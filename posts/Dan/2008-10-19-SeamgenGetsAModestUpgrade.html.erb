@@ -1,0 +1,312 @@
+---
+title: "seam-gen gets a modest upgrade"
+author: "Dan Allen"
+blogger_name: "Dan"
+layout: blog-post
+tags: [ReleaseNotes,RichFaces,Seam,Seam News,SeamGen]
+slug: SeamgenGetsAModestUpgrade
+lace: http://in.relation.to/9585.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SeamgenGetsAModestUpgrade">seam-gen gets a modest upgrade</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Along with Seam 2.1 comes a handful of enhancements to seam-gen. These changes are a culmination of the <q>mods</q> I made to the seam-gen project that forms the basis of the sample code for <a href="http://mojavelinux.com/seaminaction" target="" class="regularLink">Seam in Action</a>. Perhaps after reading this entry, you'll conclude that the enhancements go well beyond modest.
+</p>
+
+<p class="wikiPara">
+The improvements to seam-gen can be classified into four categories:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> look and feel</li>
+<li class="wikiUnorderedListItem"> functional</li>
+<li class="wikiUnorderedListItem"> project structure / build</li>
+<li class="wikiUnorderedListItem"> seam script</li>
+</ul>
+
+<p class="wikiPara">
+Since we're all attracted to shiny new things, let's start with the style upgrades and supplement the discussion with some screenshots.
+</p>
+
+<h2 class="wikiHeadline2" id="H-FresheningUpSeamgensLook"><a href="/Bloggers/SeamgenGetsAModestUpgrade#H-FresheningUpSeamgensLook">Freshening up seam-gen's look</a></h2>
+
+<p class="wikiPara">
+Both <a href="http://www.jboss.org/jbossrichfaces" target="" class="regularLink">RichFaces</a> and <a href="http://www.icefaces.org" target="" class="regularLink">ICEfaces</a> seam-gen projects already carry a touch of elegance thanks to the component styling controlled via CSS-based themes (i.e., skins) bundled with the two libraries. The styles that get imported with a theme are most apparent in the rich layout components from the JSF component sets (e.g., <tt>&lt;rich:panel&gt;</tt> and <tt>&lt;ice:panelTab&gt;</tt>). But there are some areas of the page that don't get coverage, such as the form elements and status messages. I figured out a way to stretch the theme across the whole page using RichFaces' theme extensions and some better default styles (unfortunately, the theme extensions only apply to RichFaces projects at this point).
+</p>
+
+<p class="wikiPara">
+Although it may seem trivial to worry about how the application looks, these style improvements are an important first step to ensuring that your application looks more presentable down the road (giving you one less thing to worry about early on in the project).
+</p>
+
+<h3 class="wikiHeadline3" id="H-ExtendingTheRichFacesSkin"><a href="/Bloggers/SeamgenGetsAModestUpgrade#H-ExtendingTheRichFacesSkin">Extending the RichFaces skin</a></h3>
+
+<p class="wikiPara">
+RichFaces uses skins to decorate its built-in components. But what's neat is that this skinnability feature is left entirely open to extension. A skin is nothing more than a message bundle that maps colors and font sizes to key names (e.g., panelBorderColor). Each rich component (e.g., <tt>&lt;rich:dataTable&gt;</tt>) is bundled with dynamically generated CSS that references these key names to style the component according to the theme.
+</p>
+
+<p class="wikiPara">
+The CSS is generated from an XML-based CSS file, which uses the file extension .xcss. The syntax used in this file consists of both standard and special skin-aware elements and attributes that translate into CSS. To extend the theme, you simply create a custom .xcss file and import it into your page using <tt>&lt;a:loadStyle&gt;</tt> from the Ajax4jsf component set. If you need to customize the colors and font sizes, or even add an additional skin property, you simply create a file named %SKIN_NAME%.skin.properties and place it at the root of the classpath. You replace %SKIN_NAME% with the name of the RichFaces skin (e.g., emeraldTown).
+</p>
+
+<p class="wikiPara">
+Details, details, details. Where's the benefit? Well, through the power of CSS, we can make non-RichFaces components look rich! And it's not just about colors, either. It's even possible to generate gradient images using one of the special elements in xcss (<tt>&lt;f:resource&gt;</tt>). That means we can make slick looking form elements. In seam-gen projects, these additional theme-related styles are defined in the file theme.xcss, which sits adjacent to the existing theme.css file. Here's a snippet from that file which styles text inputs:
+</p>
+
+<pre class="wikiPreformatted">&lt;u:selector name="input[type=text], input[type=password], textarea, select"&gt;
+  &lt;u:style name="background-color" skin="controlBackgroundColor"/&gt;
+  &lt;u:style name="color" skin="controlTextColor"/&gt;
+  &lt;u:style name="background-position" value="left top"/&gt;
+  &lt;u:style name="background-repeat" value="repeat-x"/&gt;
+  &lt;u:style name="background-image"&gt;
+    &lt;f:resource f:key="org.richfaces.renderkit.html.images.SliderFieldGradient"/&gt;
+  &lt;/u:style&gt;
+  &lt;u:style name="border" value="1px solid"/&gt;
+  &lt;u:style name="border-color" skin="tableBorderColor" /&gt;
+&lt;/u:selector&gt;</pre>
+
+
+<p class="wikiPara">
+Here's the CSS that this XML markup produces (for the DEFAULT RichFaces theme):
+</p>
+
+<pre class="wikiPreformatted">input[type="text"], input[type="password"], textarea, select {
+  background-color:#FFFFFF;
+  background-image:url(/appname/a4j/g/3_2_2.GAorg.richfaces...SliderFieldGradient...);
+  background-position:left top;
+  background-repeat:repeat-x;
+  border:1px solid #C0C0C0;
+  color:#000000;
+}</pre>
+
+
+<p class="wikiPara">
+And here's how an input generated by a plain old <tt>&lt;h:inputText&gt;</tt> would look:
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/9583" width="138" height="18">
+</p>
+
+<p class="wikiPara">
+Keep in mind that the input's style is going to coordinate with the RichFaces theme. That's true of all form elements as well as the general font color and the color of links. See for yourself in the next section.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ShowingOffTheNewLook"><a href="/Bloggers/SeamgenGetsAModestUpgrade#H-ShowingOffTheNewLook">Showing off the new look</a></h3>
+
+<p class="wikiPara">
+Below is a collection of screenshots, which are taken from a seam-gen project generated from the <q>vehicles</q> schema used for testing seam-gen. These screenshots show off the new styles as they look with various RichFaces themes. The RichFaces theme is controlled using the <tt>org.richfaces.SKIN</tt> servlet context parameter defined in web.xml:
+</p>
+
+<pre class="wikiPreformatted">&lt;context-param&gt;
+  &lt;param-name&gt;org.richfaces.SKIN&lt;/param-name&gt;
+  &lt;param-value&gt;classic&lt;/param-value&gt;
+&lt;/context-param&gt;</pre>
+
+
+<p class="wikiPara">
+The first thing you'll notice when you deploy a seam-gen 2.1 project is that there is a new home page featuring the Seam logo. Beyond that, you should simply notice that the elements on each page below all coordinate with the selected theme.
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/9576" width="558" height="363">
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/9577" width="558" height="336">
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/9578" width="558" height="344">
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/9579" width="558" height="323">
+</p>
+
+<p class="wikiPara">
+You'll notice in these next two screenshots that I have customized the status messages, also true for ICEfaces projects. An appropriate icon is used in front of each status message according to its level (warn, error, and info). While working on this enhancement, I fixed <a href="http://jira.jboss.com/jira/browse/JBSEAM-1517" target="" class="regularLink">JBSEAM-1517</a> so that the messages look presentable and don't overlap. (Believe it or not, the messages were still using the orange style from the original seam-gen, which didn't match at all with the RichFaces or ICEfaces theme).
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/9580" width="558" height="289">
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/9581" width="558" height="385">
+</p>
+
+<p class="wikiPara">
+The cherry on top of all this is the favicon of the Seam logo, which is defined in the main Facelets template and appears in the URL location bar. I think this is the sweetest enhancement because it gives you that pride that you are using Seam.
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/9584" width="299" height="22">
+</p>
+
+<p class="wikiPara">
+The only downside of the new theme is that the Visual Editor in JBossTools doesn't understand the xcss file. That's why I left behind an improved version of the theme.css file, which is still used in the main Facelets template. In it, I define static CSS styles that don't rely on the skin properties. It certainly would be cool if the Visual Editor could interpret the xcss file as it would make developers more productive when extending the RichFaces theme. <i class="wikiEmphasis">Currently, after making a change to the xcss file, you have to do a hard restart of the application to get RichFaces to reload the generated CSS (and with some browsers you also have to clear out the browser's cache).</i>
+</p>
+
+<p class="wikiPara">
+That's enough about styles for now. There are a couple other enhancements to the application's presentation that fall more along the lines of functional, so we'll look at those next.
+</p>
+
+<h2 class="wikiHeadline2" id="H-JustWhatTheBossOrdered"><a href="/Bloggers/SeamgenGetsAModestUpgrade#H-JustWhatTheBossOrdered">Just what the boss ordered</a></h2>
+
+<p class="wikiPara">
+As I talk about enhancements to seam-gen, it's important to keep in mind the purpose of seam-gen so we don't lose perspective. seam-gen provides two key services:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> A starting point for developing with Seam, saving you from <q>getting started</q> tedium</li>
+<li class="wikiOrderedListItem"> A broad demonstration of Seam features that you can begin building on</li>
+</ol>
+
+<p class="wikiPara">
+seam-gen is not going to do your job for you. With that said, there were a lot of areas of inconsistency in the generated project and other things that seam-gen could do better. Here's a list of functional changes that were made to seam-gen projects, which were mostly developed to satisfy requests that trickled down from management:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Human-readable labels are generated from property names using a camel-case translation (i.e., camelCase =&gt; Camel case)</li>
+<li class="wikiUnorderedListItem"> The proper converter is applied whenever outputting the value of a property (e.g., date, time, number)</li>
+<li class="wikiUnorderedListItem"> Icons are used in the tabs on the detail pages to denote parent and child associations</li>
+<li class="wikiUnorderedListItem"> The markup for the sort links in the column headers on the listing pages is simplified using a Facelets composition template <pre class="wikiPreformatted">&lt;ui:include src="layout/sort.xhtml"&gt;
+  &lt;ui:param name="entityList" value="#{personList}"/&gt;
+  &lt;ui:param name="propertyLabel" value="Name"/&gt;
+  &lt;ui:param name="propertyPath" value="person.name"/&gt;
+&lt;/ui:include&gt;</pre>
+</li>
+<li class="wikiUnorderedListItem"> Client-side sorting of columns in the child association table is enabled on the detail pages (leveraging the RichFaces table)</li>
+<li class="wikiUnorderedListItem"> Activated sorting on the listing page for properties on a component or composite key (e.g., vehicle.id.state)</li>
+<li class="wikiUnorderedListItem"> JPQL used for sorting is now compliant</li>
+<li class="wikiUnorderedListItem"> Added a link in each row on the listing page to edit the record (previously only possible from detail page)</li>
+<li class="wikiUnorderedListItem"> Changed the default username to admin, still allowing any value for the password. The failure login scenario can now be triggered out of the box.</li>
+<li class="wikiUnorderedListItem"> One-to-one associations are linked up in the UI the same way as many-to-one associations</li>
+<li class="wikiUnorderedListItem"> Introduced a <q>head</q> named insertion in the main Facelets template (view/layout/template.xhtml) for adding additional markup to the <tt>&lt;head&gt;</tt> element on a per-page basis <pre class="wikiPreformatted">
+&lt;ui:define name="head"&gt;
+  &lt;script type="text/javascript"&gt;
+    window.onload = function() { ... }
+  &lt;/script&gt;
+&lt;/ui:define&gt;
+</pre>
+</li>
+<li class="wikiUnorderedListItem"> Moved the <tt>&lt;h:messages globalOnly="true"&gt;</tt> declaration to the main Facelets template and conditionally check a Facelets parameter named showGlobalMessages to turn them off on a per-page basis</li>
+<li class="wikiUnorderedListItem"> The conversation is not propagated by links in the main menu bar (i.e., <tt>propagation="none"</tt>)</li>
+<li class="wikiUnorderedListItem"> Added a button to reset the search on the list pages</li>
+<li class="wikiUnorderedListItem"> The entity manager is switched to manual flush mode when editing a record</li>
+<li class="wikiUnorderedListItem"> A UI command link was added to to the debug page for destroying a selected conversation (not specific to seam-gen)</li>
+</ul>
+
+<p class="wikiPara">
+I'm sure there are other small enhancements that I am forgetting about, which I will leave for you to discover. Let's move on to the project structure and build changes.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SemanticallySpeaking"><a href="/Bloggers/SeamgenGetsAModestUpgrade#H-SemanticallySpeaking">Semantically speaking</a></h2>
+
+<p class="wikiPara">
+seam-gen projects are still built using Ant and they still have fundamentally the same (quirky) structure. What I did, though, was fix a semantic error. I changed the source directories so they better reflect how they are built rather than what classes they contain. In Seam 2.0, the two main source directories were:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> src/action</li>
+<li class="wikiUnorderedListItem"> src/model</li>
+</ul>
+
+<p class="wikiPara">
+Components in src/action were added to hot deployable classpath when running in development mode, whereas components and regular classes in the src/model directory ended up on the main (static) classpath. In production mode, of course, the resources in these two directories both would end up in the same classpath. The problem is that hot deployable components are not necessarily action components and non-hot deployable components are not necessarily model classes. To fix this semantic mixup, the source directories are now:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> src/hot</li>
+<li class="wikiUnorderedListItem"> src/main</li>
+</ul>
+
+<p class="wikiPara">
+I trust that you can immediately grasp the purpose of these two source directories and thus feel more comfortable finding a place for the class you are about to create. Unfortunately, JBossTools still uses the old convention for the time being. Despite the difference, it has no problem consuming a seam-gen project with the new folder names since, internally, it relies on a mapping between folder name and function (seam-gen prepares the mapping configuration to reflect this new convention).
+</p>
+
+<p class="wikiPara">
+Naturally, the project build script was updated to accommodate the new names for these source directories. But there are several other changes that came out of my meddling with the build.
+</p>
+
+<h2 class="wikiHeadline2" id="H-MoreMuscleUnderTheHood"><a href="/Bloggers/SeamgenGetsAModestUpgrade#H-MoreMuscleUnderTheHood">More muscle under the hood</a></h2>
+
+<p class="wikiPara">
+First and foremost, tests which extend <tt>SeamTest</tt> can now be run using Java 6! This was a huge frustration for me and I am thrilled to have worked out a solution. The issue is really that the Embedded JBoss container is sorely out of date and flakes out on Java 6. Until a newer version of Embedded JBoss is ready, the workaround is to use and endorsed JAR file to fix a conflict with JAX-WS and to allow a special array syntax specific to the Sun JDK. You can check the test target in the build file for the specifics.
+</p>
+
+<p class="wikiPara">
+Fans of Groovy will be excited to learn that it's now possible to use Groovy components in EAR projects. The EAR project build compiles Groovy scripts on the classpath using groovyc, making them bona fide Java bytecode. (Getting seam-gen EAR projects to interpret .groovy files at runtime requires some more research). But what's even more exciting is that you can now write tests in Groovy (again compiled using groovyc) <i class="wikiEmphasis">and</i> test components written in Groovy. Really, this was just a matter of putting the build logic in place, but it's still important to know that you can get the Groovy support right out of the box. There's still work to be done to make the support for Groovy more elegant, but for now it is at least comprehensive.
+</p>
+
+<p class="wikiPara">
+Here's a bunch of other goodies that were thrown into the build:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> seam-gen WAR projects now have a consolidated compile target</li>
+<li class="wikiUnorderedListItem"> two new targets, reexplode and redeploy, execute <tt>clean unexplode explode</tt> or <tt>clean undeploy deploy</tt>, respectively</li>
+<li class="wikiUnorderedListItem"> the restart target now detects if you have deployed an exploded or packaged archive and restarts the application appropriately (before it bombed if you had a packaged archive deployed)</li>
+<li class="wikiUnorderedListItem"> the view folder is added to the classpath during the execution of tests so that page actions defined in fine-grained page descriptors (i.e., .page.xml) get invoked properly (previously tests only read the global page descriptor (i.e., pages.xml)</li>
+<li class="wikiUnorderedListItem"> a new target named javadoc generates JavaDoc API from the project source</li>
+</ul>
+
+<p class="wikiPara">
+If you are interested in getting the dependencies of a seam-gen project under control, check out my article about how to <a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy" target="" class="regularLink">manage the dependencies of a seam-gen project with Ivy</a>.
+</p>
+
+<p class="wikiPara">
+That wraps up just about all the changes to seam-gen projects. All in all, what these upgrades should do is make your demos of Seam look just a touch prettier and give you more hammers to swing during development. Obviously, there are still plenty of improvements that could be made, so feel free to <a href="http://jira.jboss.org/jira/browse/JBSEAM" target="" class="regularLink">contribute them</a>. Patches generated with <tt>svn diff</tt> are preferred.
+</p>
+
+<p class="wikiPara">
+In the final section, I want to talk about the changes that were made to the seam script and the different ways that it can now be invoked.
+</p>
+
+<h2 class="wikiHeadline2" id="H-RemovingTheShacklesFromSeamgen"><a href="/Bloggers/SeamgenGetsAModestUpgrade#H-RemovingTheShacklesFromSeamgen">Removing the shackles from seam-gen</a></h2>
+
+<p class="wikiPara">
+The seam script (which we all call seam-gen) has finally been set free. In the past, the seam script hasn't been as comfortable to use as other project generation tools, such as Grails, because the developer has been locked into having to execute it from a Seam distribution directory. The approach that Grails takes is to add the location of the grails script to your PATH, set GRAILS_HOME, and use the script like a system command. I have an approach that falls somewhere in between and that I believe is more flexible.
+</p>
+
+<p class="wikiPara">
+Thanks to changes in the bootstrap script, you can now run seam out of any directory on the computer and it will work as it does today (meaning your current working directory can be anywhere). The seam script still has to reside in a Seam distribution directory or the SEAM_HOME environment variable must be set if it doesn't, but now you have a third option of creating a symlink to the seam script from a directory already on your path (such as ~/bin). Internally, the script figures out your current directory and the SEAM_HOME environment variable relative to the location of the script (there is no reason to make the developer set the SEAM_HOME environment variable, though it's still honored if present). More on the current working directory in a second. The point so far is that the seam script is going to work from anywhere. No more silly restrictions.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">As a side note, I want to mention that I added a validation check in the bootstrap routine that verifies the user has the JAVA_HOME environment variable defined and that it resolves to a valid JDK installation. Otherwise, the Ant build is going to fail anyway.</i>
+</p>
+
+<p class="wikiPara">
+Ever since Seam 2.0, the <tt>seam create-project</tt> command has been moving the build.properties that holds the responses from <tt>seam setup</tt> to the file seam-gen.properties in the root of the project. But we haven't done anything with this file yet...until now. Here's the big enhancement (the one you have all been asking and waiting for).
+</p>
+
+<p class="wikiPara">
+If your current working directory has a seam-gen.properties file AND and build.xml file, then the seam script recognizes that you are in a seam-gen project and operates using the seam-gen.properties file in that directory rather than the seam-gen/build.properties in the Seam distribution. If you put the seam script (or a symlink to the seam script) on your PATH, then you can simply enter a project and run <tt>seam generate</tt>. If the seam script is not on your PATH, then you have to run something like <tt>~/projects/seam-2.1.0.GA/seam generate</tt>. It really doesn't matter how it is invoked. This works across the board on Linux, Windows, and Mac. (By the way, writing cross platform scripts is a huge pain).
+</p>
+
+<p class="wikiPara">
+When your current directory is a seam-gen project, you essentially have the choice of using the seam script or the ant command to run the targets. The seam script is beneficial if the ant command is not on your PATH, though if you have Ant installed, then the seam script is just a middleman. That is, unless you are executing a code generation target (e.g., new-form, generate). Then you do need to use the seam script.
+</p>
+
+<p class="wikiPara">
+So there you have it, you can now use seam-gen to manage multiple projects and you can execute code generation from within the project! But wait, there is even more! If you don't yet have a seam-gen project created, you can feed a properties file of your choice into the script using the <tt>-Dseam-gen.properties</tt> flag:
+</p>
+
+<pre class="wikiPreformatted">seam -Dseam-gen.properties=seam-gen/myproject-build.properties</pre>
+
+
+<p class="wikiPara">
+The value of the property must either be an absolute file path or a path relative to the root of the Seam distribution. You can also override the location of the seam-gen directory or even just the seam-gen templates (if you keep a customized version) using <tt>-Dseam-gen.dir</tt> and <tt>-Dtemplates.dir</tt>, respectively. It may be a little obscure to have to pass <tt>-D</tt> flags to the seam script, but it gives you the power you are looking for.
+</p>
+
+<p class="wikiPara">
+I hope you're excited about all the enhancements that I presented in this article and that it helps you to become more productive with your seam-gen projects. There is still work to be done, including a major refactoring of the seam-gen build system, which I am going to start documenting on this <a href="http://seamframework.org/Documentation/SeamgenRefactoring" target="" class="regularLink">wiki page</a>. But for now, you should have plenty of new toys to play with.</p>
+</div>

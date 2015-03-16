@@ -1,0 +1,33 @@
+---
+title: "It's not about dependency injection"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Web Beans,Weld]
+slug: ItsNotAboutDependencyInjection
+lace: http://in.relation.to/12708.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/ItsNotAboutDependencyInjection">It's not about dependency injection</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I'm trying really hard to emphasize to the community that CDI and Weld are not just a dependency injection <q>solution</q>. We did not come at this from the point of view of trying to solve <q>dependency injection</q>, or of trying to build a <q>better Spring</q>. 
+</p>
+
+<p class="wikiPara">
+What I was really thinking about when I started working on Seam was <i class="wikiEmphasis">state management in event driven architectures</i>. How can you ensure that an event is processed with the correct set of state for the context(s) it carries with it? I wanted to get away from the awful <q>front controller</q> pattern, where some big stupid stateless method is responsible for coordinating everything involved in processing the event, from state retrieval and storage, to service location, to orchestration.
+</p>
+
+<p class="wikiPara">
+There were a couple of frameworks which were ahead of their time in this respect. The one that got me started was XWork, a dependency injection solution that was part of earlier versions of WebWork. That's why I was kind of excited when I saw the same ideas in JSF (setting aside many other problems with JSF 1.0).
+</p>
+
+<p class="wikiPara">
+It's also why I pushed back so hard when some people questioned the existence of the event notification facility in CDI. Though it appeared to some folks to be a kind of cute feature stuck on the side of a dependency injection container, that's not what it was to me at all. Indeed, the idea of event processing was <i class="wikiEmphasis">right at the core of what we were trying to achieve</i> in JSR-299.</p>
+</div>

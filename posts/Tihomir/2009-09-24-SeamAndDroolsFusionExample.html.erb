@@ -1,0 +1,219 @@
+---
+title: "Seam and Drools Fusion example"
+author: "Tihomir Surdilovic"
+blogger_name: "Tihomir"
+layout: blog-post
+tags: []
+slug: SeamAndDroolsFusionExample
+lace: http://in.relation.to/12416.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SeamAndDroolsFusionExample">Seam and Drools Fusion example</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<a href="http://downloads.jboss.com/drools/docs/5.0.1.26597.FINAL/drools-fusion/html_single/index.html" target="" class="regularLink">Drools Fusion </a> is the module responsible for adding event processing capabilities into the Drools5 platform. It defines a set of goals for support of <a href="http://en.wikipedia.org/wiki/Complex_Event_Processing" target="" class="regularLink">Complex Event Processing</a>:
+</p>
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Support Events, with their propper semantics, as first class citizens.</li>
+</ul>
+
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Allow detection, correlation, aggregation and composition of events.</li>
+</ul>
+
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Support processing of Streams of events.</li>
+</ul>
+
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Support temporal constraints in order to model the temporal relationships between events.</li>
+</ul>
+
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Support sliding windows of interesting events.</li>
+</ul>
+
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Support a session scoped unified clock.</li>
+</ul>
+
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Support the required volumes of events for CEP use cases.</li>
+</ul>
+
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Support to (re)active rules.</li>
+</ul>
+
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Support adapters for event input into the engine (pipeline).</li>
+</ul>
+
+
+<p class="wikiPara">
+Seam integration with Drools5 aims to provide full integration with Drools5 Fusion as well as provide Seam-specific convenient ways of interacting with the Fusion module. 
+</p>
+
+
+<p class="wikiPara">
+In order to show an example of this integration, again, we are going to be dealing with the <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/" target="" class="regularLink">Numberguess example</a>. This Numberguess example is depicted through a game where users have nine tries to guess a random number between 1 and 100. Each guess triggers a pageflow which in turns calls upon Drools to make a decision (win, lose, or keep guessing) until either the correct number is guessed or nine tries are reached upon which the game ends. 
+</p>
+
+<p class="wikiPara">
+For the Fusion example, we are going to change the game a little. Instead of having nine tries to guess the correct number, the users are going to have one minute to make the right guess. So let's get started:
+</p>
+
+<p class="wikiPara">
+1. The first change to integrate Fusion in our Numberguess example is in the <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/numberguesscep.drl" target="" class="regularLink">rules</a> themselves. The GameCount rule is the focal point of the changes and needs to be looked at:
+</p>
+
+
+
+
+<pre class="wikiPreformatted">rule GameCount
+   when
+   	  gameStart : GameStart() from entry-point "Guess Stream" 
+	  Guess( time after[1m,*] gameStart.time ) from entry-point "Guess Stream" 
+   then
+      decision.setOutcome("lose");
+      game.setMessage("Game time of 1 minute exceeded.");
+end</pre>
+
+
+
+<p class="wikiPara">
+The rule predicate pattern matches if the following is true:
+</p>
+
+<p class="wikiPara">
+a) there exists an event of type <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/src/org/jboss/seam/example/numberguess/GameStart.java" target="" class="regularLink">GameStart</a> from the <q>Guess Stream</q> entry point (An entry point is for Drools a gate from which facts come, you can read much more about this in the <a href="http://downloads.jboss.com/drools/docs/5.0.1.26597.FINAL/drools-fusion/html_single/index.html" target="" class="regularLink">docs</a>)
+</p>
+
+<p class="wikiPara">
+and 
+</p>
+
+<p class="wikiPara">
+b) there exists an event of type <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/src/org/jboss/seam/example/numberguess/Guess.java" target="" class="regularLink">Guess</a> where the temporal distance between the time of the event is over one minute of the time of the GameStart event (this basically means if the user makes a guess after 1 minute of the initial game start).
+</p>
+
+<p class="wikiPara">
+If the pattern is matched we set the game decision to <q>lose</q> and provide an appropriate message to the user on why they have lost the game. 
+</p>
+
+<p class="wikiPara">
+2. Now that we have our rule, we are back in our Seam code and need to put it all together. As always first we need to declare our KnowledgeBase in <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/WEB-INF/components.xml" target="" class="regularLink">components.xml</a>:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;drools:knowledge-base name="kbase" knowledge-builder-config="kbuilderconfig.properties" knowledge-base-config="kbaseconfig.properties"&gt;
+    	&lt;drools:rule-resources&gt;
+    		&lt;value&gt;classpath;numberguesscep.drl;DRL&lt;/value&gt;
+    	&lt;/drools:rule-resources&gt;	
+    	&lt;drools:event-listeners&gt;
+    		&lt;value&gt;org.drools.event.knowledgebase.DefaultKnowledgeBaseEventListener&lt;/value&gt;
+    	&lt;/drools:event-listeners&gt;
+    &lt;/drools:knowledge-base&gt;</pre>
+
+
+
+<p class="wikiPara">
+Note the attribute <i class="wikiEmphasis">knowledge-base-config</i> which points to <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/kbaseconfig.properties" target="" class="regularLink">kbaseconfig.properties</a>. Drools has two processing modes, namely CLOUD and STREAM. The CLOUD processing mode is the default processing mode and should be familiar to all Drools users. The STEAM processing mode is the mode used when the application needs to process streams of events which is what we need for this example and we tell the engine that we want to use it by defining the property drools.eventProcessingMode in our properties file and setting it to <q>stream</q>.
+</p>
+
+<p class="wikiPara">
+Once this is done we need to create the StatefulKnowledgeSession:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;drools:stateful-knowledge-session name="ksession" knowledge-base="#{kbase}" knowledge-session-config="ksessionconfig.properties"
+    audit-log="/home/tsurdilo/Desktop/ksessionlogs/ksession"&gt;
+    	&lt;drools:event-listeners&gt;
+    		&lt;value&gt;org.drools.event.rule.DebugAgendaEventListener&lt;/value&gt;
+    		&lt;value&gt;org.drools.event.rule.DebugWorkingMemoryEventListener&lt;/value&gt;
+    	&lt;/drools:event-listeners&gt;
+&lt;/drools:stateful-knowledge-session&gt;
+</pre>
+
+<p class="wikiPara">
+Note the attribute <i class="wikiEmphasis">knowledge-session-config</i> which points to <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/ksessionconfig.properties" target="" class="regularLink">ksessionconfig.properties</a>. Drools Fusion provides two clock implementations out of the box, namely Real Time Clock and Pseudo Clock. Pseudo clock is used for testing and the real time clock internally uses the system clock which we need for our example. We set this in our properties file by setting the property drools.clockType to <q>realtime</q>.
+</p>
+
+<p class="wikiPara">
+If you are still reading at this point you remember that in our <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/numberguesscep.drl" target="" class="regularLink">GameCount rule</a> we say that our events come from the <q>Guess Stream</q> entry point. So now we need to define this entry point into which we are going to feed all of our user guess events into:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;drools:working-memory-entry-point name="guessEntryPoint" 
+       ksession="#{ksession}" entry-point-name="Guess Stream"/&gt;    </pre>
+
+
+<p class="wikiPara">
+The <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/src/main/org/jboss/seam/drools/WorkingMemoryEntryPoint.java" target="" class="regularLink">WorkingMemoryEntryPoint</a> component is something we added for the Fusion integration with Seam and provides a convenient way to get a hold of a Drools entry point.
+</p>
+
+<p class="wikiPara">
+Last things to do now is to put it all together in our <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/pageflow.jpdl.xml" target="" class="regularLink">pageflow definition</a>:
+</p>
+
+
+<pre class="wikiPreformatted">
+&lt;decision name="drools"&gt;
+      &lt;handler class="org.jboss.seam.drools.KnowledgeDecisionHandler"&gt;
+         &lt;workingMemoryName&gt;ksession&lt;/workingMemoryName&gt;
+         &lt;entryPointName&gt;guessEntryPoint&lt;/entryPointName&gt;
+         &lt;assertObjects&gt;
+            &lt;element&gt;#{gameStart}&lt;/element&gt;
+            &lt;element&gt;#{guess}&lt;/element&gt;
+         &lt;/assertObjects&gt;
+      &lt;/handler&gt;
+....</pre>
+
+
+
+<p class="wikiPara">
+The new thing here is the ability to pass an entry point to KnowledgeDecisionHandler who knows to inserts events into this entry point. Currently I am working on adding support for multiple entry points to KnowledgeDecisionHandler which is useful when you have multiple event streams feeding events into the rule engine at the same time.
+</p>
+
+<p class="wikiPara">
+And that's it, with these changes users now have one minute to guess the right number...and it uses Drools Fusion :)
+</p>
+
+
+</div>

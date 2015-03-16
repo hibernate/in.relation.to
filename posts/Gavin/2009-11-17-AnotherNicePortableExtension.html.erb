@@ -1,0 +1,129 @@
+---
+title: "Another nice portable extension"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Portable Extensions,Weld]
+slug: AnotherNicePortableExtension
+lace: http://in.relation.to/13053.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/AnotherNicePortableExtension">Another nice portable extension</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Here's a CDI portable extension that reads values from properties files and configures fields of Java EE components. In Java EE 6, this works for any <q>Java EE component supporting injection</q>, including servlets, EJBs, managed beans, interceptors and more.
+</p>
+
+<p class="wikiPara">
+In this example, properties for a class such as <tt>org.mydomain.blog.Blogger</tt> go in a resource named <tt>org/mydomain/blog/Blogger.properties</tt>, and the name of a property must match the name of the field to be configured. So <tt>Blogger.properties</tt> would contain:
+</p>
+
+<pre class="wikiPreformatted">firstName=Gavin
+lastName=King</pre>
+
+
+<p class="wikiPara">
+The portable extension works by wrapping the containers <tt>InjectionTarget</tt> and setting field values from the <tt>inject()</tt> method.
+</p>
+
+<pre class="wikiPreformatted brush:java;">public class ConfigExtension implements Extension {
+
+	&lt;X&gt; void processInjectionTarget(ProcessInjectionTarget&lt;X&gt; pit) {
+		
+	    final InjectionTarget&lt;X&gt; it = pit.getInjectionTarget();
+        final Map&lt;Field, Object&gt; configuredValues = new HashMap&lt;Field, Object&gt;();
+        
+        AnnotatedType&lt;X&gt; at = pit.getAnnotatedType();
+        
+        String propsFileName = at.getClass().getSimpleName() + ".properties";
+        InputStream stream = at.getJavaClass().getResourceAsStream(propsFileName);
+        if (stream!=null) {
+            
+            try {
+                Properties props = new Properties();
+                props.load(stream);
+                for (Map.Entry&lt;Object, Object&gt; property : props.entrySet()) {
+                    String fieldName = property.getKey().toString();
+                    Object value = property.getValue();
+                    try {
+                        Field field = at.getJavaClass().getField(fieldName);
+                        field.setAccessible(true);
+                        if ( field.getType().isAssignableFrom( value.getClass() ) ) {
+                            configuredValues.put(field, value);
+                        }
+                        else {
+                            //TODO: do type conversion automatically
+                            pit.addDefinitionError( new InjectionException("field is not of type String: " + field ) );
+                        }
+                    }
+                    catch (NoSuchFieldException nsfe) {
+                        pit.addDefinitionError(nsfe);
+                    }
+                }
+            }
+            catch (IOException ioe) {
+                pit.addDefinitionError(ioe);
+            }
+            finally {
+                stream.close();
+            }
+        }
+        
+        InjectionTarget&lt;X&gt; wrapped = new InjectionTarget&lt;X&gt;() {
+
+            @Override
+            public void inject(X instance, CreationalContext&lt;X&gt; ctx) {
+                it.inject(instance, ctx);
+                for (Map.Entry&lt;Field, Object&gt; configuredValue: configuredValues.entrySet()) {
+                    try {
+                        configuredValue.getKey().set(instance, configuredValue.getValue());
+                    }
+                    catch (Exception e) {
+                        throw new InjectionException(e);
+                    }
+                }
+            }
+
+            @Override
+            public void postConstruct(X instance) {
+                it.postConstruct(instance);
+            }
+
+            @Override
+            public void preDestroy(X instance) {
+                it.dispose(instance);
+            }
+
+            @Override
+            public void dispose(X instance) {
+                it.dispose(instance);
+            }
+
+            @Override
+            public Set&lt;InjectionPoint&gt; getInjectionPoints() {
+                return it.getInjectionPoints();
+            }
+
+            @Override
+            public X produce(CreationalContext&lt;X&gt; ctx) {
+                return it.produce(ctx);
+            }
+            
+        };
+        
+        pit.setInjectionTarget(wrapped);
+        
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+The portable extension must be deployed in a jar with a file named <tt>META-INF/services/javax.enterprise.inject.spi.Extension</tt> containing the fully qualified extension class name.</p>
+</div>

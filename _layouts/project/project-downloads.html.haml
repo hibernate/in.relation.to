@@ -1,0 +1,81 @@
+---
+layout: project-frame
+---
+-# Defines the project download page template
+-# Provide get started and download action buttons
+-# List releases defined in the project metadata
+
+-# subpages must define a section whose anchor is "supported-version"
+
+-# Metadata from site.yml for the project
+- project_description = site.projects[page.project]
+
+-# Release buttons using the latest dev and latest stable releases
+.release-bottons.visible-desktop
+  - stable_release = latest_stable_release(page)
+  - dev_release = latest_dev_release(page)
+  - if not (stable_release.nil? && dev_release.nil?)
+    .row-fluid.text-center
+      - unless stable_release.nil?
+        %a.btn.btn-large.btn-success{:href => "#{sourceforge_zip_url(project_description, stable_release)}"}
+          %i.icon-cloud-download
+          stable #{stable_release.version}
+      - unless (stable_release.nil? || dev_release.nil?)
+        &nbsp;
+      - unless (dev_release.nil? || !dev_release.displayed)
+        %a.btn.btn-large.btn-warning{:href => "#{sourceforge_zip_url(project_description, dev_release)}"}
+          %i.icon-cloud-download
+          development #{dev_release.version}
+.row-fluid
+  .span12
+    .alert.alert-info.text-center
+      -# %button.close{:type => 'button', "data-dismiss" =>'alert'}
+      -#  &times;
+      %i.icon-user-md.icon-large
+      :asciidoc
+        :doctype: inline
+        :project: #{page.project}
+
+        Interested in commercial support? Check out link:/{project}/support/[Red Hat's offering].
+
+.row-fluid
+  .span12
+    -# Release table built form the metadata
+    %h2 Releases
+    - unless site.projects[page.project].sorted_releases.nil?
+      - site.projects[page.project].sorted_releases.each do |release|
+        - unless release.displayed then next end
+        %dl.dl-horizontal
+          %dt
+            = release.version
+            &nbsp;
+            %a.btn.btn-info{:href => "#{sourceforge_zip_url(project_description, release)}"}
+              %i.icon-cloud-download
+          %dd
+            %small= release.date
+            %span.label{:class => "#{release.stable ? 'label-success' : 'label-warning'}"} #{release.stable ? 'stable' : 'development'}
+          %dd
+            %small
+              Maven gav:
+              %a{:href => "https://repository.jboss.org/nexus/index.html#nexus-search;gav~#{project_description.group_id}~#{project_description.artifact_id}~#{release.version}~~"}>=" #{project_description.group_id}:#{project_description.artifact_id}:#{release.version}"
+              - if page.project == 'search'
+                ; compatible with Hibernate ORM #{release['dependencies'].get_version('org.hibernate', 'hibernate-core')}
+          %dd
+            = release.summary
+          - if not release.announcement_url.nil?
+            %dd
+              %a{:href => "#{release.announcement_url}"}
+                More on this release
+                %i.icon-circle-arrow-right
+    - else
+      %p There are no releases configured for this project.
+
+    Older releases can be found
+    %a{:href => "#{project_description.sourceforge_url}"}
+      on SourceForge
+    or in JBoss's
+    %a{:href => "https://repository.jboss.org/nexus/index.html#nexus-search;gav~#{project_description.group_id}~#{project_description.artifact_id}~~~"}<
+      Maven repository.
+.row-fluid
+  .span12
+    ~ content

@@ -1,0 +1,218 @@
+---
+title: "Hibernate OGM 4.1.0.Beta1 is out"
+author: "Gunnar Morling"
+blogger_name: "Gunnar"
+layout: blog-post
+tags: [Hibernate,Hibernate OGM,News]
+slug: HibernateOGM410Beta1IsOut
+lace: http://in.relation.to/24890.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateOGM410Beta1IsOut">Hibernate OGM 4.1.0.Beta1 is out</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+It's my great pleasure to announce the release of Hibernate OGM 4.1.0.Beta1! This version shines with:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> support for CouchDB</li>
+<li class="wikiUnorderedListItem"> query execution via JPA</li>
+<li class="wikiUnorderedListItem"> new Option API</li>
+<li class="wikiUnorderedListItem"> and much more, including a version bump</li>
+</ul>
+
+<p class="wikiPara">
+But wait, hasn't the last released version been 4.0.0.Beta4? That's true indeed, and in case you were wondering, we did not forget to do a final release of the 4.0 line. The reason for the version bump is that Hibernate OGM is now <u>compatible with JPA 2.1 and Hibernate ORM 4.3</u>. To reflect this we thought it'd be a good idea to jump to a new minor version as well.
+</p>
+
+<p class="wikiPara">
+As usual, you can get the release from <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.1.0.Beta1/" target="" class="regularLink">SourceForge</a> (ZIP, TAR.GZ) or retrieve it from the JBoss Nexus <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate/ogm/" target="" class="regularLink">repository server</a> using your favorite dependency management tool. The GAV coordinates are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-core:4.1.0.Beta1</i> for the OGM engine and </li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-&lt;datastore&gt;:4.1.0.Beta1</i>, depending on the backend you want to use.</li>
+</ul>
+
+<p class="wikiPara">
+Note that we did move some packages around, so make sure to look at our <a href="https://community.jboss.org/wiki/HibernateOGMMigrationNotes" target="" class="regularLink">migration guide</a>.
+</p>
+
+<p class="wikiPara">
+Enough of the introductory words, let's have a closer look at some of the new features.
+</p>
+
+<h1 class="wikiHeadline1" id="H-SupportForCouchDB"><a href="/Bloggers/HibernateOGM410Beta1IsOut#H-SupportForCouchDB">Support for CouchDB</a></h1>
+
+<p class="wikiPara">
+Based on a huge contribution of community member <a href="https://github.com/dreab8" target="" class="regularLink">Andrea Boriero</a> (thanks again, Andrea!), Hibernate OGM comes now with support for <a href="https://couchdb.apache.org/" target="" class="regularLink">Apache CouchDB</a>. CouchDB is a scalable document datastore which persists data as JSON documents and offers an HTTP API, fully embracing REST principles.
+</p>
+
+<p class="wikiPara">
+The storage strategy of the new dialect resembles that used for MongoDB. In particular we aimed for a very natural mapping of entities to documents in the datastore. E.g. properties are mapped as document fields, embeddables are mapped as nested documents etc. We're also leveraging CouchDB's built-in optimistic locking mechanism to detect concurrent updates, just as you would expect it.
+</p>
+
+<p class="wikiPara">
+The listing belows shows an entity and how it is represented as JSON document in CouchDB:
+</p>
+
+<pre class="wikiPreformatted brush: java">@Entity
+public class News {
+
+    @Id
+    private String id;
+
+    @Version
+    @Generated
+    @Column(name="_rev")
+    private String revision;
+
+    private String title;
+
+    @Column(name="desc")
+    private String description;
+
+    //getters, setters ...
+}
+
+# JSON document
+{
+    "_id": "News:id_:news-1_",
+    "_rev": "1-d1cd3b00a677a2e31cd0480a796e8480",
+    "$type": "entity",
+    "$table": "News",
+    "title": "On the merits of NoSQL",
+    "desc": "This paper discuss why NoSQL will save the world for good"
+}</pre>
+
+
+<p class="wikiPara">
+As you can see, the <tt>@Id</tt> attribute is mapped to CouchDB's reserved <tt>_id</tt> field, the same applies for the revision attribute which is mapped to <tt>_rev</tt>. The <tt>@Version</tt> and <tt>@Generated</tt> annotations advice OGM to handle the revision property as version attribute and use it for optimistic concurrency control. The <tt>@Column</tt> annotation can be used to map a property to a document field with another name.
+</p>
+
+<p class="wikiPara">
+To learn more about the CouchDB dialect and how to use it, refer to the reference guide. Note that the dialect is considered experimental at this time, so don't expect everything to work perfectly yet. Of course any feedback is highly welcome; maybe you even want to tackle one of the <a href="https://hibernate.atlassian.net/issues/?jql=project%20%3D%20OGM%20AND%20status%20%3D%20Open%20AND%20text%20~%20%22couchdb%22%20ORDER%20BY%20status%20DESC%2C%20priority%20DESC" target="" class="regularLink">open issues</a>) in this field?
+</p>
+
+<h1 class="wikiHeadline1" id="H-QueryImprovements"><a href="/Bloggers/HibernateOGM410Beta1IsOut#H-QueryImprovements">Query improvements</a></h1>
+
+<p class="wikiPara">
+We're very pleased to have progressed in the field of queries, addressing several long standing feature requests.
+</p>
+
+<p class="wikiPara">
+It's possible now to issue <u>JP-QL queries via the EntityManager API</u> which is great news for you if you're preferring JPA over using the native Hibernate API:
+</p>
+
+<pre class="wikiPreformatted brush: java">EntityManager em = ...;
+List&lt;Animal&gt; giraffes = em.createQuery( "FROM Animal WHERE species = :species" )
+    .setParameter( "species", "Giraffe" )
+    .getResultList();</pre>
+
+
+<p class="wikiPara">
+You also can work with <u>named queries</u> now:
+</p>
+
+<pre class="wikiPreformatted brush: java">@Entity
+@NamedQuery(name = AnimalQueries.BY_SPECIES, query = "FROM Animal WHERE species = :species")
+public class Animal { ... }
+
+EntityManager em = ...;
+List&lt;Animal&gt; giraffes = em.createNamedQuery( AnimalQueries.BY_SPECIES, Animal.class )
+    .setParameter( "species", "Giraffe" )
+    .getResultList();</pre>
+
+
+<p class="wikiPara">
+Depending on the chosen backend, these queries will either be translated into Lucene Queries via Hibernate Search or into native queries of the backend (currently the case for MongoDB).
+</p>
+
+<h1 class="wikiHeadline1" id="H-OptionAPI"><a href="/Bloggers/HibernateOGM410Beta1IsOut#H-OptionAPI">Option API</a></h1>
+
+<p class="wikiPara">
+One big challenge Hibernate OGM has to deal with is how to <u>expose store-specific functionality and configuration options</u> in case the JPA semantics are not sufficient. Taking MongoDB as example, you might want to configure the write concern or a strategy for persisting association information.
+</p>
+
+<p class="wikiPara">
+Hibernate OGM now provides an extendible, type-safe and comprehensible mechanism for declaring such options. You can use <u>annotations and a programmatic API</u>. Dialect authors can plug in store-specific configuration options very easily, allowing users to specify these options in an intuitive and type-safe fashion. The following shows an example:
+</p>
+
+<pre class="wikiPreformatted brush: java">@Entity
+@AssociationStorage(AssociationStorageType.ASSOCIATION_DOCUMENT)
+public class Zoo {
+
+    @OneToMany
+    private Set&lt;Animal&gt; animals;
+
+    @OneToMany
+    private Set&lt;Person&gt; employees;
+
+    @OneToMany
+    @AssociationStorage(AssociationStorageType.IN_ENTITY)
+    private Set&lt;Person&gt; visitors;
+
+    //...
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>@AssociationStorage</tt> annotation on the entity level expresses that all associations of the <tt>Zoo</tt> class should be persisted as separate association documents. Only the <tt>visitors</tt> association will be stored embedded within the corresponding <tt>Zoo</tt> document, as the local <tt>@AssociationStorage</tt> annotation takes precedence.
+</p>
+
+<p class="wikiPara">
+We try to share such configuration options between stores of one kind where feasible. E.g. the <tt>@AssocationStorage</tt> annotation is applicable to all document datastores (while e.g. an option such as <tt>@WriteConcern</tt> would be specific to MongoDB), simplifying the migration between stores. Neat, isn't it?
+</p>
+
+<p class="wikiPara">
+Now let's have a look at how you'd apply the same configuration using the programmatic API:
+</p>
+
+<pre class="wikiPreformatted brush: java">public class MyOptionConfigurator extends OptionConfigurator {
+
+    @Override
+    public void configure(Configurable configurable) {
+        configurable.configureOptionsFor( MongoDB.class )
+            .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
+            .entity( Zoo.class )
+                .associationStorage( AssociationStorageType.IN_ENTITY )
+                .property( "visitors", ElementType.FIELD )
+                    .associationStorage( AssociationStorageType.ASSOCIATION_DOCUMENT )
+                    .associationDocumentStorage( AssociationDocumentType.COLLECTION_PER_ASSOCIATION );
+    }
+}</pre>
+
+
+<p class="wikiPara">
+All you need to do is to create an <tt>OptionConfigurator</tt> implementation, which provides access to the fluent configuration API. You can apply settings on a global level and then use <tt>entity()</tt> and <tt>property()</tt> to navigate to single entities and properties and apply options to the same. Again you can declare options specific to the store as well as options common to the family of store. Just don't forget to register your configurator when bootstrapping Hibernate OGM.
+</p>
+
+<p class="wikiPara">
+The work on options has been mainly behind the scenes in this release, with the shown options only being the first few examples for leveraging this new mechanism. You can expect to see more options specific to single stores or store families in future releases, providing you with all the flexibility you need to configure your datastore.
+</p>
+
+<h1 class="wikiHeadline1" id="H-StreamlinedConfigurationProperties"><a href="/Bloggers/HibernateOGM410Beta1IsOut#H-StreamlinedConfigurationProperties">Streamlined configuration properties</a></h1>
+
+<p class="wikiPara">
+The new option mechanism is an elegant way for specifying many options in a type-safe way. But plain properties in <u>persistence.xml</u> are just more appropriate for settings such as the host name of the store, user name etc. When working on the option API, it became apparent that several of our backend modules had the same or very similar configuration properties, but partly with different names and adhering to different naming conventions. So we took the chance to clean up the mess and <i class="wikiEmphasis">re-organized the properties</i>.
+</p>
+
+<p class="wikiPara">
+Properties common to all/most stores are named <tt>hibernate.ogm.datastore.*</tt> now, so e.g. there is <tt>hibernate.ogm.datastore.host</tt>, <tt>hibernate.ogm.datastore.username</tt>, <tt>hibernate.ogm.datastore.database</tt> etc. Properties specific to a single store are named <tt>hibernate.ogm.&lt;datastore&gt;.*</tt>, e.g. <tt>hibernate.ogm.mongodb.connection_timeout</tt>. Note that when programmatically bootstrapping a session factory or entity manager factory, you should refer to the properties using the constants declared on <tt>OgmProperties</tt>, <tt>InfinispanProperties</tt> etc.
+</p>
+
+<p class="wikiPara">
+While this change greatly increases consistency and removes redundancies, it requires existing applications to be adapted. So check out the <a href="https://docs.jboss.org/hibernate/ogm/4.1/reference/en-US/html_single/#ogm-datastore-providers" target="" class="regularLink">reference guide</a> to make sure you use the right names. 
+</p>
+
+<p class="wikiPara">
+As always, your feedback around the new release is highly welcome. The complete change log can be found <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&amp;version=12360" target="" class="regularLink">here</a>. You can file bugs or feature requests in the <a href="https://hibernate.atlassian.net/browse/OGM" target="" class="regularLink">issue tracker</a>, ask questions in the <a href="https://forum.hibernate.org/viewforum.php?f=31" target="" class="regularLink">forum</a> or discuss ideas around the development of Hibernate OGM on our <a href="http://lists.jboss.org/pipermail/hibernate-dev/" target="" class="regularLink">mailing list</a>.
+</p>
+
+</div>

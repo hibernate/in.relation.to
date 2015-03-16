@@ -1,0 +1,395 @@
+---
+title: "Generic DAO pattern with JDK 5.0"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: []
+slug: GenericDAOPatternWithJDK50
+lace: http://in.relation.to/1350.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/GenericDAOPatternWithJDK50">Generic DAO pattern with JDK 5.0</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+One of the things in Hibernate in Action that needs serious improvement is the
+section about data access objects, the good old DAO pattern.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ThingsGoneWrong"><a href="/Bloggers/GenericDAOPatternWithJDK50#H-ThingsGoneWrong">Things gone wrong</a></h2>
+
+<p class="wikiPara">
+Some of the mistakes I've made in the first edition:
+</p>
+
+<p class="wikiPara">
+I assumed that DAO is not only a well known pattern, but that most people already had experience how to write /state-oriented/ data access object interfaces. It turns out that most developers are very familiar with /statement-oriented/ DAOs, like you would implement with plain JDBC or iBatis (or the new stateless Hibernate <tt>Session</tt> in Hibernate 3.1), but never thought about persistence services with active object state management before - and how to design an application data access interface for such a service.
+</p>
+
+<p class="wikiPara">
+All examples had internal exception handling. Now, in a real application I'd just take the Hibernate 2.x source code, replace <tt>HibernateException extends Exception</tt> with <tt>HibernateException extends RuntimeException</tt> and leave it to my controlling code, not the data access objects, to convert and handle exceptions (including transaction rollback).
+</p>
+
+<p class="wikiPara">
+But, in the book, I was trying to avoid this issue, something we should actually
+have resolved in Hibernate 2.x a long time ago. We finally switched to unchecked exceptions in Hibernate 3.x but I still see many DAO snippets that include
+some kind of exception handling (or even worse, an exception handling /framework/) for unchecked exceptions.
+</p>
+
+<p class="wikiPara">
+Finally, lazy transaction demarcation, that is, starting a transaction if the current thread doesn't already have one, was only shown as part of the DAO constructor. There are many other ways to do this. One would be the DAO factory, which I also skipped in the book, (wrongly) assuming that everybody knows how to write a factory.
+</p>
+
+<p class="wikiPara">
+Some other common mistakes I've seen in the past (even in recent other Hibernate books) and you should avoid when writing your DAOs:
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Excessive exception handling and wrapping.</i> You should never have to wrap and re-throw an unchecked exception in a DAO method, certainly not for logging, or worse to swallow the exception. Avoid, change, or wrap persistence services that only throw checked exceptions. The only exception states of interest, in higher level code, are <q>retry the unit of work</q> (e.g. database connection failed, lock couldn't be aquired, etc.) or <q>don't retry the unit of work</q> (constraint violation, SQL error, etc.). Everything else, like exceptions typed to the exact SQL error, are sugar on top - at most good for better looking error message screens. You can't use database exceptions for validation or any other regular data processing. Don't let yourself be fooled by the elaborate exception hierarchies in Hibernate and other frameworks.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Ignorance of object state management.</i> If you have a full ORM solution like Hibernate, you get automatic object state management. If a property value of a business object instance is modified you don't have to call <tt>saveThisObject()</tt> on a DAO, automatic dirty checking is provided inside a transaction. Or, if you write your DAO with state management in mind, understand the state transitions to avoid unnecessary code: <tt>session.update(o)</tt> does not need to be called before <tt>session.delete(o)</tt>, for example.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Session per operation anti-pattern.</i> Never should you use a new Hibernate <tt> Session</tt> for each DAO operation. A unit of work has a larger scope and your Hibernate application will perform horrible with this anti-pattern. This is very easy to avoid, just setthe DAO's <tt>Session</tt> when it is constructed or look it up from a thread local. In fact, the scope of the <tt>Session</tt> often seems to be handled ad-hoc and on a <q>this is better looking code</q> basis, when it should actually be a conscious design decision.
+</p>
+
+<p class="wikiPara">
+So, in the second edition I plan to include more than just 4 pages about the
+DAO pattern and write more about state/statement-oriented APIs, exception handling, how to best deal with lazy transactions, how to add factories into the mix, and so on. I'll even include DAOs written as stateless EJB 3.0 session beans.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NewDAOPatternForJDK50"><a href="/Bloggers/GenericDAOPatternWithJDK50#H-NewDAOPatternForJDK50">New DAO pattern for JDK 5.0</a></h2>
+
+<p class="wikiPara">
+I wanted to actually defer updating the DAO section until I would work on that
+chapter in the book. However, some guys made proposals for
+/generic/ DAOs on the CaveatEmptor forum and I realized it really
+is time to put some of the new JDK 5.0 features to good use (besides annotations,
+of course). If you are still using JDK 1.4 primarily you might want to stop reading
+now... but I strongly encourage you to read the Hibernate in Action DAO
+examples (and any other examples, for that matter) with the caveats mentioned above
+in mind.
+</p>
+
+<p class="wikiPara">
+If you are using JDK 5.0, get the <a href="http://caveatemptor.hibernate.org/2.html" target="" class="regularLink">CaveatEmptor alpha2 release </a>
+now. Let's walk through some of the DAO source code.
+</p>
+
+<p class="wikiPara">
+This time I based the DAO example on interfaces. Tools like Hibernate already provide
+database portability, so persistence layer portability shouldn't be a driving motivation
+for interfaces. However, DAO interfaces make sense in more complex applications, when
+several persistence services are encapsulate in one persistence layer, and they deserve
+more than a note (which was all I did in HiA first edition).
+</p>
+
+<p class="wikiPara">
+I use one interface per persistent entity, with a super interface for common CRUD functionality:
+</p>
+
+<pre class="wikiPreformatted">
+public interface GenericDAO&lt;T, ID extends Serializable&gt; {
+
+    T findById(ID id, boolean lock);
+
+    List&lt;T&gt; findAll();
+
+    List&lt;T&gt; findByExample(T exampleInstance);
+
+    T makePersistent(T entity);
+
+    void makeTransient(T entity);
+}</pre>
+
+
+<p class="wikiPara">
+You can already see that this is going to be a pattern for a state-oriented data
+access API, with methods such as <tt> makePersistent()</tt> and <tt> makeTransient()</tt>.
+Furthermore, to implement a DAO you have to provide a type and an
+identifier argument. As for most ORM solutions, identifier types have to be
+serializable.
+</p>
+
+<p class="wikiPara">
+The DAO interface for a particular entity extends the generic interface and
+provides the type arguments:
+</p>
+
+<pre class="wikiPreformatted">
+public interface ItemDAO extends GenericDAO&lt;Item, Long&gt; {
+
+    public static final String QUERY_MAXBID = "ItemDAO.QUERY_MAXBID";
+    public static final String QUERY_MINBID = "ItemDAO.QUERY_MINBID";
+
+    Bid getMaxBid(Long itemId);
+    Bid getMinBid(Long itemId);
+
+}</pre>
+
+
+<p class="wikiPara">
+We basically separate generic CRUD operations and actual business-related data
+access operations from each other. (Ignore the named query constants for now, they
+are convenient if you use annotations.) However, even if only CRUD operations are needed
+for a particular entity, you should still write an interface for it, even it it
+is going to be empty. It is important to use a concrete DAO in your controller
+code, otherwise you will face some refactoring once you have to introduce specific
+data access operations for this entity.
+</p>
+
+<p class="wikiPara">
+An implementation of the interfaces could be done with any state-management
+capable persistence service. First, the generic CRUD implementation with
+Hibernate:
+</p>
+
+<pre class="wikiPreformatted">
+public class GenericHibernateDAO&lt;T, ID extends Serializable&gt; implements GenericDAO&lt;T, ID&gt; {
+
+    private Class&lt;T&gt; persistentClass;
+    private Session session;
+
+    public GenericHibernateDAO(Class&lt;T&gt; persistentClass, Session session) {
+        this.persistentClass = persistentClass;
+        this.session = session;
+    }
+
+    protected Session getSession() {
+        return session;
+    }
+
+    public Class&lt;T&gt; getPersistentClass() {
+        return persistentClass;
+    }
+
+    public T findById(ID id, boolean lock) {
+        T entity;
+        if (lock)
+            entity = (T) getSession().load(getPersistentClass(), id, LockMode.UPGRADE);
+        else
+            entity = (T) getSession().load(getPersistentClass(), id);
+
+        return entity;
+    }
+
+    @SuppressWarnings("unchecked")
+    public List&lt;T&gt; findAll() {
+        return findByCriteria();
+    }
+
+    @SuppressWarnings("unchecked")
+    public List&lt;T&gt; findByExample(T exampleInstance) {
+        return findByCriteria( Example.create(exampleInstance) );
+    }
+
+    @SuppressWarnings("unchecked")
+    public T makePersistent(T entity) {
+        getSession().saveOrUpdate(entity);
+        return entity;
+    }
+
+    public void makeTransient(T entity) {
+        getSession().delete(entity);
+    }
+
+    /**
+     * Use this inside subclasses as a convenience method.
+     */
+    @SuppressWarnings("unchecked")
+    protected List&lt;T&gt; findByCriteria(Criterion... criterion) {
+        Criteria crit = getSession().createCriteria(getPersistentClass());
+        for (Criterion c : criterion) {
+            crit.add(c);
+        }
+        return crit.list();
+   }
+
+}</pre>
+
+
+<p class="wikiPara">
+There are some interesting things in this implementation. First, it clearly
+needs a <tt> Session</tt> to work, provided to the constructor. How you set the
+<tt> Session</tt>, and what scope this <tt> Session</tt> has is of no concern to the actual
+DAO implementation. What follows are the implementations of the generic CRUD
+operations, quite straightforward. The last method is quite nice, using another
+JDK 5.0 feature, /varargs/. It helps us to build <tt> Criteria</tt> queries in
+concrete entity DAOs. This is an example of a concrete DAO that extends the
+generic DAO implementation for Hibernate:
+</p>
+
+<pre class="wikiPreformatted">
+public class ItemDAOHibernate
+        extends     GenericHibernateDAO&lt;Item, Long&gt;
+        implements  ItemDAO {
+
+    public ItemDAOHibernate(Session session) {
+        super(Item.class, session);
+    }
+
+    public Bid getMaxBid(Long itemId) {
+        Query q = getSession().getNamedQuery(ItemDAO.QUERY_MAXBID);
+        q.setParameter("itemid", itemId);
+        return (Bid) q.uniqueResult();
+    }
+
+    public Bid getMinBid(Long itemId) {
+        Query q = getSession().getNamedQuery(ItemDAO.QUERY_MINBID);
+        q.setParameter("itemid", itemId);
+        return (Bid) q.uniqueResult();
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+Another example which uses the <tt> findByCriteria()</tt> method of the superclass
+with variable arguments:
+</p>
+
+<pre class="wikiPreformatted">
+public class CategoryDAOHibernate
+        extends     GenericHibernateDAO&lt;Category, Long&gt;
+        implements  CategoryDAO {
+
+    public CategoryDAOHibernate(Session session) {
+        super(Category.class, session);
+    }
+
+    public Collection&lt;Category&gt; findAll(boolean onlyRootCategories) {
+        if (onlyRootCategories)
+            return findByCriteria( Expression.isNull("parent") );
+        else
+            return findAll();
+    }
+}</pre>
+
+
+<p class="wikiPara">
+We bring it all together in a DAO factory, which not only sets the
+<tt> Session</tt> when a DAO is constructed, but can also take care of lazy
+transaction starting, and contains inline classes to implement CRUD-only
+DAOs with no business-related operations:
+</p>
+
+<pre class="wikiPreformatted">
+public class HibernateDAOFactory extends DAOFactory {
+
+    public ItemDAO getItemDAO() {
+        return new ItemDAOHibernate(getCurrentSession());
+    }
+
+    public CategoryDAO getCategoryDAO() {
+        return new CategoryDAOHibernate(getCurrentSession());
+    }
+
+    public UserDAO getUserDAO() {
+        // Inline implementation, constructor only
+        class UserDAOHibernate
+                extends GenericHibernateDAO&lt;User, Long&gt;
+                implements UserDAO {
+
+            public UserDAOHibernate(Session session) {
+                super(User.class, session);
+            }
+
+        }
+
+        return new UserDAOHibernate(getCurrentSession());
+    }
+
+    protected Session getCurrentSession() {
+        // Get a Session and begin a database transaction. If the current
+        // thread/EJB already has an open Session and an ongoing Transaction,
+        // this is a no-op and only returns a reference to the current Session.
+        HibernateUtil.beginTransaction();
+        return HibernateUtil.getCurrentSession();
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+This concrete factory for Hibernate DAOs extends the abstract factory, which
+is the interface we'll use in application code:
+</p>
+
+<pre class="wikiPreformatted">
+public abstract class DAOFactory {
+
+    public static final DAOFactory EJB3_PERSISTENCE =
+            new org.hibernate.ce.auction.dao.ejb3.Ejb3DAOFactory();
+
+    public static final DAOFactory HIBERNATE =
+            new org.hibernate.ce.auction.dao.hibernate.HibernateDAOFactory();
+
+    public static final DAOFactory DEFAULT = HIBERNATE;
+
+    // Add your DAO interfaces here
+    public abstract ItemDAO getItemDAO();
+    public abstract CategoryDAO getCategoryDAO();
+    public abstract CommentDAO getCommentDAO();
+    public abstract UserDAO getUserDAO();
+    public abstract CategorizedItemDAO getCategorizedItemDAO();
+}</pre>
+
+
+<p class="wikiPara">
+Of course, the <tt> DEFAULT</tt> could be externalized to some configuration setting
+if your application needs to switch persistence layers for each deployment. Note that
+this factory example is suitable for persistence layers which are primarily implemented
+with a single persistence service, such as Hibernate or EJB 3.0 persistence. If you
+have to mix persistence APIs, for example, Hibernate and plain JDBC, the pattern
+changes slightly. I'll write more about it in the book - keep in mind that you can
+also call <tt> session.connection()</tt> /inside/ a Hibernate-specific DAO, or use one
+of the many bulk operation/SQL support options in Hibernate 3.1 to avoid plain
+JDBC.
+</p>
+
+<p class="wikiPara">
+Finally, this is how data access now looks like in controller/command handler code:
+</p>
+
+<pre class="wikiPreformatted">
+ItemDAO itemDAO = DAOFactory.DEFAULT.getItemDAO();
+UserDAO userDAO = DAOFactory.DEFAULT.getUserDAO();
+
+public void execute() {
+
+    Bid currentMaxBid = itemDAO.getMaxBid(itemId);
+    Bid currentMinBid = itemDAO.getMinBid(itemId);
+
+    Item item = itemDAO.findById(itemId, true);
+
+    newBid = item.placeBid(userDAO.findById(userId, false),
+                            bidAmount,
+                            currentMaxBid,
+                            currentMinBid);
+}</pre>
+
+
+<p class="wikiPara">
+Two links you might find useful: <a href="http://hibernate.org/42.html" target="" class="regularLink">ThreadLocal Session </a>
+and <a href="http://hibernate.org/43.html" target="" class="regularLink">Open Session in View </a>
+    
+</p>
+
+<p class="wikiPara">
+I also plan to write a section about /integration testing/ of DAOs. What do you 
+think about this pattern? Did I miss anything and what else do you want covered
+in the book?
+</p>
+
+<p class="wikiPara">
+P.S. Credit has to be given to Eric Burke, who first posted the basics for this pattern on his blog. Unfortunately, not even the Google cache is available anymore.
+</p>
+</div>

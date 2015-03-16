@@ -1,0 +1,645 @@
+---
+title: "Introduction to Ceylon Part 3"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon,Introduction to Ceylon]
+slug: IntroductionToCeylonPart3
+lace: http://in.relation.to/19576.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/IntroductionToCeylonPart3">Introduction to Ceylon Part 3</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<i class="wikiEmphasis">This is the third installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">This article was updated on 28/5/2011 to reflect changes to the model for introductions and add material on ambiguities in mixin inheritance, and on 3/5/2011 to incorporate feedback on member class refinement. The comment thread reflects information in the first version of article.</i>
+</p>
+
+<h1 class="wikiHeadline1" id="H-InheritanceAndRefinement"><a href="/Bloggers/IntroductionToCeylonPart3#H-InheritanceAndRefinement">Inheritance and refinement</a></h1>
+
+<p class="wikiPara">
+In object-oriented programming, we often replace conditionals (<tt>if</tt>, and especially <tt>switch</tt>) with subtyping. Indeed, according to some folks, this is what <i class="wikiEmphasis">makes</i> a program object-oriented. Let's try refactoring the <tt>Hello</tt> class from Part 2 into two classes, with two different implementations of <tt>greeting</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "A default greeting" 
+class DefaultHello() {
+
+    doc "The greeting" 
+    shared default String greeting = "Hello, World!";
+    
+    doc "Print the greeting" 
+    shared void say(OutputStream stream) {
+        stream.writeLine(greeting);
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+Notice that Ceylon forces us to declare attributes or methods that can be refined (overridden) by annotating them <tt>default</tt>.
+</p>
+
+<p class="wikiPara">
+Subclasses specify their superclass using the <tt>extends</tt> keyword, followed by the name of the superclass, followed by a list of arguments to be sent to the superclass initializer parameters. It looks just like an expression that instantiates the superclass:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "A personalized greeting" 
+class PersonalizedHello(String name) 
+        extends DefaultHello() {
+    
+    doc "The personalized greeting" 
+    shared actual String greeting {
+        return "Hello, " name "!";
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+Ceylon also forces us to declare that an attribute or method refines (overrides) an attribute or method of a superclass by annotating it <tt>actual</tt>. All this annotating stuff costs a few extra keystrokes, but it helps the compiler detect errors. We can't inadvertently refine a member or the superclass, or inadvertently <i class="wikiEmphasis">fail</i> to refine it.
+</p>
+
+<p class="wikiPara">
+Notice that Ceylon goes out of its way to repudiate the idea of <q>duck</q> typing or <i class="wikiEmphasis">structural typing</i>. If it <tt>walks()</tt> like a <tt>Duck</tt>, then it should be a subtype of <tt>Duck</tt> and must <i class="wikiEmphasis">explicitly</i> refine the definition of <tt>walk()</tt> in <tt>Duck</tt>. We don't believe that the name of a method or attribute alone is sufficient to identify its semantics.
+</p>
+
+<h1 class="wikiHeadline1" id="H-AbstractClasses"><a href="/Bloggers/IntroductionToCeylonPart3#H-AbstractClasses">Abstract classes</a></h1>
+
+<p class="wikiPara">
+There's one problem with what we've just seen. A personalized greeting is not really a kind of default greeting. This is a case for introducing an abstract superclass:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "A greeting" 
+abstract class Hello() {
+    
+    doc "The (abstract) greeting" 
+    shared formal String greeting;
+    
+    doc "Print the greeting" 
+    shared void say(OutputStream stream) {
+        stream.writeLine(greeting);
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+Ceylon requires us to annotate abstract classes <tt>abstract</tt>, just like Java. This annotation specifies that a class cannot be instantiated, and can define abstract members. Like Java, Ceylon also requires us to annotate <q>abstract</q> members that don't specify an implementation. However, in this case, the required annotation is <tt>formal</tt>. The reason for having two different annotations, as we'll see later, is that nested classes may be either <tt>abstract</tt> or <tt>formal</tt>, and <tt>abstract</tt> nested classes are slightly different to <tt>formal</tt> member classes — a <tt>formal</tt> member class may be instantiated; an <tt>abstract</tt> class may not be.
+</p>
+
+<p class="wikiPara">
+Note that an attribute that is never initialized is always a <tt>formal</tt> attribute — Ceylon doesn't initialize attributes to zero or <tt>null</tt> <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-AbstractingStateUsingAttributes" target="" class="regularLink">unless you explicitly tell it to</a>!
+</p>
+
+<p class="wikiPara">
+One way to define an implementation for an inherited abstract attribute is to simply assign a value to it in the subclass.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "A default greeting" 
+class DefaultHello() extends Hello() {
+    greeting = "Hello, World!";
+}</pre>
+
+
+<p class="wikiPara">
+Of course, we can also define an implementation for an inherited abstract attribute by refining it.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "A personalized greeting" 
+class PersonalizedHello(String name) 
+        extends Hello() {
+    
+    doc "The personalized greeting" 
+    shared actual String greeting {
+        return "Hello, " name "!";
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+Note that there's no way to prevent a other code from extending a class in Ceylon. Since only members explicitly declared as supporting refinement using either <tt>formal</tt> or <tt>default</tt> can be refined, a subtype can never break the implementation of a supertype. Unless the supertype was explicitly designed to be extended, a subtype can add members, but never change the behavior of inherited members.
+</p>
+
+<h1 class="wikiHeadline1" id="H-InterfacesAndQmixinqInheritance"><a href="/Bloggers/IntroductionToCeylonPart3#H-InterfacesAndQmixinqInheritance">Interfaces and <q>mixin</q> inheritance</a></h1>
+
+<p class="wikiPara">
+From time to time we come across a case where a class needs to inherit functionality from more than one supertype. Java's inheritance model doesn't support this, since an interface can never define a member with a concrete implementation. Interfaces in Ceylon are a little more flexible:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> An interface may define concrete methods, attribute getters, and attribute setters.</li>
+<li class="wikiUnorderedListItem"> It may not define simple attributes or <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart11#H-InitializerSection" target="" class="regularLink">initialization logic</a>.</li>
+</ul>
+
+<p class="wikiPara">
+Notice that prohibiting simple attributes and initialization logic makes interfaces completely <i class="wikiEmphasis">stateless</i>. An interface can't hold references to other objects.
+</p>
+
+<p class="wikiPara">
+Let's take advantage of mixin inheritance to define a reusable <tt>Writer</tt> interface for Ceylon.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Writer { 
+
+    shared formal Formatter formatter; 
+    
+    shared formal void write(String string);
+    
+    shared void writeLine(String string) { 
+        write(string);
+        write(process.newLine);
+    }
+    
+    shared void writeFormattedLine(String formatString, Object... args) { 
+        writeLine( formatter.format(formatString, args) );
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+Note that we can't define a concrete value for the <tt>formatter</tt> attribute, since an interface may not define a simple attribute, and may not hold a reference to another object.
+</p>
+
+<p class="wikiPara">
+Note also that the call to <tt>writeLine()</tt> from <tt>writeFormattedLine()</tt> resolves to the instance method of <tt>Writer</tt>, which hides the toplevel method of the same name.
+</p>
+
+<p class="wikiPara">
+Now let's define a concrete implementation of this interface.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class ConsoleWriter() 
+        satisfies Writer {
+    
+    formatter = StringFormatter();
+    
+    shared actual void write(String string) { 
+        writeLine(string);
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>satisfies</tt> keyword is used to specify that an interface extends another interface or that a class implements an interface. Unlike an <tt>extends</tt> declaration, a <tt>satisfies</tt> declaration does not specify arguments, since interfaces do not have parameters or initialization logic. Furthermore, the <tt>satisfies</tt> declaration can specify more than one interface.
+</p>
+
+<p class="wikiPara">
+Ceylon's approach to interfaces eliminates a common pattern in Java where a separate abstract class defines a default implementation of some of the members of an interface. In Ceylon, the default implementations can be specified by the interface itself. Even better, it's possible to add a new member to an interface without breaking existing implementations of the interface.
+</p>
+
+<h1 class="wikiHeadline1" id="H-AmbiguitiesInMixinInheritance"><a href="/Bloggers/IntroductionToCeylonPart3#H-AmbiguitiesInMixinInheritance">Ambiguities in mixin inheritance</a></h1>
+
+<p class="wikiPara">
+It's illegal for a type to inherit two members with the same name, unless the two members both (directly or indirectly) refine a common member of a common supertype, and the inheriting type itself also refines the member to eliminate any ambiguity. The following results in a compilation error:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">interface Party {
+    shared formal String legalName;
+    shared default String name {
+        return legalName;
+    }
+}
+
+interface User {
+    shared formal String userId;
+    shared default String name {
+        return userId;
+    }
+}
+
+class Customer(String name, String email) 
+        satisfies User &amp; Party {
+    legalName = name;
+    userId = email;
+    shared actual String name = name;    //error: refines two different members
+}</pre>
+
+
+<p class="wikiPara">
+To fix this code, we'll factor out a <tt>formal</tt> declaration of the attribute <tt>name</tt> to a common supertype. The following is legal:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">interface Named {
+    shared formal String name;
+}
+
+interface Party satisfies Named {
+    shared formal String legalName;
+    shared actual default String name {
+        return legalName;
+    }
+}
+
+interface User satisfies Named {
+    shared formal String userId;
+    shared actual default String name {
+        return userId;
+    }
+}
+
+class Customer(String name, String email) 
+        satisfies User &amp; Party {
+    legalName = name;
+    userId = email;
+    shared actual String name = name;
+}</pre>
+
+
+<p class="wikiPara">
+Oh, of course, the following is illegal:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">interface Named {
+    shared formal String name;
+}
+
+interface Party satisfies Named {
+    shared formal String legalName;
+    shared actual String name {
+        return legalName;
+    }
+}
+
+interface User satisfies Named {
+    shared formal String userId;
+    shared actual String name {
+        return userId;
+    }
+}
+
+class Customer(String name, String email) 
+        satisfies User &amp; Party {    //error: inherits multiple definitions of name
+    legalName = name;
+    userId = email;
+}</pre>
+
+
+<p class="wikiPara">
+To fix this code, <tt>name</tt> must be declared <tt>default</tt> in both <tt>User</tt> and <tt>Party</tt> and explicitly refined in <tt>Customer</tt>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Introduction"><a href="/Bloggers/IntroductionToCeylonPart3#H-Introduction">Introduction</a></h1>
+
+<p class="wikiPara">
+Sometimes, especially when we're working with code from modules we don't have control over, we would like to mix an interface into a type that has already been defined in another module. For example, we might like to introduce the Ceylon collections module type <tt>List</tt> into the language module type <tt>Sequence</tt>, so that all <tt>Sequence</tt>s support all operations of <tt>List</tt>. But the language module shouldn't have a dependency to the collections module, so we can't specify that <tt>interface Sequence satisfies List</tt> in the declaration of <tt>Sequence</tt> in the language module.
+</p>
+
+<p class="wikiPara">
+Instead, we can <i class="wikiEmphasis">introduce</i> the type <tt>Sequence</tt> in the code which uses the collections and language modules. The collections module already defines an interface called <tt>SequenceList</tt> for this purpose. Well, it doesn't yet, since we have not yet either implemented introductions or written the collections module, but it will soon!
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "Decorator that introduces List to Sequence."
+see (List,Sequence)
+shared interface SequenceList&lt;Element&gt; 
+        adapts Sequence&lt;Element&gt;
+        satisfies List&lt;Element&gt; {
+    
+    shared actual default List&lt;Element&gt; sortedElements() {
+    	//define the operation of List in
+    	//terms of operations on Sequence
+        return asList(sortSequence(this));
+    }
+    
+    ...
+    
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>adapts</tt> clause makes <tt>SequenceList</tt> a special kind of interface called an <i class="wikiEmphasis">adapter</i> (in the terminology used by <a href="http://www.amazon.com/Design-Patterns-Elements-Reusable-Object-Oriented/dp/0201633612" target="" class="regularLink">this book</a>). According to the language spec:
+</p>
+
+<blockquote class="wikiBlockquote">
+The interface may not:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> declare or inherit a member that refines a member of any adapted type, or</li>
+<li class="wikiUnorderedListItem"> declare or inherit a <tt>formal</tt> or non-<tt>default</tt> <tt>actual</tt> member unless the member is inherited from an adapted type.</li>
+</ul>
+
+
+</blockquote>
+
+<p class="wikiPara">
+The purpose of an adapter is to add a new supertype, called an <i class="wikiEmphasis">introduced</i> type, to an existing type, called the <i class="wikiEmphasis">adapted</i> type. The adapter doesn't change the original definition of the adapted type, and it doesn't affect the internal workings of an instance of the adapted type in any way. All it does is <q>fill in</q> the definitions of the missing operations. Here, the <tt>SequenceList</tt> interface provides concrete implementations of all methods of <tt>List</tt> that are not already implemented by <tt>Sequence</tt>.
+</p>
+
+<p class="wikiPara">
+Now, to introduce <tt>List</tt> to <tt>Sequence</tt> in a certain compilation unit, all we need to do is <tt>import</tt> the adapter:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">import ceylon.collection { List, SequenceList }
+
+...
+
+//define a Sequence
+Sequence&lt;String&gt; names = { "Gavin", "Emmanuel", "Andrew", "Ales" };
+
+//call an operation of List on Sequence
+List&lt;String&gt; sortedNames = names.sortedElements();</pre>
+
+
+<p class="wikiPara">
+Note that the introduction is not visible outside the lexical scope of the <tt>import</tt> statement (the compilation unit). But within the compilation unit containing the <tt>import</tt> statement, every instance of of the adapted type <tt>Sequence</tt> now has all the attributes and methods of the introduced type <tt>List</tt>, and is assignable to the introduced type.
+</p>
+
+<p class="wikiPara">
+Again, according to the spec:
+</p>
+
+<blockquote class="wikiBlockquote">
+If, in a certain compilation unit, multiple introductions of a certain adapted type declare or inherit a member that refines a common member of a common supertype then either:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">there must be a unique member from the set of members, called the most refined member, that refines all the other members, or</li>
+<li class="wikiUnorderedListItem">the adapted type must declare or inherit a member that refines all the members.</li>
+</ul>
+
+At runtime, an operation (method invocation, member class instantiation, or attribute evaluation) upon any type that is a subtype of all the adapted types is dispatched according to the following rule:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> If the runtime type of the instance of the adapted type declares or inherits a member defining the operation, the operation is dispatched to the runtime type of the instance.</li>
+<li class="wikiUnorderedListItem"> Otherwise, the operation is dispatched to the introduction that has the most-refined member defining the operation.</li>
+</ul>
+
+
+</blockquote>
+
+<h1 class="wikiHeadline1" id="H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions"><a href="/Bloggers/IntroductionToCeylonPart3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions">Introduction compared to extension methods and implicit type conversions</a></h1>
+
+<p class="wikiPara">
+Introduction is Ceylon's way of extending a type after it's been defined. It's <a href="http://in.relation.to/Bloggers/NewApproachToIntroduction#comment20435" target="" class="regularLink">interesting to compare</a> introduction to the following features of other languages:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">extension methods</i>, and</li>
+<li class="wikiUnorderedListItem"> user-defined <i class="wikiEmphasis">implicit type conversions</i>.</li>
+</ul>
+
+<p class="wikiPara">
+Introduction is really just a much more powerful cousin of extension methods. From our point of view, an extension method introduces a member to a type, without actually introducing a new supertype. Indeed, a Ceylon adapter with no <tt>satisfies</tt> clause is actually a package of extension methods!
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface StringSequenceExtensions 
+        adapts Sequence&lt;String&gt; {
+    
+    shared String concatenated {
+        variable String concat = "";
+        for (String s in this) {
+            concat+=s;
+        }
+        return concat;
+    }
+    
+    shared String join(String separator=", ") {
+        ...
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+On the other hand, introductions are <i class="wikiEmphasis">less</i> powerful than implicit type conversions. This is by design! In this case, <q>less powerful</q> means <q>safer, more disciplined</q>. The power of implicit type conversions comes partly from their ability to work around some of the designed-in limitations of the type system. But these limitations have a purpose! I'm especially thinking of the prohibitions against:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> inheriting the same generic type twice, with different type arguments (in most languages), and</li>
+<li class="wikiUnorderedListItem"> overloading (in Ceylon).</li>
+</ul>
+
+<p class="wikiPara">
+Implicit type conversions are an end-run around these restrictions, reintroducing the ambiguities that these restrictions exist to solve.
+</p>
+
+<p class="wikiPara">
+Furthermore, it's extremely difficult to imagine a language with implicit type conversions that preserve the following important properties of the type system:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> transitivity of the assignability relationship,</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart6#H-CovarianceAndContravariance" target="" class="regularLink">covariance</a> of generic types,</li>
+<li class="wikiUnorderedListItem"> the semantics of the identity <tt>==</tt> operator, and</li>
+<li class="wikiUnorderedListItem"> the ability to infer generic type arguments of an invocation or instantiation.</li>
+</ul>
+
+<p class="wikiPara">
+Finally, implicit type conversions work by having the compiler introduce hidden invocations of arbitrary user-written procedural code, code that could potentially have side-effects or make use of temporal state. Thus, the observable behavior of the program can depend upon precisely where and how the compiler introduces these <q>magic</q> calls.
+</p>
+
+<p class="wikiPara">
+Introductions are a kind of elegant compromise: more powerful than plain extension methods, safer than implicit type conversions. We think the beauty of this model is a major advantage of Ceylon over similar languages.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TypeAliases"><a href="/Bloggers/IntroductionToCeylonPart3#H-TypeAliases">Type aliases</a></h1>
+
+<p class="wikiPara">
+It's often useful to provide a shorter or more semantic name to an existing class or interface type, especially if the class or interface is a parameterized type. For this, we use a type alias, for example:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">interface People = Set&lt;Person&gt;;</pre>
+
+
+<p class="wikiPara">
+A class alias must declare its formal parameters:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class People(Person... people) = ArrayList&lt;Person&gt;;</pre>
+
+
+<h1 class="wikiHeadline1" id="H-MemberClassesAndMemberClassRefinement"><a href="/Bloggers/IntroductionToCeylonPart3#H-MemberClassesAndMemberClassRefinement">Member classes and member class refinement</a></h1>
+
+<p class="wikiPara">
+You're probably used to the idea of an <q>inner</q> class in Java — a class declaration nested inside another class or method. Since Ceylon is a language with a recursive block structure, the idea of a nested class is more than natural. But in Ceylon, a non-<tt>abstract</tt> nested class is actually considered a member of the containing type. For example, <tt>BufferedReader</tt> defines the member class <tt>Buffer</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class BufferedReader(Reader reader) 
+        satisfies Reader { 
+    shared default class Buffer() 
+            satisfies List&lt;Character&gt; { ... }
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+The member class <tt>Buffer</tt> is annotated <tt>shared</tt>, so we can instantiate it like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">BufferedReader br = BufferedReader(reader); 
+BufferedReader.Buffer b = br.Buffer();</pre>
+
+
+<p class="wikiPara">
+Note that a nested type name must be qualified by the containing type name when used outside of the containing type.
+</p>
+
+<p class="wikiPara">
+The member class <tt>Buffer</tt> is also annotated <tt>default</tt>, so we can refine it in a subtype of <tt>BufferedReader</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class BufferedFileReader(File file) 
+        extends BufferedReader(FileReader(file)) {
+    shared actual class Buffer() 
+            extends super.Buffer() { ... }
+}</pre>
+
+
+<p class="wikiPara">
+That's right: Ceylon lets us <q>override</q> a member class defined by a supertype!
+</p>
+
+<p class="wikiPara">
+Note that <tt>BufferedFileReader.Buffer</tt> is a subclass of <tt>BufferedReader.Buffer</tt>.
+</p>
+
+<p class="wikiPara">
+Now the instantiation <tt>br.Buffer()</tt> above is a polymorphic operation! It might return an instance of <tt>BufferedFileReader.Buffer</tt> or an instance of <tt>BufferedReader.Buffer</tt>, depending upon whether <tt>br</tt> refers to a plain <tt>BufferedReader</tt> or a <tt>BufferedFileReader</tt>. This is more than a cute trick. Polymorphic instantiation lets us eliminate the <q>factory method pattern</q> from our code.
+</p>
+
+<p class="wikiPara">
+It's even possible to define a <tt>formal</tt> member class of an <tt>abstract</tt> class. A <tt>formal</tt> member class can declare <tt>formal</tt> members.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">abstract class BufferedReader(Reader reader) 
+        satisfies Reader { 
+    shared formal class Buffer() {
+        shared formal Byte read();
+    }
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+In this case, a concrete subclass of the <tt>abstract</tt> class must refine the <tt>formal</tt> member class.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class BufferedFileReader(File file) 
+        extends BufferedReader(FileReader(file)) {
+    shared actual class Buffer() 
+             extends super.Buffer() {
+         shared actual Byte read() {
+             ...
+         }
+    }
+}</pre>
+
+
+<p class="wikiPara">
+Notice the difference between an <tt>abstract</tt> class and a <tt>formal</tt> member class. An <tt>abstract</tt> nested class may not be instantiated, and need not be refined by concrete subclasses of the containing class. A <tt>formal</tt> member class <i class="wikiEmphasis">may</i> be instantiated, and must be refined by every subclass of the containing class.
+</p>
+
+<p class="wikiPara">
+It's an interesting exercise to compare Ceylon's member class refinement with the functionality of Java dependency injection frameworks. Both mechanisms provide a means of abstracting the instantiation operation of a type. You can think of the subclass that refines a member type as filling the same role as a dependency configuration in a dependency injection framework.
+</p>
+
+<h1 class="wikiHeadline1" id="H-AnonymousClasses"><a href="/Bloggers/IntroductionToCeylonPart3#H-AnonymousClasses">Anonymous classes</a></h1>
+
+<p class="wikiPara">
+If a class has no parameters, it's often possible to use a shortcut declaration which defines a named instance of the class, without providing any actual name for the class itself. This is usually most useful when we're extending an <tt>abstract</tt> class or implementing an interface.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "A default greeting" 
+object defaultHello extends Hello() {
+    greeting = "Hello, World!";
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared object consoleWriter satisfies Writer {
+        	
+    formatter = StringFormatter();
+    
+    shared actual void write(String string) { 
+        writeLine(string);
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+The downside to an <tt>object</tt> declaration is that we can't write code that refers to the concrete type of <tt>defaultHello</tt> or <tt>consoleWriter</tt>, only to the named instances.
+</p>
+
+<p class="wikiPara">
+You might be tempted to think of <tt>object</tt> declarations as defining singletons, but that's not quite right:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A toplevel <tt>object</tt> declaration <i class="wikiEmphasis">does</i> define a singleton. </li>
+<li class="wikiUnorderedListItem"> An <tt>object</tt> declaration nested inside a class defines an object per instance of the containing class. </li>
+<li class="wikiUnorderedListItem"> An <tt>object</tt> declaration nested inside a method, getter, or setter results in an new object each time the method, getter, or setter is executed.</li>
+</ul>
+
+<p class="wikiPara">
+Let's see how this can be useful:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">interface Subscription {
+    shared formal void cancel();
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared Subscription register(Subscriber s) { 
+    subscribers.append(s); 
+    object subscription satisfies Subscription {
+        shared actual void cancel() { 
+            subscribers.remove(s);
+        }
+    } 
+    return subscription;
+}</pre>
+
+
+<p class="wikiPara">
+Notice how this code example makes clever use of the fact that the nested <tt>object</tt> declaration receives a closure of the locals defined in the containing method declaration!
+</p>
+
+<p class="wikiPara">
+A different way to think about the difference between <tt>object</tt> and <tt>class</tt> is to think of a <tt>class</tt> as a parametrized <tt>object</tt>. (Of course, there's one big difference: a <tt>class</tt> declaration defines a named type that we can refer to in other parts of the program.) We'll see later that Ceylon also lets us think of a method as a parametrized attribute.
+</p>
+
+<p class="wikiPara">
+An <tt>object</tt> declaration can refine an attribute declared <tt>formal</tt> or <tt>default</tt>.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared abstract class App() { 
+    shared formal OutputStream stream; 
+    ...
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">class ConsoleApp() extends App() { 
+    shared actual object stream 
+            satisfies OutputStream { ... } 
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+However, an <tt>object</tt> may not itself be declared <tt>formal</tt> or <tt>default</tt>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart3#H-TheresMore">There's more...</a></h1>
+
+<p class="wikiPara">
+Member classes and member class refinement allows Ceylon to support <a href="/Bloggers/SelfTypesAndTypeFamiliesInCeylon" target="" class="regularLink">type families</a>.
+</p>
+
+<p class="wikiPara">
+If you're interested, here's some crazy ideas about how to <a href="/Bloggers/PackageExtensionAndToplevelMemberRefinement" target="" class="regularLink">generalize the notion of refinement to toplevel declarations</a>.
+</p>
+
+<p class="wikiPara">
+In <a href="/Bloggers/IntroductionToCeylonPart4" target="" class="regularLink">Part 4</a>, we're going to meet <i class="wikiEmphasis">sequences</i>, Ceylon's take on the <q>array</q> type.
+</p>
+</div>

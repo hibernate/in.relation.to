@@ -1,0 +1,97 @@
+---
+title: "FindBugs(tm) actually does it"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: []
+slug: FindBugstmActuallyDoesIt
+lace: http://in.relation.to/2208.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/FindBugstmActuallyDoesIt">FindBugs(tm) actually does it</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I heard about <a href="http://findbugs.sourceforge.net/" target="" class="regularLink">FindBugs(tm) </a> while listening to one 
+of the <a href="http://javaposse.com/" target="" class="regularLink">Java Posse </a> podcast. Since 
+<a href="http://annotations.hibernate.org" target="" class="regularLink">Hibernate Annotations </a> and
+<a href="http://entitymanager.hibernate.org" target="" class="regularLink">Hibernate EntityManager </a> are very close to 
+their respective final releases, I decided to give it a shot.
+</p>
+
+<p class="wikiPara">
+<a href="http://findbugs.sourceforge.net/" target="" class="regularLink">FindBugs(tm) </a> is basically a static code analyser that tries to find bugs in your 
+code through some pattern recognition. I have been working in the past with both 
+static and dynamic code analysers and I have been pretty disappointed by their 
+false positive ratios (basically a non-bug considered as a bug),
+and the complexity of their set up process. FindBugs was a refreshing experience.
+</p>
+
+<p class="wikiPara">
+The cool stuff about it is, well, there are several cool stuffs:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> it's a no brainer to set up and run</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the amount of false positive is surprisingly low</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> it works at the bytecode level, so you don't have to have the source code (more later)</li>
+</ul>
+
+
+<h2 class="wikiHeadline2" id="H-SetUpAndRun"><a href="/Bloggers/FindBugstmActuallyDoesIt#H-SetUpAndRun">Set up and Run</a></h2>
+<p class="wikiPara">
+I haven't read the documentation, just downloaded the package and run the .bat file. A couple of clicks
+and I was analysing <a href="http://annotations.hibernate.org" target="" class="regularLink">Hibernate Annotations </a> and
+<a href="http://entitymanager.hibernate.org" target="" class="regularLink">Hibernate EntityManager </a>. No fancy Ant integration
+required (you can, but you don't have to), no fancy IDE dependency (you can, but you don't 
+have to), no fancy command line requiring you to RTFM (you can, ahem you should, 
+but you don't have to). The provided GUI does the job pretty smoothly, even if a package 
+filtering feature would have been really cool (more later).
+</p>
+
+<h2 class="wikiHeadline2" id="H-APrettyLowFalsePositiveRatio"><a href="/Bloggers/FindBugstmActuallyDoesIt#H-APrettyLowFalsePositiveRatio">A pretty low false positive ratio</a></h2>
+<p class="wikiPara">
+THE thing that usually kills such a product is the amount of false positive bug claims.
+You end up scanning hundreds of warnings without paying attention to them and trash the
+whole product after 30 minutes.
+FindBugs has a pretty low false positive ratio, which is very good. And if the warning end 
+up being a false positive, there are usually some good reasons that worth a second look at your
+code.
+I must admit I am pretty proud of me ;-) Of course in HAN and HEM, I found some bugs
+and suboptimal constructs (no worries, I fixed them), but much less than my expectations.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WorkAtTheBytecodeLevel"><a href="/Bloggers/FindBugstmActuallyDoesIt#H-WorkAtTheBytecodeLevel">Work at the bytecode level</a></h2>
+<p class="wikiPara">
+That is probably what makes it easy to use (and hard to develop), 
+<a href="http://findbugs.sourceforge.net/" target="" class="regularLink">FindBugs(tm) </a> works at the bytecode level, not the source level 
+(it highlights the source line if the sources are available). So pointing a jar
+or a directory containing your compiled classes is enough. Actually what I did, was
+pointing to my project root directory, and the job was done.
+</p>
+
+<p class="wikiPara">
+So while analysing <a href="http://annotations.hibernate.org" target="" class="regularLink">Hibernate Annotations </a> and
+<a href="http://entitymanager.hibernate.org" target="" class="regularLink">Hibernate EntityManager </a>, I ended up analysing
+a bunch of jars (Oh Filter, where art thou?), and I can tell you some guys out there
+should take a look at <a href="http://findbugs.sourceforge.net/" target="" class="regularLink">FindBugs(tm) </a>, this include a bunch of JDBC drivers and well
+known in-memory Database backed by some big company(ies) ;-)
+</p>
+
+<h2 class="wikiHeadline2" id="H-GiveItATry"><a href="/Bloggers/FindBugstmActuallyDoesIt#H-GiveItATry">Give it a try</a></h2>
+<p class="wikiPara">
+It's free, it's easy to set up, it's going to take two hours of your time and save
+you much more.
+</p>
+</div>

@@ -1,0 +1,138 @@
+---
+title: "Making external resources configurable without lots of XML"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Web Beans,XML Hell]
+slug: MakingExternalResourcesConfigurableWithoutLotsOfXML
+lace: http://in.relation.to/12718.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MakingExternalResourcesConfigurableWithoutLotsOfXML">Making external resources configurable without lots of XML</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Suppose we have an external resource, a database, let's say, that we want to be able to change depending upon the deployment environment. In CDI, we declare resources using a producer field declaration.
+</p>
+
+<pre class="wikiPreformatted brush:java;">class CustomerDatabase {
+   static 
+   @Resource(lookup="java:global/env/jdbc/CustomerDatasource")
+   @Produces @CustomerDatabase
+   Datasource customerDatabase;
+}</pre>
+
+
+<p class="wikiPara">
+The purpose of this field declaration is to associate the bean type <tt>Datasource</tt> and binding type <tt>@CustomerDatabase</tt> with the Java EE resource with the global JNDI name <tt>java:global/env/jdbc/CustomerDatasource</tt>.
+</p>
+
+<p class="wikiPara">
+Now we can easily inject our <tt>Datasource</tt> into any bean that needs it:
+</p>
+
+<pre class="wikiPreformatted brush:java;">public class Bean {
+   private Datasource customerDatabase;
+
+   @Inject public Bean(@CustomerDatabase Datasource ds) {
+       customerDatabase = ds;
+   }
+   ...
+}</pre>
+
+
+<p class="wikiPara">
+Now, this injected resource reference is already extremely configurable. The JNDI name is just a logical name. The actual datasource it points to can easily change depending upon the deployment. We certainly haven't hardcoded a JDBC URL, username and password! But let's say that's not enough. CDI lets you define <i class="wikiEmphasis">alternative</i> implementations of a bean.
+</p>
+
+<pre class="wikiPreformatted brush:java;">class TestCustomerDatabase {
+   static 
+   @Resource(lookup="java:global/env/jdbc/TestDatasource") 
+   @Produces @Alternative @CustomerDatabase 
+   Datasource testCustomerDatabase;
+}</pre>
+
+
+
+<pre class="wikiPreformatted brush:java;">@Alternative @CustomerDatabase
+class MockCustomerDatabase implements Datasource {
+   //operations of Datasource go here!
+   ...
+}</pre>
+
+
+<p class="wikiPara">
+These classes both provide an alternative implementation of <tt>@CustomerDatabase Datasource</tt>. By default, CDI will ignore these beans, and keep using the original implementation, since it is the only implementation not declared <tt>@Alternative</tt>.
+</p>
+
+<p class="wikiPara">
+However, if we declare one of the alternatives in <tt>beans.xml</tt>, CDI will use that implementation instead:
+</p>
+
+
+<pre class="wikiPreformatted brush:xml;">&lt;beans&gt;
+   &lt;alternatives&gt;
+      &lt;class&gt;org.mycompany.resources.TestCustomerDatabase&lt;/class&gt;
+   &lt;/alternatives&gt;
+&lt;/beans&gt;</pre>
+
+
+
+<p class="wikiPara">
+That's great, and straightforward, when we only have one or two beans that vary depending upon the deployment scenario. Well, I usually consider that to be the case in most applications. However, developers whose brains have been turned to mush by overexposure to the Spring framework think that they have <i class="wikiEmphasis">hundreds</i> of beans which might vary depending upon the deployment. That's how they justify writing great gobs of XML to explicitly list out all the classes in their application. We certainly don't want to follow them down that path!
+</p>
+
+<p class="wikiPara">
+Therefore, CDI provides the ability to define an annotation that represents a deployment scenario. These annotations are called <i class="wikiEmphasis">alternative stereotypes</i>. For example:
+</p>
+
+<pre class="wikiPreformatted brush:java;">@Alternative @Stereotype
+@Target(TYPE) @Retention(RUNTIME)
+public @interface Mock {}</pre>
+
+
+<pre class="wikiPreformatted brush:java;">@Alternative @Stereotype
+@Target({TYPE, METHOD, FIELD}) @Retention(RUNTIME)
+public @interface Test {}</pre>
+
+
+<p class="wikiPara">
+We can now use these annotations to indicate which of our beans belong to which deployment scenario:
+</p>
+
+
+<pre class="wikiPreformatted brush:java;">class TestCustomerDatabase {
+   static 
+   @Resource(lookup="java:global/env/jdbc/TestDatasource") 
+   @Produces @Test @CustomerDatabase 
+   Datasource testCustomerDatabase;
+}</pre>
+
+
+
+<pre class="wikiPreformatted brush:java;">@Mock @CustomerDatabase
+class MockCustomerDatabase implements Datasource {
+   //operations of Datasource go here!
+   ...
+}</pre>
+
+
+<p class="wikiPara">
+Now, with just a single line of XML, we can collectively enable all <tt>@Test</tt> beans, or all <tt>@Mock</tt> beans.
+</p>
+
+<pre class="wikiPreformatted brush:xml;">&lt;beans&gt;
+   &lt;alternatives&gt;
+      &lt;stereotype&gt;org.mycompany.deployment.Test&lt;/stereotype&gt;
+   &lt;/alternatives&gt;
+&lt;/beans&gt;</pre>
+
+
+<p class="wikiPara">
+Don't you think that's a better way?</p>
+</div>

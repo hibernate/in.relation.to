@@ -1,0 +1,255 @@
+---
+title: "Using Hibernate3 as a JDBC framework"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: UsingHibernate3AsAJDBCFramework
+lace: http://in.relation.to/1689.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/UsingHibernate3AsAJDBCFramework">Using Hibernate3 as a JDBC framework</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+There's been a certain amount of noise recently surrounding simple JDBC frameworks 
+like iBATIS. I've liked the idea of iBATIS myself, for use in applications which
+don't need an object-oriented domain model, and don't work with deep graphs of 
+associated entities in a single transaction. A JDBC framework also makes good sense 
+if you are working with some kind of <q>insane</q> legacy database; ORM solutions tend 
+to assume that associations are represented as nice clean foreign keys with proper 
+referential integrity constraints (Hibernate3 much less so than Hibernate 2.x).
+</p>
+
+<p class="wikiPara">
+Some people even suggest that JDBC frameworks are a suitable alternative to ORM, 
+even for those systems to which ORM is best suited: object-oriented applications
+with clean relational schemas. They argue that you are /always/ better off with 
+hand-written SQL than generated SQL. Well, I don't think this is true, not only 
+because the overwhelming bulk of SQL code needed by most applications is of the 
+tedious kind, and simply does not require human intervention, but also because a 
+JDBC framework operates at a different semantic level to ORM. A solution like iBATIS 
+knows a lot less about the semantics of the SQL it is issuing, and of the resulting 
+datasets. This means that there is much less opportunity for performance optimizations 
+such as effficent caching. (By <q>efficient</q>, I am referring mainly to efficient cache 
+/invalidation strategies, which are crucial to the usefulness of the cache/.)
+Furthermore, whenever we have seen handwritten SQL, we have seen N+1 selects problems.
+It is extremely tedious to write a new SQL query for each combination of associations
+I might need to fetch together. HQL helps /significantly/ here, since HQL is much
+less verbose than SQL. For a JDBC framework to be able to make the kind of 
+optimizations that an ORM can make, it would have to evolve to a similar level of 
+sophistication. Essentially, it would need to become an ORM, minus SQL generation. 
+In fact, we already start to see  this evolution taking place in existing JDBC 
+frameworks. This begins to erode one of the stated benefits: the claimed simplicity.
+</p>
+
+<p class="wikiPara">
+It also raises the following interesting thought: if, by gradually adding stuff, a 
+JDBC framework will eventually end up as ORM, minus SQL generation, why not just 
+take an existing ORM solution like, ooh, um ... Hibernate, maybe ... and subtract 
+the SQL generation?
+</p>
+
+<p class="wikiPara">
+The Hibernate team has long recognized the need to mix and match generated SQL
+with the occasional handwritten query. In older versions of Hibernate, our
+solution was simply to expose the JDBC connection Hibernate is using, so you can
+execute your own prepared statement. This started to change a while ago, and Max
+Andersen has recently done a lot of work on this. Now, in Hibernate3, it is 
+possible to write an entire application with no generated SQL, while still taking 
+advantage of all of Hibernate's other features.
+</p>
+
+<p class="wikiPara">
+Do we really expect or intend people to use Hibernate in this way? Well, not 
+really - I doubt there are many people out there who really enjoy writing tedious
+INSERT, UPDATE, DELETE statements all day. On the other hand, we do think that
+quite a few people need to customize the occasional query. But to prove a point,
+I'll show you how you can do it, if you really want to.
+</p>
+
+
+<p class="wikiPara">
+Let's take a simple Person-Employment-Organization domain model. (You can find 
+the code in the org.hibernate.test.sql package, so I'm not going to reproduce
+it here.) The simplest class is Person; here's the mapping:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Person" lazy="true"&gt;
+    &lt;id name="id" unsaved-value="0"&gt;
+        &lt;generator class="increment"/&gt;
+    &lt;/id&gt;
+    
+    &lt;property name="name" not-null="true"/&gt;
+    
+    &lt;loader query-ref="person"/&gt;
+    
+    &lt;sql-insert&gt;INSERT INTO PERSON (NAME, ID) VALUES ( UPPER(?), ? )&lt;/sql-insert&gt;
+    &lt;sql-update&gt;UPDATE PERSON SET NAME=UPPER(?) WHERE ID=?&lt;/sql-update&gt;
+    &lt;sql-delete&gt;DELETE FROM PERSON WHERE ID=?&lt;/sql-delete&gt;
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+The first thing to notice is the handwritten INSERT, UPDATE and DELETE statements.
+The ? order of the parameters matches to the order in which properties are listed 
+above (we'll have to eventually support named parameters, I suppose). I guess 
+there is nothing especially interesting there.
+</p>
+
+<p class="wikiPara">
+More interesting is the <tt>&lt;loader&gt;</tt> tag: it defines a reference to a named query 
+which is to be used anytime we load a person using get(), load(), or lazy 
+association fetching. In particular, the named query might be a native SQL query,
+which it is, in this case:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;sql-query name="person"&gt;
+    &lt;return alias="p" class="Person" lock-mode="upgrade"/&gt;
+    SELECT NAME AS {p.name}, ID AS {p.id} FROM PERSON WHERE ID=? FOR UPDATE
+&lt;/sql-query&gt;
+</pre>
+
+
+<p class="wikiPara">
+(A native SQL query may return multiple <q>columns</q> of entities; this is the simplest
+case, where just one entity is returned.)
+</p>
+
+<p class="wikiPara">
+Employment is a bit more complex, in particular, not all properties are included
+in the INSERT and UPDATE statements:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Employment" lazy="true"&gt;
+    &lt;id name="id" unsaved-value="0"&gt;
+        &lt;generator class="increment"/&gt;
+    &lt;/id&gt;
+    
+    &lt;many-to-one name="employee" not-null="true" update="false"/&gt;
+    &lt;many-to-one name="employer" not-null="true" update="false"/&gt;
+    &lt;property name="startDate" not-null="true" update="false" 
+        insert="false"/&gt;
+    &lt;property name="endDate" insert="false"/&gt;
+    &lt;property name="regionCode" update="false"/&gt;
+    
+    &lt;loader query-ref="employment"/&gt;
+    
+    &lt;sql-insert&gt;
+        INSERT INTO EMPLOYMENT 
+            (EMPLOYEE, EMPLOYER, STARTDATE, REGIONCODE, ID) 
+            VALUES (?, ?, CURRENT_DATE, UPPER(?), ?)
+    &lt;/sql-insert&gt;
+    &lt;sql-update&gt;UPDATE EMPLOYMENT SET ENDDATE=? WHERE ID=?&lt;/sql-update&gt;
+    &lt;sql-delete&gt;DELETE FROM EMPLOYMENT WHERE ID=?&lt;/sql-delete&gt;
+&lt;/class&gt;
+
+&lt;sql-query name="employment"&gt;
+    &lt;return alias="emp" class="Employment"/&gt;
+    SELECT EMPLOYEE AS {emp.employee}, EMPLOYER AS {emp.employer}, 
+        STARTDATE AS {emp.startDate}, ENDDATE AS {emp.endDate},
+        REGIONCODE as {emp.regionCode}, ID AS {emp.id}
+    FROM EMPLOYMENT
+    WHERE ID = ?
+&lt;/sql-query&gt;
+</pre>
+
+
+<p class="wikiPara">
+The mapping for Organization has a collection of Employments:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Organization" lazy="true"&gt;
+    &lt;id name="id" unsaved-value="0"&gt;
+        &lt;generator class="increment"/&gt;
+    &lt;/id&gt;
+    
+    &lt;property name="name" not-null="true"/&gt;
+    
+    &lt;set name="employments" 
+        lazy="true" 
+        inverse="true"&gt;
+        
+        &lt;key column="employer"/&gt; &lt;!-- only needed for DDL generation --&gt;
+        
+        &lt;one-to-many class="Employment"/&gt;
+        
+        &lt;loader query-ref="organizationEmployments"/&gt;
+    &lt;/set&gt;
+    
+    &lt;loader query-ref="organization"/&gt;
+    
+    &lt;sql-insert&gt;
+        INSERT INTO ORGANIZATION (NAME, ID) VALUES ( UPPER(?), ? )
+    &lt;/sql-insert&gt;
+    &lt;sql-update&gt;UPDATE ORGANIZATION SET NAME=UPPER(?) WHERE ID=?&lt;/sql-update&gt;
+    &lt;sql-delete&gt;DELETE FROM ORGANIZATION WHERE ID=?&lt;/sql-delete&gt;
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+Not only is there a <tt>&lt;loader&gt;</tt> query for Organization, but also for its collection 
+of Employments:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;sql-query name="organization"&gt;
+    &lt;return alias="org" class="Organization"/&gt;
+    SELECT NAME AS {org.name}, ID AS {org.id} FROM ORGANIZATION
+    WHERE ID=?
+&lt;/sql-query&gt;
+
+&lt;sql-query name="organizationEmployments"&gt;
+    &lt;return alias="empcol" collection="Organization.employments"/&gt;
+    &lt;return alias="emp" class="Employment"/&gt;
+    SELECT {empcol.*}, 
+        EMPLOYER AS {emp.employer}, EMPLOYEE AS {emp.employee},
+        STARTDATE AS {emp.startDate}, ENDDATE AS {emp.endDate},
+        REGIONCODE as {emp.regionCode}, ID AS {emp.id}
+    FROM EMPLOYMENT empcol
+    WHERE EMPLOYER = :id AND DELETED_DATETIME IS NULL
+&lt;/sql-query&gt;    
+</pre>
+
+
+<p class="wikiPara">
+When I was writing this code, I really started to feel the advantages of having
+Hibernate write the SQL for me. In just this simple example, I would have 
+eliminated more than 35 lines of code that I would have to later maintain.
+</p>
+
+<p class="wikiPara">
+Finally, for ad hoc querying, we can use a native SQL query (a named query, or
+one embedded in the Java code). For example:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;sql-query name="allOrganizationsWithEmployees"&gt;
+    &lt;return alias="org" class="Organization"/&gt;
+    SELECT DISTINCT NAME AS {org.name}, ID AS {org.id} 
+    FROM ORGANIZATION org
+    INNER JOIN EMPLOYMENT e ON e.EMPLOYER = org.ID
+&lt;/sql-query&gt;
+</pre>
+
+
+<p class="wikiPara">
+Personally, I prefer to program in Java than in XML, so all this stuff is much 
+too XML-heavy for my liking. I think I'll stick with SQL generation, wherever
+I can, which is almost everywhere. It's not that I don't like SQL. In fact, I
+am a great fan of SQL, and just love watching the queries scroll past when
+I turn Hibernate's logging on. It's just that Hibernate is much better at writing
+SQL than I am.
+</p>
+</div>

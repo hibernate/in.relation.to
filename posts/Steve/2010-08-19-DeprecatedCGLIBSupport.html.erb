@@ -1,0 +1,41 @@
+---
+title: "Deprecated CGLIB support"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: []
+slug: DeprecatedCGLIBSupport
+lace: http://in.relation.to/16658.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/DeprecatedCGLIBSupport">Deprecated CGLIB support</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Kind of knew people would ask about this...  So why did we decide to deprecate CGLIB support in Hibernate?  First I want to point out that Hibernate and CGLIB have a very long history (and a largely good history) in terms of working together.  This is not an indictment against any of the CGLIB developers.  They are good guys and as I stated above for many years Hibernate and CGLIB have worked well together.
+</p>
+
+<p class="wikiPara">
+The simple fact of the matter is that development on CGLIB has largely stopped.  It happens.  Developers for whatever reason (the reasons are their own) move on to new priorities.
+</p>
+
+<p class="wikiPara">
+The fact that development on CGLIB had even slowed initially came to my attention about 4 years ago in regards to <a href="http://opensource.atlassian.com/projects/hibernate/browse/HHH-2222" target="" class="regularLink">HHH-2222</a>.  The problem described in the JIRA issue itself was not the concern; the concern was that the <q>fix</q> was simply a release of CGLIB 2.2 using the updated ASM library.  That 2.2 release was over a year in coming.
+</p>
+
+<p class="wikiPara">
+More recently we have had issues with CGLIB in regards to signed jars as well as its handling of bytecode enhancement for annotated entities.  The Hibernate team have submitted patches (to the best of our ability) to CGLIB for each of these issues we have found without even a response.
+</p>
+
+<p class="wikiPara">
+So it really comes down to a decision as to whether we want to get into maintaining a fork of CGLIB for Hibernate where we can fix stuff as we need.  But that is not our core competency and we already have integration with another great bytecode library in Javassist.  So I decided it was just time to move on.
+</p>
+
+<p class="wikiPara">
+BytecodeProvder, as an SPI, will remain intact so users are free to continue to use CGLIB as the bytecode provider for Hibernate.  We just will not maintain the integration anymore.</p>
+</div>

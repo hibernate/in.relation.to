@@ -1,0 +1,93 @@
+---
+title: "Migrating databases with DBUnit"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: [Databases,Hibernate,MySQL,PostgreSQL]
+slug: MigratingDatabasesWithDBUnit
+lace: http://in.relation.to/11110.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MigratingDatabasesWithDBUnit">Migrating databases with DBUnit</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+In the last few weeks I had to migrate a MySQL database and it turned out to be more difficult than I thought. In the past I've used the tools that ship with MySQL, such as <tt>mysqldump</tt> and its various options. For the recent migrations that was surprisingly... impossible. 
+</p>
+
+<p class="wikiPara">
+The first migration was from a latin MySQL database to a UTF encoded database. By default MySQL and the JDBC driver all use latin encoding (or they derive it from the system character set), so you better make sure that your database is using UTF8 if you want, for example, Chinese users to be able to store their data. I recommend doing this on a per-table basis, which is easy if you export the schema with Hibernate - just add an extension to your <a href="http://fisheye.jboss.com/browse/Seam/trunk/examples/wiki/src/main/org/jboss/seam/wiki/util/WikiMySQL5HibernateDialect.java" target="" class="regularLink">dialect</a>. Also make sure that you set <tt>characterEncoding=UTF-8</tt> on your JDBC connection string to initialize the SQL session properly. Note that the <tt>useUnicode=true</tt> switch is not necessary for MySQL 5.x. 
+</p>
+
+<p class="wikiPara">
+The problem I had was the seamframework.org production database, which was latin encoded when it was created a year ago. I've been pushing migration back because we never had any issue with it and the manual migration with <tt>mysqldump</tt> and <tt>recode</tt> turned out not to work for me (some <a href="http://confluence.atlassian.com/display/DOC/Configuring+Database+Character+Encoding#ConfiguringDatabaseCharacterEncoding-MySQL" target="" class="regularLink">instructions for this</a> if you want to try).
+</p>
+
+<p class="wikiPara">
+The second migration I was looking at was a migration from MySQL to PostgreSQL, for development and testing purposes. Now, many people use <tt>mysqldump</tt> for this, then fiddle about with its many command line options and switches (<q>make it ANSI compatible SQL damnyou!</q>) and then close their eyes and pray when they import the dump into Postgres. Well, that didn't work in my case because <tt>mysqldump</tt> exports <tt>bit</tt> typed columns as raw binary. You can't make it to export something like <tt>true</tt> or <tt>false</tt> or anything that you can import into a Postgres <tt>boolean</tt> type. The problem here is actually that MySQL (just like the mighty Oracle) doesn't support a true <tt>boolean</tt> datatype and that Hibernate defaults to creating a <tt>bit</tt> column for a <tt>java.lang.Boolean</tt> mapping. In retrospect, Hibernate should probably not do this on MySQL for portability reasons and use a <tt>tinyint(1)</tt> mapping - on the other hand it is fine if you always stay on MySQL. 
+</p>
+
+<p class="wikiPara">
+So <tt>mysqldump</tt> didn't work in both cases, I had to find another solution. I solved it with DBUnit and a simple 20 line class:
+</p>
+
+<pre class="wikiPreformatted">
+import org.dbunit.database.IDatabaseConnection;
+import org.dbunit.database.DatabaseConnection;
+import org.dbunit.database.QueryDataSet;
+import org.dbunit.operation.DatabaseOperation;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+
+public class Migration {
+
+    public static final String[] TABLES = new String[]{ "FOO", "BAR", "BAZ" };
+
+    public static void main(String[] args) throws Exception {
+        System.out.println("Running Migration...");
+
+        Class.forName("com.mysql.jdbc.Driver");
+        //Class.forName("org.postgresql.Driver");
+
+        Connection exportConnection = DriverManager.getConnection(
+            "jdbc:mysql://localhost/mydb", 
+            "johndoe", 
+            "secret"
+        );
+        IDatabaseConnection exportDatabaseConnection = new DatabaseConnection(exportConnection);
+
+        Connection importConnection = DriverManager.getConnection(
+            "jdbc:mysql://localhost/mytarget?characterEncoding=UTF-8&amp;sessionVariables=FOREIGN_KEY_CHECKS=0", 
+            "johndoe", 
+            "secret"
+        );
+        IDatabaseConnection importDatabaseConnection = new DatabaseConnection(importConnection);
+
+        for (String table : TABLES) {
+        System.out.println("Migrating table: " + table);
+            QueryDataSet exportDataSet = new QueryDataSet(exportDatabaseConnection);
+            exportDataSet.addTable(table, "SELECT * FROM " + table);
+            DatabaseOperation.INSERT.execute(importDatabaseConnection, exportDataSet);
+        }
+
+        exportDatabaseConnection.close();
+        importDatabaseConnection.close();
+        System.out.println("Migration complete");
+
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+This is the code I used to migrate from MySQL latin to MySQL UTF encoding. For the PostgreSQL migration, uncomment the driver and use a different import JDBC URL. Make sure that you disable foreign key checks for the importing SQL session as you don't know or control in which order tables and rows will be exported and imported.
+</p>
+
+
+</div>

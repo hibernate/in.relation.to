@@ -1,0 +1,79 @@
+---
+title: "Contexts and Dependency Injection 1.1 early draft submitted"
+author: "Pete Muir"
+blogger_name: "Pete"
+layout: blog-post
+tags: []
+slug: ContextsAndDependencyInjection11EarlyDraftSubmitted
+lace: http://in.relation.to/22115.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/ContextsAndDependencyInjection11EarlyDraftSubmitted">Contexts and Dependency Injection 1.1 early draft submitted</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I've just submitted an early draft of the Contexts and Dependency Injection 1.1 (CDI, JSR-346) to the JCP. We (the CDI community) have completed around a third of the features we want to see in CDI 1.1, so wanted to post an early draft to get some wider feedback. Whilst the JCP sort out the paperwork, you can read the draft <a href="http://docs.jboss.org/cdi/spec/1.1.EDR1/pdf/cdi-spec.pdf" target="" class="regularLink">on jboss.org</a> :-)
+</p>
+
+<p class="wikiPara">
+So, what's been added since CDI 1.0?
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">@Disposes methods for producer fields</li>
+<li class="wikiUnorderedListItem">The CDI class, which provides programmatic access to CDI facilities from outside a managed bean</li>
+<li class="wikiUnorderedListItem">Pass the qualifiers an event was fired with to the ObserverMethod</li>
+<li class="wikiUnorderedListItem">Ability to veto beans declaratively using @Veto and @Requires</li>
+<li class="wikiUnorderedListItem">Ability to access the BeanManager from the ServletContext</li>
+<li class="wikiUnorderedListItem">Conversations in Servlet requests</li>
+<li class="wikiUnorderedListItem">Application lifecycle events in Java EE</li>
+<li class="wikiUnorderedListItem">Injection of Bean metadata into bean instances</li>
+<li class="wikiUnorderedListItem">Programmatic access to a container provided Producer, InjectionTarget, AnnotatedType</li>
+<li class="wikiUnorderedListItem">Ability to override attributes of a Bean via BeanAttributes</li>
+<li class="wikiUnorderedListItem">Ability to process modules via ProcessModule</li>
+<li class="wikiUnorderedListItem">Ability to wrap the InjectionPoint</li>
+<li class="wikiUnorderedListItem">Ability to obtain Extension instances from BeanManager</li>
+<li class="wikiUnorderedListItem">Injection of the ServletContext</li>
+<li class="wikiUnorderedListItem">Access to beans.xml in ProcessModule</li>
+<li class="wikiUnorderedListItem">Injection into enums</li>
+<li class="wikiUnorderedListItem">Around 60 issues addressed</li>
+</ul>
+
+<p class="wikiPara">
+However, don't worry if your favorite new feature isn't listed - we're still planning to add:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">XML configuration</li>
+<li class="wikiUnorderedListItem">Global ordering for interceptors, decorators and events</li>
+<li class="wikiUnorderedListItem">Global enablement of interceptors, decorators and alternatives</li>
+<li class="wikiUnorderedListItem">Multi-plexed contexts (multi-tennancy support)</li>
+<li class="wikiUnorderedListItem"><a href="http://docs.jboss.org/seam/3/solder/3.1.0.Beta3/reference/en-US/html/solder-servicehandler.html" target="" class="regularLink">Service Handlers</a></li>
+<li class="wikiUnorderedListItem">Split specification into core and Java EE integration</li>
+<li class="wikiUnorderedListItem">Bootstrap support</li>
+<li class="wikiUnorderedListItem">Java SE context definition</li>
+<li class="wikiUnorderedListItem">Transaction scope</li>
+</ul>
+
+<p class="wikiPara">
+We're also tracking the development of other features such as:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">Declarative transactions for managed beans</li>
+<li class="wikiUnorderedListItem">Async invocation and timers</li>
+<li class="wikiUnorderedListItem">JMS / CDI integration</li>
+</ul>
+
+<p class="wikiPara">
+So, what do you think? You can comment on this blog, email the cdi-dev@lists.jboss.org list, or direct comments to me.
+</p>
+
+<p class="wikiPara">
+What do you like? What have we missed? What don't you like? The purpose of the EDR is to get <i class="wikiEmphasis">your</i> feedback - so please, get in touch!</p>
+</div>

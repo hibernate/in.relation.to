@@ -1,0 +1,25 @@
+---
+title: "Small Gotcha with SEAM-99"
+author: "Jason Porter"
+blogger_name: "JasonP"
+layout: blog-post
+tags: []
+slug: SmallGotchaWithSEAM99
+lace: http://in.relation.to/22552.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SmallGotchaWithSEAM99">Small Gotcha with SEAM-99</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+For those of you tracking Seam 3 releases and bug fixes, you might have seen <a href="https://issues.jboss.org/browse/SEAM-99" target="" class="regularLink">SEAM-99</a> was fixed with Seam 3.1.0.CR1 we released last week. I just discovered a small gotcha when using non-JTA transactions. If you are, your EntityManager must <i class="wikiEmphasis">not</i> be scoped <tt>@ConversationScoped</tt> or it will fail on every request.
+</p>
+
+<p class="wikiPara">
+We prefer JTA and hope the majority of our users do as well, but some may choose to simply use transactions from the <tt>EntityManager</tt>, which is fine too. Just be aware of that little gotcha if you are not using JTA.</p>
+</div>

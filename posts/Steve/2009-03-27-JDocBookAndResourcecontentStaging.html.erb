@@ -1,0 +1,57 @@
+---
+title: "jDocBook and resource+content staging"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: [jDocBook]
+slug: JDocBookAndResourcecontentStaging
+lace: http://in.relation.to/10967.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JDocBookAndResourcecontentStaging">jDocBook and resource+content staging</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<tt>&lt;queue-voice-of-god&gt;</tt>In the beginning there was jdocbook-styles...<tt>&lt;/queue-voice-of-god&gt;</tt>
+</p>
+
+<p class="wikiPara">
+jDocBook styles were meant to represent common styling elements that could be developed on their own, built into bundles and used as dependencies to DocBook builds using the <a href="http://jboss.org/maven-jdocbook-plugin" target="" class="regularLink">jDocBook</a> plugin.  The contents of the styles (css and images) were staged to a special directory within the DocBook project's target directory for use within the XSLT formatting.
+</p>
+
+<p class="wikiPara">
+Recently I have been working on extending that concept to an idea from the world of <a href="https://fedorahosted.org/publican/" target="" class="regularLink">publican</a>.  For those not familiar with it, <a href="https://fedorahosted.org/publican/" target="" class="regularLink">publican</a> is the DocBook build system used by Fedora and many Red Hat related projects.  The idea I was looking at including into the world of <a href="http://jboss.org/maven-jdocbook-plugin" target="" class="regularLink">jDocBook</a> is what <a href="https://fedorahosted.org/publican/" target="" class="regularLink">publican</a> terms brands.  These brands really provide two somewhat complimentary things:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> styling</li>
+<li class="wikiOrderedListItem"> fallback content</li>
+</ol>
+
+<p class="wikiPara">
+Much like jdocbook-styles, publican brands allow providing css and images that should be used in the output formatting.  The big difference is that brands allow for them to be localized to the particular translations.  The notion of 'fallback content' allows common pieces of content (DocBook XML) to be developed and then used throughout various documentation projects.  For example, the publican brands generally define fallback content for things like legal notices and document conventions.  Again, allows for localization to the various translations in terms of appropriate POT/PO files.
+</p>
+
+<p class="wikiPara">
+The localization aspect brings up a question wrt jdocbook-styles and the staging of those resources.  Currently the resources within a jdocbook-styles are staged into the target/docbook/staging directory by the jdocbook plugin itself (the later formatting phase simply points to them from there for each translation since they are implicitly shared for all translations).  Staging of the brands, however, would require that each translation have its own staging directory (ala target/docbook/staging/en-US, etc).  So either the jdocbook-styles could be repeatedly exploded into each translation's staging directory or we could make the move to have localized jdocbook-styles as well.
+</p>
+
+<p class="wikiPara">
+Initially the idea was to have the jDocBook plugin itself perform all these stagings (especially since it does so already for jdocbook-styles).  But today another thought crossed my mind: separate out the notions of staging.  The basic principle would be to simplify jDocBook to focus on a core competency, namely taking some DocBook XML, some resources, some XSLT and generating some formatted output.  This would allow projects not using styles and not using brands to have a very simple jDocBook setup; essentially it would build directly from the controlled sources.  For projects with styles and/or brands we would stage <i class="wikiEmphasis">everything</i> to the staging directories and configure jDocBook itself to use the staged directories as its input.
+</p>
+
+<p class="wikiPara">
+--- 
+Resources:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.gnu.org/software/gettext/" target="" class="regularLink">GNU gettext</a> if you are not familiar with POT/PO files</li>
+<li class="wikiUnorderedListItem"> <a href="http://linuxappfinder.com/package.php?package=poxml" target="" class="regularLink">poxml</a> for the tools used to handle gettext in regards to XML files</li>
+</ul>
+</div>

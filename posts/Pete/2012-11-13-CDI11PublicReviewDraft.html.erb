@@ -1,0 +1,111 @@
+---
+title: "CDI 1.1 Public review draft"
+author: "Pete Muir"
+blogger_name: "Pete"
+layout: blog-post
+tags: [Contexts and Dependency Injection]
+slug: CDI11PublicReviewDraft
+lace: http://in.relation.to/23666.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/CDI11PublicReviewDraft">CDI 1.1 Public review draft</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Last week the JCP <a href="http://jcp.org/en/jsr/detail?id=346" target="" class="regularLink">posted the CDI 1.1</a> public review draft. This draft continues to incrementally improve the 1.0 spec. We haven't added any major new features, instead we're concentrating on honing 1.0 :-)
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The <tt>CDI</tt> class, which provides programmatic access to CDI facilities from outside a managed bean</li>
+<li class="wikiUnorderedListItem"> Ability to veto beans declaratively using <tt>@Vetoed</tt>
+</li>
+<li class="wikiUnorderedListItem"> Conversations in Servlet requests</li>
+<li class="wikiUnorderedListItem"> Application lifecycle events in Java EE</li>
+<li class="wikiUnorderedListItem"> Injection of <tt>Bean</tt>  metadata into bean instances</li>
+<li class="wikiUnorderedListItem"> Programmatic access to a container provided <tt>Producer</tt>, <tt>InjectionTarget</tt>, <tt>AnnotatedType</tt>
+</li>
+<li class="wikiUnorderedListItem"> Ability to override attributes of a <tt>Bean</tt>  via <tt>BeanAttributes</tt>
+</li>
+<li class="wikiUnorderedListItem"> Ability to process modules via <tt>ProcessModule</tt>
+</li>
+<li class="wikiUnorderedListItem"> Ability to wrap the <tt>InjectionPoint</tt>
+</li>
+<li class="wikiUnorderedListItem"> Honor <tt>WEB-INF/classes/META-INF/beans.xml</tt>  to activate <tt>WEB-INF/classes</tt> in a bean archive</li>
+<li class="wikiUnorderedListItem"> Global ordering and enablement of interceptors and decorators</li>
+<li class="wikiUnorderedListItem"> Global selection of alternatives</li>
+<li class="wikiUnorderedListItem"> <tt>@New</tt> deprecated</li>
+<li class="wikiUnorderedListItem"> Clarify interceptors and decorators must be implemented using proxying</li>
+<li class="wikiUnorderedListItem"> Allow multiple annotated types per Java class</li>
+<li class="wikiUnorderedListItem"> Allow Extensions to specify the annotations that they are interested in</li>
+</ul>
+
+<p class="wikiPara">
+There are a number of open issues about which we would appreciate your feedback:
+</p>
+
+<h3 class="wikiHeadline3" id="H-BeanVisibility"><a href="/Bloggers/CDI11PublicReviewDraft#H-BeanVisibility">Bean visibility</a></h3>
+
+<p class="wikiPara">
+The CDI 1.0 specification clearly states that <u>only</u> beans whose bean class is accessible (using standard classloader visibility rules) can be injected into another bean. For example, if you have a bean A in WAR, assuming standard Java EE classloader structure, it wouldn't be available for injection in bean B, in an EJB module. This generally makes sense, as the type is not visible either.
+</p>
+
+<p class="wikiPara">
+CDI also offers two options to replace bean implementations transparently, without explicitly selecting that implementation (either by type or using a qualifier) - alternatives and specialization. In this case, it is less clear that the bean class of the specializing bean, or the bean class selected alternative, must be visible.
+</p>
+
+<p class="wikiPara">
+The CDI EG is still debating this issue, including whether to offer a backwards incompatible mode here.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TtApplicationScopedttBeansSharedBetweenAllEARModules"><a href="/Bloggers/CDI11PublicReviewDraft#H-TtApplicationScopedttBeansSharedBetweenAllEARModules"><tt>@ApplicationScoped</tt> beans shared between all EAR modules</a></h3>
+
+<p class="wikiPara">
+CDI implementations have not consistently shared <tt>@ApplicationScoped</tt> beans across all modules of an EAR. This issue heavily relates to <u>Bean visibility</u>. The CDI 1.1 specification will clearly state how <tt>@ApplicationScoped</tt> are shared.
+</p>
+
+<h3 class="wikiHeadline3" id="H-StartupEvent"><a href="/Bloggers/CDI11PublicReviewDraft#H-StartupEvent">Startup event</a></h3>
+
+<p class="wikiPara">
+A commonly requested feature is for the application to be able to do some work once the application has started but before it starts servicing requests originating remotely. Currently CDI 1.1 defines a <tt>@Initialized(ApplicationScoped.class)</tt> which is called when the application context starts, but we are investigating whether this can be extended to provide a more general startup event.
+</p>
+
+<p class="wikiPara">
+If we define such an event, we need to allow custom contexts to activate themselves whilst it is executing, however this is likely beyond the scope of CDI 1.1 and will likely be addressed in CDI 2.0.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TtWithAnnotationstt"><a href="/Bloggers/CDI11PublicReviewDraft#H-TtWithAnnotationstt"><tt>@WithAnnotations</tt></a></h3>
+
+<p class="wikiPara">
+CDI 1.1 adds <tt>@WithAnnotations</tt> which allows an extension observing <tt>ProcessAnnotatedType</tt> to filter which types it sees. We would like to provide such functionality for all container lifecycle event observers, but there are some interesting things to consider, including whether it would be better to filter on qualifiers for later events. CDI 1.1 may or may not add such support, and we are looking for feedback on this.
+</p>
+
+<h3 class="wikiHeadline3" id="H-AllowingArraysAsQualifierMembers"><a href="/Bloggers/CDI11PublicReviewDraft#H-AllowingArraysAsQualifierMembers">Allowing arrays as qualifier members</a></h3>
+
+<p class="wikiPara">
+CDI 1.0 requires array valued members of qualifiers to be annotated with <tt>@Nonbinding</tt>, excluding them from the resolution process. The JDK defines that annotation equality for array valued members should use <tt>Arrays.equals()</tt>, which requires two identical arrays (equal values, in the same order) in order to return true.
+</p>
+
+<p class="wikiPara">
+We feel that to make array valued members of qualifiers useful, we need to offer a pluggable strategy for checking equality of arrays, as often it would be desirable to consider two arrays with the same values, in any order, as equal. We intend to add this for CDI 1.1.
+</p>
+
+<h3 class="wikiHeadline3" id="H-RestrictingWhatCDIScans"><a href="/Bloggers/CDI11PublicReviewDraft#H-RestrictingWhatCDIScans">Restricting what CDI scans</a></h3>
+
+<p class="wikiPara">
+CDI 1.0 will scan all classes in a jar with <tt>beans.xml</tt>. We plan to add a syntax to <tt>beans.xml</tt> that will the application developer to exclude classes using a variety of filtering options (e.g. by package). Weld offers such a syntax, and will be used as a starting point for CDI <a href="http://docs.jboss.org/weld/reference/1.1.5.Final/en-US/html/configure.html#d0e5769" target="" class="regularLink">http://docs.jboss.org/weld/reference/1.1.5.Final/en-US/html/configure.html#d0e5769</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ObserverResolution"><a href="/Bloggers/CDI11PublicReviewDraft#H-ObserverResolution">Observer resolution</a></h3>
+
+<p class="wikiPara">
+CDI 1.0 requires the type used for observer resolution to be based on the runtime type of the event object. Unfortunately, the JDK erases generic type information about objects that we need to allow firing of many events with parameterized types. CDI 1.0 also completely ignores the generic type of the injected event object, which does typically contain the needed type information. We therefore intend to change the event observer resolution rules to allow the generic type of the event object to be taken into account if the runtime event object does not contain sufficient information.
+</p>
+
+<p class="wikiPara">
+Note that this may seem like a backwards incompatible change, however CDI 1.0 is essentially unimplementable today - examples in the spec do not work as described.</p>
+</div>

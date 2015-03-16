@@ -1,0 +1,69 @@
+---
+title: "Hibernate Search migrating to Apache Lucene 4.6"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+layout: blog-post
+tags: [Hibernate,Hibernate Search]
+slug: HibernateSearchMigratingToApacheLucene46
+lace: http://in.relation.to/24853.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearchMigratingToApacheLucene46">Hibernate Search migrating to Apache Lucene 4.6</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+The first milestone using the latest Apache Lucene is <a href="http://hibernate.org/search/downloads/" target="" class="regularLink">now available</a>, having version 5.0.0.Alpha1.
+</p>
+
+<pre class="wikiPreformatted brush: xml">&lt;dependency&gt;
+ &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+ &lt;artifactId&gt;hibernate-search-orm&lt;/artifactId&gt;
+ &lt;version&gt;5.0.0.Alpha1&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-NotJustAnAlphaRelease"><a href="/Bloggers/HibernateSearchMigratingToApacheLucene46#H-NotJustAnAlphaRelease">Not just an Alpha release</a></h1>
+<p class="wikiPara">
+Since this is the starting point of a new major release 5.0, we will be making many API improvements too. But since migrating to Lucene 4 is not a simple drop-in replacement, this will probably force you to make several changes in code using Lucene APIs directly. For this reason, during this initial Alpha1 milestone we intentionally avoided making any change in the Hibernate Search APIs so that you can use this version as a safe harbor milestone to simplify your migration.
+</p>
+
+<h1 class="wikiHeadline1" id="H-YoullNeedTheMigrationGuide"><a href="/Bloggers/HibernateSearchMigratingToApacheLucene46#H-YoullNeedTheMigrationGuide">You'll need the migration guide</a></h1>
+<p class="wikiPara">
+As always our <a href="https://community.jboss.org/wiki/HibernateSearchMigrationGuide#jive_content_id_Hibernate_Search_500Alpha1" target="" class="regularLink">Migration Guide</a> was updated; you're probably going to need it. If I've missed to document some needed change, or if any aspect is unclear, please let us know we'll be happy to evolve the guide.
+</p>
+
+<p class="wikiPara">
+The <a href="http://lucene.apache.org/core/4_6_1/MIGRATE.html" target="" class="regularLink">Apache Lucene Migration Guide</a> might also be useful, but we applied most of it already to the internal engine for you to use transparently.
+</p>
+
+<h1 class="wikiHeadline1" id="H-NoLongerDependingOnApacheSolr"><a href="/Bloggers/HibernateSearchMigratingToApacheLucene46#H-NoLongerDependingOnApacheSolr">No longer depending on Apache Solr</a></h1>
+<p class="wikiPara">
+We never used much from Solr, other than taking advantage of its powerfull and extensive collection of Analyzer helpers. These are now all moved into Apache Lucene, a welcome cleanup of our dependency tree.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsNext"><a href="/Bloggers/HibernateSearchMigratingToApacheLucene46#H-WhatsNext">What's next?</a></h1>
+<p class="wikiPara">
+We will now start adapting our APIs to make sure to make the most of the new Lucene's capabilities.
+As usual refer to <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a> and our <a href="http://hibernate.org/search/roadmap/" target="" class="regularLink">Roadmap</a>, and feel free to make suggestions.
+</p>
+
+<h2 class="wikiHeadline2" id="H-UsefulLinks"><a href="/Bloggers/HibernateSearchMigratingToApacheLucene46#H-UsefulLinks">Useful links</a></h2>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://hibernate.org/search/downloads/" target="" class="regularLink">Downloads</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://community.jboss.org/wiki/HibernateSearchMigrationGuide#jive_content_id_Hibernate_Search_500Alpha1" target="" class="regularLink">Migration guide</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Forums</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/hibernate/search/5.0/reference/en-US/html_single/" target="" class="regularLink">Documentation</a>
+</li>
+</ul>
+</div>

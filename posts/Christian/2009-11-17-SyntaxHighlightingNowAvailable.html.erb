@@ -1,0 +1,55 @@
+---
+title: "Syntax highlighting now available"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: []
+slug: SyntaxHighlightingNowAvailable
+lace: http://in.relation.to/13035.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SyntaxHighlightingNowAvailable">Syntax highlighting now available</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+A much-requested feature on this website has been automatic syntax highlighting of code snippets. It is now available and I thought I'd document it here instead of sending everyone an e-mail. The reason why it took so long to implement is that I didn't know how to best integrate it with the Seam wiki text syntax. As you know, we wrap a code block in backticks - that doesn't leave any room for syntax highlighting options. Other wiki text parsers use something like <tt>&lt;code syntax="java"&gt;...&lt;/code&gt;</tt> but I wanted to keep the superfast backtick syntax <i class="wikiEmphasis">and</i> have it highlighted.
+</p>
+
+<p class="wikiPara">
+So the way it works now is with an optional line of parameters that follows the opening backtick:
+</p>
+
+<pre>
+`[brush: java; gutter: true;] 
+String text = "Hello World"; // Some comment...
+System.out.println(text);
+`
+</pre>
+
+<p class="wikiPara">
+The options are enclosed in square brackets and the closing square bracket needs to be followed by a newline. See <a href="http://alexgorbatchev.com/wiki/SyntaxHighlighter:Configuration" target="" class="regularLink">this page</a> for a list of options. I've installed all brushes, though most of you will probably use 'java', 'xml', and 'sql'.
+</p>
+
+<p class="wikiPara">
+The example will then render like this:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: true;">String text = "Hello World"; // Some comment...
+System.out.println(text);
+</pre>
+
+
+<p class="wikiPara">
+If you do not specify a brush or if you do not include an option line, the code block will be rendered as a grey box, as before. Oh, and the preview when you edit a document will always show the non-highlighted version, it's only applied when you save or update the document.
+</p>
+
+<p class="wikiPara">
+(No, it will not work on the seamframework.org forums. This has to be tested here first.)
+</p>
+
+</div>

@@ -1,0 +1,123 @@
+---
+title: "Weld 2.0.0.Beta1"
+author: "Jozef Hartinger"
+blogger_name: "Jozef"
+layout: blog-post
+tags: []
+slug: Weld200Beta1
+lace: http://in.relation.to/23723.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/Weld200Beta1">Weld 2.0.0.Beta1</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Weld 2.0.0.Beta1 has been released. Weld 2 is the reference implementation of CDI 1.1. This release implements the <a href="http://jcp.org/aboutJava/communityprocess/pr/jsr346/index.html" target="" class="regularLink">Public Review Draft of CDI 1.1</a>. You can read more about the CDI draft in <a href="http://in.relation.to/Bloggers/CDI11PublicReviewDraft" target="" class="regularLink">Pete’s blog post</a>.
+</p>
+
+
+<p class="wikiPara">
+Out of the large number of changes that the draft introduces, I would highlight the following:
+</p>
+
+<h3 class="wikiHeadline3" id="H-GlobalEnablementAndOrderingOfInterceptorsDecoratorsAndAlternatives"><a href="/Bloggers/Weld200Beta1#H-GlobalEnablementAndOrderingOfInterceptorsDecoratorsAndAlternatives">Global enablement and ordering of interceptors, decorators and alternatives</a></h3>
+
+<p class="wikiPara">
+An often misunderstood and disliked part of CDI is enablement of interceptors, decorators and alternatives. CDI 1.0 requires each interceptor / decorator / alternative to be explicitly enabled in each bean archive where it should be used.
+</p>
+
+<p class="wikiPara">
+CDI 1.1 enhances this concept and provides a way of enabling interceptors, decorators and alternatives globally. Such globally enabled component is only defined in a single bean archive and defines a priority which determines its global ordering. Lower priority interceptors and decorators are called first. For alternatives, if there are multiple enabled alternatives matching the same injection point, the alternative with higher priority wins.
+</p>
+
+<pre class="wikiPreformatted">&lt;decorators&gt;
+    &lt;class priority="100"&gt;org.mycompany.myfwk.TimestampLogger&lt;/class&gt;
+    &lt;class priority="200"&gt;org.mycompany.myfwk.IdentityLogger&lt;/class&gt;
+&lt;/decorators&gt;</pre>
+
+
+
+
+<h3 class="wikiHeadline3" id="H-AlterableContextsAndExplicitDependencyDestruction"><a href="/Bloggers/Weld200Beta1#H-AlterableContextsAndExplicitDependencyDestruction">Alterable contexts and explicit dependency destruction</a></h3>
+
+<p class="wikiPara">
+CDI 1.1 adds an ability to save resources by destroying existing contextual instances. On the SPI part the <a href="http://docs.jboss.org/cdi/api/1.1-PRD/javax/enterprise/context/spi/AlterableContext.html" target="" class="regularLink">AlterableContext</a> interface is introduced which exposes the <tt>destroy()</tt> operation. If a contextual reference is accessed after the underlying instance has been destroyed, a new instance is transparently initialized by the CDI container.
+</p>
+
+<p class="wikiPara">
+Furthermore, the built-in <tt>Instance</tt> bean now exposes a <tt>destroy()</tt> operation which can be used for:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> releasing dependent instances obtained using <tt>Instance</tt>
+</li>
+<li class="wikiUnorderedListItem"> destroying normal-scoped instances (a shortcut to the SPI approach above)</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-DecorationOfBuiltinBeans"><a href="/Bloggers/Weld200Beta1#H-DecorationOfBuiltinBeans">Decoration of built-in beans</a></h3>
+
+<p class="wikiPara">
+The realm of decorators has been expanded to support decoration of CDI built-in beans. The following built-in beans support decoration:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Event</li>
+<li class="wikiUnorderedListItem"> Instance</li>
+<li class="wikiUnorderedListItem"> Conversation</li>
+<li class="wikiUnorderedListItem"> HttpServletRequest / HttpSession / ServletContext</li>
+<li class="wikiUnorderedListItem"> InjectionPoint</li>
+<li class="wikiUnorderedListItem"> Principal</li>
+<li class="wikiUnorderedListItem"> UserTransaction</li>
+</ul>
+
+<p class="wikiPara">
+The hottest candidates for new extensions are <tt>Event</tt> (event ordering) and <tt>Conversation</tt> (conversation begin/end events)
+</p>
+
+<h3 class="wikiHeadline3" id="H-FilteringOfTtProcessAnnotatedTypettEventsBasedOnAnnotationsPresent"><a href="/Bloggers/Weld200Beta1#H-FilteringOfTtProcessAnnotatedTypettEventsBasedOnAnnotationsPresent">Filtering of <tt>ProcessAnnotatedType</tt> events based on annotations present</a></h3>
+
+<p class="wikiPara">
+CDI 1.1 introduces the <tt>@WithAnnotations</tt> annotation. This annotation can be used on extension observer methods to more precisely specify the events an observer method is interested in.
+</p>
+
+<pre class="wikiPreformatted">void observeTypesWithInject(@Observes @WithAnnotations(Inject.class) ProcessAnnotatedType&lt;?&gt; event) {
+    // TODO: process types
+}</pre>
+
+
+<p class="wikiPara">
+In the example above the extension observer method is only notified of AnnotatedTypes which define the <tt>@Inject</tt> annotation. The specified annotation can appear on the type or any supertype, on any field, method or constructor declared by the type or a supertype, or on any parameter of any method or constructor declared by the type or a supertype. The annotation may be applied as a meta-annotation on any annotation considered.
+</p>
+
+<p class="wikiPara">
+This allows for both simpler implementation of CDI extensions and faster CDI containers as the additional information exposed via <tt>@WithAnnotations</tt> allows containers to perform bootstrap optimizations.
+</p>
+
+<hr>
+
+<p class="wikiPara">
+Besides implementing the specification changes, this release also fixes more than <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?version=12319810&amp;projectId=12310891" target="" class="regularLink">30 bugs</a>. We also worked on Weld’s performance. Bootstrap performance of large deployments is now significantly better and we also tuned runtime performace of CDI-bound interceptors a bit.
+</p>
+
+<p class="wikiPara">
+As always, this release is accompanied with a CDI TCK release with tests for the new CDI 1.1 features.
+</p>
+
+<p class="wikiPara">
+UPDATE: There is no ready-made AS7 distribution this time. Instead, the Weld bundle contains an installer that you can use to patch any existing JBoss AS 7.1.1.Final or better with Weld 2. Just follow the instructions in the readme file.
+</p>
+
+<p class="wikiPara">
+Give Weld 2 a try and give us feedback. Note that CDI 1.1 is not yet final so if you do not like something in CDI there’s still time to improve it!
+</p>
+
+<p class="wikiPara">
+[ Distribution (<a href="http://sourceforge.net/projects/jboss/files/Weld/2.0.0.Beta1/weld-2.0.0.Beta1.zip/download" target="" class="regularLink">Weld</a>, <a href="http://sourceforge.net/projects/jboss/files/CDI-TCK/1.1.0.Beta1/cdi-tck-1.1.0.Beta1-dist.zip/download" target="" class="regularLink">CDI TCK</a>)] [Release notes (<a href="https://issues.jboss.org/secure/ReleaseNote.jspa?version=12319810&amp;projectId=12310891" target="" class="regularLink">Weld</a>, <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?version=12319812&amp;projectId=12310900" target="" class="regularLink">CDI TCK</a>)] [ <a href="http://docs.jboss.org/cdi/api/1.1-PRD/" target="" class="regularLink">CDI 1.1 PRD Javadoc</a> ]
+</p>
+
+</div>

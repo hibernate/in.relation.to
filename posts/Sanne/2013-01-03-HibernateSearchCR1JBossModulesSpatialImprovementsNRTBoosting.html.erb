@@ -1,0 +1,157 @@
+---
+title: "Hibernate Search CR1: JBoss Modules, Spatial improvements, NRT boosting"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+layout: blog-post
+tags: [Hibernate,Hibernate Search]
+slug: HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting
+lace: http://in.relation.to/23846.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting">Hibernate Search CR1: JBoss Modules, Spatial improvements, NRT boosting</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<a href="https://sourceforge.net/projects/hibernate/files/hibernate-search/4.2.0.CR1/" target="" class="regularLink">Hibernate Search v.4.2.0.CR1</a>
+has just been released. Mostly bug fixes and performance improvements but
+also an easier way to deploy in JBoss AS 7 or JBoss EAP 6.
+</p>
+
+<h2 class="wikiHeadline2" id="H-JBossModules"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-JBossModules">JBoss modules</a></h2>
+
+<p class="wikiPara">
+In JBoss 7 rather than a flat <u>lib</u> directory you'll find <q>modules</q>; each module is organized in its own directory and explicitly defines which jars are exported and which dependencies it has on other modules.
+It is now possible to bundle Hibernate Search as a JBoss Module, and add it to the other modules of The Application Server.
+</p>
+
+<p class="wikiPara">
+This gets you smaller and quicker deployments, the ability to share the same artifacts across multiple applications. Other projects depending on Hibernate Search Engine might depend on it, like <a href="http://www.jboss.org/infinispan/" target="" class="regularLink">Infinispan</a>, <a href="http://torquebox.org/" target="" class="regularLink">TorqueBox</a>, <a href="http://www.jboss.org/modeshape/" target="" class="regularLink">ModeShape</a>, <a href="http://www.jboss.org/capedwarf/" target="" class="regularLink">CapeDwarf</a>, <a href="http://www.cloudtm.eu/" target="" class="regularLink">Cloud-TM</a>, ...(and let us know which others!)
+</p>
+
+<p class="wikiPara">
+How to benefit from it in your applications? Provided you're deploying on JBoss 7.1.x or EAP6, instead of adding all the Hibernate Search jars to your EAR you can download the
+pre-packaged module from either:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://downloads.sourceforge.net/project/hibernate/hibernate-search/4.2.0.CR1/hibernate-search-modules-4.2.0.CR1-jbossas-71-dist.zip" target="" class="regularLink">Sourceforge</a>
+</li>
+<li class="wikiUnorderedListItem"> Maven: <u>org.hibernate:hibernate-search-modules</u>
+</li>
+</ul>
+
+<p class="wikiPara">
+Unpack the modules in your JBoss AS directory, this will create modules for Hibernate Search, Apache Lucene and some useful Solr libraries. Hibernate Search is split in two modules:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.search.orm:main</i> For users of Hibernate Search with Hibernate; this will transitively include Hibernate ORM</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.search.engine:main</i> For other projects depending just on the internal indexing engine and do now wish other dependencies to Hibernate</li>
+</ul>
+
+<h4 class="wikiHeadline4" id="H-UsingManifest"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-UsingManifest">Using Manifest</a></h4>
+
+<p class="wikiPara">
+The simplest way to have your application declare a dependency on the Hibernate Search module; just add a single attribute to your application's Manifest:
+</p>
+
+<pre class="wikiPreformatted">Dependencies: org.hibernate.search.orm services</pre>
+
+
+<h4 class="wikiHeadline4" id="H-UsingJbossdeploymentstructurexml"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-UsingJbossdeploymentstructurexml">Using jboss-deployment-structure.xml</a></h4>
+
+<p class="wikiPara">
+In alternative to the manifest, an XML file can be used: add <u>WEB-INF/jboss-deployment-structure.xml</u> with content:
+</p>
+
+<pre class="wikiPreformatted brush:xml">&lt;jboss-deployment-structure&gt;
+    &lt;deployment&gt;
+        &lt;dependencies&gt;
+            &lt;module name="org.hibernate.search.orm" services="export" /&gt;
+        &lt;/dependencies&gt;
+    &lt;/deployment&gt;
+&lt;/jboss-deployment-structure&gt;
+</pre>
+
+<p class="wikiPara">
+More details about modules are described in <a href="https://docs.jboss.org/author/display/AS72/Class+Loading+in+AS7" target="" class="regularLink">Class Loading in AS7</a>.
+</p>
+
+<p class="wikiPara">
+(this is just a new packaging and doesn't affect any library code: assembling applications in the older traditional style is still supported)
+</p>
+
+<h2 class="wikiHeadline2" id="H-SpatialIndexingImprovements"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-SpatialIndexingImprovements">Spatial indexing improvements</a></h2>
+
+<p class="wikiPara">
+After the initial round of feedback we changed some methods and hopefully made it easier, at the cost of changing some class names.
+</p>
+
+<h4 class="wikiHeadline4" id="H-GridToQuadTree"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-GridToQuadTree">Grid to QuadTree</a></h4>
+
+<p class="wikiPara">
+We dropped the <u>grid</u> term in favour of <u>QuadTree</u>, as it better reflects the internals of the algorithm. This is mostly an internal
+detail, but if you were using any class with the <u>Grid</u> postfix you should be able to find a <u>QuadTree</u> equivalent now.
+</p>
+
+<h4 class="wikiHeadline4" id="H-LongitueAndLatitude"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-LongitueAndLatitude">@Longitue and @Latitude</a></h4>
+
+<p class="wikiPara">
+The attribute names of these annotations changed to be more readable.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Performance"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-Performance">Performance</a></h2>
+
+<p class="wikiPara">
+I don't know if these affect you, but if they happen to address your use case the performance boost can be very significant, up to two orders of magnitude.
+</p>
+
+<h4 class="wikiHeadline4" id="H-NearRealTimeForWritemostlyScenarios"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-NearRealTimeForWritemostlyScenarios">Near-Real-Time for write-mostly scenarios</a></h4>
+
+<p class="wikiPara">
+I always expected most users would face a read-mostly use case, and the Near-Real-Time IndexManager implementation was biased by this belief: it used to prepare in advance an IndexReader after each write was applied. This is now prepared on-demand and only if needed, so applications who have bursts of write activity will be <i class="wikiEmphasis">much</i> faster when using this backend.
+</p>
+
+<p class="wikiPara">
+At the same time, Lucene 3.6 is behaving slightly differently compared to previous versions so we now have the NRT backend try hard to avoid flushing delete operations unless they are necessary, this also provides a significant performance boost for some scenarios.
+</p>
+
+<p class="wikiPara">
+The combination of these changes might make it suitable to track visitors activity to perform efficient data mining activities on the index.
+</p>
+
+<h4 class="wikiHeadline4" id="H-MassIndexer"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-MassIndexer">MassIndexer</a></h4>
+
+<p class="wikiPara">
+The MassIndexer now might benefit from fetch size hinting to the JDBC driver; this mostly depends on your driver implementation: some ignore it, but shouldn't hurt to try.
+In my tests on MySQL 5.5 it appeared to provide a small but consistent improvement of around 3.1% indexing time.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ApacheLuceneVersions"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-ApacheLuceneVersions">Apache Lucene versions</a></h2>
+
+<p class="wikiPara">
+The Apache Lucene community released version <u>3.6.2</u> so that's what we target now. This is mostly a bugfix release: no APIs where changed so if you wish so you can stick to versions <u>3.6</u> or <u>3.6.1</u>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Thanks"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-Thanks">Thanks</a></h3>
+
+<p class="wikiPara">
+Special thanks to Nicolas Helleringer for implementing the new Spatial features and bearing with me, to Michael Simons for carefully reviewing and fixing the Spatial documentation and his feedback to the API, to Guillaume Smet and his team for the very brave debugging and fixing of the MassIndexer.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheUsualLinks"><a href="/Bloggers/HibernateSearchCR1JBossModulesSpatialImprovementsNRTBoosting#H-TheUsualLinks">The usual links:</a></h2>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Download it from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-search/4.2.0.CR1/" target="" class="regularLink">Sourceforge</a> or via <a href="http://www.hibernate.org/subprojects/search/download.html" target="" class="regularLink">Maven artifacts</a>
+</li>
+<li class="wikiUnorderedListItem"> Get in touch on the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forums</a> or on <a href="http://hibernate.org/community" target="" class="regularLink">the mailing list</a>, or join us for a chat on <a href="http://hibernate.org/community" target="" class="regularLink">IRC</a>
+</li>
+<li class="wikiUnorderedListItem"> Get the spotlight in the next release: have a look at <a href="https://hibernate.onjira.com/browse/HSEARCH" target="" class="regularLink">JIRA</a> and get the code from <a href="https://github.com/hibernate/hibernate-search" target="" class="regularLink">GitHub</a>
+</li>
+</ul>
+</div>

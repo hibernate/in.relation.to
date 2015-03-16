@@ -1,0 +1,392 @@
+---
+title: "Introduction to Ceylon Part 12"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon,Introduction to Ceylon]
+slug: IntroductionToCeylonPart12
+lace: http://in.relation.to/20239.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/IntroductionToCeylonPart12">Introduction to Ceylon Part 12</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<i class="wikiEmphasis">This is the final installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">This article was updated on 2/6/2011 to reflect changes to the way annotation constraints are defined. The comment thread reflects information in the first version of article.</i>
+</p>
+
+<h1 class="wikiHeadline1" id="H-Annotations"><a href="/Bloggers/IntroductionToCeylonPart12#H-Annotations">Annotations</a></h1>
+
+<p class="wikiPara">
+If you've made it this far into this series of articles, you've already seen lots of annotations. Annotations are so important in Ceylon that it's extremely difficult to write any code without using them. But we have not yet really explored what an annotation <i class="wikiEmphasis">is</i>. 
+</p>
+
+<p class="wikiPara">
+Let's finally rectify that. The answer is simple: an annotation is a toplevel method that returns a subtype of <tt>ConstrainedAnnotation</tt>. Here's the definition of a some of our old friends:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared Deprecated deprecated() {
+    return Deprecated();
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared Description doc(String description) {
+    return Description(description.normalize());
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared Authors by(String... authors) {
+    return Authors( from (authors) select (String name) (name.normalize()) );
+}</pre>
+
+
+<p class="wikiPara">
+(Note that the third example uses the <a href="/Bloggers/AnonymousFunctionsOrSmalltalkstyleArguments" target="" class="regularLink">syntax introduced in this blog entry</a>.)
+</p>
+
+<p class="wikiPara">
+Of course, we can define our own annotations. (That's the whole point!)
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared Scope scope(Scope s) { return s; }</pre>
+
+<pre class="wikiPreformatted brush:ceylon">shared Todo todo(String text) { return Todo(text); }</pre>
+
+
+<p class="wikiPara">
+Since annotations are methods, annotation names always begin with a lowercase letter.
+</p>
+
+<h1 class="wikiHeadline1" id="H-AnnotationArguments"><a href="/Bloggers/IntroductionToCeylonPart12#H-AnnotationArguments">Annotation arguments</a></h1>
+
+<p class="wikiPara">
+When we specify an annotation with a non-empty parameter list at a program element, we need to specify arguments for the parameters of the annotation. Just like with a normal method invocation, we have the choice between a positional argument list or a <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart9#H-NamedArguments" target="" class="regularLink">named argument list</a>. We could write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc ("The Hello World program")</pre>
+
+
+<p class="wikiPara">
+or:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc { description="The Hello World program"; }</pre>
+
+
+<p class="wikiPara">
+Likewise, we could write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">by ("Gavin", "Stephane", "Emmanuel")</pre>
+
+
+<p class="wikiPara">
+or:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">by { "Gavin", "Stephane", "Emmanuel" }</pre>
+
+
+<p class="wikiPara">
+But with annotations whose arguments are all literal values, we have a third option. We can completely eliminate the punctuation, and just list the literal values.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "The Hello World program"</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">by "Gavin" 
+   "Stephane" 
+   "Emmanuel"</pre>
+
+
+<p class="wikiPara">
+As a special case of this, if the annotation has <i class="wikiEmphasis">no</i> arguments, we can just write the annotation name and leave it at that. We do this all the time with annotations like <tt>shared</tt>, <tt>formal</tt>, <tt>default</tt>, <tt>actual</tt>, <tt>abstract</tt>, <tt>deprecated</tt>, and <tt>variable</tt>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-AnnotationTypes"><a href="/Bloggers/IntroductionToCeylonPart12#H-AnnotationTypes">Annotation types</a></h1>
+
+<p class="wikiPara">
+The return type of an annotation is called the <i class="wikiEmphasis">annotation type</i>. Multiple methods may produce the same annotation type. An annotation type must be a subtype of <tt>ConstrainedAnnotation</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "An annotation. This interface encodes
+     constraints upon the annotation in its
+     type arguments."
+shared interface ConstrainedAnnotation&lt;out Value, out Values, in ProgramElement&gt;
+        of OptionalAnnotation&lt;Value,ProgramElement&gt; | SequencedAnnotation&lt;Value,ProgramElement&gt;
+        satisfies Annotation&lt;Value&gt;
+        given Value satisfies Annotation&lt;Value&gt;
+        given ProgramElement satisfies Annotated {
+    shared Boolean occurs(Annotated programElement) {
+        return programElement is ProgramElement;
+    }
+}</pre>
+
+
+<p class="wikiPara">
+The type arguments of this interface express constraints upon how annotations which return the annotation type occur. The first type parameter, <tt>Value</tt>, is simply the annotation type itself. 
+</p>
+
+<h1 class="wikiHeadline1" id="H-AnnotationConstraints"><a href="/Bloggers/IntroductionToCeylonPart12#H-AnnotationConstraints">Annotation constraints</a></h1>
+
+<p class="wikiPara">
+The second type parameter, <tt>Values</tt>, governs how many different annotations of given program element may return the annotation type. Notice that <tt>ConstrainedAnnotation</tt> has an <tt>of</tt> clause telling us that there are only two direct subtypes. So any annotation type must be a subtype of one of these two interfaces:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> If an annotation type is a suptype of <tt>OptionalAnnotation</tt>, at most one annotation of a given program element may be of this annotation type, or, otherwise</li>
+<li class="wikiUnorderedListItem"> if an annotation type is a suptype of <tt>SequencedAnnotation</tt>, more than one annotation of a given program element may be of this annotation type.</li>
+</ul>
+
+
+<pre class="wikiPreformatted brush:ceylon">doc "An annotation that may occur at most once at 
+     a single program element."
+shared interface OptionalAnnotation&lt;out Value, in ProgramElement&gt;
+        satisfies ConstrainedAnnotation&lt;Value,Value?,ProgramElement&gt;
+        given Value satisfies Annotation&lt;Value&gt;
+        given ProgramElement satisfies Annotated {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">doc "An annotation that may occur multiple times at 
+     a single program element."
+shared interface SequencedAnnotation&lt;out Value, in ProgramElement&gt;
+        satisfies ConstrainedAnnotation&lt;Value,Value[],ProgramElement&gt;
+        given Value satisfies Annotation&lt;Value&gt;
+        given ProgramElement satisfies Annotated {}</pre>
+
+
+<p class="wikiPara">
+Finally, the third type parameter, <tt>ProgramElement</tt>, of <tt>ConstrainedAnnotation</tt> constrains the kinds of program elements at which the annotation can occur. The argument to <tt>ProgramElement</tt> must be a metamodel type. So the argument <tt>Type&lt;Number&gt;</tt> would constrain the annotation to occur only at program elements that declare a subtype of <tt>Number</tt>. The argument <tt>Attribute&lt;Bottom,String&gt;</tt> would constrain the annotation to occur only at program elements that declare an attribute of type <tt>String</tt>.
+</p>
+
+<p class="wikiPara">
+Here's a couple of examples I copied and pasted straight from the language spec:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Scope
+        of request | session | application
+        satisfies OptionalAnnotation&lt;Scope,Type&lt;Object&gt;&gt; {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared class Todo(String text)
+        satisfies SequencedAnnotation&lt;Todo,Annotated&gt; {
+    shared actual String string = text;
+}</pre>
+
+
+<h1 class="wikiHeadline1" id="H-ReadingAnnotationValuesAtRuntime"><a href="/Bloggers/IntroductionToCeylonPart12#H-ReadingAnnotationValuesAtRuntime">Reading annotation values at runtime</a></h1>
+
+<p class="wikiPara">
+Annotation values may be obtained by calling the toplevel method <tt>annotations()</tt> defined in the language module.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared Values annotations&lt;Value,Values,ProgramElement&gt;(
+               Type&lt;ConstrainedAnnotation&lt;Value,Values,ProgramElement&gt;&gt; annotationType,
+               ProgramElement programElement)
+           given Value satisfies ConstrainedAnnotation&lt;Value,Values,ProgramElement&gt;
+           given ProgramElement satisfies Annotated { ... }</pre>
+
+
+<p class="wikiPara">
+So to obtain the value of the <tt>doc</tt> annotation of the <tt>Person</tt> class, we write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">String? description = annotations(Description, Person)?.description;</pre>
+
+
+<p class="wikiPara">
+Note that the expression <tt>Person</tt> returns the metamodel object for the class <tt>Person</tt>, an instance of <tt>ConcreteClass&lt;Person&gt;</tt>.
+</p>
+
+<p class="wikiPara">
+To determine if the method <tt>stop()</tt> of a class named <tt>Thread</tt> is deprecated, we can write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Boolean deprecated = annotations(Deprecated, Thread.stop) exists;</pre>
+
+
+<p class="wikiPara">
+Note that the expression <tt>Thread.stop</tt> returns the <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAMethod" target="" class="regularLink">metamodel object for the method</a> <tt>stop()</tt> of <tt>Thread</tt>, an instance of <tt>Method&lt;Thread,Void&gt;</tt>.
+</p>
+
+<p class="wikiPara">
+Here's two more examples, to make sure you get the idea:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Scope scope = annotations(Scope, Person) ? request;</pre>
+
+<pre class="wikiPreformatted brush:ceylon">Todo[] todos = annotations(Todo, method);</pre>
+
+
+<p class="wikiPara">
+Yeah, everything's set up so that <tt>annotations()</tt> returns <tt>Scope?</tt> for the optional annotation type <tt>Scope</tt>, and <tt>Todo[]</tt> for the sequenced annotation type <tt>Todo</tt>. Nice, huh?
+</p>
+
+<p class="wikiPara">
+Of course, it's much more common to work with annotations in generic code, so you're more likely to be writing code like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Entry&lt;Attribute&lt;Bottom,Object?&gt;,String&gt;[] attributeColumnNames(Class&lt;Object&gt; clazz) {
+	return from (clazz.members(Attribute&lt;Bottom,Object?&gt;))
+	        select (Attribute&lt;Bottom,Object?&gt; att) (att-&gt;columnName(att));
+}
+
+String columnName(Attribute&lt;Bottom,Object?&gt; member) {
+    return annotations(Column, member)?.name ? member.name;
+}</pre>
+
+
+<p class="wikiPara">
+As you can see, Ceylon annotations are framework-developer-heaven.
+</p>
+
+<h1 class="wikiHeadline1" id="H-DefiningAnnotations"><a href="/Bloggers/IntroductionToCeylonPart12#H-DefiningAnnotations">Defining annotations</a></h1>
+<p class="wikiPara">
+        
+We've seen plenty of examples of annotations built into Ceylon.
+Application developers don't often define their own annotations, but
+framework developers do this all the time. Let's see how we could define
+an annotation for declarative transaction management in Ceylon.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Transactional transactional(Boolean requiresNew = false) {
+    return Transactional(requiresNew);
+}</pre>
+
+
+<p class="wikiPara">
+This method simply produces an instance of the class <tt>Transactional</tt> that 
+will be attached to the metamodel of an annotated method or attribute. The 
+meta-annotation specifies that the annotation may be applied to methods 
+and attributes, and may occur at most once on any member.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Transactional(Boolean requiresNew) 
+        satisfies OptionalAnnotation&lt;Transactional,Member&lt;Bottom,Void&gt;&gt; {
+    shared Boolean requiresNew = requiresNew;
+}</pre>
+
+
+<p class="wikiPara">
+Now we can apply our annotation to a method of any class.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class OrderManager() {
+    shared transactional void createOrder(Order order) { ... }
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+We could specify an explicit argument to the parameter of <tt>transactional</tt> using 
+a positional argument list:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared transactional (true) 
+void createOrder(Order order) { ... }</pre>
+
+
+<p class="wikiPara">
+Alternatively, we could use a named argument list:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared transactional { requiresNew=true; }
+void createOrder(Order order) { ... }</pre>
+
+
+<p class="wikiPara">
+We won't need to use reflection in our example, since Ceylon's module architecture 
+includes special built-in support for using annotations to add interceptors to 
+methods and attributes.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Interceptors"><a href="/Bloggers/IntroductionToCeylonPart12#H-Interceptors">Interceptors</a></h1>
+
+<p class="wikiPara">
+An <i class="wikiEmphasis">interceptor</i> allows frameworks to react to events like method invocations, class 
+instantiations, or attribute evaluations. We don't need to write any special annotation 
+scanning code to make use of interceptors. Ceylon handles this for us at class-loading
+time.
+</p>
+
+<p class="wikiPara">
+All we need to do is have our <tt>Transactional</tt> class implement the interfaces 
+<tt>MethodAnnotation</tt> and <tt>AttributeAnnotation</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Transactional(Boolean requiresNew)
+        satisfies OptionalAnnotation&lt;Transactional,Member&lt;Bottom,Void&gt;&gt; &amp;
+                  MethodAnnotation &amp; AttributeAnnotation {
+        
+    shared Boolean requiresNew = requiresNew;
+    
+    doc "This method is called whenever Ceylon loads a class with a method
+         annotated |transactional|. It registers a transaction management
+         interceptor for the method."
+    shared actual void onDefineMethod&lt;Instance,Result,Argument...&gt;(OpenMethod&lt;Instance,Result,Argument...&gt; method) {
+        method.intercept()
+                onInvoke(Instance instance, Result proceed(Argument... args), Argument... args) {
+            if (currentTransaction.inProcess || !requiresNew) {
+                return proceed(args);
+            }
+            else {
+                currentTransaction.begin();
+                try {
+                    Result result = proceed(args);
+                    currentTransaction.commit();
+                    return result;
+                }
+                catch (Exception e) {
+                    currentTransaction.rollback();
+                    throw e;
+                }
+            }
+        }
+    }
+    
+    doc "This method is called whenever Ceylon loads a class with an attribute
+         annotated |transactional|. It registers a transaction management
+         interceptor for the attribute."
+    shared actual void onDefineAttribute&lt;Instance,Result&gt;(OpenAttribute&lt;Instance,Result&gt; attribute) {
+        attribute.intercept()
+                onGet(Instance instance, Result proceed()) {
+            if (currentTransaction.inProcess || !requiresNew) {
+                return proceed();
+            }
+            else {
+                currentTransaction.begin();
+                try {
+                    Result result = proceed();
+                    currentTransaction.commit();
+                    return result;
+                }
+                catch (Exception e) {
+                    currentTransaction.rollback();
+                    throw e;
+                }
+            }
+        }
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>intercept()</tt> method registers the interceptor - a kind of callback method. Again, we're using the <a href="/Bloggers/AnonymousFunctionsOrSmalltalkstyleArguments" target="" class="regularLink">syntax discussed here</a>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Conclusion"><a href="/Bloggers/IntroductionToCeylonPart12#H-Conclusion">Conclusion</a></h1>
+
+<p class="wikiPara">
+I think this is probably a good place to end this series for now, since I've covered all of the bits of Ceylon that have been  properly worked out at this stage. At some stage I'll go back and update / clean up these posts and perhaps even reorganize the material a bit. Thanks for following along, and please keep letting us know your feedback!
+</p>
+</div>

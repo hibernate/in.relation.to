@@ -1,0 +1,101 @@
+---
+title: "Second milestone towards Hibernate Search 5: introducing MoreLikeThis Queries"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+layout: blog-post
+tags: [Hibernate,Hibernate Search]
+slug: SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries
+lace: http://in.relation.to/24985.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries">Second milestone towards Hibernate Search 5: introducing MoreLikeThis Queries</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+The release 5.0.0.Alpha2 is now <a href="http://hibernate.org/search/downloads/" target="" class="regularLink">available on our shiny new website</a>: as the alpha1 release also did, it integrates with Apache Lucene 4.6.1, but now we do it better ;-)
+</p>
+
+<pre class="wikiPreformatted brush: xml">&lt;dependency&gt;
+ &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+ &lt;artifactId&gt;hibernate-search-orm&lt;/artifactId&gt;
+ &lt;version&gt;5.0.0.Alpha2&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-MoreLikeThisQueries"><a href="/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries#H-MoreLikeThisQueries">More Like This queries</a></h1>
+<p class="wikiPara">
+New features!
+A <q>More Like This</q> query is a special kind of query which takes a model document as an input, rather than a traditional string. It has been available for you to use since a long time via Lucene's MoreLikeThis Query implementation, but this implementation was rather tricky to use on our richer entity based model. Hibernate Search now provides direct support for this functionality via our Query builder DSL, and in its simplest form looks like this:
+</p>
+
+<pre class="wikiPreformatted brush: java">Coffee exampleCoffee = ...
+
+QueryBuilder qb = fullTextSession.getSearchFactory()
+        .buildQueryBuilder()
+        .forEntity( Coffee.class )
+        .get();
+
+Query mltQuery = qb
+        .moreLikeThis()
+            .comparingAllFields()
+            .toEntity( exampleCoffee )
+            .createQuery();
+
+List results = fullTextSession
+        .createFullTextQuery( mltQuery, Coffee.class )
+        .list();
+</pre>
+
+
+<p class="wikiPara">
+What does it do? It returns a list of Coffee instances which are similar to the <i class="wikiEmphasis">exampleCoffee</i> instance. The definition of <q>similar</q> is as usual controlled by the analyzers and indexing options you choose. By default the list is of course ordered according to the scoring model, so the top match would be the example entity itself (this might be surprising but is often useful in practice).
+</p>
+
+<p class="wikiPara">
+A more extensive blogpost about this will follow, but if you can't wait to learn more see all details in the <a href="http://docs.jboss.org/hibernate/search/5.0/reference/en-US/html/search-query.html#section-building-lucene-queries" target="" class="regularLink">Building queries</a> chapter.
+</p>
+
+<h1 class="wikiHeadline1" id="H-FacetingImprovements"><a href="/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries#H-FacetingImprovements">Faceting improvements</a></h1>
+<p class="wikiPara">
+One of the highest voted improvement requests on JIRA, it is now finally possible to facet on embedded collections. Hardy also started exploring possible performance improvements, and how to use the new Lucene 4 features: feedback, use cases or patches would be very welcome as we're eager to improve faceting more.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WatchTheMigrationGuide"><a href="/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries#H-WatchTheMigrationGuide">Watch the migration guide</a></h1>
+<p class="wikiPara">
+If you're updating an application from previous versions of Hibernate Search, we highly recommend to keep an eye on the <a href="https://community.jboss.org/wiki/HibernateSearchMigrationGuide#jive_content_id_Hibernate_Search_500Alpha2" target="" class="regularLink">Migration Guide</a> as the changes in the Lucene API are significant and not always self-documenting. Suggestions for the migration guide are also very welcome.
+</p>
+
+<p class="wikiPara">
+The <a href="http://lucene.apache.org/core/4_6_1/MIGRATE.html" target="" class="regularLink">Apache Lucene Migration Guide</a> might also be useful, but we applied most of it already to the internal engine for you to use transparently.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheHibernatesearchanalyzersModuleIsRemoved"><a href="/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries#H-TheHibernatesearchanalyzersModuleIsRemoved">The hibernate-search-analyzers module is removed</a></h1>
+<p class="wikiPara">
+This module  was created years ago when we had to fork some Lucene code to allow an easy migration path, but is now since long an empty module just depending on various commonly used analyzers. It's time for spring cleaning of dependencies, so the no longer needed module is removed: if you where using it, just remove it from your project and include a direct dependency to the analyzers you need from the Apache Lucene ecosystem.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsNext"><a href="/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries#H-WhatsNext">What's next?</a></h1>
+<p class="wikiPara">
+You can find an high level overview on our <a href="http://hibernate.org/search/roadmap/" target="" class="regularLink">Roadmap page</a>, or check the fine grained break down on <a href="https://hibernate.atlassian.net/issues/?filter=12266" target="" class="regularLink">this JIRA filter</a>. Essentially we're aiming now at OSGi compability and at usability improvements which had to be postponed to a major release.
+</p>
+
+<h2 class="wikiHeadline2" id="H-UsefulLinks"><a href="/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries#H-UsefulLinks">Useful links</a></h2>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://hibernate.org/search/downloads/" target="" class="regularLink">Downloads</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/hibernate/search/5.0/reference/en-US/html_single/" target="" class="regularLink">Documentation</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://community.jboss.org/wiki/HibernateSearchMigrationGuide#jive_content_id_Hibernate_Search_500Alpha2" target="" class="regularLink">Migration guide</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Forums</a>
+</li>
+</ul>
+</div>

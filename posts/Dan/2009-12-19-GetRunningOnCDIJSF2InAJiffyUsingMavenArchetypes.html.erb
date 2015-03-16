@@ -1,0 +1,80 @@
+---
+title: "Get running on CDI & JSF 2 in a jiffy using Maven archetypes"
+author: "Dan Allen"
+blogger_name: "Dan"
+layout: blog-post
+tags: [Seam News,Weld]
+slug: GetRunningOnCDIJSF2InAJiffyUsingMavenArchetypes
+lace: http://in.relation.to/13649.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/GetRunningOnCDIJSF2InAJiffyUsingMavenArchetypes">Get running on CDI &amp; JSF 2 in a jiffy using Maven archetypes</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+The Weld team has recently collaborated with members of the community, most notably <a href="http://seamframework.org/user/StevenBoscarine" target="" class="regularLink">Steven Boscarine</a>, to provide you with a set of <a href="http://seamframework.org/Documentation/WeldQuickstartForMavenUsers" target="" class="regularLink">Maven archetypes</a> that get you developing with CDI and JSF 2 in a jiffy. Today we are announcing that the 1.0.0-BETA1 version of the archetypes are available in the <a href="http://repo1.maven.org/maven2/org/jboss/weld/archetypes/" target="" class="regularLink">Maven Central Repository</a>. Consider it a holiday present from us ;)
+</p>
+
+<strong>Now you can create a brand new project with a single command and get started writing your application with CDI without having to waste time messing around with mundane setup tasks!</strong>
+
+<p class="wikiPara">
+Follow <a href="http://seamframework.org/Documentation/WeldQuickstartForMavenUsers" target="" class="regularLink">this guide</a> to get started.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TellMeMore"><a href="/Bloggers/GetRunningOnCDIJSF2InAJiffyUsingMavenArchetypes#H-TellMeMore">Tell me more</a></h2>
+
+<p class="wikiPara">
+<a href="http://maven.apache.org/plugins/maven-archetype-plugin/" target="" class="regularLink">Maven archetypes</a> are templates that you use to create a new Maven project that is customized to your organization domain name (groupId) and project name (artifactId). The Weld archetypes focus on creating Java EE 6 projects that can be run on any Java EE 6-compliant application server (e.g., <a href="http://glassfish.org" target="" class="regularLink">Glassfish V3</a> or <a href="http://jboss.org/jbossas/download" target="" class="regularLink">JBoss AS 6.0</a>), as well as JSF 2.0 and CDI projects that run on Servlet Containers (e.g., Tomcat 6 or Jetty 6). At the moment, the only view layer that is offered is JSF 2, though we plan to have archetypes that setup Wicket and other technologies that integrate with CDI in the future.
+</p>
+
+<p class="wikiPara">
+There are currently three archetypes available:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> weld-jsf-servlet-miminal: <i class="wikiEmphasis">An archetype for creating an application using JSF 2.0 and CDI 1.0 for Servlet Containers (Tomcat 6 / Jetty 6)</i>
+</li>
+<li class="wikiUnorderedListItem"> weld-jsf-jee-minimal: <i class="wikiEmphasis">An archetype for creating a minimal Java EE 6 application using JSF 2.0, CDI 1.0 and EJB 3.1 (persistence unit not included)</i>
+</li>
+<li class="wikiUnorderedListItem"> weld-jsf-jee: <i class="wikiEmphasis">An archetype for creating a Java EE 6 application using JSF 2.0, CDI 1.0, EJB 3.1 and JPA 2.0 (persistence unit included)</i>
+</li>
+</ul>
+
+<p class="wikiPara">
+The resulting project imports the <a href="http://anonsvn.jboss.org/repos/weld/extensions/tags/1.0.0-CR2/bom/pom.xml" target="" class="regularLink">weld-extensions-bom</a> to provide compatible version numbers for the Java EE APIs and supporting libraries. Only servlet projects depend on Weld at runtime, in order to bring the CDI services in a servlet environment. The jee projects depend exclusively on the Java EE 6 platform.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ShowMe"><a href="/Bloggers/GetRunningOnCDIJSF2InAJiffyUsingMavenArchetypes#H-ShowMe">Show me</a></h2>
+
+<p class="wikiPara">
+After loading the <a href="http://anonsvn.jboss.org/repos/weld/archetypes/tags/1.0.0-BETA1/archetype-catalog.xml" target="" class="regularLink">archetype catalog</a>, you can choose to generate the project from the commandline or an IDE like Eclipse, NetBeans, or IntelliJ IDEA. Here's a screenshot showing us creating a new Maven project from one of the Weld archetypes in Eclipse (using the <a href="http://m2eclipse.sonatype.org" target="" class="regularLink">m2eclipse plugin</a>):
+</p>
+
+<img src="http://seamframework.org/service/File/109674" style="width: 531px; height: 587px;" alt="Create Maven project">
+
+<p class="wikiPara">
+The generated project includes a readme file with instructions on how to deploy the application (readme.txt), a Maven POM (pom.xml), boilerplate configuration, a demonstration of the JSF 2 and Bean Validation integration, and a start page that you can visit to confirm your application deployed correctly, shown below. The start page uses layout template and stylesheet. The graphics on the page are taken from prototypes that the JBoss.org design team has created for the Weld project branding.
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/13648" width="650" height="504">
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">There is no faster way to get started with CDI and JSF 2 than using these archetypes!</i>
+</p>
+
+<p class="wikiPara">
+Still, there is room for improvement. We are looking for your <a href="http://seamframework.org/Community/WeldUsers" target="" class="regularLink">feedback</a>. Do you find them easy? Do they provide too little? Too much? What other features do you want?
+</p>
+
+<h2 class="wikiHeadline2" id="H-Credits"><a href="/Bloggers/GetRunningOnCDIJSF2InAJiffyUsingMavenArchetypes#H-Credits">Credits</a></h2>
+
+<p class="wikiPara">
+I'd like to thank <a href="http://seamframework.org/user/StevenBoscarine" target="" class="regularLink">Steven Boscarine</a> for his dedication to this initiative and for helping us keep the end goal in perspective, Sonatype for making it so streamlined for OSS projects to publish artifacts to the Maven Central repository with <a href="http://nexus.sonatype.org/oss-repository-hosting.html" target="" class="regularLink">Nexus</a>, and the JBoss.org design team for the graphics that give the start page a slick look!</p>
+</div>

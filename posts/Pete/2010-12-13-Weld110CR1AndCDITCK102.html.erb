@@ -1,0 +1,65 @@
+---
+title: "Weld 1.1.0.CR1 and CDI TCK 1.0.2"
+author: "Pete Muir"
+blogger_name: "Pete"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Seam News,Weld]
+slug: Weld110CR1AndCDITCK102
+lace: http://in.relation.to/17900.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/Weld110CR1AndCDITCK102">Weld 1.1.0.CR1 and CDI TCK 1.0.2</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I've just published a release candidate for Weld 1.1.0, the reference implementation of JSR-299: Contexts and Dependency Injection for Java EE.  It's based on the <a href="http://docs.jboss.org/cdi/api/1.0-SP3/" target="" class="regularLink">CDI 1.0 API</a>. You can find direct download links at the bottom of this post or you can pull the artifacts from the <a href="http://repository.jboss.org/nexus/content/groups/public/org/jboss/weld/" target="" class="regularLink">JBoss Maven Repository</a>.
+</p>
+
+<p class="wikiPara">
+Highlights from this release are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A new approach to managing contexts, making it easier to write view-layer integrations</li>
+<li class="wikiUnorderedListItem"> Performance improvements (around 40% on the previous release, meaning Weld performs as well as, or better than other CDI implementations and other DI engines in our tests)</li>
+<li class="wikiUnorderedListItem"> Startup time improvements (around 20 times faster in extreme cases)</li>
+<li class="wikiUnorderedListItem"> More improvements in memory usage, with more planned for 1.2.0 (we're aiming at 1k per class deployed)</li>
+<li class="wikiUnorderedListItem"> around 70 bug fixes</li>
+</ul>
+
+<p class="wikiPara">
+We also just released 1.0.2 of the CDI TCK - you can find the links for it below :-)
+</p>
+
+<p class="wikiPara">
+Thanks go to Marius Bogoevici, Stuart Douglas, Martin Gencur, <a href="http://in.relation.to/Bloggers/Nicklas" target="" class="regularLink">Nicklas Karlsson</a>, Stale Pedersen and Jason Porter for their hard work on this release!
+</p>
+
+<h2 class="wikiHeadline2" id="H-JBossAS"><a href="/Bloggers/Weld110CR1AndCDITCK102#H-JBossAS">JBoss AS</a></h2>
+
+<p class="wikiPara">
+Weld 1.1.0 will be included in JBoss AS 6.0.0.Final; until then you are best off using a <a href="http://hudson.jboss.org/hudson/view/JBoss%20AS/job/JBoss-AS-6.0.x/" target="" class="regularLink">snapshot build of JBoss AS</a> if you want to use Weld 1.1.0.Final.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AboutWeld"><a href="/Bloggers/Weld110CR1AndCDITCK102#H-AboutWeld">About Weld</a></h2>
+
+<p class="wikiPara">
+<a href="http://seamframework.org/Weld" target="" class="regularLink">Weld</a> is used in <a href="http://glassfish.dev.java.net" target="" class="regularLink">GlassFish V3</a> and the <a href="http://jboss.org/jbossas/" target="" class="regularLink">JBoss AS 6</a> series. Weld also has support for Servlet containers such as <a href="http://tomcat.apache.org" target="" class="regularLink">Tomcat</a> and <a href="http://www.mortbay.org/jetty/" target="" class="regularLink">Jetty</a>. Alternatively, you can use Weld with Java SE.
+</p>
+
+<p class="wikiPara">
+There is great testing support via <a href="http://jboss.org/arquillian" target="" class="regularLink">Arquillian</a>, which allows you to test in Weld SE, a mocked out Java EE container, Tomcat or Jetty, as well as JBoss AS and GlassFish.
+</p>
+
+<p class="wikiPara">
+If you are just getting started, there are a few examples in the <a href="https://sourceforge.net/projects/jboss/files/Weld/1.1.0.CR1/weld-1.1.0.CR1.zip/download" target="" class="regularLink">distribution</a> to guide you (look for instructions in the reference guide, and each example has a <tt>readme.txt</tt>). If you are looking for help, try our <a href="http://www.seamframework.org/Community/WeldUsers" target="" class="regularLink">user forums</a>, or perhaps join us on <a href="irc://freenode.net/#weld">IRC</a>.
+</p>
+
+<p class="wikiPara">
+[ Distribution (<a href="https://sourceforge.net/projects/jboss/files/Weld/1.1.0.CR1/weld-1.1.0.CR1.zip/download" target="" class="regularLink">Weld</a>, <a href="https://sourceforge.net/projects/jboss/files/CDI-TCK/1.0.2.SP1/jsr299-tck-1.0.2.SP1-dist.zip/download" target="" class="regularLink">CDI TCK</a>) ] | [ Release Notes (<a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12310891&amp;version=12315606" target="" class="regularLink">Weld</a>, <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12310900&amp;version=12315593" target="" class="regularLink">CDI TCK</a>) ] | [ Reference Guide (<a href="http://docs.jboss.org/weld/reference/1.1.0.CR1/en-US/html" target="" class="regularLink">Weld</a>, <a href="http://docs.jboss.org/cdi/tck/reference/1.0.2.SP1/en-US/html/" target="" class="regularLink">CDI TCK</a> ] | [ Issue Tracker (<a href="http://jira.jboss.com/jira/browse/WELD" target="" class="regularLink">Weld</a>, <a href="http://jira.jboss.com/jira/browse/CDITCK" target="" class="regularLink">CDI TCK</a>) ] | [ <a href="http://docs.jboss.org/cdi/api/1.0-SP3/" target="" class="regularLink">CDI Javadoc</a> ]</p>
+</div>

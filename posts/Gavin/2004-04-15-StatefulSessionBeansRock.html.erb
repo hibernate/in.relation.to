@@ -1,0 +1,62 @@
+---
+title: "Stateful Session Beans Rock"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: StatefulSessionBeansRock
+lace: http://in.relation.to/1538.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/StatefulSessionBeansRock">Stateful Session Beans Rock</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Like, I suppose, many Java developers, I have so often read about the supposed scalability problems associated with stateful session beans, that I simply accepted that these problems were real, and refused to even consider using stateful beans. I guess this was laziness, but we don't have time to verify everything we read - and I'd never had cause to doubt that what I read was correct.
+</p>
+
+<p class="wikiPara">
+A few months ago, as Christian and I were nailing down our notion of <q>application transactions</q> in a hotel room in Kohn Kaen, Thailand, it really struck me hard that a stateful bean is the perfect place to keep state associated with the application transaction. (An application transaction is a unit of work /from the point of view of the user/; it spans multiple database/JTA transactions.) For example, you could keep a dedicated Hibernate session for the lifetime of the stateful bean, obviating the need for detaching and reattaching the object graph at every request.
+</p>
+
+<p class="wikiPara">
+This made me wonder about the cause of the scalability problems that everyone talks about. Once I really started thinking about this, it just didn't add up! A stateful bean without failover is quite equivalent to a HttpSession with server affinity, a design that is commonly understood to scale acceptably well. Similarly, failover for stateful beans should be no more difficult to implement than HttpSession failover.
+</p>
+
+<p class="wikiPara">
+Indeed, it seemed that the use of stateful beans should actually improve performance, since we would no longer need to wear the cost of serializing state relating to the application transaction to and from either the web tier or database /upon each request/. It seems far more natural to keep the state right there, in the middle tier, along with the business logic, where it belongs.
+</p>
+
+<p class="wikiPara">
+The conclusion I came to at that time was that the scalability problems must be due to implementation problems in existing appservers.
+</p>
+
+<p class="wikiPara">
+Well, I was talking about this with a friend who works for one of the other J2EE vendors the other day and she pointed me to this excellent paper:
+</p>
+
+<p class="wikiPara">
+<a href="http://www.sys-con.com/weblogic/articleprint.cfm?id=101" target="" class="regularLink">HTTP Session Object vs Stateful EJB</a>
+</p>
+
+<p class="wikiPara">
+which really debunks that particular superstition.
+</p>
+
+<p class="wikiPara">
+Actually, there is a lot of nonsense written about the desirability of so-called <q>stateless</q> architectures. It certainly might be true that a truly stateful design has some nice scalability characteristics. The trouble is that a stateless application can't really /do/ anything of consequence. In a real life application, the state /has to live somewhere/. Serializing it to and from the web tier is just a waste of breath. Serializing it to the database is even worse.
+</p>
+
+<p class="wikiPara">
+In future, I think I'll find myself using stateful beans all the time.
+</p>
+
+<p class="wikiPara">
+Lesson: beware J2EE folklore!
+</p>
+</div>

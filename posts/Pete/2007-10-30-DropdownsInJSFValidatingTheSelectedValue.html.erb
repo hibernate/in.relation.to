@@ -1,0 +1,66 @@
+---
+title: "Dropdowns in JSF: Validating the selected value"
+author: "Pete Muir"
+blogger_name: "Pete"
+layout: blog-post
+tags: [JSF 2,Seam]
+slug: DropdownsInJSFValidatingTheSelectedValue
+lace: http://in.relation.to/2708.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/DropdownsInJSFValidatingTheSelectedValue">Dropdowns in JSF: Validating the selected value</a>
+                    </h1>
+</div>
+<blockquote class="wikiBlockquote">
+I'm using <tt>&lt;s:convertEntity /&gt;</tt> and when I submit the form I get an error message on the page /Value is not a valid option/ — what am I doing wrong?
+</blockquote>
+
+<p class="wikiPara">
+This commonly asked question on the Seam forum refuses to go away — so lets run through the problem, look at the workarounds and what changes would be needed to JSF to make it go away.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TheBackground"><a href="/Bloggers/DropdownsInJSFValidatingTheSelectedValue#H-TheBackground">The Background</a></h3>
+
+<p class="wikiPara">
+JSF allows you to specify a converter for any editable value; the converter converts /from/ an <tt>Object</tt> /to/ a <tt>String</tt> when rendering the page, and /from/ a <tt>String</tt> /to/ an <tt>Object</tt> when submitting a form.  JSF comes with some built in converters (e.g. for <tt>Date</tt>, enums...) or allows you to create a custom converter.
+</p>
+
+<p class="wikiPara">
+Inside your custom converter you implement <tt>getAsString</tt>, returning a <tt>String</tt>, which, when passed to <tt>getAsObject</tt> on submitting the form, you use to get hold of the <tt>Object</tt> and return it.
+</p>
+
+<p class="wikiPara">
+Seam provides <tt>&lt;s:convertEntity /&gt;</tt>, a generic converter which does the job of converting any JPA entity (mapped with annotations or XML, with a simple or composite key).  It takes the primary key of the entity, stores it, returns a reference to the location in the key store; when the page is submitted, the key is fetched from the store and used to load the entity.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TheProblem"><a href="/Bloggers/DropdownsInJSFValidatingTheSelectedValue#H-TheProblem">The Problem</a></h3>
+
+<p class="wikiPara">
+The JSF 1.2 Specification (sections 4.1.15.3 and 4.1.16.3) specify that
+</p>
+
+<blockquote class="wikiBlockquote">
+...must provide a specialized <tt>validate()</tt> method which ensures that any decoded value is a valid option (from the nested <tt>UISelectItem</tt> and <tt>UISelectItems</tt> children).
+</blockquote>
+
+<p class="wikiPara">
+In other words, the submitted item must be in the list displayed on the page.  As the entity converter <i class="wikiEmphasis">loads</i> the selected object from the persistence context when the page is submitted, /the submitted object is not in the displayed list/.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TheWorkarounds"><a href="/Bloggers/DropdownsInJSFValidatingTheSelectedValue#H-TheWorkarounds">The Workarounds</a></h3>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem">Display the list and submit the form inside the same long running conversation (so that the persistence context returns the same object both times).  This makes caching the list of selectable items hard.</li>
+<li class="wikiOrderedListItem">Overriding <tt>equals()</tt> on the entity (which <a href="http://hibernate.org/109.html" target="" class="regularLink">isn't a a great idea</a>).</li>
+</ol>
+
+<h3 class="wikiHeadline3" id="H-TheSolution"><a href="/Bloggers/DropdownsInJSFValidatingTheSelectedValue#H-TheSolution">The Solution</a></h3>
+
+<p class="wikiPara">
+For JSF 2 this validation should be optional/overrideable (as it is <i class="wikiEmphasis">everywhere else</i> in JSF). In this case the converter is doing all necessary validation.</p>
+</div>

@@ -1,0 +1,118 @@
+---
+title: "More on the wiki road map"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: [Seam Wiki]
+slug: MoreOnTheWikiRoadMap
+lace: http://in.relation.to/2491.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MoreOnTheWikiRoadMap">More on the wiki road map</a>
+                    </h1>
+</div>
+<div style="float:right; border-width: 1px;border-style: solid; border-color: gray; padding:5px;margin-left:25px;"><img src="/service/File/2366" width="300" height="400"></div>
+
+<p class="wikiPara">
+I was traveling last week (see picture) when Gavin <a href="/Bloggers/WikiRoadMap" target="" class="regularLink">posted about the wiki road map</a> and didn't have much time to elaborate. 
+</p>
+
+<p class="wikiPara">
+What we actually call <q>wiki</q> is a small platform that we are building to run some of our websites, most notably the website you are looking at right now and the upcoming /seamframework.org/ community site. Gavin already explained why we are building this from scratch, the primary reason being that we want to build it on and with <a href="http://labs.jboss.com/jbossseam/" target="" class="regularLink">Seam</a>.
+</p>
+
+<p class="wikiPara">
+For me it is also about learning how to write a real application with Seam and JSF. There are some unique and new challenges you have to face if you have the typical Struts-HttpSession-StatelessFacade-DAO background. We are chatting about this frequently and it's obvious that the introduction of new contexts and contextual wiring of components at runtime radically changes the programming model. This is a chat excerpt from yesterday:
+</p>
+
+<div style="margin-left:20px; background: #f4fff1; width: 50%; padding:10px; font-size:85%;">
+Christian: there is some hope that it will all sort itself out with more patterns<br>
+Gavin: it takes time to develop the intuition about what is good to do<br>
+Gavin: remember the first time you wrote OO code :)<br>
+Christian: well the thing is, it's difficult to understand the state your system is in<br>
+Christian: which is now so much more important<br>
+Christian: and it's already a pain with imperative programming<br>
+Gavin: interesting thing to say<br>
+Gavin: i dont know what you mean<br>
+Gavin: you mean there is no central orchestration?<br>
+Christian: when you write code, you push the state of the system forward in little steps<br>
+Christian: and for every line you need to visualize in your head what it is now<br>
+Christian: which is with seam no longer limited to your current stack of operations<br>
+Christian: you need to think about the contexts as well<br>
+Gavin: don't you need to <i class="wikiEmphasis">anyway</i>?<br>
+Gavin: even if you don't have a proper model of these contexts<br>
+Gavin: thats what i always found....<br>
+Christian: hm<br>
+Christian: well, no<br>
+Christian: session is easy to do - even if it ends up being buggy<br>
+Christian: but page and conversation are a challenge if you add the JSF lifecycle as well<br>
+
+</div>
+
+<p class="wikiPara">
+There are so many new ways of solving architectural problems that inevitably some of them turn out to be bad ideas in the long run while others work very nicely. This is also becoming an FAQ on the Seam forum, so we as a developer team need to provide more guidelines (and probably a pattern catalogue) for Seam users. 
+</p>
+
+<p class="wikiPara">
+Seam as a project is now more than 2 years old, the first presentations Gavin was showing internally at JBoss - and I don't think many people understood what he wanted to say at the time :) - date back to a developer meeting in 2004. So the good news is that some of the more obvious design patterns are already emerging and that we just need to finish formalizing them. Others are still open for debate.
+</p>
+
+<p class="wikiPara">
+For example, the code running this website has about 130 classes and 50 TODO items. Most of the TODOs are not minor problems but go something like this:
+</p>
+
+<pre class="wikiPreformatted">
+    @Observer("Wiki.started")
+    public void scanForSearchSupportComponents() {
+        log.debug("initializing search registry");
+
+        // Fire an event and let all listeners add to the given collection
+        // TODO: Is this smarter than PreferenceRegistry scanning approach?
+        Set&lt;SearchSupport&gt; searchSupportComponents = new HashSet&lt;SearchSupport&gt;();
+        Events.instance().raiseEvent("Search.addSearchSupport", searchSupportComponents);
+</pre>
+
+
+<p class="wikiPara">
+This <q>scans</q> the application space after deployment and startup and finds every component that wants to integrate with the full text indexing/search capability of the platform (based on the excellent <a href="http://search.hibernate.org/" target="" class="regularLink">Hibernate Search </a> integration with Lucene). The way this is done is a registry that fires an event on startup and any component that wishes to register adds itself to the collection that is passed around as the event payload.
+</p>
+
+<p class="wikiPara">
+We need similar functionality for preferences, every component that brings its own set of customizable properties needs to be known. But there I used a completely different approach:
+</p>
+
+<pre class="wikiPreformatted">
+    @Observer("Wiki.started")
+    public void scanForPreferenceComponents() {
+        log.debug("initializing preference registry");
+
+        // Register the meta model by scanning components with @Preference annotation
+        String[] boundNames = Contexts.getApplicationContext().getNames();
+
+        for (String boundName : boundNames) {
+            if (boundName.endsWith(".component") &amp;&amp; !boundName.startsWith("org.jboss.seam")) {
+                Component component = (Component) Contexts.getApplicationContext().get(boundName);
+
+                if (component.getBeanClass().getAnnotation(Preference.class) != null &amp;&amp;
+                    !preferenceComponentsByName.containsKey(component.getName())) {
+
+                    log.debug("Registering preference component: " + component.getName());
+</pre>
+
+
+<p class="wikiPara">
+What happens here is that I get all the components from the application context (Seam registers component metadata there), find out which have a <tt>@Preference</tt> annotation, and then build my own metadata for the registry. I'd argue that the event/listener approach is more elegant. I think many applications need an application-level registry of metadata and it comes up regularly on the forums as well. So what is the pattern going to be and which variations are good and bad practice?
+</p>
+
+<p class="wikiPara">
+P.S. If you want to try out this application or just look at the code - beware, the example above should make it clear that it's not all very beautiful - here are some pointers: It's released under the LGPL and you can find it in the <tt>examples/wiki/</tt> directory of the <a href="http://labs.jboss.com/jbossseam/download/index.html" target="" class="regularLink">Seam 2.0 package</a>. You can <a href="http://fisheye.jboss.com/browse/JBoss/jboss-seam/examples/wiki" target="" class="regularLink">look at the source online</a> or get it from <a href="http://wiki.jboss.org/wiki/Wiki.jsp?page=SeamRepository" target="" class="regularLink">Seam CVS</a>. We have a separate JIRA component called <a href="http://jira.jboss.org/jira/browse/JBSEAM" target="" class="regularLink">Wiki</a> for any bug or improvement reports.
+</p>
+
+<p class="wikiPara">
+</p>
+</div>

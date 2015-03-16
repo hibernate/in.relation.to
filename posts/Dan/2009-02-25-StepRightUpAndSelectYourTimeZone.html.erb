@@ -1,0 +1,156 @@
+---
+title: "Step right up and select your time zone"
+author: "Dan Allen"
+blogger_name: "Dan"
+layout: blog-post
+tags: [JavaServer Faces,Proposal]
+slug: StepRightUpAndSelectYourTimeZone
+lace: http://in.relation.to/10748.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/StepRightUpAndSelectYourTimeZone">Step right up and select your time zone</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Prior to revision 2.0, the JavaServer Faces specification states that all dates and times should be treated as UTC, and rendered as UTC, unless a time zone is explicitly specified in the <tt>timeZone</tt> attribute of the <tt>&lt;f:convertDateTime&gt;</tt> converter tag. This is an extremely inconvenient default behavior. This open proposal, targeting the 2.1 release, extends the Locale configuration to accommodate a default time zone preference that is used by default when a date is rendered.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Note: Dates are always assumed to be defined using UTC, so this proposal merely addresses the display offset.</i>
+</p>
+
+<h4 class="wikiHeadline4" id="H-MakingTheSystemTimeZoneTheDefault"><a href="/Bloggers/StepRightUpAndSelectYourTimeZone#H-MakingTheSystemTimeZoneTheDefault">Making the system time zone the default</a></h4>
+
+<p class="wikiPara">
+The JavaServer Faces 2.0 (proposed) specification offers a way to override the standard time zone setting of the JavaServer Faces application so that it uses the time zone where the application server is running (which happens to be the default behavior for Java SE according to java.util.TimeZone) rather than UTC. This override is activated using the following web.xml context parameter declaration, documented in section 11.1.3:
+</p>
+
+<pre class="wikiPreformatted">&lt;context-param&gt;
+    &lt;param-name&gt;javax.faces.DATETIMECONVERTER_DEFAULT_TIMEZONE_IS_SYSTEM_TIMEZONE&lt;/param-name&gt;
+    &lt;param-value&gt;true&lt;/param-value&gt;
+&lt;/context-param&gt;</pre>
+
+
+<p class="wikiPara">
+Before diving into the implications of using the system time zone, I want to first suggest either renaming this parameter or removing it in favor of a comparable setting defined in faces-config.xml. Assuming the context parameter remains the preferred way of making the system time zone the default, there's no way anyone except JSF experts will be able to commit this parameter to memory due to its unnecessarily long name. I would like to put forth an alternate, simpler name:
+</p>
+
+<pre class="wikiPreformatted">javax.faces.USE_SYSTEM_TIMEZONE</pre>
+
+
+<p class="wikiPara">
+In addition to name being shorter, it's much less specific, opening the door for other areas of JSF to take advantage of this setting. (An alternative configuration defined in faces-config.xml is proposed further down).
+</p>
+
+<p class="wikiPara">
+Naming aside, this setting is important because it allows the developer to restore the default time zone behavior of the JVM. However, it does not address the real problem that JSF was attempting to solve, which is that the time zone used by the application should not be affected by the geographic location of the deployment. Optimally, the default time zone should reflect the time zone preference of the user (i.e., it should be a user time zone).
+</p>
+
+<h4 class="wikiHeadline4" id="H-SettingTheDefaultTimeZoneInJSF"><a href="/Bloggers/StepRightUpAndSelectYourTimeZone#H-SettingTheDefaultTimeZoneInJSF">Setting the default time zone in JSF</a></h4>
+
+<p class="wikiPara">
+Time zones are extremely important in data-driven web applications. That's why the JSF runtime should make it easy for the developer to get the time zone setting correct. Both the UTC and the system default time zone choices are inadequate. The UTC default is annoying because it forces every developer to deal with the time zone issue on day one (no good default). The system default is risky because it's dependent on the geographic location where the application is deployed.
+</p>
+
+<p class="wikiPara">
+Let's consider a scenario where the system default is inadequate.
+</p>
+
+<p class="wikiPara">
+If I am deploying my application to a server in California and servicing New York customers, the default time zone is not what the customers expect. Now, I could start my application server instance with the time zone of New York. But what if I have a separate application on that server that services customers in California? Then I have a major conflict.
+</p>
+
+<p class="wikiPara">
+The correct solution is to allow the time zone to be set per JSF application, configured in faces-config.xml. In fact, there is already an ideal place to define this configuration: within the <tt>&lt;locale-config&gt;</tt> element, complementing the default locale. The developer would specify a time zone ID in the new <tt>&lt;default-time-zone-id&gt;</tt> element and JSF would resolve a TimeZone object from this ID. Here's an example showing the default time zone set to New York.
+</p>
+
+<pre class="wikiPreformatted">&lt;application&gt;
+    &lt;locale-config&gt;
+        &lt;default-time-zone-id&gt;America/New_York&lt;/default-time-zone-id&gt;
+    &lt;/locale-config&gt;
+&lt;/application&gt;</pre>
+
+
+<p class="wikiPara">
+However, a static value is not always sufficient since the users of an application may reside in different time zones. Therefore, while a static value is permitted, this element should also accept a ValueExpression that is resolved when the time zone value is needed (i.e., such as during encoding). The permitted use of a ValueExpression allows the default time zone to be dynamic, but still a default since it can be overridden by the <tt>&lt;f:convertDateTime&gt;</tt> component tag.
+</p>
+
+<pre class="wikiPreformatted">&lt;application&gt;
+    &lt;locale-config&gt;
+        &lt;default-time-zone-id&gt;#{userPreferences.timeZoneId}&lt;/default-time-zone-id&gt;
+    &lt;/locale-config&gt;
+&lt;/application&gt;</pre>
+
+
+<p class="wikiPara">
+This configuration setting provides three important features:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Provides a good application default (which may be customized to the user's preference using a ValueExpression)</li>
+<li class="wikiOrderedListItem"> Remains stable across deployment locations (doesn't change just because the application is deployed to a different time zone, as is the case with the system default)</li>
+<li class="wikiOrderedListItem"> Isolated per application running on the same server</li>
+</ol>
+
+<p class="wikiPara">
+With this feature available, JSF will perform the following time zone resolution algorithm.
+</p>
+
+<p class="wikiPara">
+If a default time zone ID is specified in a configuration resources (i.e., faces-config.xml), then the TimeZone resolved from the specified ID is used as the default time zone in the JSF application. If one is not specified, JSF will use the system default time zone if the <tt>javax.faces.USE_SYSTEM_TIMEZONE</tt> context parameter value is true or UTC otherwise.
+</p>
+
+<p class="wikiPara">
+But instead of relying on a context parameter to set the time zone to the system default, it may be better to introduce the <tt>&lt;system/&gt;</tt> element as a possible value for <tt>&lt;default-time-zone-id&gt;</tt> to keep the time zone setting contained within the JSF configuration. (Context parameters in the web.xml configuration should only be used for defining implementation-specific settings).
+</p>
+
+<p class="wikiPara">
+The addition of the <tt>&lt;default-time-zone-id&gt;</tt> child element in <tt>&lt;locale-config&gt;</tt> requires the following API additions to javax.faces.application.Application.
+</p>
+
+<pre class="wikiPreformatted">/**
+  * &lt;p&gt;Return the default &lt;code&gt;TimeZone&lt;/code&gt; for this application. This
+  * method resolves the Value Expression returned by {@link Application#getDefaultTimeZoneId}
+  * and uses that value to look up a &lt;code&gt;TimeZone&lt;/code&gt; instance. If the
+  * resolved time zone id is null, the &lt;code&gt;TimeZone&lt;/code&gt; for UTC is returned.&lt;/p&gt;
+  */
+public abstract TimeZone getDefaultTimeZone();
+
+/**
+ * &lt;p&gt;Set the default time zone for this application as a value expression that
+ * is expected to resolve to a time zone id.&lt;/p&gt;
+ *
+ * @param timeZoneId The new default time zone
+ *
+ * @throws NullPointerException if &lt;code&gt;timeZone&lt;/code&gt;
+ *  is &lt;code&gt;null&lt;/code&gt;
+ */
+public abstract void setDefaultTimeZoneId(ValueExpression timeZoneId);
+
+/**
+ * &lt;p&gt;Return the default time zone for this application as a value expression
+ * that is expected to resolve to a time zone id.&lt;p&gt;
+ */
+public abstract ValueExpression getDefaultTimeZoneId();</pre>
+
+
+<h4 class="wikiHeadline4" id="H-WhatAboutAutodetectingTheUsersTimeZone"><a href="/Bloggers/StepRightUpAndSelectYourTimeZone#H-WhatAboutAutodetectingTheUsersTimeZone">What about auto-detecting the user's time zone?</a></h4>
+
+<p class="wikiPara">
+The main challenge is that browsers don't send a preferred timezone header like they do a preferred language header. And you can't rely on a geo-IP address resolution since VPNs and other network configurations can move the source address across timezones. For now, it's the application's responsibly to collect the user's preference and store it in either the database or a browser cookie. The ValueExpression defined in the <tt>&lt;default-time-zone-id&gt;</tt> element is expected to return this stored value.
+</p>
+
+<h4 class="wikiHeadline4" id="H-ProvideYourFeedback"><a href="/Bloggers/StepRightUpAndSelectYourTimeZone#H-ProvideYourFeedback">Provide your feedback</a></h4>
+
+<p class="wikiPara">
+Let me know what you think about this solution. Does it seem adequate? Do you think the configuration is simple enough? Am I missing something? (Please see the <a href="http://seamframework.org/Documentation/JSF21#H-DefaultApplicationTimeZoneP1" target="" class="regularLink">JSF 2.1</a> page on the Seam Wiki for the latest revision of this proposal). 
+</p>
+
+<p class="wikiPara">
+I encourage you to start participating now in these and other issues so that JSF can continue to improve as a result of community participation and feedback. JSF 2 is a big step in the evolution of JSF, but it is by no means the last.</p>
+</div>

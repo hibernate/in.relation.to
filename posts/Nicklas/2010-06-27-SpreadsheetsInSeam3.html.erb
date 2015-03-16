@@ -1,0 +1,219 @@
+---
+title: "Spreadsheets in Seam 3"
+author: "Nicklas Karlsson"
+blogger_name: "Nicklas"
+layout: blog-post
+tags: []
+slug: SpreadsheetsInSeam3
+lace: http://in.relation.to/15992.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SpreadsheetsInSeam3">Spreadsheets in Seam 3</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+While the community is pondering on the question as how to do JSF headless rendering for xhtml templates for content delivery,
+I started planing on how to make the Excel-centric spreadsheet module from Seam 2 more generic for the upcoming Seam 3 release.
+This blog is just a documented brainstorming session where I call for feedback so don't panic if you feel you didn't learn anything
+new once you finished reading.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheModel"><a href="/Bloggers/SpreadsheetsInSeam3#H-TheModel">The model</a></h1>
+
+<p class="wikiPara">
+Excel-generation didn't really have that much of a model in Seam 2. The various UI tags worked pretty much straight against the rendering
+library, so the first step in a more generic solution would be a model for the spreadsheet. So, how does a spreadsheet application look like?
+The answer to that is of course <q>It depends on the spreadsheet application</q> but most of them have a collection of named worksheets that has
+a collection of cells that are formatted in various ways. Let's start with the workbook (I omit getters/setters for brevity):
+</p>
+
+<pre class="wikiPreformatted">
+public class Workbook
+{
+   private List&lt;Worksheet&gt; worksheets = new ArrayList&lt;Worksheet&gt;();
+   private List&lt;FormattingRule&gt; formattingRules = new ArrayList&lt;FormattingRule&gt;();
+}
+</pre>
+
+
+<p class="wikiPara">
+We'll talk about FormattingRules shortly. Now the worksheet:
+</p>
+
+<pre class="wikiPreformatted">
+public class Worksheet
+{
+   private String name;
+   private List&lt;Cell&gt; cells = new ArrayList&lt;Cell&gt;();
+   private List&lt;FormattingRule&gt; formattingRules = new ArrayList&lt;FormattingRule&gt;();
+}
+</pre>
+
+
+<p class="wikiPara">
+and the cell:
+</p>
+
+<pre class="wikiPreformatted">
+public class Cell
+{
+   private Coordinate coordinate;
+   private CellSpan span;
+   private CellFormatting formatting;
+}
+</pre>
+
+
+<p class="wikiPara">
+a Coordinate is a class for modeling a (column, row) tuple:
+</p>
+
+<pre class="wikiPreformatted">
+public class Coordinate
+{
+   private int column;
+   private int row;
+}
+</pre>
+
+
+<p class="wikiPara">
+and a CellSpan for modeling col/rowspans
+</p>
+
+<pre class="wikiPreformatted">
+public class CellSpan
+{
+   private int columnSpan;
+   private int rowSpan;
+}
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-Formatting"><a href="/Bloggers/SpreadsheetsInSeam3#H-Formatting">Formatting</a></h1>
+
+<p class="wikiPara">
+Now for the formatting. This is modeled by the CellFormatting class:
+</p>
+
+<pre class="wikiPreformatted">
+public class CellFormatting
+{
+   public enum Type { CASCADING, ABSOLUTE }
+   public Type type = Type.CASCADING;
+   // Lots of formatting objects for Fonts, Borders, Backgrounds etc...
+}
+</pre>
+
+
+<p class="wikiPara">
+Where the enum is used for marking if the formatting should be absolute or merged/cascaded with previous rules.
+What previous rules? That's what I said I'll get back to when I talked about the Workbook class. Workbooks and SpreadSheets
+can have a list of FormattingRule:s that are cascaded
+</p>
+
+<pre class="wikiPreformatted">
+public interface FormattingRule
+{
+   public abstract boolean appliesTo(Cell cell);
+   public abstract CellFormatting getCellFormatting();
+}
+</pre>
+
+
+<p class="wikiPara">
+So if you want all cells in the entire Workbook to have a particular font, you would place an implementation of a FormattingRule
+in the Workbook that appliesTo all cells and returns a formatting for that font. Then if you would like to have alternate rows
+with grey background in a certain worksheet, you would in that worksheet place a FormattingRule implementation that appliesTo
+cell.getCoordinate().getRow()s that are odd and return a formatting for grey background. For final tuning of a cell, it could 
+also have some formatting that would be merged in for the final result.
+</p>
+
+<h1 class="wikiHeadline1" id="H-GeneratingTheModel"><a href="/Bloggers/SpreadsheetsInSeam3#H-GeneratingTheModel">Generating the model</a></h1>
+
+<p class="wikiPara">
+You could of course assemble a Workbook model by hand but that would be a bit tedious so there would of course be builder classes
+that could transform a JSF datatable (with ICEfaces/RichFaces variants for bling-bling-support) to a Workbook. Another tool would be a 
+Workbook from JavaBean builder that would take an Iterable&lt;Foo&gt; and a String[] of field names and generate a workbook from that
+(keeping track of Coordinates with an internal cursor) etc.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ImportingAndExporting"><a href="/Bloggers/SpreadsheetsInSeam3#H-ImportingAndExporting">Importing and exporting</a></h1>
+
+<p class="wikiPara">
+So what do we do with the model? We import and export then of course. We could read a workbook with
+</p>
+
+<pre class="wikiPreformatted">
+public interface SpreadsheetReader
+{
+   public abstract Workbook readWorkbook(byte[] data);
+}
+</pre>
+
+
+<p class="wikiPara">
+and write one with
+</p>
+
+<pre class="wikiPreformatted">
+public interface SpreadsheetWriter
+{
+   public abstract byte[] writeWorkbook(Workbook workbook);
+   public abstract byte[] writeWorkbook(Workbook workbook, byte[] template);
+}
+</pre>
+
+
+<p class="wikiPara">
+This means that we could have different implementations that do different things. There could be implementations like
+</p>
+
+<pre class="wikiPreformatted">
+@Inject SpreadsheetWriter write;
+</pre>
+
+
+<p class="wikiPara">
+or
+</p>
+
+<pre class="wikiPreformatted">
+@Inject @Excel SpreadsheetWriter write;
+</pre>
+
+
+<p class="wikiPara">
+or
+</p>
+
+<pre class="wikiPreformatted">
+@Inject @OpenOffice SpreadsheetWriter write;
+</pre>
+
+
+<p class="wikiPara">
+or in the case of multiple implementations
+</p>
+
+
+<pre class="wikiPreformatted">
+@Inject @Excel(implementation="jxl") SpreadsheetWriter write;
+</pre>
+
+
+<p class="wikiPara">
+The output from the could then be put in a database, written to the user, mailed etc.
+</p>
+
+<h1 class="wikiHeadline1" id="H-OpenIssues"><a href="/Bloggers/SpreadsheetsInSeam3#H-OpenIssues">Open issues</a></h1>
+
+<p class="wikiPara">
+Does it work? How about the EL-stuff in Seam 2 templates, is it all mappable to FormattingRules? How about usage of the <q>rendered</q> attribute?
+Any other stuff? Your feedback is appreciated!</p>
+</div>

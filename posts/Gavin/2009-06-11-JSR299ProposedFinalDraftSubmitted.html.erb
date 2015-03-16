@@ -1,0 +1,149 @@
+---
+title: "JSR-299 Proposed Final Draft submitted"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Seam News,Web Beans]
+slug: JSR299ProposedFinalDraftSubmitted
+lace: http://in.relation.to/11777.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JSR299ProposedFinalDraftSubmitted">JSR-299 Proposed Final Draft submitted</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I just submitted the Proposed Final Draft of <a href="http://jcp.org/en/jsr/detail?id=299" target="" class="regularLink">JSR-299</a>, Contexts and Dependency Injection, to the JCP. Download it <a href="&lt;%=%20site.base_url%20%&gt;/assets/JSR-299-20090610.pdf" target="" class="regularLink">here</a>. We're gearing up for a final release in August, in time for the Java EE 6 release in September. Thanks to everyone who put so much effort into this!
+</p>
+
+<p class="wikiPara">
+If you have not being paying attention to 299, now is a great time to get up to date. This is arguably the most significant enhancement in EE 6, providing the following suite of functionality:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> a completely general typesafe dependency injection model,</li>
+<li class="wikiUnorderedListItem"> contextual lifecycle management for injectable objects,</li>
+<li class="wikiUnorderedListItem"> an event notification model,</li>
+<li class="wikiUnorderedListItem"> interceptor bindings via user-defined annotations,</li>
+<li class="wikiUnorderedListItem"> typesafe decorators,</li>
+<li class="wikiUnorderedListItem"> a complete SPI for integration of third-party web or component frameworks, and</li>
+<li class="wikiUnorderedListItem"> integration with JSF, servlets and JSP, including </li>
+<li class="wikiUnorderedListItem"> a conversation context for JSF</li>
+</ul>
+
+<p class="wikiPara">
+Best of all, this functionality is provided with a clean, simple, uniform programming model that emphasizes two primary values: typesafety, and loose coupling. JSR-299 doesn't use strings or XML to wire together beans, events, interceptors and decorators. Instead, it uses the Java type system and user defined <q>binding annotations</q> to discover the relationships between loosely coupled components.
+</p>
+
+<p class="wikiPara">
+Now is a good time to clear up some misconceptions I've seen floating about.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JSR299IsJustForEJBs"><a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#H-JSR299IsJustForEJBs">JSR-299 is just for EJBs</a></h3>
+
+<p class="wikiPara">
+This isn't true at all. 
+</p>
+
+<p class="wikiPara">
+Out of the box you can inject into just about any kind of thing in the Java EE environment, including servlets, servlet filters, servlet event listeners, JAX-WS web service endpoints and JAX-RS resources. Even better, there's an SPI so that any third-party framework (for example, a web framework like Wicket) can easily ask the 299 implementation to perform injection upon objects managed by the framework.
+</p>
+
+<p class="wikiPara">
+The kinds of objects you can inject include:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">managed beans</i> (plain Java classes), </li>
+<li class="wikiUnorderedListItem"> local EJB session beans, </li>
+<li class="wikiUnorderedListItem"> objects obtained from a <i class="wikiEmphasis">producer method</i> or <i class="wikiEmphasis">producer field</i>, and</li>
+<li class="wikiUnorderedListItem"> Java EE component environment resources (datasources, connectors, persistence contexts, JMS message destinations, web services, remote EJBs, etc.)</li>
+</ul>
+
+<p class="wikiPara">
+In case you're trying to not believe me (you know who you are), here is a class that can be injected:
+</p>
+
+<pre class="wikiPreformatted">final class Head {}</pre>
+
+
+<p class="wikiPara">
+Here's a class that uses injection:
+</p>
+
+<pre class="wikiPreformatted">final class Person {
+    private Head head;
+
+    @Initializer 
+    Person(Head head) { 
+        this.head=head; 
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+There's also a simple SPI to allow third-party frameworks (including other container like Spring) to offer their own objects up for injection via the 299 container.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JSR299IsTiedToJSF"><a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#H-JSR299IsTiedToJSF">JSR-299 is tied to JSF</a></h3>
+
+<p class="wikiPara">
+Also not true. In an EE 6 environment, JSR-299 comes pre-integrated with Java Servlets, JSP and JAX-RS, in addition to JSF. And 299 provides SPIs to enable integration with your favorite web framework. These SPIs make it easier than ever before to integrate third-party web frameworks with the rest of the EE environment.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JSR299IsTiedToQheavyweightqJavaEEContainers"><a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#H-JSR299IsTiedToQheavyweightqJavaEEContainers">JSR-299 is tied to <q>heavyweight</q> Java EE containers</a></h3>
+
+<p class="wikiPara">
+Obviously, integration with the Java EE environment was an extremely high priority for the expert group, so you'll come across lots of information about Java EE integration when you read the specification. Certain functionality defined by JSR-299 is specific to certain other EE technologies. For example, if there's no EJB container, we can't inject EJBs! But this doesn't mean that JSR-299 is only available in a traditional Java EE container like JBoss or GlassFish.
+</p>
+
+<p class="wikiPara">
+Instead, 299 was designed to be suitable for inclusion in a variety of execution environments, for example: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Java EE 6 defines a <i class="wikiEmphasis">web profile</i> for servlet containers along the lines of Caucho Resin, JBoss Web Platform or SpringSource dm server that don't want to support the full set of legacy EE 5 technologies. It is proposed that the web profile will require support for JSR-299. </li>
+<li class="wikiUnorderedListItem"> EJB 3.1 defines an <i class="wikiEmphasis">embeddable container</i> that runs in the Java SE environment. The embeddable container will also support JSR-299.</li>
+</ul>
+
+<p class="wikiPara">
+However, JSR-299 does not currently define a bootstrap API for starting and running the container standalone in the SE environment. Instead, this API is being defined by <a href="http://jcp.org/en/jsr/detail?id=330" target="" class="regularLink">JSR-330</a>. Unlike JSR-299, JSR-330 <a href="/Bloggers/CommentsOnAnnotationsForDependencyInjection" target="" class="regularLink">is not defining everything that is needed in order to write portable applications</a>. So you'll still need JSR-299 if you want your application to be portable to other container implementations. Therefore, we plan a maintenance release of JSR-299 that includes support for the JSR-330 bootstrap API. For now, if you want to run JSR-299 in the SE environment, you'll need to use a vendor-specific bootstrap API.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JSR299UsesALotOfAnnotations"><a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#H-JSR299UsesALotOfAnnotations">JSR-299 uses a lot of annotations</a></h3>
+
+<p class="wikiPara">
+We've been very careful to not require the use of many annotations in simple usecases. Let's take dependency injection as an example of this. 
+</p>
+
+<p class="wikiPara">
+Almost any Java class may be injected by the container without the need for <i class="wikiEmphasis">any</i> annotation on the class. Most injection points require a single annotation to indicate to the container that injection should be performed. The container uses the Java type of the injection point to decide what object should be injected.
+</p>
+
+<p class="wikiPara">
+Then, in more complex cases where knowledge of the type system alone is not sufficient to unambiguously express a dependency, the container can use additional user-defined annotations to resolve the ambiguity. The good news is that the user-defined annotation usually expresses something meaningful in terms of the application business logic. They therefore improve code readability. 
+</p>
+
+<p class="wikiPara">
+For example, this is neither typesafe, nor very readable:
+</p>
+
+<pre class="wikiPreformatted">@PersistenceContext(unitName="userDB") EntityManager em;</pre>
+
+
+<p class="wikiPara">
+So in JSR-299, you can write this instead:
+</p>
+
+<pre class="wikiPreformatted">@UserDatabase EntityManager em;</pre>
+
+
+<p class="wikiPara">
+A very similar model is followed for interceptor bindings and event observation, and for decorator bindings, which are just a special case of dependency injection.
+</p>
+</div>

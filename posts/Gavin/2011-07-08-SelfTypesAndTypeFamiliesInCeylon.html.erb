@@ -1,0 +1,206 @@
+---
+title: "Self types and type families in Ceylon"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon]
+slug: SelfTypesAndTypeFamiliesInCeylon
+lace: http://in.relation.to/20960.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SelfTypesAndTypeFamiliesInCeylon">Self types and type families in Ceylon</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I've just finished implementing support for self types and type families in the Ceylon type analyzer. I think this stuff is pretty cool, if ever so slightly esoteric.
+</p>
+
+<p class="wikiPara">
+Let's start with the simpler thing. A <i class="wikiEmphasis">self type</i> is a reasonably familiar idea to most of us who write Java code for a living, since we've all used <tt>Comparable</tt> from time to time. Let's translate Java's <tt>Comparable</tt> interface to Ceylon:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Comparable&lt;Other&gt; {
+    shared formal Integer compareTo(Other other);
+}</pre>
+
+
+<p class="wikiPara">
+The type parameter <tt>Other</tt> is a self type. It represents the type of the class that implements <tt>Comparable</tt>. I'm not quite sure why Java's <tt>Comparable</tt> doesn't have a type constraint like the following on <tt>Other</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Comparable&lt;Other&gt;
+        given Other satisfies Comparable&lt;Other&gt; { ... }</pre>
+
+
+<p class="wikiPara">
+This constraint prevents us from forming nonsensical types like <tt>Comparable&lt;Object&gt;</tt>. So I think the constraint is useful.
+</p>
+
+<p class="wikiPara">
+Now let's add an operation to <tt>Comparable</tt> that treats <tt>Other</tt> as a self type:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Comparable&lt;Other&gt;
+        given Other satisfies Comparable&lt;Other&gt; {
+    shared formal Integer compareTo(Other other);
+    shared Integer reverseCompareTo(Other other) {
+    	return other.compareTo(this); //error: this not assignable to Other
+    }
+}</pre>
+
+
+<p class="wikiPara">
+Oops! This doesn't compile. You see, <tt>Comparable&lt;Other&gt;</tt> is not a subtype of <tt>Other</tt>. We can write pathological classes like this one:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class NotAString() satisfies Comparable&lt;String&gt; { ... }</pre>
+
+
+<p class="wikiPara">
+We need to properly capture in our code that <tt>Other</tt> is a self type, and that the only thing that can be assigned to <tt>Comparable&lt;String&gt;</tt> is <tt>String</tt>. We can't express this in Java, but in Ceylon we can now write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Comparable&lt;Other&gt; of Other
+        given Other satisfies Comparable&lt;Other&gt; { ... }</pre>
+
+
+<p class="wikiPara">
+The new syntax <tt>of Other</tt> expresses the idea that the only direct subtype of <tt>Comparable&lt;Other&gt;</tt> we need to account for is <tt>Other</tt>. The compiler will now prevent us from defining a class like <tt>NotAString</tt> above. And now our code compiles:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Comparable&lt;Other&gt; of Other
+        given Other satisfies Comparable&lt;Other&gt; {
+    shared formal Integer compareTo(Other other);
+    shared Integer reverseCompareTo(Other other) {
+    	return other.compareTo(this);
+    }
+}</pre>
+
+
+<p class="wikiPara">
+Well, that's nice, and occasionally useful, but the real reason for introducing this machinery is to be able to abstract over groups of types using a <i class="wikiEmphasis">type family</i>. Subtype polymorphism and parametric polymorphism (generics) let is write code that abstracts over a single unknown type without losing type safety. The notion of a type family generalizes that idea to several related unknown types.
+</p>
+
+<p class="wikiPara">
+Let's reuse (loosely) an <a href="http://www.familie-kneissl.org/Members/martin/blog/family-polymorphism-in-scala" target="" class="regularLink">example I found lying around on the internet</a>.
+</p>
+
+<p class="wikiPara">
+In this example, the type family we're interested in is the family of <tt>Graph</tt>s, where a <tt>Graph</tt> consists of a <tt>Node</tt> type and an <tt>Edge</tt> type. Here's how we can express this type family in Ceylon:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">abstract class Graph&lt;ActualNode,ActualEdge&gt;() 
+    given ActualNode satisfies Node
+    given ActualEdge satisfies Edge {
+    
+    shared formal class Edge(ActualNode from, ActualNode to) 
+            of ActualEdge {
+        shared ActualNode from = from;
+        shared ActualNode to = to;
+        shared Boolean touches(ActualNode node) {
+            return from==node || to==node;
+        }
+    }
+
+    shared formal class Node() 
+            of ActualNode {
+        shared default Boolean touches(ActualEdge edge) {
+            return edge.touches(this);
+        }
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+Let's look carefully at the <tt>Node</tt> member class. The class is declared <tt>formal</tt>, meaning that subclasses of <tt>Graph</tt> must provide a concrete subclass of <tt>Node</tt>. If you don't understand this, please read about <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-MemberClassesAndMemberClassRefinement" target="" class="regularLink">member class refinement in Ceylon</a>. <tt>Graph</tt> also has a type parameter <tt>ActualNode</tt>, representing the concrete subclass of <tt>Node</tt> in a particular subclass of <tt>Graph</tt>. It's not a self type, it's a member-of-self type!
+</p>
+
+<p class="wikiPara">
+We're using the <tt>of</tt> clause to express that the type parameter <tt>ActualNode</tt> is the only direct subtype of the type <tt>Graph&lt;ActualNode,ActualEdge&gt;.Node</tt>. The difference in this case is that the type parameter belongs to a containing type <tt>Graph</tt> of the type <tt>Node</tt> (the type family). Notice how we make use of this relationship in the <tt>touches()</tt> method of <tt>Node</tt>, where <tt>this</tt> is assigned to a parameter of type <tt>ActualNode</tt>.
+</p>
+
+<p class="wikiPara">
+Now let's create a concrete group of types that realizes this family:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class BasicGraph() extends Graph&lt;Node,Edge&gt;() {
+    
+    shared actual class Node() 
+            extends super.Node() {}
+    
+    shared actual class Edge(Node from, Node to) 
+            extends super.Edge(from, to) {}
+    
+}</pre>
+
+
+<p class="wikiPara">
+Easy. We just <q>fill in</q> the missing <tt>Node</tt> and <tt>Edge</tt> types.
+</p>
+
+<p class="wikiPara">
+Of course, this whole exercise wouldn't be worth doing if <tt>BasicGraph</tt> was the only kind of <tt>Graph</tt>, so let's add a second member of the family:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class OnOffGraph() extends Graph&lt;Node,Edge&gt;() {
+    
+    shared actual class Node() 
+            extends super.Node() {
+        shared actual Boolean touches(Edge edge) {
+            return edge.enabled &amp;&amp; super.touches(edge);
+        }
+    }
+                
+    shared actual class Edge(Node from, Node to) 
+            extends super.Edge(from, to) {
+        shared variable Boolean enabled := true;
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+OK, now let's get to the cool part. <tt>BasicGraph</tt> and <tt>OnOffGraph</tt> are completely typesafe. I can't accidentally try to create an <tt>Edge</tt> of an <tt>OnOffGraph</tt> by passing two <tt>Node</tt>s from a <tt>BasicGraph</tt>. The last line of the following code does not compile:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">BasicGraph bg = BasicGraph();
+BasicGraph.Edge bge = bg.Edge(bg.Node(), bg.Node());
+
+OnOffGraph oog = OnOffGraph();
+OnOffGraph.Edge ooge = oog.Edge(oog.Node(), oog.Node());
+
+OnOffGraph.Edge evil = oog.Edge(bg.Node(), bg.Node()); //error: BasicGraph.Node is not assignable to OnOffGraph.Node</pre>
+
+
+<p class="wikiPara">
+The compiler enforces the constraint that <tt>Edge</tt>s and <tt>Node</tt>s of <tt>BasicGraph</tt>s only mix with other <tt>Edge</tt>s and <tt>Node</tt>s of <tt>BasicGraph</tt>s, not with <tt>Edge</tt>s and <tt>Node</tt>s of <tt>OnOffGraph</tt>s.
+</p>
+
+<p class="wikiPara">
+And yet, it's still possible to write code that abstracts over all kinds of <tt>Graph</tt>s without losing that typesafety:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Edge createEdge&lt;Node,Edge&gt;(Graph&lt;Node, Edge&gt; g) 
+        given Node satisfies Graph&lt;Node,Edge&gt;.Node 
+        given Edge satisfies Graph&lt;Node,Edge&gt;.Edge {
+    return g.Edge(g.Node(),g.Node());
+}
+
+BasicGraph.Edge e = createEdge(BasicGraph());
+OnOffGraph.Edge e = createEdge(OnOffGraph());</pre>
+
+
+<p class="wikiPara">
+Is that cool or what?
+</p>
+
+<p class="wikiPara">
+I mentioned above that I've already implemented this in the type analyzer, but it's not clear to me how much work is involved making this stuff work in the backend, so I'm not sure if this feature will be in the M1 compiler release or not.
+</p>
+</div>

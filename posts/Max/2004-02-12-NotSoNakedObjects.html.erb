@@ -1,0 +1,125 @@
+---
+title: "Not so Naked Objects"
+author: "Max Andersen"
+blogger_name: "Max"
+layout: blog-post
+tags: []
+slug: NotSoNakedObjects
+lace: http://in.relation.to/2091.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/NotSoNakedObjects">Not so Naked Objects</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Currently I have noticed that Naked Objects gets more and more blog-time.
+And every time I wondered why (many?) people found it so intriguing - 
+and I often thought about making a blog about the good and bad about Naked Objects;
+but I've never found the time.
+</p>
+
+<p class="wikiPara">
+I still don't have the time to do a detailed blog about it, but just
+state some facts and/or criticism about the implementation of Naked
+Objects that I've can't remember seeing listed before.
+</p>
+
+<p class="wikiPara">
+A. All objects has to implement NakedObject or extend
+AbstractNakedObject (actually some code in the framework assumes every
+object is an AbstractNakedObject...but that I guess they will fix a
+some point). 
+</p>
+
+<p class="wikiPara">
+B. All fields that you want the framework to know about need to
+be a NakedValue, thus String has to be a TextString, float a FloatingPointNumber, etc. 
+This is all basically done to let the values be mutable and add all the linguistic needs for
+their (all to easy to criticize, so I won't) automatic GUI.
+</p>
+
+<p class="wikiPara">
+C. All collections of associated objects need to be NakedCollection
+which definitly is not in any way a standard java.util.Collection
+(because they also do not use anything from jdk 1.2, <q>just</q> to be able
+to run on .Net!).
+</p>
+
+<p class="wikiPara">
+Each of point A, B and C makes me not like the Naked Objects framework
+(at least the implementation)! Why ? Because all my objects won't be
+POJO's anymore - and especially item C, makes it very hard to e.g. use
+Hibernate (or many other reflection based ORM's) to persist these not
+so Naked Objects. It at least require some very specific Naked Object
+code to make it work.
+</p>
+
+<p class="wikiPara">
+And when we are talking about persistence, then the whole framework
+does have a built-in persistence engine which is <q>pluggable</q> - but
+it's very simple, and transaction demarcation looks very
+hard to control, if even possible at the moment.
+</p>
+
+<p class="wikiPara">
+But enough harsh criticism ;), the good stuff is their ideas
+about behavioral complete objects (BCO). From the book: <q>an object
+should completely model the behavior of the thing that it
+represents. ... most people continue to design business systems that
+separate procedure from data, albeit dressed up in the language and
+technology of object-orientation</q>.
+</p>
+
+<p class="wikiPara">
+And I do agree to that point - people do get to procedural at times,
+myself included, and if Naked Objects help us do that a little less I
+would appreciate it.
+</p>
+
+<p class="wikiPara">
+Their automatic (and <q>empowering to the users</q> as they call it) UI, is
+somewhat interesting - but geez, they seriously got to look more into
+ui design ;) (and yes, I know they did look into ui design to empower
+their users, but I simply don't think their UI has value in other
+areas besides being provocative and different ;)
+</p>
+
+<p class="wikiPara">
+And as I understand the authors then it is the BCO and the automatic created
+UI that is their focal point, but I don't understand why they have not
+utilized existing technologies that is close to almost do the same....like
+the JavaBeans API ? JavaBeans is more than just a naming standard for properties!
+It was build for allowing IDE's to inspect objects and build intelligent UI's!
+</p>
+
+<p class="wikiPara">
+It got an Introspection API which one could use to discover all the
+details of an object and the API is extensible in a much more
+non-intrusive way than Naked Object does it.
+</p>
+
+<p class="wikiPara">
+What about using standard property listeners ?
+Why limit you to use jdk 1.1 ? Who want's to only use Vector, and
+why not utilize the Collections API interfaces to make their object
+structure much more standard compliant ?
+</p>
+
+<p class="wikiPara">
+In the end I encourage the authors to work on their core concepts: BCO
+and automatic UI's (even though I don't think it will cover more than
+a few useful applications).  But they should really look into using
+more JDK API's for this, so the framework becomes more useful in
+real-life applications.
+</p>
+
+<p class="wikiPara">
+P.S. And why is their catch all blocks and printStackTrace() multiple places in the
+source of a system that candidates for being used in more than just prototype systems ? 
+</p>
+</div>

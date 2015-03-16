@@ -1,0 +1,553 @@
+---
+title: "PicketLink Deep Dive - Part 1"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+layout: blog-post
+tags: [PicketLink]
+slug: PicketLinkDeepDivePart1
+lace: http://in.relation.to/24530.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/PicketLinkDeepDivePart1">PicketLink Deep Dive - Part 1</a>
+                    </h1>
+</div>
+<img src="&lt;%=%20site.base_url%20%&gt;/images/24529" align="right" style="margin-left:20px">
+
+<p class="wikiPara">
+In this series we’ll be taking a magnifying glass to PicketLink, a security framework for Java EE.  Each article in the series will examine a single aspect or feature of PicketLink in detail and also illuminate some of the design decisions made during the feature’s development.  
+</p>
+
+<p class="wikiPara">
+Hopefully by the end of the series we’ll have helped you to gain a greater understanding of PicketLink, and how best to use it to address the security requirements of your own Java EE application.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Resources"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Resources">Resources</a></h1>
+
+<p class="wikiPara">
+At the time of writing the latest stable version of PicketLink is <strong>2.5.2.Final</strong>.  The latest version of both the <i class="wikiEmphasis">PicketLink Reference Documentation</i> and <i class="wikiEmphasis">API Documentation</i> can always be found at <a href="http://docs.jboss.org/picketlink/2/latest/" target="" class="regularLink">http://docs.jboss.org/picketlink/2/latest/</a>.
+</p>
+
+<p class="wikiPara">
+The PicketLink binary distribution can be downloaded from the following page:
+</p>
+
+<p class="wikiPara">
+<a href="http://www.jboss.org/picketlink/downloads.html" target="" class="regularLink">http://www.jboss.org/picketlink/downloads.html</a>
+</p>
+
+<p class="wikiPara">
+If your build is Maven-based then please refer to the <i class="wikiEmphasis">PicketLink Reference Documentation</i> for information about how to include the PicketLink dependencies in your project.
+</p>
+
+<p class="wikiPara">
+You can find the latest version of the PicketLink source code at GitHub:
+</p>
+
+<p class="wikiPara">
+<a href="https://github.com/picketlink/picketlink" target="" class="regularLink">https://github.com/picketlink/picketlink</a>
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-IdentityModel"><a href="/Bloggers/PicketLinkDeepDivePart1#H-IdentityModel">Identity Model</a></h1>
+
+<p class="wikiPara">
+In this issue we’ll be looking at PicketLink’s Identity Model feature, a fundamental part of the PicketLink IDM (Identity Management) submodule that forms the foundation on which the majority of PicketLink’s other features are built.
+</p>
+
+<p class="wikiPara">
+During the design process for PicketLink IDM the development team spent a lot of time trying to work out the best way for modelling common security concepts such as roles and groups, etc.  Faced with challenges relating to the lack of a common (or even de facto) standard for these core concepts it was decided that PicketLink required a certain level of abstraction to allow it to be customized per-deployment depending on the application’s security needs.  Striking a balance between usability (for those that just wished to use PicketLink out of the box) and customizability (for applications that had more complex, or non-standard security requirements) posed a challenge that required an elegant solution.
+</p>
+
+<p class="wikiPara">
+The answer was the Identity Model - a set of interfaces and classes that provide a basic implementation so that PicketLink would just work(™), built on top of an abstraction layer that allows for a completely custom implementation.
+</p>
+
+<p class="wikiPara">
+The Identity Model defines the identity objects (such as Users and Roles) for your project, and the relationships between those objects.  This is one of the major differences between PicketLink and other security frameworks - PicketLink supports a dynamic Identity Model, which means that there isn’t a hard-coded set of User, Role or Group classes that you are forced to use in your own application (PicketLink actually does provide these classes but you may choose not to use them).  Why is it so important that PicketLink supports such a high level of customization?  There are actually quite a number of reasons, so let’s take the time to explore a few of them in more detail.
+</p>
+
+<h2 class="wikiHeadline2" id="H-RegionSpecificAttributes"><a href="/Bloggers/PicketLinkDeepDivePart1#H-RegionSpecificAttributes">Region Specific Attributes</a></h2>
+
+<p class="wikiPara">
+Depending on where your project is being deployed, you may have specific requirements in relation to <tt>User</tt> state based on the region that your application may be servicing.  For example, an application in the United States might require a <tt>User</tt> to have an <i class="wikiEmphasis">SSN</i> property, while an application in Russia might require a property to store a user’s <i class="wikiEmphasis">patronym</i>.  In western culture a person may typically have a title, first name, middle name/s and last name, however this is certainly not the rule in many other cultures. It may be argued that these property values may be simply stored as arbitrary attribute values, like so:
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">user.setAttribute(new Attribute(“joinDate”, new Date()));</pre>
+
+
+<p class="wikiPara">
+However storing these property values as ad-hoc attributes means we give up on important stuff like type safety and bean validation.  If the property value is one that’s required for all of your users, then It’s much more desirable to be able to define these as first class properties of your bean, like so:
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">user.setJoinDate(new Date());</pre>
+
+
+
+
+
+<h2 class="wikiHeadline2" id="H-CustomSecurityRequirements"><a href="/Bloggers/PicketLinkDeepDivePart1#H-CustomSecurityRequirements">Custom Security Requirements</a></h2>
+
+
+<p class="wikiPara">
+Security requirements may change drastically between applications, and a security architecture that may be sufficient for one application might be unsuitable for another.  Let’s take roles for example - depending on who you ask, a role within an application might mean any number of things.  
+</p>
+
+<p class="wikiPara">
+In some cases, a role equates to a simple, application-wide privilege that may be assigned directly to users.  In Java EE5 for example the <tt>@RolesAllowed</tt> annotation may be used to restrict access to a class or method, allowing only the users that have been granted that specific role invocation rights:
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">@RolesAllowed(“admin”)
+public void setBaseInterestRate(float value);</pre>
+
+
+
+
+<p class="wikiPara">
+In other cases, a role might be something that may only be assigned to a group or mapped to a principal.  Or it might only be valid within the context of a group (i.e. user <i class="wikiEmphasis">jsmith</i> has the <i class="wikiEmphasis">logistics_support</i> role for the <i class="wikiEmphasis">retail_sales</i> group). Or there may even be no such thing as roles at all, with all application privileges perhaps modeled as group memberships or using some alternative design.  The point is there’s no single correct way to <q>do</q> security.
+</p>
+
+<p class="wikiPara">
+Because of the fact that everyone has different ideas of what constitutes a Security API, it is important that PicketLink provides the flexibility to allow custom scenarios to be supported.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-BackendIdentityStoreCompatibility"><a href="/Bloggers/PicketLinkDeepDivePart1#H-BackendIdentityStoreCompatibility">Backend Identity Store Compatibility</a></h2>
+
+
+<p class="wikiPara">
+In some environments your application may be required to conform to a pre existing security model. For example a corporate LDAP directory with heavily customised user attributes or a central SSO provider over which you have no direct control, or a legacy database containing user records.  In these scenarios it's important that PicketLink is able to work within the bounds of an existing security architecture, and be able to accurately model its security objects.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-IdentityModelBuildingBlocks"><a href="/Bloggers/PicketLinkDeepDivePart1#H-IdentityModelBuildingBlocks">Identity Model Building Blocks</a></h1>
+
+
+<p class="wikiPara">
+Let’s get more technical now about what actually constitutes an Identity Model.  A core set of interfaces from the <tt>org.picketlink.idm.model</tt> package define the foundation on which an Identity Model is built.  Let’s take a look at these in the following class diagram:
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/24526">
+
+<p class="wikiPara">
+We’ll be covering partitions in a future article so we can ignore the <tt>Partition</tt> interface for now.  That leaves us with the following four core interfaces:
+</p>
+
+<p class="wikiPara">
+<tt>AttributedType</tt> - This is the root interface of the Identity Model.  It basically provides methods for defining only two simple pieces of state - a globally unique identifier value assigned by PicketLink when an identity object is created, and a set of arbitrary attribute values.  This means that every identity object (including users, roles, groups, and any other identity types you might create) at the very least has a unique identifier value, and is capable of storing a custom set of named attribute values of any <tt>Serializable</tt> type.
+</p>
+
+<p class="wikiPara">
+<tt>IdentityType</tt> - This is the parent interface for all identity types.  In addition to the identifier and attribute properties inherited from the <tt>AttributedType</tt> interface, it also defines properties that reflect whether the identity object is enabled or not, the partition that it belongs to and the created date and optional expiration date for the identity.
+</p>
+
+<p class="wikiPara">
+<tt>Account</tt> - This is a special marker interface, which represents an identity type that is capable of authenticating.  It is typically used as the superinterface for user identity types, or identity types that represent a third party process or agent that may interact with your application.  Identity types such as roles or groups do not implement the <tt>Account</tt> interface as these types are not capable of authentication (i.e. they cannot log in), instead they implement the <tt>IdentityType</tt> interface directly.
+</p>
+
+<p class="wikiPara">
+<tt>Relationship</tt> - This is the super-interface for all relationship implementations.  Like the <tt>Account</tt> interface it is also a marker interface, with no additional state (beyond that declared by its parent interface IdentityType) required by its contract.
+</p>
+
+<p class="wikiPara">
+There are a couple more important ingredients that we must know about besides the core interfaces described above when creating an identity model - the <tt>@AttributeProperty</tt> annotation and the <tt>@Unique</tt> annotation.  We’ll cover these in more detail in the next section.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-WhatDoesAnActualIdentityModelLookLike"><a href="/Bloggers/PicketLinkDeepDivePart1#H-WhatDoesAnActualIdentityModelLookLike">What does an actual Identity Model look like?</a></h1>
+
+
+<p class="wikiPara">
+Good question!  To answer this, we’ll take a look at the basic Identity Model provided out of the box by PicketLink.  This model defines a number of commonly used identity objects and relationships, and in many cases may be sufficient for the security requirements of many typical applications.  It can be easily extended or even copied to allow for convenient customization if desired.
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/24527">
+
+
+
+<h2 class="wikiHeadline2" id="H-Agent"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Agent">Agent</a></h2>
+
+
+<p class="wikiPara">
+The <tt>Agent</tt> class represents an external non-human identity that is capable of authenticating, hence it implements the <tt>Account</tt> interface.  It defines getter and setter methods for a <tt>loginName</tt> property, which is used during authentication to identify the <tt>Account</tt>.  Let’s take a look at the source code for this class (for the purpose of brevity some non-essential code has been trimmed):
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">public class Agent extends AbstractIdentityType implements Account {
+    private String loginName;
+
+    @AttributeProperty
+    @Unique
+    public String getLoginName() {
+        return loginName;
+    }
+
+    public void setLoginName(String loginName) {
+        this.loginName = loginName;
+    }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+There’s a few significant things to note about the above code.  First of all, we can see that the <tt>Agent</tt> class extends <tt>AbstractIdentityType</tt>.  This abstract class provides default implementations for all the methods of the parent <tt>IdentityType</tt> interface, allowing us to concentrate on the specific business logic for this identity class.  If you wish to implement your own Identity Model then this can be a great time-saver.
+</p>
+
+<p class="wikiPara">
+Secondly, the <tt>@AttributeProperty</tt> annotation indicates that this is a property of the identity object that should be automatically mapped to the backend identity store.  Each identity property that must be persisted should be annotated with <tt>@AttributeProperty</tt>.  An example of a property that might not be annotated would be one with a calculated value, for instance a <tt>getFullName()</tt> method that simply concatenates the user’s first and last name together, yet doesn’t persist the calculated value itself in the backend identity store.
+</p>
+
+<p class="wikiPara">
+Thirdly, the <tt>@Unique</tt> annotation is used to indicate to PicketLink that the property must contain unique values.  In this example it is used to ensure that the <tt>loginName</tt> property is unique (it should be obvious why it’s important that more than one account does not have the same login name).
+</p>
+
+<p class="wikiPara">
+Finally, we can observe that creating identity properties is as simple as defining a getter and setter method, following the JavaBean standard.  Property values may be any serializable type.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-User"><a href="/Bloggers/PicketLinkDeepDivePart1#H-User">User</a></h2>
+
+
+<p class="wikiPara">
+The <tt>User</tt> class extends <tt>Agent</tt> to add some human-specific properties, such as first name, last name and so forth.
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">public class User extends Agent {
+    @AttributeProperty
+    private String firstName;
+
+    @AttributeProperty
+    private String lastName;
+
+    @AttributeProperty
+    private String email;
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+In the above code, you may notice that the <tt>@AttributeProperty</tt> annotation is on the actual field declaration itself, instead of the getter method.  PicketLink allows the annotation on either the field or the getter method, similar in fashion to JPA and its annotations.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-Group"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Group">Group</a></h2>
+
+
+<p class="wikiPara">
+The <tt>Group</tt> class is an identity type that may be used for modelling basic group-related identity privileges, such as group membership and group roles.  It is intended to be used in a hierarchical structure, with each group capable of having multiple subgroups and so forth.  The <tt>Group</tt> class defines three property values - the <tt>name</tt> property represents the group’s unique name within the same branch of its hierarchical structure, the <tt>parentGroup</tt> property is an optional property which may be used to specify the group’s parent group (or null if the group has no parent, i.e. it is a root group), and <tt>path</tt> which represents the fully qualified path of the group, i.e. the complete hierarchical group name structure starting from the root, delimited by a separator.
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">public class Group extends AbstractIdentityType {
+    public static final String PATH_SEPARATOR = "/";
+
+    private String name;
+    private Group parentGroup;
+    private String path;
+
+    @AttributeProperty
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @AttributeProperty
+    @Unique
+    public String getPath() {
+        this.path = buildPath(this);
+        return this.path;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
+
+    @AttributeProperty
+    public Group getParentGroup() {
+        return this.parentGroup;
+    }
+
+    @AttributeProperty
+    public void setParentGroup(Group group) {
+        this.parentGroup = group;
+    }
+
+    private String buildPath(Group group) {
+        String name = PATH_SEPARATOR + group.getName();
+
+        if (group.getParentGroup() != null) {
+            name = buildPath(group.getParentGroup()) + name;
+        }
+
+        return name;
+    }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+You may notice in the above code that the <tt>parentGroup</tt> property has a type of <tt>Group</tt>.  This is possible because PicketLink allows identity definitions to themselves directly reference other identities via their properties.  We can also notice that the <tt>getPath()</tt> method is annotated with <tt>@Unique</tt> - this is to ensure that group names are unique within their same group branch (i.e. no other group with the same parent group may have the same name).
+</p>
+
+
+
+
+<h2 class="wikiHeadline2" id="H-Role"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Role">Role</a></h2>
+
+
+<p class="wikiPara">
+The <tt>Role</tt> class is quite similar to the <tt>Group</tt> class except that it doesn’t support a hierarchical structure, therefore its code is significantly more simple:
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">public class Role extends AbstractIdentityType {
+    private String name;
+
+    @AttributeProperty
+    @Unique
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}</pre>
+
+
+
+
+
+<h1 class="wikiHeadline1" id="H-Relationships"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Relationships">Relationships</a></h1>
+
+
+<p class="wikiPara">
+Relationships are the constructs that help us to define the privileges for our identity objects by defining how they relate to each other.  Relationships are <i class="wikiEmphasis">typed associations</i> between <i class="wikiEmphasis">two or more</i> identity objects.  
+</p>
+
+<p class="wikiPara">
+A relationship class must implement the <tt>Relationship</tt> interface, which itself extends <tt>AttributedType</tt> - this means that every concrete relationship instance is assigned a unique identifier value, and is also capable of storing an arbitrary set of attribute values.
+</p>
+
+<p class="wikiPara">
+The basic identity model defines only three relationship types - <tt>Grant</tt>, which associates an identity with a role; <tt>GroupMembership</tt>, which similarly associates an identity with a group; and lastly <tt>GroupRole</tt>, which is used to assign a group-specific role to an identity.  Let’s take a look at them in closer detail:
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/24528">
+
+
+
+<h2 class="wikiHeadline2" id="H-Grant"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Grant">Grant</a></h2>
+
+
+<p class="wikiPara">
+The <tt>Grant</tt> relationship is a simple association between a <i class="wikiEmphasis">role</i> and an <i class="wikiEmphasis">assignee</i>, and is generally used to assign coarse-grained application-wide privileges to a set of users.
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">public class Grant extends AbstractAttributedType implements Relationship {
+    
+    private IdentityType assignee;
+    private Role role;
+
+    public IdentityType getAssignee() {
+        return assignee;
+    }
+
+    public void setAssignee(IdentityType assignee) {
+        this.assignee = assignee;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+You may notice that there is nothing special about the above code - the <tt>Grant</tt> class extends <tt>AbstractAttributedType</tt> to provide the basic framework methods, however the implementation of the relationship itself is simple a couple of fields with getter/setter methods.  This simplicity is intentional - as long as your property values implement the <tt>IdentityType</tt> interface then PicketLink is perfectly capable of working with your relationship class without any further effort required.  This makes it extremely easy to define new custom relationship types yourself.
+</p>
+
+<p class="wikiPara">
+If you do wish to define a non-identity attribute property for your relationship, then you may do so by annotating the property with <tt>@AttributeProperty</tt>, the same way as is done when creating an identity type.  For example, let’s say we would like to store the grant date for the above relationship - we could simply add a property like this:
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">    private Date grantDate;
+
+    @AttributeProperty
+    public Date getGrantDate() {
+        return grantDate;
+    }
+
+    public void setGrantDate(Date grantDate) {
+        this.grantDate = grantDate;
+    }</pre>
+
+
+
+
+<p class="wikiPara">
+Then we would be able to use it like so:
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">Grant grant = new Grant();
+grant.setGrantDate(new Date());</pre>
+
+
+
+
+<p class="wikiPara">
+Alternatively, you could of course just set an arbitrary attribute value:
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">Grant grant = new Grant();
+grant.setAttribute(new Attribute(“grantDate”, new Date()));</pre>
+
+
+
+
+<p class="wikiPara">
+Which option you would choose is totally up to you.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-GroupMembership"><a href="/Bloggers/PicketLinkDeepDivePart1#H-GroupMembership">GroupMembership</a></h2>
+
+
+<p class="wikiPara">
+The <tt>GroupMembership</tt> relationship is very similar to <tt>Grant</tt>, except that it is used to associate an account with a <tt>Group</tt>.  
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">public class GroupMembership extends AbstractAttributedType implements Relationship {
+    private Account member;
+    private Group group;
+
+    public Account getMember() {
+        return member;
+    }
+
+    public void setMember(Account member) {
+        this.member = member;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+Once again, there is absolutely nothing special about this implementation - it simply defines two property values with getter/setter methods.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-GroupRole"><a href="/Bloggers/PicketLinkDeepDivePart1#H-GroupRole">GroupRole</a></h2>
+
+
+<p class="wikiPara">
+The <tt>GroupRole</tt> relationship is used to represent a group-specific role, similar to <tt>Grant</tt> however restricted to the scope of a single group.  To simplify the implementation of this relationship it extends the <tt>Grant</tt> relationship (which already provides the assignee and role properties), and just adds a group property:
+</p>
+
+
+
+<pre class="wikiPreformatted brush: java; gutter: true;">public class GroupRole extends Grant implements Relationship {
+    private Group group;
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+Like the above examples, the implementation is extremely simple - a single property with getter/setter methods.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-Summary"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Summary">Summary</a></h1>
+
+
+<p class="wikiPara">
+Hopefully this article has been helpful in explaining how to work with PicketLink’s identity model, both in using the provided basic model and in describing how to create your own custom model, complete with identity and relationship classes. 
+</p>
+
+<p class="wikiPara">
+If you have any questions or comments please post them below, and if you have any special requests for future PicketLink Deep Dive topics please let us know also.  
+</p>
+
+<p class="wikiPara">
+Thanks for reading!</p>
+</div>

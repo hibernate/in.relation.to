@@ -1,0 +1,81 @@
+---
+title: "Bean Validation 1.1 Feature Spotlight - Method validation"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Bean Validation,Hibernate Validator]
+slug: BeanValidation11FeatureSpotlightMethodValidation
+lace: http://in.relation.to/24336.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/BeanValidation11FeatureSpotlightMethodValidation">Bean Validation 1.1 Feature Spotlight - Method validation</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+With the release of <a href="http://in.relation.to/24334.lace" target="" class="regularLink">Hibernate Validator 5.1.0.Alpha1</a> just out, it is time to pick up on the <a href="http://in.relation.to/24284.lace" target="" class="regularLink">Bean Validation 1.1 spotlight series</a> and cast a light onto method validation. Long time Hibernate Validator users know that method validation is part of Validator since version <a href="http://docs.jboss.org/hibernate/validator/4.2/reference/en-US/html_single/#validator-customoptions-methodvalidation" target="" class="regularLink">4.2</a>, however only as a provider specific featue. Bean Validation 1.1 makes method validation now part of the <a href="http://beanvalidation.org/1.1/spec/#constraintdeclarationvalidationprocess-methodlevelconstraints" target="" class="regularLink">specification</a>.
+</p>
+
+<p class="wikiPara">
+But what is method validation? Method validation is the ability to place constraint annotations onto methods or constructors and/or their parameters. Here is an example:
+</p>
+
+<pre class="wikiPreformatted brush:java">public class User {
+     public User(@NotNull @Size(max = 40) String firstName, @NotNull @Size(max = 40) String lastName) {
+        // ...
+     }
+
+     @NotNull
+     @Valid
+     public Order placeOrder(@NotNull @Valid Item item) {
+          // ...
+     }
+
+     @PasswordsMatch
+     public void resetPassword( @NotNull String password, @NotNull String passwordConfirmation) {
+          // ...
+     }
+
+     // ...
+}</pre>
+
+
+<p class="wikiPara">
+The constraints describe that whenever the constructor of <tt>User</tt> is called, <tt>firstName</tt> and <tt>lastName</tt> cannot be <tt>null</tt> and neither can exceed 40 characters. Also, whenever the user places an order, the provided <tt>Item</tt> instance cannot be <tt>null</tt> and must be valid. Valid in this context means that the instance itself passes the validation of all its property (constraints placed on fields and getters) and class level constraints. The returned <tt>Order</tt> instance of the <tt>placeOrder()</tt> call is a non <tt>null</tt> instance which also passes all bean constrains for this type. Last but not least, if the user resets his password, the new password and the password confirmation cannot be <tt>null</tt> and they have to match. The latter is expressed via a so called cross parameter constraint - <tt>@PasswordMatch</tt>.
+</p>
+
+<p class="wikiPara">
+Overall, the shown constraints define the pre- and postconditions for a given method or constructor call. This is commonly known as <a href="http://en.wikipedia.org/wiki/Design_by_contract" target="" class="regularLink">programming by contract</a> which allows to make the specification of the these constraints part of the method. It also avoids code duplication, since these checks don't have to be implemented redundantly in the body of the methods.
+</p>
+
+<p class="wikiPara">
+But how do these constraints get validated then? Bean Validation offers for this purpose <tt>ExecutableValidator</tt> which can be retrieved from a <tt>Validator</tt> instance via <tt>Validator.forExecutables()</tt>. This <tt>ExecutableValidator</tt> offers the <a href="http://docs.jboss.org/hibernate/stable/beanvalidation/api/javax/validation/executable/ExecutableValidator.html" target="" class="regularLink">methods</a> to validate method/constructor parameters and return values. This in itself, however, is not very helpful for an application developer. She would have to write the required code to handle the validation herself which is not a trivial task. Instead the intention is that frameworks and libraries provide the integration for the application developer via some sort of AOP, interceptor or proxy based approach. That way, method validation occurs transparently upon invocation of constrained methods or constructors, throwing a <a href="http://docs.jboss.org/hibernate/stable/beanvalidation/api/javax/validation/ConstraintViolationException.html" target="" class="regularLink">ConstraintViolationException</a> whenever one more more constraints are violated. An example of this type of integration is the <a href="https://blogs.oracle.com/theaquarium/entry/java_ee_7_glassfish_4" target="" class="regularLink">Java EE 7</a> framework.
+</p>
+
+<p class="wikiPara">
+In Java EE 7 all CDI managed beans are automatically method validated. All you have to do is to place constraints on methods or constructors and their parameters. CDI will then, via its interceptor capabilities, evaluate all method validation constraints. In this context it is important to know that Bean Validation does not validate getters (method name starts with <tt>get</tt>, has a return type and no parameters or starts with <tt>is</tt>, is returning <tt>boolean</tt> and has no parameters) per default. This is to avoid conflicts with the validation of bean constraints. This behaviour can be configured via the use of <tt>@ValidateOnExecution</tt> or in <tt>validation.xml</tt> using <tt>default-validated-executable-types</tt>. The specification contains all the <a href="http://beanvalidation.org/1.1/spec/#integration-general-executable" target="" class="regularLink">details</a> and also gives some <a href="http://beanvalidation.org/1.1/spec/#d0e11200" target="" class="regularLink">examples</a>.
+</p>
+
+<p class="wikiPara">
+Last but not least, another caveat. When using method validation constraints within class hierarchies, the specification demands that the <a href="http://en.wikipedia.org/wiki/Liskov_substitution_principle" target="" class="regularLink">Liskov substitution principle</a> holds. Formally this means that a method's preconditions (as represented by parameter constraints) must not be strengthened and its postconditions (as represented by return value constraints) must not be weakened in sub-types. Concretely it implies that in sub-types no parameter constraints can be declared on overridden or implemented methods. Also parameters cannot be marked for cascaded validation. Instead, all parameter constraints must be defined at the method's root within the hierarchy. The Bean Validation implementation will throw a <tt>ConstraintDeclarationException</tt> if the Liskov substitution principle is violated. The complete set of rules can be found in <q><a href="http://beanvalidation.org/1.1/spec/#constraintdeclarationvalidationprocess-methodlevelconstraints-inheritance" target="" class="regularLink">Method constraints in inheritance hierarchies</a></q> of the specification.
+</p>
+
+<p class="wikiPara">
+I hope this blog helped to shine some light on the biggest new feature of Bean Validation 1.1 - method validation. If you have questions, leave a comment, contact us via the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a> or chat to us in <a href="http://www.hibernate.org/community/irc" target="" class="regularLink">IRC</a>.
+</p>
+
+<p class="wikiPara">
+Happy validating! 
+</p>
+
+<p class="wikiPara">
+P.S. We will talk about the changes to the metadata and <tt>javax.validation.Path</tt> API related to method validation in another post. We also will have a closer look at the details of implementing cross parameter constraints. Stay tuned.
+</p>
+
+
+
+</div>

@@ -1,0 +1,45 @@
+---
+title: "Fun with MySQL case sensitivity"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: [Seam Wiki]
+slug: FunWithMySQLCaseSensitivity
+lace: http://in.relation.to/2243.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/FunWithMySQLCaseSensitivity">Fun with MySQL case sensitivity</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+So I was preparing the data for this website locally on my machine. My staging environment was pretty much the same (same Java VM, JBoss AS, MySQL version, etc.) The only difference is the operating system, it's OS X and the live site is running on CentOS. I created a package to deploy and everything looked fine. Until I edited documents on the live site. MySQL started to throw constraint violation errors it didn't show in the staging environment.
+</p>
+
+<p class="wikiPara">
+Now, it took me about half an hour to realize what was going on and I hope this will save someone some time: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> MySQL is case sensitive or not wrt identifiers in the database catalog.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> This depends on the operating system it is running on, which clearly doesn't make any sense but you learn it at some point. Table names, for example in SQL queries or even in foreign key constraint declarations (<tt>references FOO</tt>...) have to be specified in the correct case if you run MySQL on Linux but not if you run it on OS X.</li>
+</ul>
+
+<p class="wikiPara">
+I know this and I have written all database identifiers in uppercase everywhere, in all source and scripts. What I didn't expect was that the <tt>mysqldump</tt> tool, which I used to export the package for deployment from the staging database, generates all constraint declarations in the exported file with lowercase <tt>references 'foo'</tt>.
+</p>
+
+<p class="wikiPara">
+This you'd usually consider a regular bug in a tool, if MySQL would have caught it on import. But no, it silently ignored these obviously illegal constraint declarations (because the target table can't be found), imported them anyway, and then failed at runtime with a constraint violation. Nice, eh?
+</p>
+
+<p class="wikiPara">
+</p>
+</div>

@@ -1,0 +1,190 @@
+---
+title: "JSR - Bean Validation 1.1: what to put in?"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: [Bean Validation]
+slug: JSRBeanValidation11WhatToPutIn
+lace: http://in.relation.to/18584.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JSRBeanValidation11WhatToPutIn">JSR - Bean Validation 1.1: what to put in?</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+As you may have noticed, it's almost spring cleaning time and everyone pushes its new JSR proposal following EE 7. I wanted to share with you what I had in mind for Bean Validation. This is by no mean a definite list but more a starting point to discuss things further. In the end the EG and the community will shape the spec.
+</p>
+
+<p class="wikiPara">
+First off, I think people have been very pleased with Bean Validation (no major flaw nor big limitation). So the idea is to go for a version 1.1 rather than a 2.0.
+</p>
+
+<h1 class="wikiHeadline1" id="H-IntegrationWithOtherSpecs"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-IntegrationWithOtherSpecs">Integration with other specs</a></h1>
+
+<p class="wikiPara">
+While not part of the Bean Validation JSR, I think it is important to pursue further collaborative work with some other JSR leads on how to integrate Bean Validation into the various lifecycles of the SE/EE platforms. Certainly nobody wants each specification to invent its own validation mechanism and its own annotations. The work we did with JPA 2 and JSF 2 showed that it is possible and beneficial for the platform and developers.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> JAX-RS: call Bean Validation upon HTTP method calls on parameters. If a parameter is not valid, JAX-RS could return the appropriate HTTP error code as well as some payload describing the error.</li>
+<li class="wikiUnorderedListItem"> JAXB: some people have asked for integration between Bean Validation and JAXB. Basically, the Bean Validation constraints (at least the fundamental ones) could be converted into the XML schema descriptor (and vice versa) to guarantee a unified propagation between the Java land and the XML land. I have been exploring some of the needs with Martin Grebac and I hope we can converge.</li>
+<li class="wikiUnorderedListItem"> JPA: improve the integration by letting Bean Validation constraints influence the DDL generated with the constraints declared on the entity model</li>
+<li class="wikiUnorderedListItem"> CDI: offer a way for Bean Validation pluggable components to allow CDI style injection (in particular constraint validator implementations)</li>
+<li class="wikiUnorderedListItem"> CDI: integrate method-level validation (see below)</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-MethodLevelValidation"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-MethodLevelValidation">Method level validation</a></h1>
+
+<p class="wikiPara">
+The idea is to offer APIs to validate parameters and return values of method calls. These APIs would be used by any injection or AOP framework around method invocations. If a constraint violation is detected, an exception (eg. <tt>ConstraintViolationException</tt>) would be raised.
+</p>
+
+<pre class="wikiPreformatted">public class OrderManager {
+  public void processOrder(@Valid Order order, @Min(0) @Max(30) int retry) {
+    doProcessOrder(...)
+  }
+}</pre>
+
+
+<p class="wikiPara">
+if <tt>Order</tt> contains constraint violations or if <tt>retry</tt>'s value is not between 0 and 30, a <tt>ConstraintViolationException</tt> will be raised by the interceptor framework.
+</p>
+
+<p class="wikiPara">
+Interceptor frameworks could be:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> CDI: some stereotyped interceptor could trigger the method validations when accessed</li>
+<li class="wikiUnorderedListItem"> AOP style framework like Javassist or AspectJ</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-ValidAndGroupPropagation"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ValidAndGroupPropagation">@Valid and group propagation</a></h1>
+
+<p class="wikiPara">
+Some people have required the ability to translate a group into another group while cascading the validation. This can help reduce the number of groups and increase reuse.
+</p>
+
+<pre class="wikiPreformatted">public class Address {
+  @NotNull String city;
+  
+  @Valid(from=Default.class, to=EnhancedGroup.class)
+  Country country;
+}
+
+public class Country {
+  @NotNull(groups=EnhancedGroup.class) 
+  String name;
+
+  @Size(min=2, max=2, groups=EnhancedGroup.class) 
+  String iso2; 
+}</pre>
+
+
+<h1 class="wikiHeadline1" id="H-ApplyConstraintsOnElementsOfCollection"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ApplyConstraintsOnElementsOfCollection">Apply constraints on elements of collection</a></h1>
+
+<p class="wikiPara">
+While we can validate constraints on the collection itself and ask to cascade validation to the elements of the collection, we cannot put constraints on the collection element itself. This is annoying for collection of native types in particular. There are several not so elegant solutions to this problem, the real solution is to wait for Annotations on Java types (JSR-308)
+</p>
+
+<pre class="wikiPreformatted">Collection&lt;@NotNull String&gt; names;
+</pre>
+
+
+<p class="wikiPara">
+Depending on when JSR-308 finally comes out, we might want to delay this feature.
+</p>
+
+<h1 class="wikiHeadline1" id="H-VariousIssues"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-VariousIssues">Various issues</a></h1>
+
+<p class="wikiPara">
+In no particular order, here are a few issues or features we can also try to tackle. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-ConstraintComposition"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ConstraintComposition">Constraint composition</a></h2>
+
+<p class="wikiPara">
+Today constraint composition is done with a logical AND (all constraints must be valid). We could also support logical OR composition.
+</p>
+
+<pre class="wikiPreformatted">@ConstraintComposition(OR)
+@SSN
+@TemporarySSN
+@Constraint(validatedBy = { })
+@ReportAsSingleViolation
+@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
+@Retention(RUNTIME)
+public @interface ValidSSN {
+	String message() default "Not a valid social security number";
+	Class&lt;?&gt;[] groups() default { };
+	Class&lt;? extends Payload&gt;[] payload() default { };
+}</pre>
+
+
+<h2 class="wikiHeadline2" id="H-JTAAndExceptionPropagation"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-JTAAndExceptionPropagation">JTA and exception propagation</a></h2>
+
+<p class="wikiPara">
+In EE, there are some inconsistencies on how exceptions are raised:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> while in the process of a business method</li>
+<li class="wikiUnorderedListItem"> raised by the declarative or explicit commit() calls</li>
+</ul>
+
+<p class="wikiPara">
+Basically when operations (like validation) are triggered within the declarative <tt>commit()</tt>, everything I believe is wrapped into a <tt>RollbackException</tt>. Which means that depending when JPA's <tt>flush()</tt> is called, <tt>ConstraintViolationException</tt> (raised by JPA) comes either untainted or comes wrapped in <tt>RollbackException</tt>. I wonder if we can fix this inconsistency.
+</p>
+
+<h2 class="wikiHeadline2" id="H-BetterRulesForOSGiStyleContainers"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-BetterRulesForOSGiStyleContainers">Better rules for OSGi style containers</a></h2>
+
+<p class="wikiPara">
+Some extreme modularity fanboys have complained about some fuzziness in the spec around visibility and classloaders. We should clarify that.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ExclusiveFlagOnBigDecimalBigInteger"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ExclusiveFlagOnBigDecimalBigInteger">Exclusive flag on @BigDecimal / @BigInteger</a></h2>
+
+<p class="wikiPara">
+Allow to exclude limits.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ConstraintViolationExceptionBuilder"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ConstraintViolationExceptionBuilder">ConstraintViolationException builder</a></h2>
+
+<p class="wikiPara">
+The idea is to provide a simple API to build consistent <tt>ConstraintViolationException</tt>s. Because Bean Validation is usually called by the lifecycle of other specifications or frameworks, it is their responsibility to raise the exception.
+</p>
+
+<h1 class="wikiHeadline1" id="H-YourParticipation"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-YourParticipation">Your participation</a></h1>
+
+<p class="wikiPara">
+That's all I have. I am sure I'm missing many improvements so please speak up. You can do it however it pleases you:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> comment on this blog entry</li>
+<li class="wikiUnorderedListItem"> open an issue on the <a href="http://opensource.atlassian.com/projects/hibernate/browse/BVAL" target="" class="regularLink">specification issue tracker</a>
+</li>
+<li class="wikiUnorderedListItem"> discuss on the <a href="https://forum.hibernate.org/viewforum.php?f=26" target="" class="regularLink">Bean Validation forum</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+And of course, you can always go <a href="https://github.com/beanvalidation" target="" class="regularLink">one fork ahead</a>.
+</p>
+
+<p class="wikiPara">
+From this first wave of feedback, I plan to propose a JSR to the JCP.
+</p>
+
+<p class="wikiPara">
+Note that Hibernate Validator 4.2 has or will integrate some of these features which will provide us feedback. 
+</p>
+
+<p class="wikiPara">
+Emmanuel</p>
+</div>

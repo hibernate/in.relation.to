@@ -1,0 +1,104 @@
+---
+title: "Hibernate Validator 4.2.0.CR1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Bean Validation,Hibernate,Hibernate Validator]
+slug: HibernateValidator420CR1
+lace: http://in.relation.to/20732.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateValidator420CR1">Hibernate Validator 4.2.0.CR1</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Hibernate Validator 4.2.0.CR1 is finally ready for download via the <a href="http://repository.jboss.org/nexus/content/groups/public-jboss/org/hibernate/hibernate-validator/4.2.0.CR1" target="" class="regularLink">JBoss Maven Repository</a> or <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/4.2.0.CR1" target="" class="regularLink">SourceForge</a>. We promise you won't have to wait so long for 4.2.0.Final.
+In total we addressed <a href="http://opensource.atlassian.com/projects/hibernate/secure/IssueNavigator.jspa?reset=true&amp;mode=hide&amp;jqlQuery=project+%3D+HV+AND+fixVersion+%3D+%224.2.0.CR1%22" target="" class="regularLink">28 issues</a>. Most of the issues where minor bug fixes, documentation and code refactorings. Thanks you everyone providing bug reports and helping us to make Validator even better :-)
+</p>
+
+<p class="wikiPara">
+The biggest change is the ability to now also configure method level validation programmatically. To implement this in
+an unambiguous way we had to make yet some more changes to the programmatic API. Remember how the programmatic API looked like in Beta2? Here is an example:
+</p>
+
+<pre class="wikiPreformatted">ConstraintMapping mapping = new ConstraintMapping();
+mapping.type( Car.class )
+    .property( "manufacturer", FIELD )
+        .constraint( NotNullDef.class )
+    .property( "licensePlate", FIELD )
+        .constraint( NotNullDef.class )
+        .constraint( SizeDef.class )
+            .min( 2 )
+            .max( 14 )
+    .property( "seatCount", FIELD )
+        .constraint( MinDef.class )
+            .value ( 2 )
+.type( RentalCar.class )
+    .property( "rentalStation", METHOD)
+        .constraint( NotNullDef.class ); 
+</pre>
+
+
+<p class="wikiPara">
+With the CR1 API the same example looks like:	
+</p>
+
+<pre class="wikiPreformatted">ConstraintMapping mapping = new ConstraintMapping();
+mapping.type( Car.class )
+    .property( "manufacturer", FIELD )
+        .constraint( new NotNullDef() )
+    .property( "licensePlate", FIELD )
+        .constraint( new NotNullDef() )
+        .constraint( new SizeDef()
+            .min( 2 )
+            .max( 14 ) )
+    .property( "seatCount", FIELD )
+        .constraint( new MinDef()
+            .value ( 2 ) )
+.type( RentalCar.class )
+    .property( "rentalStation", METHOD )
+        .constraint( new NotNullDef() ); 
+</pre>
+
+
+<p class="wikiPara">
+As you can see the difference is that you now have to instantiate the definition classes. That's all. Not too bad, right? 
+Programmatic method level validation looks like this:
+</p>
+
+<pre class="wikiPreformatted">ConstraintMapping mapping = new ConstraintMapping();
+mapping.type( Car.class )
+    .method( "drive", String.class, Integer.class )
+        .parameter( 0 )
+            .constraint( new NotNullDef() )
+            .constraint( new MinDef().value ( 1 ) )
+        .parameter( 1 )
+            .constraint( new NotNullDef() )
+        .returnValue()
+            .constraint( new NotNullDef() )
+    .method( "check" )
+        .returnValue()
+            .constraint( new NotNullDef() );   
+</pre>
+
+
+<p class="wikiPara">
+You find the full change log for this release <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10060&amp;version=11181" target="" class="regularLink">here</a>. Please provide feedback via the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Validator Forum</a> and the Jira <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV" target="" class="regularLink">issue tracker</a>.
+</p>
+
+<p class="wikiPara">
+Thanks to Gunnar and Kevin to once more were driving most of the work.
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+
+<p class="wikiPara">
+P.S. If you have any opinion what should go into <a href="http://in.relation.to/18584.lace" target="" class="regularLink">Bean Validation 1.1</a> let us know!</p>
+</div>

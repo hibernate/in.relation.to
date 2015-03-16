@@ -1,0 +1,59 @@
+---
+title: "Mutli-valued injection points"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Web Beans]
+slug: MutlivaluedInjectionPoints
+lace: http://in.relation.to/11429.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MutlivaluedInjectionPoints">Mutli-valued injection points</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+One of the nice new features in the latest draft of JSR-299 is the ability to inject a reference to all beans of a certain type, for example:
+</p>
+
+<pre class="wikiPreformatted">@Any Instance&lt;Connection&gt; anyConnections;</pre>
+
+
+<p class="wikiPara">
+There's actually nothing very special about this injection point. <tt>@Any</tt> is a built-in binding that is defined to be supported by <i class="wikiEmphasis">all</i> beans. <tt>Instance&lt;T&gt;</tt> is an interface which is implemented by a built-in bean that uses <a href="/Bloggers/InjectionPointMetadataAPIForWebBeans" target="" class="regularLink">InjectionPoint</a> to inspect the binding types of the injection point. (You could implement <tt>Instance&lt;T&gt;</tt> yourself if the container didn't come with one.)
+</p>
+
+<p class="wikiPara">
+Now, <tt>Instance&lt;T&gt;</tt> extends <tt>Iteratable&lt;T&gt;</tt>, so we can iterate over <tt>anyConnections</tt> to do something to all beans that implement <tt>Connection</tt>:
+</p>
+
+<pre class="wikiPreformatted">for (Connection c: anyConnections) c.close();</pre>
+
+
+<p class="wikiPara">
+We can narrow the set of connections we're interested in either dynamically:
+</p>
+
+<pre class="wikiPreformatted">Connection userDatabaseConnection = anyConnections.select( new AnnotationLiteral&lt;UserDatabase&gt;() {} ).get();</pre>
+
+
+<p class="wikiPara">
+Or using an annotation at the injection point:
+</p>
+
+<pre class="wikiPreformatted">@UserDatabase Instance&lt;Connection&gt; userDatabaseConnection;</pre>
+
+
+<p class="wikiPara">
+Of course, we've now got a way to iterate over <i class="wikiEmphasis">every</i> bean:
+</p>
+
+<pre class="wikiPreformatted">@Any Instance&lt;Object&gt; anyBeans;</pre>
+
+<pre class="wikiPreformatted">for (Object bean: anyBeans) doSomething(bean);</pre>
+
+</div>

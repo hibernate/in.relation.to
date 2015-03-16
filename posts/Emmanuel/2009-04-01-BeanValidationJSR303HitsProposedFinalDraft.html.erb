@@ -1,0 +1,133 @@
+---
+title: "Bean Validation (JSR 303) hits proposed final draft"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: []
+slug: BeanValidationJSR303HitsProposedFinalDraft
+lace: http://in.relation.to/10999.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/BeanValidationJSR303HitsProposedFinalDraft">Bean Validation (JSR 303) hits proposed final draft</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Good news!
+</p>
+
+<p class="wikiPara">
+Bean Validation is now in proposed final draft and <a href="http://jcp.org/en/jsr/detail?id=303" target="" class="regularLink">available for download on the JCP website</a>.
+Bean Validation standardizes the way constraint validations are defined, declared and validated in objects graphs. By using annotations such as <tt>@NotNull</tt>, <tt>@Email</tt> etc, you express constraints on your domain model once (following the DRY principle) and let them be validated automatically by different layers of you application.
+Bean Validation also exposes constraints via a metadata query API which is useful for frameworks interacting beyond Java like javascripts libraries or database schema generators. 
+</p>
+
+<p class="wikiPara">
+Here are the main highlights of this proposed final draft:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Type-safe constraint validator</li>
+<li class="wikiUnorderedListItem"> XML configuration and XML mapping support</li>
+<li class="wikiUnorderedListItem"> Clearer names</li>
+<li class="wikiUnorderedListItem"> integration into JPA 2 and JSF 2</li>
+<li class="wikiUnorderedListItem"> More built-in constraints</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-TypesafeConstraintValidatorS"><a href="/Bloggers/BeanValidationJSR303HitsProposedFinalDraft#H-TypesafeConstraintValidatorS">Type-safe constraint validatorS</a></h1>
+
+<p class="wikiPara">
+Constraints are now validating particular types (like <tt>String</tt> and <tt>Collection</tt>) in a type-safe way. You can even have several <tt>ConstraintValidator</tt> implementations associated to a given constraint. Each <tt>ConstraintValidator</tt> is dedicated to a specific type.
+</p>
+
+<pre class="wikiPreformatted">
+@Constraint(validatedBy = {
+	SizeValidatorForString.class,
+        SizeValidatorForCollection.class } ) 
+public @interface Size { 
+    String message() default "{constraint.size}"; 
+    Class&lt;?&gt;[] groups() default {}; 
+    int min() default 0;
+    int max() default Integer.MAX_VALUE;
+}
+
+public class SizeValidatorForString implements&lt;Size, String&gt; {
+	public void initialize(Size size) {}
+	public boolean isValid(String value, ConstraintValidatorContext context) {}
+}
+
+
+public class SizeValidatorForCollection implements&lt;Size, Collection&gt; {
+	public void initialize(Size size) {}
+	public boolean isValid(Collection value, ConstraintValidatorContext context) {}
+}
+</pre>
+
+
+<p class="wikiPara">
+The appropriate <tt>ConstraintValidator</tt> is chosen automatically by the Bean Validation provider. Even better, an IDE or an annotation processor (see another usage <a href="http://in.relation.to/Bloggers/Java6CompilerPluginsAndTypesafeCriteriaQueries" target="" class="regularLink">here</a>) can warn you if you place a constraint on a property of an incompatible type.
+</p>
+
+<pre class="wikiPreformatted">
+@Size //invalid usage of @Size
+Number number;
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-XMLConfigurationAndMappings"><a href="/Bloggers/BeanValidationJSR303HitsProposedFinalDraft#H-XMLConfigurationAndMappings">XML configuration and mappings</a></h1>
+
+<p class="wikiPara">
+Support for XML configuration via <tt>META-INF/validation.xml</tt> and XML mapping (ie using XML instead of annotations) have been added. Check it out if you are interested and give us feedback.
+The configuration can also be done entirely programmatically if needed, XML is completely optional.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ClearerNames"><a href="/Bloggers/BeanValidationJSR303HitsProposedFinalDraft#H-ClearerNames">Clearer names</a></h1>
+<p class="wikiPara">
+We took a second look at all the class names and cleaned that up, especially in the bootstrapping API. Names are much more consistent and clear.
+</p>
+
+<h1 class="wikiHeadline1" id="H-IntegrationWithJPA2AndJSF2"><a href="/Bloggers/BeanValidationJSR303HitsProposedFinalDraft#H-IntegrationWithJPA2AndJSF2">Integration with JPA 2 and JSF 2</a></h1>
+<p class="wikiPara">
+It's official now, Bean Validation is integrated with JPA 2 and JSF 2. Even better, it requires <i class="wikiEmphasis">zero</i> configuration in your application. Pretty neat. Check JSF and JPA's specifications to read more about it.
+</p>
+
+<h1 class="wikiHeadline1" id="H-MoreBuiltinConstraints"><a href="/Bloggers/BeanValidationJSR303HitsProposedFinalDraft#H-MoreBuiltinConstraints">More built-in constraints</a></h1>
+
+<p class="wikiPara">
+We have added a few new built-in constraints. <tt>@Pattern</tt> which validates a String against a regular expression. <tt>@DecimalMin</tt> and <tt>@DecimalMax</tt> which uses <tt>BigDecimal</tt> style notation and range to define boundaries. <tt>@Min</tt> and <tt>@Max</tt> are still be used for integer boundaries.
+</p>
+
+<pre class="wikiPreformatted">
+@Pattern(regexp="[0-9]*")
+String number;
+
+@Max(500000)
+BigDecimal salary;
+
+@DecimalMax("27.5")
+BigDecimal luggageWeight;
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-Feedback"><a href="/Bloggers/BeanValidationJSR303HitsProposedFinalDraft#H-Feedback">Feedback</a></h1>
+
+<p class="wikiPara">
+Additional minor and not so minor enhancements and bug fixes have been done. See our <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10090&amp;styleName=Html&amp;version=10890" target="" class="regularLink">JIRA changelog</a> for more details.
+</p>
+
+<p class="wikiPara">
+We listened to your feedbacks since the public draft and are pretty pleased with the current status of the spec. 
+Do more, go read the proposed final draft and give us even more feedbacks (<a href="http://jcp.org/en/jsr/detail?id=303" target="" class="regularLink">spec</a>, <a href="http://forum.hibernate.org/viewforum.php?f=26" target="" class="regularLink">forums</a>).
+</p>
+
+<p class="wikiPara">
+You can already use Bean Validation by downloading <a href="http://validator.hibernate.org" target="" class="regularLink">Hibernate Validator 4</a>, we are almost feature complete now!
+</p>
+
+<p class="wikiPara">
+Many thanks to all the contributions we received inside and outside the JCP. This spec is very solid and will remove one of the remaining painpoints of Java SE and Java EE developments.</p>
+</div>

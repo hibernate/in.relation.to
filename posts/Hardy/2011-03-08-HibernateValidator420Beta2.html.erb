@@ -1,0 +1,70 @@
+---
+title: "Hibernate Validator 4.2.0.Beta2"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Bean Validation,Hibernate,Hibernate Validator]
+slug: HibernateValidator420Beta2
+lace: http://in.relation.to/18632.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateValidator420Beta2">Hibernate Validator 4.2.0.Beta2</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Hibernate Validator 4.2.0.Beta2 is bottled up and ready for consumption via the <a href="http://repository.jboss.org/nexus/content/groups/public-jboss/org/hibernate/hibernate-validator/4.2.0.Beta2" target="" class="regularLink">JBoss Maven Repository</a> or <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/4.2.0.Beta2" target="" class="regularLink">SourceForge</a>.
+</p>
+
+<p class="wikiPara">
+Since <a href="http://in.relation.to/17856.lace" target="" class="regularLink">Beta1</a> we have been focusing on method level validation details and bug fixes. One important issue in this regard is <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-421" target="" class="regularLink">HV-421</a> which defines the behavior of parameter constraint validation. Generally a logical AND is used to combine all constraints defined within a class hierarchy on a given field or method. Doing the same for method parameter constraints, however, causes ambiguities with the definition of <a href="http://en.wikipedia.org/wiki/Programming_by_contract" target="" class="regularLink">Programming by contract</a> where subtypes may only weaken preconditions defined by supertypes. In order to support this one would have to combine all parameter constraints within a hierarchy using an OR. A conservative alternative (the one we chose for this release) is to prohibit multiple parameter constraints on the same parameter within a class hierarchy. <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-421" target="" class="regularLink">HV-421</a> discusses in more detail. We are very interested in feedback on this.
+</p>
+
+<p class="wikiPara">
+Another method level validation related feature is the extension of the meta data API (<a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-440" target="" class="regularLink">HV-440</a>). We introduced three more interfaces <i class="wikiEmphasis">TypeDescriptor</i>, <i class="wikiEmphasis">MethodDescriptor</i> and <i class="wikiEmphasis">ParameterDescriptor</i> which you can all find in the <i class="wikiEmphasis">org.hibernate.validator.method.metadata</i> package. Here is an usage example:</p>
+<pre class="wikiPreformatted"> MethodValidator validator = Validation.byProvider( HibernateValidator.class )
+    .configure()
+    .buildValidatorFactory()
+    .getValidator()
+    .unwrap( MethodValidator.class );
+
+TypeDescriptor typeDescriptor = validator.getConstraintsForType( clazz );
+...
+Set&lt;MethodDescriptor&gt; constrainedMethods = descriptor.getConstrainedMethods();
+...
+List&lt;ParameterDescriptor&gt; parameterConstraints = methodDescriptor.getParameterConstraints();
+ParameterDescriptor parameterDescriptor = parameterConstraints.get( 0 );
+assertTrue( parameterDescriptor.hasConstraints() );
+...
+</pre>
+Note: <i class="wikiEmphasis">MethodValidator.validateParameters</i> was renamed into <i class="wikiEmphasis">MethodValidator.validateAllParameters</i> (<a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-415" target="" class="regularLink">HV-415</a>).
+
+
+<p class="wikiPara">
+To mention at least one method level validation unrelated feature - Hibernate Validator has now a fail fast option. When enabled, validation will terminate on the first validation error. This could be interesting for large object graph validation. You can enable the fail fast flag for example via:</p>
+<pre class="wikiPreformatted">
+ValidatorFactory factory = Validation.byProvider( HibernateValidator.class )
+                             .configure()
+                             .failFast( true )
+                             .buildValidatorFactory();
+</pre>
+
+You find the full change log for this release <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10060&amp;version=11180" target="" class="regularLink">here</a>. Please provide feedback via the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Validator Forum</a> and the Jira <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV" target="" class="regularLink">issue tracker</a>.
+
+
+<p class="wikiPara">
+Enjoy!
+</p>
+
+<p class="wikiPara">
+P.S.
+For all the Seam people out there. Gunnar started a new Seam 3 module called <a href="http://seamframework.org/Seam3/ValidationModule" target="" class="regularLink">SeamValidation</a> which offers amongst other a CDI extension for method level validation. Check it out!
+</p>
+
+<p class="wikiPara">
+P.P.S. Make sure to also provide feedback on what we should include into <a href="http://in.relation.to/18584.lace" target="" class="regularLink">Bean Validation 1.1</a></p>
+</div>

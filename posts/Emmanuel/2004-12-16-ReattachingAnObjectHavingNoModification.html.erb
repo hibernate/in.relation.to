@@ -1,0 +1,123 @@
+---
+title: "Reattaching an object having no modification"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: []
+slug: ReattachingAnObjectHavingNoModification
+lace: http://in.relation.to/2160.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/ReattachingAnObjectHavingNoModification">Reattaching an object having no modification</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+It happens sometimes that a domain model objet dettached from a previous session needs/can 
+be reattached without trigging an UPDATE (whether it has optimistic locking or not).
+Hibernate supports this kind of feature by providing:
+</p>
+
+<pre class="wikiPreformatted">
+session.lock(myEntity, LockMode.NONE);
+</pre>
+
+
+<p class="wikiPara">
+Thus, Hibernate will not propagate the modifications unless they are made after
+the reattachment to the session.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DontUseItAsAnOptimization"><a href="/Bloggers/ReattachingAnObjectHavingNoModification#H-DontUseItAsAnOptimization">Don't use it as an optimization</a></h2>
+<p class="wikiPara">
+First of all, try to avoid this feature. Usually, reattaching an object using 
+<tt>session.saveOrUpdate()</tt> or by retrieving it through a <tt>session.get()</tt>/<tt>session.load()</tt> 
+is fast enough for you. I'm not kidding, do not suppose it's significantly faster in your 
+real application not to update the object (esp. when versioning is switched on) or not 
+to retrieve it from the DB: do some benchmark before any decision.
+</p>
+
+<h2 class="wikiHeadline2" id="H-BewareOfBoundaries"><a href="/Bloggers/ReattachingAnObjectHavingNoModification#H-BewareOfBoundaries">Beware of boundaries</a></h2>
+<p class="wikiPara">
+Associated object are not always managed the way you want. Uncascaded properties 
+are not reattached to the session. 
+</p>
+
+<p class="wikiPara">
+I am currently working on a project where some entities needs to be reattached using a lock mode NONE. 
+In my case, the entity is a <tt>Contact</tt>. <tt>Contact</tt> is linked to some barely updated (and cached)
+entities. In a particular but very frequent
+use case, I know for sure that the <tt>Contact</tt> instance I get is the same as the DB version one.
+It appeared to me to be the best use case for <tt>session.lock(contact, LockMode.NONE);</tt>
+</p>
+
+<p class="wikiPara">
+Unfortunatly, the contact I retrieve is associated (but not cascaded) to some 
+lazy loaded (at the second level of the graph) entities, so I cannot properly walk 
+through my object graph.
+</p>
+
+<p class="wikiPara">
+The solution I've used is to redefine properly my object graph boundary, by refreshing
+some of the <tt>Contact</tt> properties with fresh entities.
+</p>
+
+<pre class="wikiPreformatted">
+contact = ... //get it from somewhere
+session = sf.openSession();
+Transaction tx = session.beginTransaction();
+ContactType type = session.load( 
+        ContactType.class, 
+        contact.getContactType().getId() 
+    );
+contact.setContactType(type);
+session.lock(contact, LockMode.NONE);
+//work with contact safely
+</pre>
+
+
+<p class="wikiPara">
+I'm now able to walk my graph through contact, eg:
+</p>
+
+<pre class="wikiPreformatted">
+contact.getContactType().getFavoriteChannel();
+</pre>
+
+
+<p class="wikiPara">
+Notice several things:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> I used <tt>load()</tt> instead of <tt>get()</tt>, it allows me to get a proxy if available and thus don't hit the DB</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> I set the refreshed property <i class="wikiEmphasis">before</i> reattaching the object to avoid useless updates.</li>
+</ul>
+
+
+<h2 class="wikiHeadline2" id="H-KnowWhatYouDo"><a href="/Bloggers/ReattachingAnObjectHavingNoModification#H-KnowWhatYouDo">Know what you do</a></h2>
+<p class="wikiPara">
+This feature it quite complex because it may break the ACID semantic (contact and the other
+entities where not loaded in the same transaction) and may lead to
+very tricky issues. I did use this optimization (reduce of DB hit) because I knew my application business 
+process very well, I was sure it won't break any data, and because it makes me gain signficant time. 
+I have considered seriously the following solution.
+</p>
+
+<pre class="wikiPreformatted">
+session.get(Contact.class, contact.getId());
+</pre>
+
+
+<p class="wikiPara">
+This one line of code is your friend, don't ban it too early. That's the most natural way of playing with
+the object.
+</p>
+</div>

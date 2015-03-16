@@ -1,0 +1,52 @@
+---
+title: "CDI 1.1 available :-)"
+author: "Pete Muir"
+blogger_name: "Pete"
+layout: blog-post
+tags: []
+slug: CDI11Available
+lace: http://in.relation.to/24247.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/CDI11Available">CDI 1.1 available :-)</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I'm pleased to say that <a href="http://jcp.org/en/jsr/detail?id=346" target="" class="regularLink">CDI 1.1</a> is available and included in <a href="https://javaee-spec.java.net/" target="" class="regularLink">Java EE 7</a>. If you want to learn more, read on, and <a href="http://event.on24.com/r.htm?e=615713&amp;s=1&amp;k=453EBA948F6408FE613E61903CBAEBFA&amp;partnerref=Java_EE7_Launch_RedHatnwsltr_06122013" target="" class="regularLink">join a webcast 12th June</a> about all the technologies in Java EE 7. Both webcasts are followed by a Q&amp;A session, when CDI experts will be on hand to answer your questions. The webcast is at [9 am PT / 12 pm ET / 5 pm London] or [9 pm PT / 12 am ET (Thursday) / 2 pm Sydney (Thursday)]
+</p>
+
+<h3 class="wikiHeadline3" id="H-SoWhatsNewInCDI11"><a href="/Bloggers/CDI11Available#H-SoWhatsNewInCDI11">So, what's new in CDI 1.1?</a></h3>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Add global enablement of interceptors (see the Java Interceptors Specification 1.2), global enablement of decorators (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#enabled_decorators_priority" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#enabled_decorators_priority</a>) and alternatives (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#unsatisfied_and_ambig_dependencies" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#unsatisfied_and_ambig_dependencies</a>) using the @Priority annotation</li>
+<li class="wikiUnorderedListItem"> Add support for @AroundConstruct lifecycle callback for constructors (see the Java Interceptors Specification 1.2)</li>
+<li class="wikiUnorderedListItem"> Allow binding interceptors to constructors</li>
+<li class="wikiUnorderedListItem"> Moved interceptor binding to interceptors spec, allowing for reuse by other specifications</li>
+<li class="wikiUnorderedListItem"> Support decorators on built in beans (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#decorators" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#decorators</a>)</li>
+<li class="wikiUnorderedListItem"> Add EventMetadata (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#event_metadata" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#event_metadata</a>) to allow inspection of event metadata</li>
+<li class="wikiUnorderedListItem"> Add @Vetoed annotation allowing easy programmatic disablement of classes (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#what_classes_are_beans" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#what_classes_are_beans</a>
+</li>
+<li class="wikiUnorderedListItem"> Many improvements for passivation capable beans, including @TransientReference allowing instances to be retained only for use within the invoked method or constructor (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#passivation_capable_injection_points" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#passivation_capable_injection_points</a> and <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#passivating_scope" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#passivating_scope</a>)</li>
+<li class="wikiUnorderedListItem"> Add scope activation and destruction callback events (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#builtin_contexts" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#builtin_contexts</a>)</li>
+<li class="wikiUnorderedListItem"> Add AlterableContext allowing bean instances to be explicitly destroyed (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#context" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#context</a>)</li>
+<li class="wikiUnorderedListItem"> Add automatic enablement of CDI for beans with a scope annotation, and EJBs, in Java EE (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#bean_discovery" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#bean_discovery</a>)</li>
+<li class="wikiUnorderedListItem"> Add class exclusion filters to beans.xml to prevent scanning of classes and packages (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#bean_discovery" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#bean_discovery</a>)</li>
+<li class="wikiUnorderedListItem"> Add Unmanaged allowing easy access to non-contexutal instances of beans (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#bm_obtain_unmanaged_instance" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#bm_obtain_unmanaged_instance</a>)</li>
+<li class="wikiUnorderedListItem"> Add CDI allowing easy accesss to the current CDI container (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#provider" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#provider</a>)</li>
+<li class="wikiUnorderedListItem"> Add AfterTypeDiscovery event, allowing extensions to register additional types after type discovery (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#atd" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#atd</a>)</li>
+<li class="wikiUnorderedListItem"> Add @WithAnnotations as a way of improving extension loading performance (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#pat" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#pat</a>)</li>
+<li class="wikiUnorderedListItem"> Many minor improvements to portable extensions (see <a href="http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#spi" target="" class="regularLink">http://docs.jboss.org/cdi/spec/1.1/cdi-spec.html#spi</a>)</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-TryItOutAndFindOutMore"><a href="/Bloggers/CDI11Available#H-TryItOutAndFindOutMore">Try it out and find out more</a></h3>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Weld 2 is the reference implementation of CDI 1.1, and is available in <a href="http://www.wildfly.org/download/" target="" class="regularLink">WildFly 8 Alpha 1</a>.</li>
+<li class="wikiUnorderedListItem"> <a href="http://cdi-spec.org" target="" class="regularLink">http://cdi-spec.org</a> is the official website of CDI, and contains more on CDI 1.1.</li>
+</ul>
+</div>

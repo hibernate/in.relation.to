@@ -1,0 +1,129 @@
+---
+title: "Hibernate3 Events"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: []
+slug: Hibernate3Events
+lace: http://in.relation.to/2010.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/Hibernate3Events">Hibernate3 Events</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Another major change in Hibernate3 is the evolution to use an event and listener
+paradigm as its core processing model.  This allows very fine-grained hooks into
+Hibernate internal processing in response to external, application initiated 
+requests.  It even allows customization or complete over-riding of how Hibernate 
+reacts to these requests.  It really serves as an expansion of what Hibernate
+tried to acheive though the earlier Interceptor, Lifecycle, and Validatable 
+interafaces.
+</p>
+
+<p class="wikiPara">
+Note: The Lifecycle and Validatable interfaces have been moved to the new <q>classic</q> 
+package in Hibernate3.  Their use is not encouraged, as it introduces 
+dependencies on the Hibernate library into the users domain model and can
+be handled by a custom Interceptor or through the new event model external to
+the domain classes.  This is nothing new, as the same recomendation was made
+in Hibernate2 usage.
+</p>
+
+<p class="wikiPara">
+So what types of events does the new Hibernate event model define?  Essentially
+all of the methods of the org.hibernate.Session interface correlate to an event.
+So you have a LoadEvent, a FlushEvent, etc (consult the configuration DTD or
+the org.hibernate.event package for the full list of defined event types).
+When a request is made of one of these methods, the Hibernate session generates
+an appropriate event and passes it to the configured event listener for that
+type.  Out-of-the-box, these listeners implement the same processing in which
+those methods always resulted.  However, the user is free to implement a 
+customization of one of the listener interfaces (i.e., the LoadEvent is
+processed by the registered implemenation of the LoadEventListener interface),
+in which case their implementation would be responsible for processing any
+load() requests made of the Session.
+</p>
+
+<p class="wikiPara">
+These listeners should be considered effectively singletons; meaning, they are
+shared between requests, and thus should not save any state as instance 
+variables.  The event objects themselves, however, do hold a lot of the context
+needed for processing as they are unique to each request.  Custom event 
+listeners may also make use of the event's context for storage of any needed
+processing variables.  The context is a simple map, but the default listeners
+don't use the context map at all, so don't worry about over-writing internally
+required context variables.
+</p>
+
+<p class="wikiPara">
+A custom listener should implement the appropriate interface for the event
+it wants to process and/or extend one of the convenience base classes (or
+even the default event listeners used by Hibernate out-of-the-box as these
+are declared non-final for this purpose).  Custom listeners can either be
+registered programatically through the Configuration object, or specified
+in the Hibernate configuration XML (declarative configuration through the
+properties file is not supported).  Here's an example of a custom load
+event listener:
+</p>
+
+<pre class="wikiPreformatted">
+public class MyLoadListener extends DefaultLoadEventListener {
+    // this is the single method defined by the LoadEventListener interface
+    public Object onLoad(LoadEvent event, LoadEventListener.LoadType loadType) 
+            throws HibernateException {
+        if ( !MySecurity.isAuthorized( event.getEntityName(), event.getEntityId() ) ) {
+            throw MySecurityException("Unauthorized access");
+        }
+        return super.onLoad(event, loadType);
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+Then we need a configuration entry telling Hibernate to use our listener
+instead of the default listener:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;hibernate-configuration&gt;
+    &lt;session-factory&gt;
+        ...
+        &lt;listener type="load" class="MyLoadListener"/&gt;
+    &lt;/session-factory&gt;
+&lt;/hibernate-configuration&gt;
+</pre>
+
+
+<p class="wikiPara">
+Or we could register it programatically:
+</p>
+
+<pre class="wikiPreformatted">
+Configuration cfg = new Configuration();
+cfg.getSessionEventListenerConfig().setLoadEventListener( new MyLoadListener() );
+....
+</pre>
+
+
+<p class="wikiPara">
+Listeners registered declaratively cannot share instances.  If the same class
+name is used in multiple <tt>&lt;listener/&gt;</tt> elements, each reference will result in a
+seperate instance of that class.  If you need the capability to share listener
+instances between listener types you must use the programatic registration
+approach.
+</p>
+
+<p class="wikiPara">
+Why implement an interface and define the specific type during configuration?
+Well, a listener implementation could implement multiple event listener
+interfaces.  Having the type additionally defined during registration makes 
+it easier to turn custom listeners on or off during configuration.
+</p>
+</div>

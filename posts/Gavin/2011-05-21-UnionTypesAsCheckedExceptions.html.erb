@@ -1,0 +1,65 @@
+---
+title: "Union types as checked exceptions"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon]
+slug: UnionTypesAsCheckedExceptions
+lace: http://in.relation.to/20143.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/UnionTypesAsCheckedExceptions">Union types as checked exceptions</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+We've talked quite a lot about <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-MoreAboutUnionTypes" target="" class="regularLink">union types</a>, and even <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-TypeInferenceForSequenceEnumerationExpressions" target="" class="regularLink">seen</a> <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">some</a> of <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart10#H-NumericOperatorSemantics" target="" class="regularLink">their</a> <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-InstantiatingClassesAndOverloadingTheirInitializerParameters" target="" class="regularLink">many</a> <a href="/Bloggers/IntroductionToCeylonPart4" target="" class="regularLink">applications</a>, but one thing I didn't mention is that they can be used as a kind of checked exception facility. Consider the following method declaration:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">shared String|Error format(String format, Object... args) { .... }</pre>
+
+
+<p class="wikiPara">
+The return type of this method <i class="wikiEmphasis">forces</i> you to handle the possibility of an <tt>Error</tt> result, just like a checked exception does. You must either deal with the problem immediately in the calling code:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">String formatEntry(Entry e) {
+    local result = format("%s-&gt;%s", $e.key, $e.value);
+    if (is String result)
+        return result; 
+    }
+    else { 
+        return "Invalid entry"; 
+    }
+}</pre>
+
+
+<p class="wikiPara">
+Here the <tt>if</tt>/<tt>else</tt> performs the role of a <tt>try</tt>/<tt>catch</tt>. Ceylon's various static analysis facilities (in this case, the safe narrowing construct <tt>if (is ...)</tt> and definite return checking) conspire to force you to explicitly handle the possibility of <tt>Error</tt>. 
+</p>
+
+<p class="wikiPara">
+Or you must propagate the possibility of error up the stack:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">String|Error formatEntry(Entry e) {
+    return format("%s-&gt;%s", $e.key, $e.value);
+}</pre>
+
+
+<p class="wikiPara">
+Multiple exception types may be represented by including them all in the union, for example <tt>String|SomeError|OtherError</tt>, or by using a supertype, for example <tt>String|GenericError</tt>. Just like with real language-level support for checked exceptions.
+</p>
+
+<p class="wikiPara">
+Actually, Ceylon's handling of optional values, where the type <tt>X?</tt> is just a shortcut for <tt>X|Nothing</tt> can be viewed as really just a special case of this pattern. <tt>Error</tt> is just a <q>null</q> which carries a little more information than <tt>null</tt> itself.
+</p>
+
+<p class="wikiPara">
+I suppose that this probably isn't a pattern we should very much encourage in Ceylon, in view of the nasty failure of checked exceptions in Java, but I can imagine it being occasionally useful. In particular, it might sometimes be useful to be able to provide some information about <i class="wikiEmphasis">why</i> a return value is <q>null</q>.
+</p>
+</div>

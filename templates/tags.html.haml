@@ -1,0 +1,57 @@
+---
+layout: base
+---
+// general layout copied from the layout blog
+
+// find the tag name based on the page output path and the tag url
+- identifier = page.output_path.split("/")[-2].to_s
+- if not page.posts.nil?
+  - post = page.posts[0]
+  - for tag in post.tags
+    - tag_identifier = tag.primary_page.url.split("/")[-1].to_s
+    - if tag_identifier == identifier
+      - page_tag = tag
+.row
+  .span9
+    %h1
+      In relation to 
+      -if page_tag
+        = page_tag
+    - if not page.posts.nil?
+      - for post in page.posts
+        .blogpost
+          %h2
+            %a{:href=>post.url}= post.title
+          .blogtagbar
+            - post.author.each do |author|
+              %a{:href=>author.primary_page.url}
+                = author
+              &nbsp;
+            |&nbsp;
+            #{post.date.strftime( '%Y-%m-%d' )}
+            &nbsp;|&nbsp;
+            - post.tags.each do |tag|
+              %a.label{:href=>tag.primary_page.url}
+                = tag
+              &nbsp;
+          %p
+            ~ post.content.force_encoding("UTF-8")
+          %hr
+      = page.posts.links
+
+  .span3
+    %a{:href=>"/#{identifier}/feed.atom"}
+      %img{:src=>'/images/services/rss_32.png'}
+    %a{:href=>"/#{identifier}/feed.atom"}
+      Feed for
+      = page_tag
+    %h2
+      Authors
+    %ul.author
+      - for author in site.posts_author
+        %li
+          %span
+            %a{:href=>site.base_url + author.primary_page.url}= author
+    %h2
+      Tags
+    = site.posts_tags_cloud

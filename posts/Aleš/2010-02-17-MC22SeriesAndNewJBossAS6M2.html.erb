@@ -1,0 +1,76 @@
+---
+title: "MC 2.2 series and new JBossAS6_M2"
+author: "Aleš Justin"
+blogger_name: "Aleš"
+layout: blog-post
+tags: []
+slug: MC22SeriesAndNewJBossAS6M2
+lace: http://in.relation.to/14354.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MC22SeriesAndNewJBossAS6M2">MC 2.2 series and new JBossAS6_M2</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+We just released new <a href="http://bstansberry.wordpress.com/2010/02/16/jboss-application-server-6-0-0-m2-is-out/" target="" class="regularLink">JBossAS6 milestone - M2</a>.
+</p>
+
+<p class="wikiPara">
+With this one we start off a new <a href="http://www.jboss.org/jbossmc" target="" class="regularLink">Microcontainer</a> 2.2.x version series:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> VFS 2.2.0.Alpha2 -- minor bug fixes and a few hack removals</li>
+<li class="wikiUnorderedListItem"> Reflect 2.2.0.Alpha2 -- first one to include new Classpool project [1]</li>
+<li class="wikiUnorderedListItem"> MDR 2.2.0.Alpha1 -- down the optimization road, metadata annotations lookup</li>
+<li class="wikiUnorderedListItem"> Kernel 2.2.0.Alpha6 -- includes JMX [2], new Weld-int, asynchronous mode [3], ...</li>
+<li class="wikiUnorderedListItem"> CL 2.2.0.Alpha2 -- system resources are still visible at shutdown, lifecycle callbacks, shutdown mode, ...</li>
+<li class="wikiUnorderedListItem"> Deployers 2.2.0.Alpha1 -- deployers sorting fix, modification check based on known files, includes JMX, ...</li>
+<li class="wikiUnorderedListItem"> McAnn 1.0.0.Alpha1 -- extracted scanning; to-be even more generalized (McScan project)</li>
+</ul>
+
+<p class="wikiPara">
+Explaining the [x] in a bit more details: 
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Classpool is a project that will let us properly use Javassist based Reflect in JBossAS/MC</li>
+<li class="wikiOrderedListItem"> JMX impl used to be part of AS; extracted and split into 3 sub-projects: JMX-Kernel, JMX-Deployers, JBossMX</li>
+<li class="wikiOrderedListItem"> you can declare &lt;bean name=<q>Foo</q> class=<q>org.acme.Bar</q> <b>mode=<q>Asynchronous</q></b>&gt; and its install will happen in a new thread</li>
+</ol>
+
+<p class="wikiPara">
+A lot of work in Kernel was done to support our new OSGi+MC facade and its transparent service/component mix.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://anonsvn.jboss.org/repos/jbossas/projects/jboss-osgi/projects/runtime/framework/branches/alesj_service-mix/" target="" class="regularLink">http://anonsvn.jboss.org/repos/jbossas/projects/jboss-osgi/projects/runtime/framework/branches/alesj_service-mix/</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://jaxlondon.com/conferences/trackssessions/?tid=1453#session-13375" target="" class="regularLink">http://jaxlondon.com/conferences/trackssessions/?tid=1453#session-13375</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+Another big chunk of work in Kernel was also spent on optimizations,
+where Kabir did most of the heavy lifting, hence I'll let him talk about it. :-)
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://kabir-khan.blogspot.com/2010/02/optimizing-jboss-microcontainer.html" target="" class="regularLink">http://kabir-khan.blogspot.com/2010/02/optimizing-jboss-microcontainer.html</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+We're off to changing VFS with new v3 implementation!
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://lists.jboss.org/pipermail/jboss-development/2010-February/015781.html" target="" class="regularLink">http://lists.jboss.org/pipermail/jboss-development/2010-February/015781.html</a>
+</li>
+</ul>
+</div>

@@ -1,0 +1,122 @@
+---
+title: "Seam 1.1 finally reaches GA"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: Seam11FinallyReachesGA
+lace: http://in.relation.to/1946.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/Seam11FinallyReachesGA">Seam 1.1 finally reaches GA</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+This morning I uploaded a GA release of Seam 1.1. For those who've been following the development of Seam 1.1, there is not much new in this compared to the two CR releases. The only significant improvements compared to CR2 are that we now have the Hibernate and JPA example applications running out of the box on WebLogic (as well as JBoss, GlassFish and Tomcat), a number of enhancements to seam-gen, and a nice built-in datepicker control.
+</p>
+
+<p class="wikiPara">
+Download it <a href="https://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=163777&amp;release_id=470955" target="" class="regularLink">here </a>.
+</p>
+
+<p class="wikiPara">
+But for those who've been sleeping on Seam, here's a quick rundown on what's new in 1.1. (If you've never heard of Seam, and are wondering why you care, go <a href="http://www.jboss.com/products/seam/whyseam" target="" class="regularLink">here </a> first.)
+</p>
+
+<h2 class="wikiHeadline2" id="H-AJAX"><a href="/Bloggers/Seam11FinallyReachesGA#H-AJAX">AJAX</a></h2>
+<p class="wikiPara">
+Seam has featured (DWR-like) AJAX component remoting for a while now and this functionality is popular and useful. But realistically most Java developers would prefer to be able to get functionality like partial page refresh, interactive server-side validation, server-side suggest, etc, without needing to futz with JavaScript at all. This is where ICEfaces and Ajax4JSF come in. These are the leading AJAX component libraries for JSF, and they are the easiest way to build a rich client using simple, declarative JSF templates. We've been working with the ICEfaces and Ajax4JSF teams to make sure that both libraries work with Seam. 
+</p>
+
+<p class="wikiPara">
+More importantly, we've created a brand new concurrency management architecture for Seam. AJAX fundamentally changes the interaction model of the web. If you try to take a traditional stateless architecture, designed for use with few, synchronous, coarse-grained requests, and re-use it in an AJAX environment where many, asynchronous (and therefore concurrent), fine-grained requests are the order of the day, you're virtually guaranteed to kill your database! AJAX makes server-side (conversational) state management a requirement, not a nicety. Amazingly, Seam is the only architecture in existence today which offers a strong model for conversation state. But the possibility of concurrent access to server-side conversation state opens up a whole raft of threadsafety issues which are not addressed by the servlet specification. Seam 1.1 solves these problems in a robust way.
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/concepts.html#d0e2420" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/concepts.html#d0e2420</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-DataorientedApplications"><a href="/Bloggers/Seam11FinallyReachesGA#H-DataorientedApplications">Data-oriented applications</a></h2>
+<p class="wikiPara">
+It's very important to make clear that Seam is not, primarily, a Rails/Grails/Trails style framework for simplifying the development of basic data-oriented applications. Seam certainly does very much simplify the programming model of typical J2EE or Spring+Hibernate application architectures, but you won't really fully appreciate Seam until you start to come to terms with the stateful component model, conversations, conversation-scoped persistence contexts, pageflow and business process management. However, there is no reason on earth why the existence of this sophisticated functionality can't live comfortably beside facilities for simplifying basic data access. So Seam 1.1 introduces an Application Framework and a command line tool. These are surprisingly simple since they are layered over Seam's existing programming model, and are able to leverage all the power and simplicity of Seam. 
+</p>
+
+<p class="wikiPara">
+The Seam Application Framework will eventually grow a lot bigger than it is now, and might eventually end up being packaged seperately from the Seam core. For now it provides Query and Home objects for both JPA and Hibernate3. These are classes that you can re-use either by extension or configuration. If you like, you can think of them as filling a similar role to DAO in a more traditional Java web application architecture. The biggest difference is that in Seam it is perfectly reasonable to bind Query and Home objects directly to the view (with loose coupling courtesy of the EL) whereas more traditional architectures force you to access the DAO via some kind of Action class. Of course, you can still inject a Query or Home into any Seam component and call it programmatically if that is what you prefer. As always, Seam lets you layer your code, but does not force any particular layering upon you.
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/framework.html" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/framework.html</a>
+</p>
+
+<p class="wikiPara">
+The commandline tool makes it super-easy to get started with Seam. A few keystrokes, and you'll have a full Eclipse project structure (NetBeans is also supported) that automagically re-deploys itself to a JBoss exploded directory when you edit code. A few more keystrokes, and we've got a page with a simple action. A few more, and we've reverse engineered a whole Seam application (based on the Application Framework) from the database. The reverse engineering tool is, of course, built on top of Hibernate Tools. We intend to integrate the functionality of the commandline tool into a future release of JBoss IDE.
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/gettingstarted.html" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/gettingstarted.html</a>
+</p>
+
+<p class="wikiPara">
+This work also involved improving Seam's extensions to JSF that allow the easy creation of applications with bookmarkable pages.
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/events.html#d0e3357" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/events.html#d0e3357</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-J2EESupport"><a href="/Bloggers/Seam11FinallyReachesGA#H-J2EESupport">J2EE support</a></h2>
+<p class="wikiPara">
+Previously, Seam could be deployed on a Java EE 5 environment like JBoss or GlassFish, or on standalone Tomcat with the help of JBoss Microcontainer or JBoss Embeddable EJB3. We have heard loud complaints from a number of potential users who want to use Seam but are stuck on J2EE application servers like WebLogic or WebSphere. Seam 1.1 is compatible with J2EE (you can use either JPA or Hibernate for persistence) and comes with some examples that deploy out of the box on WebLogic (we'll get up to WebSphere next release).
+</p>
+
+<p class="wikiPara">
+This change meant that we needed to beef up Seam's support for plain JavaBean components, since in a J2EE environment people won't be able to use stateful session beans. A lot of the less visible work in Seam 1.1 involved building an efficient clustering architecture of stateful JavaBean components.
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/concepts.html#d0e2831" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/concepts.html#d0e2831</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-PersistenceContextManagement"><a href="/Bloggers/Seam11FinallyReachesGA#H-PersistenceContextManagement">Persistence context management</a></h2>
+<p class="wikiPara">
+Seam-managed persistence contexts are one of the coolest things in Seam. In fact, one of the main reasons we decided to create Seam in the first place was our frustration at the all the problems Hibernate users experienced with LazyInitializationExceptions when using Hibernate with stateless session beans or Spring. Seam persistence context management got two major enhancements in this release. First, there is a bunch of extremely complex code (totally invisible to the user) to allow extremely efficient clustering of extended persistence contexts - even more efficient than what the EJB container is allowed to do with container-managed persistence contexts. Second, we introduced support for atomic persistence contexts. An atomic persistence context lets you make changes to managed objects across many requests in the same conversation, but have those changes be made persistent only at the end of the conversation (or some other well-defined point), instead of at the end of each request. This is a feature that JBoss, Sun and Sybase tried unsuccessfully to standardize into the EJB3 specification. If you want to use this feature, you'll need to use Hibernate as the JPA provider.
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/conversations.html#d0e4275" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/conversations.html#d0e4275</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-Asynchronicity"><a href="/Bloggers/Seam11FinallyReachesGA#H-Asynchronicity">Asynchronicity</a></h2>
+<p class="wikiPara">
+Seam 1.1 layers support for asynchronous method invocation over the EJB3 timer service. This is a <q>lightweight</q> way to achieve asynchronicity in cases where JMS is overkill (don't worry, Seam also makes sending and receiving JMS messages a breeze, but that is not new).
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/jms.html#d0e5041" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/jms.html#d0e5041</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-JSFTagLibrary"><a href="/Bloggers/Seam11FinallyReachesGA#H-JSFTagLibrary">JSF tag library</a></h2>
+<p class="wikiPara">
+Seam 1.1 introduces some additions to Seam's JSF tag library, the most notable being a control for page fragment caching (similar to OSCache, which does not work with JSF), a control for adding fancy <q>decorations</q> to fields when validation fails, and a nice datepicker.
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/controls.html" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/controls.html</a>
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/validation.html" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/validation.html</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-SophisticatedXMLbasedComponentConfiguration"><a href="/Bloggers/Seam11FinallyReachesGA#H-SophisticatedXMLbasedComponentConfiguration">Sophisticated XML-based component configuration</a></h2>
+<p class="wikiPara">
+We've enhanced Seam's XML configuration facility, allowing more flexible packaging of the XML, and the use of namespaced schemas along with other improvements.
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.1GA/reference/en/html/xml.html" target="" class="regularLink">http://docs.jboss.com/seam/1.1GA/reference/en/html/xml.html</a>
+</p>
+</div>

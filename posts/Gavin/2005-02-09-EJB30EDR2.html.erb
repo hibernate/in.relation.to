@@ -1,0 +1,82 @@
+---
+title: "EJB 3.0 EDR2"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: EJB30EDR2
+lace: http://in.relation.to/1769.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/EJB30EDR2">EJB 3.0 EDR2</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Cedric beat me to this, but if you missed his announcement, the EJB 3.0 second 
+early draft is available. The most interesting new stuff to me is:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the new callback listener/interceptor architecture</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the separate document dealing with entity beans that will evolve into a complete specification out-of-container operation of the entity manager (the persistence engine)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> native SQL queries</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> definition of interoperability with legacy EJB 2.1 clients and servers</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> complete specification of the semantics of association mappings</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> complete specification of the semantics of EJBQL</li>
+</ul>
+
+
+<p class="wikiPara">
+There is also an example of what the XML-based ORM metadata might look like. 
+This is intended to spark discussion and is certainly not final at this stage.
+</p>
+
+<p class="wikiPara">
+Of course, there are many other revisions compared to EDR1. (Those were just the ones I could think of now.)
+</p>
+
+<p class="wikiPara">
+The goals for a next draft include
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> API for obtaining an EntityManager outside the container</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> more complete definition of XML-based deployment descriptors</li>
+</ul>
+
+
+<p class="wikiPara">
+<a href="http://jcp.org/en/jsr/detail?id=220" target="" class="regularLink">http://jcp.org/en/jsr/detail?id=220</a>
+</p>
+
+<p class="wikiPara">
+Before I go, I can't overemphasize how important the new @Interceptor stuff is - for a long time we've been unable to extend the basic set of EJB services in a portable way. Yes, you could do it in JBoss, using JBoss-specific APIs, and in WebLogic using BEA-specific APIs, but that just isn't good enough! One immediate consequence of this new feature is that people will be able to build /EJB frameworks/. I anticipate a whole new marketplace for open source addons to EJB, just like there is a profusion of web-tier frameworks today. But unlike web-tier frameworks, the architecture lends itself to combining different extensions in the same application! It's interesting; the original EJB vision was for a marketplace of reuseable /application components/, which didn't eventuate. /This/ feature will further foster the availability of reuseable /infrastructure services/, which actually /has/ worked in practice (though it hasn't worked so well for EJB).
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+</div>

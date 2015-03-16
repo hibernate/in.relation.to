@@ -1,0 +1,96 @@
+---
+title: "4.1 Feature : Loading by NaturalId "
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: [Hibernate,News]
+slug: 41FeatureLoadingByNaturalId
+lace: http://in.relation.to/22795.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/41FeatureLoadingByNaturalId">4.1 Feature : Loading by NaturalId </a>
+                    </h1>
+</div>
+<p class="wikiPara">
+One of the new features in 4.1 will be the addition of an actual API for loading entities by natural id.  Yes previous versions had the ability to do natural id loading leveraging criteria queries, but that approach was very limiting.  The new API will allow caching at both the Session and SessionFactory level in addition to providing a consistent API.  The new approach has been made available for identifier based loading as well, again for consistency.
+</p>
+
+<p class="wikiPara">
+New methods have been added to the Session contract as a starting point (see source or javadoc for additional discussion):
+</p>
+
+<pre class="wikiPreformatted">public IdentifierLoadAccess byId(String entityName);
+public IdentifierLoadAccess byId(Class entityClass);
+
+public NaturalIdLoadAccess byNaturalId(String entityName);
+public NaturalIdLoadAccess byNaturalId(Class entityClass);
+
+public SimpleNaturalIdLoadAccess bySimpleNaturalId(String entityName);
+public SimpleNaturalIdLoadAccess bySimpleNaturalId(Class entityClass);</pre>
+
+
+<p class="wikiPara">
+All of the load access delegates have methods for getting an entity reference (<tt>getReference</tt>) and loading an entity (<tt>load</tt>).  The distinction is similar to the older <tt>get</tt> and <tt>load</tt> methods on Session; <tt>getReference</tt> on load access delegates equate to <tt>Session.load</tt> and <tt>load</tt> on load access delegates equate to <tt>Session.get</tt>
+</p>
+
+<pre class="wikiPreformatted">public interface IdentifierLoadAccess {
+    public IdentifierLoadAccess with(LockOptions lockOptions);
+    public Object getReference(Serializable id);
+    public Object load(Serializable id);
+}
+
+public interface NaturalIdLoadAccess {
+    public NaturalIdLoadAccess with(LockOptions lockOptions);
+    public NaturalIdLoadAccess using(String attributeName, Object value);
+    public Object getReference();
+    public Object load();
+}
+
+public interface SimpleNaturalIdLoadAccess {
+    public SimpleNaturalIdLoadAccess with(LockOptions lockOptions);
+    public Object getReference(Object naturalIdValue);
+    public Object load(Object naturalIdValue);
+}</pre>
+
+
+<p class="wikiPara">
+So let's say we have an entity defining a natural id:
+</p>
+
+<pre class="wikiPreformatted">@Entity
+@Table(name="T_USER")
+public class User {
+    @Id
+    private Long id;
+    @NaturalId
+    private String username;
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+we can load instances of that class by natural id as follows:
+</p>
+
+<pre class="wikiPreformatted">session.byNaturalId( User.class ).using( "username", "steve" ).load();</pre>
+
+
+<p class="wikiPara">
+That actually makes sure we get back an initialized instance, just like <tt>Session.get</tt> does.  If we just want a possibly uninitialized reference we would use this instead:
+</p>
+
+<pre class="wikiPreformatted">session.byNaturalId( User.class ).using( "username", "steve" ).getReference();</pre>
+
+
+<p class="wikiPara">
+Since the natural id here is simple (just a single attribute) we can make this even easier:
+</p>
+
+<pre class="wikiPreformatted">session.bySimpleNaturalId( User.class ).load( "steve" );</pre>
+
+</div>

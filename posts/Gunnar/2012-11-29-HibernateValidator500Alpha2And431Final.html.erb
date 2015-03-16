@@ -1,0 +1,308 @@
+---
+title: "Hibernate Validator 5.0.0.Alpha2 and 4.3.1.Final"
+author: "Gunnar Morling"
+blogger_name: "Gunnar"
+layout: blog-post
+tags: [Hibernate Validator]
+slug: HibernateValidator500Alpha2And431Final
+lace: http://in.relation.to/23706.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateValidator500Alpha2And431Final">Hibernate Validator 5.0.0.Alpha2 and 4.3.1.Final</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Today it's my pleasure to announce the simultaneous release of Hibernate Validator
+5.0.0.Alpha2 and 4.3.1.Final.
+</p>
+
+<h1 class="wikiHeadline1" id="H-HibernateValidator5"><a href="/Bloggers/HibernateValidator500Alpha2And431Final#H-HibernateValidator5">Hibernate Validator 5</a></h1>
+
+<p class="wikiPara">
+The 5.0.0.Alpha2 release catches up with the public review
+<a href="http://beanvalidation.org/1.1/" target="" class="regularLink">draft</a> of Bean Validation 1.1 (1.1.0.Beta2). Let's have a 
+closer look at some of the changes in the following.
+</p>
+
+<h2 class="wikiHeadline2" id="H-MethodValidation"><a href="/Bloggers/HibernateValidator500Alpha2And431Final#H-MethodValidation">Method validation</a></h2>
+
+<p class="wikiPara">
+The methods for validating method arguments and return values <a href="https://hibernate.onjira.com/browse/BVAL-310" target="" class="regularLink">have been moved</a> from
+<i class="wikiEmphasis">javax.validation.Validator</i> to a new dedicated interface <i class="wikiEmphasis">MethodValidator</i>. It is obtained
+and used like this:
+</p>
+
+<pre class="wikiPreformatted">MethodValidator methodValidator = Validation
+    .buildDefaultValidatorFactory()
+    .getValidator()
+    .forMethods();
+
+OrderService myOrderService = ...;
+Method placeOrderMethod = ...;
+Object[] arguments = ...;
+
+Set&lt;ConstraintViolation&lt;OrderService&gt;&gt; = methodValidator
+    .validateParameters(myOrderService, placeOrderMethod, arguments);</pre>
+
+
+<p class="wikiPara">
+Also related to method validation, there is now support for <a href="https://hibernate.onjira.com/browse/BVAL-232" target="" class="regularLink">cross-parameter constraints</a>.
+These come in handy when several parameters of a method or constructor need to be validated
+together, similar to traditional class-level constraints. The following shows an example:
+</p>
+
+<pre class="wikiPreformatted">@ConsistentDateParameters
+public void createCalendarEvent(Date start, Date end) {
+    //...
+}</pre>
+
+
+<p class="wikiPara">
+Opposed to constraints on individual parameters, cross-parameter constraints are specified
+on the method itself. To make it easy for readers of your code to differentiate
+cross-parameter constraints from return value constraints, it's recommended to choose a name
+which clearly expresses the constraint's purpose.
+</p>
+
+<p class="wikiPara">
+A cross-parameter constraint is defined like this:
+</p>
+
+<pre class="wikiPreformatted">@Target({ METHOD, ANNOTATION_TYPE })
+@Retention(RUNTIME)
+@CrossParameterConstraint(validatedBy = ConsistentDateParametersValidator.class)
+@Documented
+public @interface ConsistentDateParameters {
+    String message() default "{ConsistentDateParameters.message}";
+    Class&lt;?&gt;[] groups() default { };
+    Class&lt;? extends Payload&gt;[] payload() default { };
+}</pre>
+
+
+<p class="wikiPara">
+As you can see, this looks very similar to a normal Bean Validation constraint annotation.
+The only difference is that the <i class="wikiEmphasis">@CrossParameterConstraint</i> meta-annotation is used to
+specify the constraint's validator. The validator must support <i class="wikiEmphasis">Object[]</i> as validated type:
+</p>
+
+<pre class="wikiPreformatted">public class ConsistentDateParametersValidator implements ConstraintValidator&lt;ConsistentDateParameters, Object[]&gt; {
+
+    @Override
+    public void initialize(ConsistentDateParameters constraintAnnotation) {
+        //nothing to do
+    }
+
+    @Override
+    public boolean isValid(Object[] value, ConstraintValidatorContext context) {
+        if ( value.length != 2 ) {
+            throw new IllegalArgumentException( "Unexpected method signature" );
+        }
+
+        if ( value[0] == null || value[1] == null ) {
+            return true;
+        }
+
+        if ( !( value[0] instanceof Date ) || !( value[1] instanceof Date ) ) {
+            throw new IllegalArgumentException( "Unexpected method signature" );
+        }
+
+        return ( ( Date ) value[0] ).before( ( Date ) value[1] );
+    }
+}</pre>
+
+
+<p class="wikiPara">
+As this validator operates on an array of objects representing the method arguments to be
+validated, it is required to check the number and types of arguments first. The advantage
+of this approach is that it allows to implement generic cross-parameter constraints which
+are not specific to one method:
+</p>
+
+<pre class="wikiPreformatted">@AreEqual(indexes={0,1}, message="Passwords must be identical")
+public void resetPassword(String password, String confirmedPassword) {
+    //...
+}</pre>
+
+
+<p class="wikiPara">
+The Bean Validation EG also considers a
+<a href="http://beanvalidation.org/proposals/BVAL-232/" target="" class="regularLink">more type-safe approach</a>, which has its own
+quirks, though. Let us know what would work best for you.
+</p>
+
+<h2 class="wikiHeadline2" id="H-IntegrationWithCDI"><a href="/Bloggers/HibernateValidator500Alpha2And431Final#H-IntegrationWithCDI">Integration with CDI</a></h2>
+
+<p class="wikiPara">
+One of the big themes in Bean Validation 1.1 is the <a href="https://hibernate.onjira.com/browse/BVAL-307" target="" class="regularLink">integration with CDI</a>. The 5.0.0.Alpha2
+release brings initial support for this. So it's possible now to have dependencies injected
+into constraint validator implementations via CDI:
+</p>
+
+<pre class="wikiPreformatted">public class OrderNumberValidator implements ConstraintValidator&lt;ValidOrderNumber, String&gt; {
+
+    @Inject
+    private OrderValidationService orderValidationService;
+
+    @Override
+    public void initialize(ValidOrderNumber constraintAnnotation) {
+        //nothing to do
+    }
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        return orderValidationService.isValid(value);
+    }
+}</pre>
+
+
+<p class="wikiPara">
+But that's not all. When invoking a method on a CDI managed bean which has parameter or
+return value constraints, automatically an interceptor kicks in, which validates the
+arguments and return value. If either is invalid, a <i class="wikiEmphasis">ConstraintViolationException</i> will be
+thrown. This protects the method implementation from illegal argument values and the caller
+from illegal return values. So you'll never have to write code like this again:
+</p>
+
+<pre class="wikiPreformatted">public void placeOrder(Item item, int quantity) {
+    if(item == null) {
+        throw new IllegalArgumentException("Item must not be null");
+    }
+    if(quantity &lt; 1) {
+        throw new IllegalArgumentException("Quantity must be at least 1");
+    }
+    
+    //actual implementation
+}</pre>
+
+
+<p class="wikiPara">
+Instead this is sufficient:
+</p>
+
+<pre class="wikiPreformatted">public void placeOrder(@NotNull Item item, @Min(1) int quantity) {    
+    //actual implementation
+}</pre>
+
+
+<p class="wikiPara">
+This does not only simplify the implementation, it also makes sure that the caller knows
+about the constraints, because they are part of the method's public API.
+</p>
+
+<h2 class="wikiHeadline2" id="H-GroupConversion"><a href="/Bloggers/HibernateValidator500Alpha2And431Final#H-GroupConversion">Group conversion</a></h2>
+
+<p class="wikiPara">
+Finally, there is support for the conversion of the validated groups during cascaded
+validation, a long standing <a href="https://hibernate.onjira.com/browse/BVAL-208" target="" class="regularLink">feature request</a>
+with the Bean Validation spec. Remember, when annotating an element (e.g. a property or
+method parameter) with <i class="wikiEmphasis">@Valid</i>, validation will be propagated to the referenced object(s).
+</p>
+
+<p class="wikiPara">
+With help of the new <i class="wikiEmphasis">ConvertGroup</i> annotation it is now possible to define which group or
+sequence on the cascaded element shall be validated when a given group is validated on the
+parent. Let's look at an example:
+</p>
+
+<pre class="wikiPreformatted">//validation groups
+public interface Complete extends Default {}
+public interface BasicPostal {}
+public interface FullPostal extends BasicPostal {}
+
+public class Address {
+    
+    @NotNull(groups = BasicPostal.class)
+    String street1;
+
+    @NotNull
+    String street2;
+
+    @Size(groups = BasicPostal.class, min = 3)
+    String zipCode = "12";
+
+    @Size(groups = FullPostal.class, max = 2)
+    String doorCode = "ABC";
+}
+    
+public class User {
+
+    @Valid
+    @ConvertGroup.List({
+        @ConvertGroup(from = Default.class, to = BasicPostal.class),
+        @ConvertGroup(from = Complete.class, to = FullPostal.class)
+    })
+    Set&lt;Address&gt; addresses = new HashSet&lt;&gt;();
+}</pre>
+
+
+<p class="wikiPara">
+When validating a <i class="wikiEmphasis">User</i> object with the default group, for the associated addresses the
+constraints in the <i class="wikiEmphasis">BasicPostal</i> group will be validated. When validating a <i class="wikiEmphasis">User</i> object
+with the <i class="wikiEmphasis">Complete</i> group, this will lead to a validation of the constraints in the
+<i class="wikiEmphasis">FullPostal</i> group on the user's addresses.
+</p>
+
+<p class="wikiPara">
+This feature should help with cascaded validations throughout different layers of an
+application which all define different validation groups.
+</p>
+
+<p class="wikiPara">
+While these are the major changes of the release, there are some more notable ones,
+e.g. minor <a href="https://hibernate.onjira.com/browse/HV-631" target="" class="regularLink">modifications to the metadata API</a>,
+some changes around <a href="https://hibernate.onjira.com/browse/HV-630" target="" class="regularLink">ConfigurationSource</a> as
+well as several bugfixes. Not related to Bean Validation 1.1, we finished <a href="https://hibernate.onjira.com/browse/HV-584" target="" class="regularLink">the works</a> to clearly
+separate API, SPI and internal parts of the code base. The
+<a href="https://hibernate.onjira.com/browse/HV/fixforversion/12151" target="" class="regularLink">changelog</a> has all the details
+for you.
+</p>
+
+<h1 class="wikiHeadline1" id="H-HibernateValidator43"><a href="/Bloggers/HibernateValidator500Alpha2And431Final#H-HibernateValidator43">Hibernate Validator 4.3</a></h1>
+
+<p class="wikiPara">
+While we're heavily working on Hibernate Validator 5 in order to implement revision 1.1 of
+the Bean Validation spec, we decided to do a maintenance release of Hibernate Validator
+4.3, the reference implementation of Bean Validation 1.0.
+</p>
+
+<p class="wikiPara">
+We fixed a couple of bugs, most notably <a href="https://hibernate.onjira.com/browse/HV-591" target="" class="regularLink">HV-591</a>.
+This caused an error when applying the <i class="wikiEmphasis">@Email</i> constraint to long strings. Interestingly,
+this is by far the most reported bug we've had so far in Hibernate Validator 
+<a href="https://hibernate.onjira.com/browse/HV-607" target="" class="regularLink">with</a>
+<a href="https://hibernate.onjira.com/browse/HV-609" target="" class="regularLink">altogether</a>
+<a href="https://hibernate.onjira.com/browse/HV-613" target="" class="regularLink">four</a>
+<a href="https://hibernate.onjira.com/browse/HV-625" target="" class="regularLink">duplicates</a>. I'm wondering who choses an email
+address with over 60 characters, but we can validate it now :) Check out the 
+<a href="https://hibernate.onjira.com/browse/HV/fixforversion/12366" target="" class="regularLink">change log</a> for a complete 
+overview of all issues fixed in 4.3.1.
+</p>
+
+<h1 class="wikiHeadline1" id="H-SummingItUp"><a href="/Bloggers/HibernateValidator500Alpha2And431Final#H-SummingItUp">Summing it up</a></h1>
+
+<p class="wikiPara">
+This concludes our tour through the new Hibernate Validator releases.
+</p>
+
+<p class="wikiPara">
+As usual, both releases can be retrieved from SourceForge
+(<a href="http://sourceforge.net/projects/hibernate/files/hibernate-validator/4.3.1.Final/" target="" class="regularLink">4.3.1.Final</a>,
+<a href="http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.0.0.Alpha2/" target="" class="regularLink">5.0.0.Alpha2</a>).
+The Maven coordinates are <i class="wikiEmphasis">org.hibernate:hibernate-validator:4.3.1.Final</i> respectively
+<i class="wikiEmphasis">org.hibernate:hibernate-validator:5.0.0.Alpha2</i>. Your feedback is welcome in the
+<a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a>, the
+<a href="https://hibernate.onjira.com/browse/HV" target="" class="regularLink">issue tracker</a> and our
+<a href="http://www.hibernate.org/community/mailinglists" target="" class="regularLink">mailing list</a>. The new features are not
+described in the Hibernate Validator reference guide yet, so you might be interested in the
+<a href="http://beanvalidation.org/latest-draft/spec/" target="" class="regularLink">latest specification draft</a>.
+</p>
+
+<p class="wikiPara">
+If you have any ideas or proposals around the Bean Validation 1.1 spec, don't hesitate to
+engage directly with the <a href="http://beanvalidation.org/contribute/" target="" class="regularLink">expert group</a>.</p>
+</div>

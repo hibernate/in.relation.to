@@ -1,0 +1,207 @@
+---
+title: "Discrimination"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: Discrimination
+lace: http://in.relation.to/1754.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/Discrimination">Discrimination</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Type - not sex, or race - discrimination is what we do when we read a row from a SQL query result set, and determine what Java class we should instantiate to hold the data from that row. Type discrimination is needed by any ORM solution or handwritten persistence layer that supports polymorphic queries or associations.
+</p>
+
+<p class="wikiPara">
+This simplest way to visualize type discrimination is to consider the following result set:
+</p>
+
+<pre class="wikiPreformatted">
+( 123, '1234-4567-8910-1234', 'Foo Bar', 'VISA' )
+( 111, '4321-7654-0198-0987', 'Baz Qux', 'MCD'  )
+</pre>
+
+
+<p class="wikiPara">
+This result set contains details of two credit cards. Suppose our application has a different Java class to represent each type of credit card. We have two subclasses, VisaCard and MasterCard of the CreditCard class. Then we can check the last column of the result set to decide which class to instantiate for each row. This column is the <q>discriminator column</q>.
+</p>
+
+<p class="wikiPara">
+You're probably wondering why I'm talking about about <q>result sets</q> instead of tables. Well, there are various ways to map a Java class hierarchy to a relational database schema: table-per-hierarchy, table-per-concrete-class, table-per-class. So the actual table structure may be quite complex. But the only way to actually get data efficiently out of the database is to denormalize it into one big square result set. In fact, I usually think of the job of the SQL query as transforming table-per-concrete-class or table-per-class mapped data into an intermediate table-per-hierarchy denormalized form. (This is, incidentally, why table-per-hierarchy offers the best performance of the three mapping strategies - it is already in a convenient form and does not require unions or joins on the database.) Whatever strategy we choose, we need to perform type discrimination upon this flattened result set.
+</p>
+
+<p class="wikiPara">
+Now, what I'm most interested in for the moment is the result set discriminator column. Most writings on the topic of inheritance mappings - and there have not been very many - and even most ORM solutions (actually every one that I know of), have assumed that the discriminator column is an actual physical column of the root table of the supertype. Indeed, it has usually been further assumed that the mapping from discriminator values to classes is one-to-one. But this need not be the case. In my credit card example, it certainly made sense. But now let's consider a different case. We're storing data relating to specific individuals in the PERSON table; our SQL query might look like this:
+</p>
+
+<pre class="wikiPreformatted">
+SELECT ID, NAME, SPECIES FROM PERSON
+</pre>
+
+
+<p class="wikiPara">
+and the result set might be:
+</p>
+
+<pre class="wikiPreformatted">
+( 12345, 'Zxychg Ycjzy', 'Martian' )
+( 52778, 'Glooble Queghm', 'Venusian' )
+( 98876, 'Gavin King', 'Human' )
+</pre>
+
+
+<p class="wikiPara">
+Now, here on earth, we consider Humans to be quite special and worthy of extra attention compared to other species of intelligent alien. So we might have a specific Human class, and a generic Alien class. Then the mapping from discriminator column values to classes is certainly not one-to-one. Indeed, there is a <q>specific</q> value for Human, and a <q>catchall</q> for Alien. 
+</p>
+
+<p class="wikiPara">
+Actually, it's quite reasonable that we might even have some extra, Human-specific data, in the HUMAN table. To get all the data we need, let's use the following join:
+</p>
+
+<pre class="wikiPreformatted">
+SELECT ID, NAME, SPECIES, COUNTRY 
+FROM PERSON 
+    NATURAL JOIN HUMAN
+
+( 12345, 'Zxychg Ycjzy', 'Martian', null )
+( 52778, 'Glooble Queghm', 'Venusian', null )
+( 98876, 'Arnold Schwarzenegger', 'Human', 'US' )
+</pre>
+
+
+<p class="wikiPara">
+In this result set, we have two potential discriminator columns. Either the COUNTRY or SPECIES column could be used to determine if the individual is human. And the COUNTRY column isn't a column of the root PERSON table. Now imagine we introduce a further level of specialization, and include data specific to employees of our organization:
+</p>
+
+<pre class="wikiPreformatted">
+SELECT ID, NAME, SPECIES, COUNTRY, JOB
+FROM PERSON 
+    NATURAL JOIN HUMAN 
+    NATURAL JOIN EMPLOYEE
+
+( 12345, 'Zxychg Ycjzy', 'Martian', null, null )
+( 52778, 'Glooble Queghm', 'Venusian', null, null )
+( 98876, 'Arnold Schwarzenegger', 'Human', 'US', null )
+( 34556, 'Gavin King', 'Human', 'AU', 'Java Developer' )
+</pre>
+
+
+<p class="wikiPara">
+Now we can no longer perform type discrimination using just a single column. Ouch! That's messy. Let's change the query slightly:
+</p>
+
+<pre class="wikiPreformatted">
+SELECT ID, NAME, SPECIES, COUNTRY, JOB, 
+    CASE 
+        WHEN LOC IS NULL THEN 'ALIEN' 
+        WHEN JOB IS NULL THEN 'HUMAN' 
+        ELSE 'EMPLOYEE' 
+    END 
+FROM PERSON 
+    NATURAL JOIN HUMAN 
+    NATURAL JOIN EMPLOYEE
+
+( 12345, 'Zxychg Ycjzy', 'Martian', null, null, 'ALIEN' )
+( 52778, 'Glooble Queghm', 'Venusian', null, null, 'ALIEN' )
+( 98876, 'Arnold Schwarzenegger', 'Human', 'US', null, 'HUMAN' )
+( 34556, 'Gavin King', 'Human', 'AU', 'Java Developer', 'EMPLOYEE' )
+</pre>
+
+
+<p class="wikiPara">
+Yay, we've got our nice clean discriminator column back again! But this column most certainly does not correspond to any physical column of a table. It holds a pure derived value.
+</p>
+
+<p class="wikiPara">
+This is <q>content-based discrimination</q>. Our example uses a table-per-class mapping strategy, but the result sets above could all just as easily have come from from some other mapping strategy.
+</p>
+
+<p class="wikiPara">
+Here's a second example of content-based discrimination:
+</p>
+
+<pre class="wikiPreformatted">
+SELECT TX_ID, ACCOUNT_ID, AMOUNT, 
+    CASE 
+        WHEN AMOUNT&gt;0 THEN 'CREDIT' 
+        ELSE 'DEBIT' 
+    END 
+FROM TRANSACTIONS
+
+( 12875467987, 98798723, 56.99, 'CREDIT' )
+( 09808343123, 87558345, 123.25, 'DEBIT' )
+</pre>
+
+
+<p class="wikiPara">
+Here, we use a column that is based upon a mathematical expression, AMOUNT&gt;0, to discriminate between DebitTransaction and CreditTransaction. In principle, much more complex expressions are possible. (In practice, they are likely to remain quite simple.)
+</p>
+
+<p class="wikiPara">
+In Hibernate 2.x the table-per-class mapping strategy always used content-based discrimination, and the table-per-hierarchy strategy always used column-based discrimination. For some reason - that is now kind of obscure to me - that felt quite natural. In Hibernate3, you can use content based discrimination for the table-per-hierarchy mapping strategy:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Person" table="PERSON" 
+    discriminator-value="ALIEN"&gt;
+    ...
+    &lt;discriminator type="string"&gt; 
+        &lt;formula&gt;
+            CASE 
+                WHEN LOC IS NULL THEN 'ALIEN' 
+                WHEN JOB IS NULL THEN 'HUMAN' 
+                ELSE 'EMPLOYEE' 
+            END
+        &lt;/formula&gt;
+    &lt;/discriminator&gt;
+    ...
+    &lt;subclass name="Human" 
+        discriminator-value="HUMAN"&gt;
+        ...
+        &lt;subclass name="Employee" 
+            discriminator-value="EMPLOYEE"&gt;
+            ...
+        &lt;/subclass&gt;
+     &lt;/subclass&gt;
+ &lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+And you can use column-based discrimination for table-per-class mappings:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Person" table="PERSON" 
+    discriminator-value="ALIEN"&gt;
+    ...
+    &lt;discriminator type="string" column="TYPE"/&gt;
+    ...
+    &lt;subclass name="Human" 
+        discriminator-value="HUMAN"&gt;
+        &lt;join table="HUMAN"&gt;
+            ...
+            &lt;subclass name="Employee" 
+                discriminator-value="EMPLOYEE"&gt;
+                &lt;join table="EMPLOYEE"&gt;
+                    ...
+                &lt;/join&gt;
+            &lt;/subclass&gt;
+        &lt;/join&gt;
+     &lt;/subclass&gt;
+ &lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+For the table-per-concrete-class strategy (<tt>&lt;union-subclass&gt;</tt> mapping), only content-based discrimination makes sense.
+</p>
+</div>

@@ -1,0 +1,34 @@
+---
+layout: project
+---
+-# layout for pages related to the blog
+-# display menu on the left
+-# handles title display
+
+-# Project specific navigation menu
+.row-fluid
+  -# Menu
+  .span2
+    .project-menu
+      .text-center.project-menu-title
+        %a{:href => '/', :class => 'icon-stack'}
+          %i.icon-circle.icon-stack-base.icon-fixed-width
+          %i{:class => "icon icon-light icon-fixed-width icon-quote-right"}
+          /icon-rss icon-signal
+      %hr.divider
+    .blogtagbar
+      .single_blog_author
+        - page.author.each do |author|
+          %a{:href=>author.primary_page.url}
+            = author
+      .single_blog_date
+        #{page.date.strftime( '%Y-%m-%d' )}
+      .single_blog_tags
+        - page.tags.each do |tag|
+          %a.label{:href=>tag.primary_page.url}
+            = tag
+          &nbsp;
+  .span8
+    -# Title
+    = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
+    ~ content

@@ -1,0 +1,103 @@
+---
+title: "You should upgrade to Java EE 6"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Java EE 6]
+slug: YouShouldUpgradeToJavaEE6
+lace: http://in.relation.to/13788.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/YouShouldUpgradeToJavaEE6">You should upgrade to Java EE 6</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+With the release of Java EE 6, I've seen a number of recurring, but rather curious, arguments against upgrading to the new platform. These are usually deployed by folks who are using a <q>homegrown</q> stack consisting of a servlet engine like Tomcat or Jetty together with a number of open source frameworks like Hibernate and Spring.
+</p>
+
+<p class="wikiPara">
+Now, of course, I'm sure there are plenty of good reasons to choose a non-standard open source technology as an alternative to, or in addition to, a technology included in the EE platform. Happily, you're free to use whatever open source frameworks you like in EE 6 - indeed, Servlet 3 and CDI include a bunch of functionality to make integration of third-party frameworks as seamless as possible. So this doesn't amount to a reason to not use EE 6.
+</p>
+
+<p class="wikiPara">
+Rather, I've seen people saying the following:
+</p>
+
+<h3 class="wikiHeadline3" id="H-UpgradingTheEEApplicationServerIsQhardq"><a href="/Bloggers/YouShouldUpgradeToJavaEE6#H-UpgradingTheEEApplicationServerIsQhardq">Upgrading the EE application server is <q>hard</q></a></h3>
+
+<p class="wikiPara">
+This seems to be an organization-specific political problem, rather than an actual technical problem with the application servers themselves. Certainly, upgrading a server like GlassFish or JBoss is usually a pretty trivial task. (And upgrading third-party frameworks is certainly not always painless.) Apparently, some organizations have put in place extremely heavyweight processes surrounding server upgrades, without introducing similar processes for frameworks which run <q>inside</q> the server, thus making it easier for the development team to deploy upgrades to third-party frameworks than to the application server itself.
+</p>
+
+<p class="wikiPara">
+Well, this sounds to me more like an argument for developing more responsive processes than an argument for abandoning Java EE. There are certainly risks associated with running your application on an old or obsolete server platform, and your processes shouldn't encourage that practice.
+</p>
+
+<p class="wikiPara">
+But from a practical perspective, almost everyone is going to want to upgrade to Servlet 3 in the near future. This means a server upgrade, whether you're using Tomcat, Jetty, JBoss, GlassFish, Resin, WebLogic, Oracle or WebSphere. This is an excellent opportunity to simultaneously migrate to an EE 6 web profile. A golden opportunity, in fact.
+</p>
+
+<h3 class="wikiHeadline3" id="H-EEApplicationServersAreQbloatedq"><a href="/Bloggers/YouShouldUpgradeToJavaEE6#H-EEApplicationServersAreQbloatedq">EE application servers are <q>bloated</q></a></h3>
+
+<p class="wikiPara">
+The objection is that the EE server includes functionality that the team is not (currently) using. Well, then don't use it! Oh.
+</p>
+
+<p class="wikiPara">
+This argument usually devolves into a discussion of jar sizes, and a comparison of the disk space occupied by the servlet engine and third-party frameworks versus an EE application server deployment. Upfront, there's a couple of things wrong with this argument:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> the amount of disk space we're talking about in either case is just <i class="wikiEmphasis">tiny</i> when measured in dollars, and</li>
+<li class="wikiOrderedListItem"> the size of the application war file is actually more important than the size of the server installation, and including more functionality in the server helps reduce the size of the war.</li>
+</ol>
+
+<p class="wikiPara">
+But by far the biggest reason to reject this argument is that the new Java EE 6 web profile is so obviously <i class="wikiEmphasis">not bloated</i>. When the first certified web profile servers make it into the market place, we'll have a new <q>just right</q> sweet spot between <q>too big</q> full EE application servers, and <q>too small</q> servlet containers.
+</p>
+
+<h3 class="wikiHeadline3" id="H-J2EEAndEJB2Sucked"><a href="/Bloggers/YouShouldUpgradeToJavaEE6#H-J2EEAndEJB2Sucked">J2EE and EJB2 sucked!</a></h3>
+
+<p class="wikiPara">
+The idea here is that we can take revenge on the people who gave us entity beans by refusing to use anything else that has gone through the JCP standardization process. Of course, this is a special form of <q>revenge</q> which involves the user cutting off his own nose. Oh and:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> That was <i class="wikiEmphasis">eight years ago</i>! Is this really your best shot?</li>
+<li class="wikiOrderedListItem"> Several great specifications have emerged from the JCP, some of which you almost certainly <i class="wikiEmphasis">are</i> using. No, the JCP has not had a 100% success rate - far from it - but then, who has?</li>
+<li class="wikiOrderedListItem"> Most of the folks who worked on EE 6 hated EJB2 and J2EE just as much (or more) than you did. That's why they joined the JCP - to help fix the problems. For example, the, ahem, author of this blog post was the creator of Hibernate. Are you really trying to give him a lecture on the problems of EJB2?</li>
+<li class="wikiOrderedListItem"> The folks who invented entity beans have probably all retired by now!</li>
+</ol>
+
+<p class="wikiPara">
+The truth is that the technologies in the Java EE 6 web profile range from <q>very adequate</q> to <q>cool as shit</q>. You're doing yourself and your employer no favors by not trying them out for yourself.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ApplicationServerPortabilityIsAMyth"><a href="/Bloggers/YouShouldUpgradeToJavaEE6#H-ApplicationServerPortabilityIsAMyth">Application server portability is a myth!</a></h3>
+
+<p class="wikiPara">
+Really? Then why do we see so many people porting applications between different application servers? Oh, I see, you mean 100% perfect world zero-changes-to-my-application platonic ideal portability. Well, OK, I understand that the nerd mindset has a weak spot for absolute truths and platonic ideas, but can we take a step back in this case, please?
+</p>
+
+<p class="wikiPara">
+In which scenario are you <i class="wikiEmphasis">really</i> better off, from a portability perspective:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> 99% of your code, and 85% of your external metadata is compatible between server platforms - and the remaining 1% and 15% can be ported reasonably easily</li>
+<li class="wikiUnorderedListItem"> 40% of your code and 80% of your external metadata is tied to a non-standard, single-vendor container architecture</li>
+</ul>
+
+<p class="wikiPara">
+When I make this point, it usually results in an immediate subject change from <q>application server portability is a myth</q> to <q>I don't care about container portability</q>. Well, OK, that's a value judgement that you're entitled to. But your subject-change concedes the point that application server portability is real. And it's useful to many organizations.
+</p>
+
+<p class="wikiPara">
+UPDATE: I'm still waiting to see a more <i class="wikiEmphasis">substantive</i> critique of EE 6 from advocates of alternative technologies. I consider the arguments mentioned above to be non-substantive, in the sense that they don't raise real, technical problems with the usability of the EE platform for application development. The quality of the latest round of specifications seems to have left the anti-EE camp (temporarily?) short on ammunition.
+</p>
+</div>

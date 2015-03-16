@@ -1,0 +1,658 @@
+---
+title: "What You Can Do With EJB3 (part one)"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: WhatYouCanDoWithEJB3PartOne
+lace: http://in.relation.to/1635.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/WhatYouCanDoWithEJB3PartOne">What You Can Do With EJB3 (part one)</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Now that the EJB 3.0 early draft is 
+<a href="http://jcp.org/aboutJava/communityprocess/edr/jsr220/index.html" target="" class="regularLink">out there</a>,
+it's definitely time to move on from all the recent politics, and start 
+thinking about what we can actually /do/ with this stuff. EJB is the only Java 
+standard which addresses server-side /business logic/, and is thus central
+to J2EE. The EJB spec committee recognizes that EJB has fallen short of achieving
+some of its ambitious goals, and is in need of an overhaul. This overhaul
+has focused very much upon ease of use, primarily via simplification of the
+requirements upon bean implementors. However, the spec committe also identified 
+a number of critical functional enhancements that facilitate ease of use and
+the elimination of certain J2EE anti-patterns.
+</p>
+
+<p class="wikiPara">
+Fortunately, the Java community now knows much more about the problems 
+involved in building web and enterprise applications than it did five years 
+ago. We have been <q>learning by doing</q>. A powerful, easy to use, standard 
+approach to building server-side business objects is now well within our grasp!
+</p>
+
+
+<p class="wikiPara">
+The spec committee thought very hard about how to simplify certain extremely 
+common use cases, expecially two cases that I'll canonicalize as follows:
+</p>
+
+<p class="wikiPara">
+/Updating data/
+</p>
+
+<p class="wikiPara">
+1. retrieve an item of data
+</p>
+
+<p class="wikiPara">
+2. display on screen
+</p>
+
+<p class="wikiPara">
+3. accept user input
+</p>
+
+<p class="wikiPara">
+4. update the data
+</p>
+
+<p class="wikiPara">
+5. report success to the user
+</p>
+
+<p class="wikiPara">
+/Entering new data/
+</p>
+
+<p class="wikiPara">
+1. retrieve an item of data
+</p>
+
+<p class="wikiPara">
+2. display on screen
+</p>
+
+<p class="wikiPara">
+3. accept user input
+</p>
+
+<p class="wikiPara">
+4. create a new item of data, with an association to the first item
+</p>
+
+<p class="wikiPara">
+5. report success to the user
+</p>
+
+<p class="wikiPara">
+Each of these cases involves two full application request/response cycles.
+Both demonstrate that optimistic locking is essential in an application
+that requires high concurrency (both cases would need to be implemented
+as a single conversation spanning two distinct ACID database/JTA 
+transactions).
+</p>
+
+<p class="wikiPara">
+A further common use case, that is especially difficult to do in EJB 2.1,
+given the limitations of the query language is the following:
+</p>
+
+<p class="wikiPara">
+/Listing and reporting data/
+</p>
+
+<p class="wikiPara">
+1. retrieve an aggregated or summarized list of data
+</p>
+
+<p class="wikiPara">
+2. display it to the user
+</p>
+
+<p class="wikiPara">
+Finally, we considered two canonical physical architectures. The /colocated/
+case - which we considered most important, at least for typical web apps - 
+has a presentation layer acting as a local client of the business layer. 
+The /remote case/ has a remote client (for example, a servlet engine 
+or swing client running in a different physical tier) accessing the 
+business layer.
+</p>
+
+<p class="wikiPara">
+First we need data. Interaction with relational data is central
+to almost every web or enterprise application. Applications that implement 
+nontrivial business logic benefit from an object-oriented representation of
+the data (a /domain model/) that takes full advantage of object oriented 
+techniques like inheritance and polymorphism. For various reasons (I won't 
+repeat the arguments we made at length in Hibernate in Action), applications
+which use fully object oriented domain models need an automated solution
+to the OR mismatch problem. EJB3 incorporates a very sophisticated ORM
+specification that draws heavily upon the experience of CMP 2.1, Hibernate 
+and Oracle's TopLink.
+</p>
+
+<p class="wikiPara">
+Our auction application has Users, Items and Bids. Let's implement these
+as 3.0-style entity beans. We'll start with Item:
+</p>
+
+<pre class="wikiPreformatted">
+@Entity 
+public class Item {
+    private Long id;
+    private User seller;
+    private Collection&lt;Bid&gt; bids = new ArrayList&lt;Bid&gt;();
+    private String description;
+    private String shortDescription;
+    private Date auctionEnd;
+    private int version;
+    
+    public Item(User seller, String desc, String shortDesc, Date end) {
+        this.seller = seller;
+        this.description = desc;
+        this.shortDescription = shortDesc;
+        this.auctionEnd = end;
+    }
+    
+    protected Item() {}
+    
+    @Id(generate=AUTO)
+    public Long getId() {
+        return id;
+    }
+    protected void setId(Long id) {
+        this.id = id;
+    }
+    
+    @Column(length=500)
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+    
+    public Date getAuctionEnd() {
+        return auctionEnd;
+    }
+    protected void setAuctionEnd(Date end) {
+        this.auctionEnd = end;
+    }
+    
+    @Column(length=100)
+    public String getShortDescription() {
+        return shortDescription;
+    }
+    public void setShortDescription(String shortDescription) {
+        this.shortDescription = shortDescription;
+    }
+    
+    @JoinColumn(nullable=false, updatable=false)
+    public User getSeller() {
+        return seller;
+    }
+    protected void setSeller(User seller) {
+        this.seller = seller;
+    }
+    
+    @OneToMany(cascade=ALL)
+    protected Collection&lt;Bid&gt; getBids() {
+        return bids;
+    }
+    protected void setBids(Collection&lt;Bid&gt; bids) {
+        this.bids = bids;
+    }
+    
+    @Version
+    public int getVersion() {
+        return version;
+    }
+    protected void setVersion(int version) {
+        this.version = version;
+    }
+    
+    public Bid bid(BigDecimal amount, User bidder) {
+        Bid newBid = new Bid(this, amount, bidder);
+        bids.add(newBid);
+        return bid;
+    }
+    
+}
+</pre>
+
+
+<p class="wikiPara">
+The most striking thing, initially, is the annotations. No deployment 
+descriptor is required! EJB 3.0 will let you choose between the use of 
+annotations and XML deployment descriptors, but we expect that annotations 
+will be the most common case.
+</p>
+
+<p class="wikiPara">
+The @Entity annotation tells the container that this class is a CMP entity
+bean. The optional @Column annotations define the column mappings for 
+persistent properties (if we were mapping legacy data, we would define column 
+names in these annotations). The @Id annotations selects the primary key 
+property of the entity bean. In this case, the entity bean has a generated 
+primary key. The optional @OneToMany annotations defines a one to many 
+association, and specifies a /cascade style/ of ALL. The optional @JoinColumn
+annotation defines a column mapping for an association. In this case, it
+constrains the association to be required and immutable. The @Version 
+annotation defines the property used by the container for optimistic
+locking.
+</p>
+
+<p class="wikiPara">
+Perhaps the most important thing to notice here is that almost all of the
+annotations are optional. EJB3 uses /configuration by exception/, meaning
+that the specification defines natural, useful defaults so that you do
+/not/ need to specify an annotation in the common case. For example, we
+have not included any annotation at all on one of the persistent 
+properties.
+</p>
+
+<p class="wikiPara">
+Also striking is that, apart from the annotations, Item has no dependency
+to classes or interfaces in javax.ejb. This was a major goal of EJB3, and
+helps to significantly reduce <q>noise</q>.
+</p>
+
+<p class="wikiPara">
+Entity beans do not require a local or remote interface, which also reduces
+noise.
+</p>
+
+<p class="wikiPara">
+It's time to implement Bid:
+</p>
+
+<pre class="wikiPreformatted">
+@Entity
+public class Bid {
+    private Long id;
+    private Item item;
+    private BigDecimal amount;
+    private Date datetime;
+    private User bidder;
+    private boolean approved;
+    
+    protected Bid() {}
+    
+    public Bid(Item item, BigDecimal amount, User bidder) {
+        this.item = item;
+        this.amount = amount;
+        this.bidder = bidder;
+        this.datetime = new Date();
+    }
+    
+    @Id(generate=AUTO)
+    public Long getId() {
+        return id;
+    }
+    protected void setId(Long id) {
+        this.id = id;
+    }
+    
+    @Column(nullable=false) 
+    public BigDecimal getAmount() {
+        return amount;
+    }
+    protected void setAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
+    
+    @Column(nullable=false) 
+    public Date getDatetime() {
+        return datetime;
+    }
+    protected void setAmount(Date datetime) {
+        this.datetime = datetime;
+    }
+    
+    @JoinColumn(nullable=false)
+    public User getBidder() {
+        return bidder;
+    }
+    protected void setBidder(User bidder) {
+        this.bidder = bidder;
+    }
+    
+    @JoinColumn(nullable=false)
+    public Item getItem() {
+        return item;
+    }
+    protected void setItem(Item item) {
+        this.item = item;
+    }
+    
+    public boolean isApproved() {
+        return approved;
+    }
+    public void setApproved(boolean approved) {
+        this.approved = approved;
+    }
+    
+    
+}
+</pre>
+
+
+<p class="wikiPara">
+I'll leave it to you to write the User entity bean!
+</p>
+
+<p class="wikiPara">
+Notice that our domain model classes are now simple JavaBeans. This means that
+they are testable outside the EJB container.
+</p>
+
+<p class="wikiPara">
+What about the home interfaces? Well, the requirement for home interfaces has 
+been eliminated by EJB3, so we won't be needing them.
+</p>
+
+<p class="wikiPara">
+Now, let's look at our first use case, updating an Item. We'll assume a colocated
+architecture, and implement our business logic in a stateless session bean with
+a local business interface. A business interface defines operations visible to
+the client (your session beans may have as many business interfaces as you like).
+We'll define the Auction local interface as follows:
+</p>
+
+<pre class="wikiPreformatted">
+public interface Auction {
+    public Item getItemById(Long itemId);
+    public void updateItem(Item item);
+}
+</pre>
+
+
+<p class="wikiPara">
+Business interfaces are local by default, so no @Local annotation is required.
+</p>
+
+<p class="wikiPara">
+Since our Item entity bean is also a JavaBean, we can pass it directly to a
+JSP (for example). We do not need any DTOs, or complex method signatures.
+</p>
+
+<p class="wikiPara">
+The AuctionImpl bean class implements this interface:
+</p>
+
+<pre class="wikiPreformatted">
+@Stateless
+public class AuctionImpl implements Auction {
+    @Inject public EntityManager em;
+    
+    public Item getItemById(Long itemId) {
+        return em.find(Item.class, itemId);
+    }
+    
+    public void updateItem(Item item) {
+        em.merge(item);
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+Wow. That was easy! 
+</p>
+
+<p class="wikiPara">
+The @Inject annotation is used to indicate that a field of a session bean is set 
+by the container. In EJB 3.0, session beans do not need to use JNDI to obtain
+references to resources or other EJBs. In this case, the container /injects/ a
+reference to the EntityManager, the interface for persistence-related operations
+on entity beans.
+</p>
+
+<p class="wikiPara">
+Notice that the container handles optimistic locking transparently.
+</p>
+
+<p class="wikiPara">
+Suppose our client was a servlet. The code to display an Item might look something 
+like this:
+</p>
+
+<pre class="wikiPreformatted">
+Long itemId = new Long( request.getParameter("itemId") );
+
+Auction auction = (Auction) new InitialContext().lookup("Auction");
+
+Item item = auction.getItemById(itemId);
+
+session.setAttribute("item", item);
+</pre>
+
+
+<p class="wikiPara">
+Since the Item entity bean is also just a simple JavaBean, the JSP can use it
+directly. The second request, which updates the Item, might look like this:
+</p>
+
+<pre class="wikiPreformatted">
+Item item = (Item) session.getAttribute("item");
+
+item.setDescription( request.getParameter("description") );
+item.setShortDescription( request.getParameter("shortDescription") );
+
+Auction auction = (Auction) new InitialContext().lookup("Auction");
+    
+auction.updateItem(item);
+</pre>
+
+
+<p class="wikiPara">
+Note that other expert groups are exploring ways to eliminate JNDI lookups, 
+such as these lookups for the session bean.
+</p>
+
+<p class="wikiPara">
+Now let's turn to the second use case, creating a new Bid.  We'll add a new 
+method to Auction:
+</p>
+
+<pre class="wikiPreformatted">
+public interface Auction {
+    public Item getItemById(Long itemId);
+    public void updateItem(Item item);
+    public Bid bidForItem(Item item, BigDecimal amount, User bidder)
+        throws InvalidBidException;
+    public void approveBid(Long bidId);
+}
+</pre>
+
+
+<p class="wikiPara">
+We must implement these new methods in AuctionImpl, of course:
+</p>
+
+<pre class="wikiPreformatted">
+@Stateless
+public class AuctionImpl implements Auction {
+    @Inject public EntityManager em;
+    @Inject QueueConnectionFactory bidQueue;
+    
+    ...
+    
+    public void approveBid(Long bidId) {
+        Bid bid = em.find(Bid.class, bidId);
+        bid.setApproved(approved);
+    }
+    
+    public Bid bidForItem(Item item, BigDecimal amount, User bidder)
+        throws InvalidBidException {
+        
+        String query = "select max(bid.amount) from Bid bid where "
+            + "bid.item.id = :itemId and bid.approved = true";
+        
+        BigDecimal maxApprovedBid = 
+            (BigDecimal) em.createNamedQuery(query)
+                .setParameter( "itemId", item.getId() )
+                .getUniqueResult();
+        
+        if ( amount.lessThan(maxApprovedBid) ) {
+            throw new InvalidBidException();
+        }
+        
+        Bid bid = item.createBid(amount, bidder);
+        
+        em.create(bid);
+        
+        requestApproval(bid, bidQueue);
+        
+        return bid;            
+        
+    }
+    
+    
+    private static void requestApproval(Bid bid, Queue queue) {
+        ...
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+The bidForItem() method executes an EJB QL query that determines the current maximum
+approved Bid. If the amount of the new bid is larger, we instantiate a new Bid and
+make it persistent by calling EntityManager.create().
+</p>
+
+<p class="wikiPara">
+The requestApproval() method sends a message to the queue, asking a backend system to 
+verify the bidder's ability to pay. The session bean gets a reference to a JMS
+QueueConnectionFactory by dependency injection.
+</p>
+
+<p class="wikiPara">
+We need a message driven bean, BidApprovalListener, to receive the reply from the 
+backend system. When the reply is received, we'll send an email to the bidder, and
+mark the Bid approved.
+</p>
+
+<pre class="wikiPreformatted">
+@MessageDriven 
+public class BidApprovalListener implements MessageListener {
+    @Inject javax.mail.Session session;
+    @Inject Auction auction;
+    
+    public void onMessage(Message msg) {
+    
+        MapMessage mapMessage = (MapMessage) msg;
+        boolean approved = mapMessage.getBoolean("approved");
+        long bidId = mapMessage.getLong("bidId");
+        
+        auction.approveBid(bidId);
+                    
+        notifyApproval(bid, session);
+        
+    }
+    
+    private static void notifyApproval(Bid bid, Session session) {
+        ...
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+Notice that the message driven bean gets its JavaMail Session and a reference to
+the Auction session bean by dependency injection.
+</p>
+
+<p class="wikiPara">
+Our final use case is easy. We add one more method to Auction:
+</p>
+
+<pre class="wikiPreformatted">
+public interface Auction {
+    public Item getItemById(Long itemId);
+    public void updateItem(Item item);
+    public Bid bidForItem(Item item, BigDecimal amount, User bidder)
+        throws InvalidBidException;
+    public void approveBid(Long bidId);
+    public List&lt;ItemSummary&gt; getItemSummaries();
+}
+</pre>
+
+
+<p class="wikiPara">
+And implement it in AuctionImpl:
+</p>
+
+<pre class="wikiPreformatted">
+@Stateless
+public class AuctionImpl implements Auction {
+    ...
+    
+    public List&lt;ItemSummary&gt; getItemSummaries() {
+        String query = "select new "
+        + "ItemSummary(item.shortDescription, item.id, max(bid.amount)) "
+        + "from Item item left outer join item.bids bid";
+        
+        return (List&lt;ItemSummary&gt;) em.createQuery(query)
+            .listResults();
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+ItemSummary is just a simple JavaBean, with an appropriate constructor, so we don't need 
+to show it here.
+</p>
+
+<p class="wikiPara">
+The EJB QL query demonstrates how easy it is to do outer joins, projection and aggregation 
+in EJB3. These (and other) new features make the Fast Lane Reader antipattern pretty
+much obsolete. 
+</p>
+
+<p class="wikiPara">
+Well, that's the end of part one. We've seen the following simplifications:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Annotations replace complex XML deployment descriptors</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Elimination of home interfaces</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Elimination of dependencies to classes and interfaces in javax.ejb</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Entity beans are simple JavaBeans, with no local or remote interfaces</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Dependency injection replaces JNDI lookups</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Elimination of DTOs</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Elimination of Fast Lane Reader antipattern</li>
+</ul>
+
+
+<p class="wikiPara">
+In the next installment, we'll consider remote clients...
+</p>
+</div>

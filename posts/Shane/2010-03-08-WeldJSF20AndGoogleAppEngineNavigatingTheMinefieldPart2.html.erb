@@ -1,0 +1,537 @@
+---
+title: "Weld, JSF 2.0 and Google App Engine - Navigating the minefield (Part 2)"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+layout: blog-post
+tags: []
+slug: WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2
+lace: http://in.relation.to/14671.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2">Weld, JSF 2.0 and Google App Engine - Navigating the minefield (Part 2)</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+In <a href="http://in.relation.to/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1" target="" class="regularLink">part 1</a> of this article, 
+we learnt how to create a new Google App Engine project in Eclipse, 
+integrate the Weld and JSF libraries, run the project locally and finally how to deploy it to the GAE production 
+environment.  This second part will look at some of the issues faced when developing a GAE application, 
+particularly when coming from a Java EE development background.
+</p>
+
+<p class="wikiPara">
+First a disclaimer - while part 1 of this article was more a step by step guide, this part is more of a random
+collection of thoughts on various aspects of the GAE development process.  I still consider myself quite a noob
+in this area, so if you think you have better information for any of the following topics please let us know in 
+the comments area.
+</p>
+
+<p class="wikiPara">
+Let's get started! We'll begin by looking at one of the most important things, the persistence layer.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheGoogleAppEngineDatastore"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-TheGoogleAppEngineDatastore">The Google App Engine datastore</a></h2>
+
+<p class="wikiPara">
+If you're used to working with relational databases, then the 
+<a href="http://code.google.com/appengine/docs/java/datastore/overview.html" target="" class="regularLink">GAE datastore</a> might be a bit confusing at first.
+Although Google supports both JDO (don't ask me why) and JPA APIs for datastore access, you need to approach
+data access in GAE with a different mindset.  The most important thing to remember is that the App Engine datastore 
+is designed for scalability, not performance.  As far as application architecture goes, my recommendation is to try and 
+design your app to be based on simple, single-table queries filtered to return just the results you need.  For data that 
+seldom changes, I recommend that you avoid the database wherever possible and use a cached result instead (I'll cover this a 
+bit later).  To be a little bit more particular about <a href="http://code.google.com/appengine/docs/java/datastore/usingjpa.html#Unsupported_Features_of_JPA" target="" class="regularLink">what the datastore doesn't support</a>, 
+here's a brief list:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Owned many-to-many relationships, and unowned relationships</li>
+<li class="wikiUnorderedListItem"> Join queries - you cannot filter by a child entity's field when querying its parent.</li>
+<li class="wikiUnorderedListItem"> Aggregation queries such as group by, sum, having, etc</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-PrimaryKeys"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-PrimaryKeys">Primary Keys</a></h3>
+
+<p class="wikiPara">
+There are <a href="http://code.google.com/appengine/docs/java/datastore/creatinggettinganddeletingdata.html#Keys" target="" class="regularLink">four different options</a> 
+available for primary key values.  The easiest way is to just use a <tt>Long</tt>:
+</p>
+
+
+
+<pre class="wikiPreformatted">   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+   public Long getId()</pre>
+
+
+
+<p class="wikiPara">
+   
+However if you want to create a reference to your entity from other entities you should use an encoded String, which
+requires an additional annotation on the primary key field:
+</p>
+
+
+
+<pre class="wikiPreformatted">   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+   @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
+   public String getProjectId()</pre>
+
+
+
+<p class="wikiPara">
+   
+By using an encoded String primary key value, you can then create references using the standard JPA annotations:
+</p>
+
+
+
+<pre class="wikiPreformatted">   @ManyToOne
+   @JoinColumn(name = "PROJECTID")
+   public Project getProject() {
+      return project;
+   } </pre>
+
+
+<p class="wikiPara">
+  
+</p>
+
+<h3 class="wikiHeadline3" id="H-EntityRelationships"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-EntityRelationships">Entity Relationships</a></h3>
+
+<p class="wikiPara">
+By default, relationships to other entities defined via the <tt>@OneToOne</tt> or <tt>@ManyToOne</tt> annotations are lazy-loaded.
+This means that when you perform a query on the parent entity, the child entity isn't loaded until you explicitly
+read the child property from the parent.  Obviously this is going to cause an extra round trip to the database, which
+may have performance implications.  My suggestion here may be a little counter-intuitive, but in cases like this where
+you want to reduce calls to the database it may pay to de-normalize your database structure if possible.
+</p>
+
+<p class="wikiPara">
+Alternatively, you may wish to keep lookup data (for example records in COUNTRY or STATE tables in the case of address
+entities) cached, and simply store the primary key values of the lookup records in the parent table, rather than an
+object reference.  It means a little more work, however is probably worth it for the performance benefits.
+</p>
+
+<h3 class="wikiHeadline3" id="H-CreatingTheEntityManagerFactory"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-CreatingTheEntityManagerFactory">Creating the EntityManagerFactory</a></h3>
+
+<p class="wikiPara">
+This is a very expensive operation, and should only be done once.  The recommended way is to store the <tt>EntityManagerFactory</tt>
+instance in a static field, like this:
+</p>
+
+
+
+<pre class="wikiPreformatted">public final class EMF {
+   private static final EntityManagerFactory emfInstance = Persistence.createEntityManagerFactory("transactions-optional");
+   
+   public static EntityManagerFactory get() {
+      return emfInstance;  
+   }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+To get <tt>EntityManager</tt> instances you can use a producer method.  Since we don't support conversations in GAE yet
+(see the Unsupported features section below) the following code shows a request scoped producer:
+</p>
+
+
+
+<pre class="wikiPreformatted">public class EntityManagerProducer  {
+         
+   @Produces @RequestScoped EntityManager createEntityManager() {
+      return EMF.get().createEntityManager();
+   }
+   
+   public void close(@Disposes EntityManager entityManager) {
+      entityManager.close();
+   }
+}</pre>
+
+
+
+
+<h3 class="wikiHeadline3" id="H-DetachingEntities"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-DetachingEntities">Detaching entities</a></h3>
+
+<p class="wikiPara">
+This one can be quite a gotcha.  In GAE, managed entities may have hidden references back to certain database objects,
+such as the <tt>Query</tt> that loaded them.  This causes problems with session serialization because those database objects
+aren't serializable.  With JDO this isn't such a problem because it has a method called <tt>detachCopy()</tt> which detaches 
+the object from the persistence context.  Unfortunately the JPA spec has only recently introduced (in version 2.0) the 
+<tt>detach()</tt> method which at present isn't available in GAE.
+</p>
+
+<p class="wikiPara">
+What this means, is that if you wish to cache objects you load from the database you either need to clone the entities
+in question, or alternatively create DTOs that contain only the properties that you wish to cache.  Hopefully GAE will
+support JPA 2.0 in the future.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Indexes"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Indexes">Indexes</a></h2>
+
+<p class="wikiPara">
+Table indexes are configured in a file called <tt>datastore-indexes.xml</tt> in the <tt>WEB-INF</tt> directory.  There is a
+property in this file called <tt>autoGenerate</tt> which if set to <tt>true</tt> is supposed to detect the queries
+that you execute when running the application locally and automatically create the necessary indexes.  I found this
+a little flaky in practice and ended up having to configure some indexes manually, which is as simple as adding
+an entry to <tt>datastore-indexes.xml</tt> containing the fields of the index and their sort direction.  Here's an example:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;datastore-indexes autoGenerate="true"&gt;
+    &lt;datastore-index kind="Comment" ancestor="false"&gt;
+        &lt;property name="blogId" direction="asc" /&gt;
+        &lt;property name="commentDate" direction="asc" /&gt;
+    &lt;/datastore-index&gt;
+&lt;/datastore-indexes&gt;</pre>
+
+
+
+
+<p class="wikiPara">
+Once your application is deployed to production, you can view the status of your indexes from the GAE dashboard,
+simply click the 'Datastore Indexes' link in the left hand column.  Here's a heads up - index creation in GAE is
+SLOW!  Even if your table contains no data whatsoever, it can literally take hours to create a simple index.  So
+don't get worried if it seems like Google has forgotten to create your index, just be patient.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Security"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Security">Security</a></h2>
+
+<p class="wikiPara">
+A great feature of GAE is its integration with the Google Accounts API.  In my opinion, why would you want to bother
+with having to create and maintain user and role tables, creating user registration views, 'I forgot my password'
+views, CAPTCHA, an e-mail facility for registration confirmation, etc when you can let Google do all that hard work for you.
+By using the Google Accounts API you allow anyone with a Google account to use your application, meaning you get all
+the advantages that come with being able to uniquely identify a visitor without any of the maintenance overhead.
+</p>
+
+<p class="wikiPara">
+Using the Google Accounts API to authenticate is a piece of cake.  My recommendation is to create a simple
+<tt>Identity</tt> bean which takes care of the security-related stuff for you.  Start by creating a method called
+<tt>getLoginUrl()</tt> which generates a URL that the user can click to authenticate:
+</p>
+
+
+
+<pre class="wikiPreformatted">@Named @SessionScoped
+public class Identity {
+
+   public String getLoginUrl() {
+      ExternalContext ctx = FacesContext.getCurrentInstance().getExternalContext();
+      HttpServletRequest request = (HttpServletRequest) ctx.getRequest();
+      HttpServletResponse response = (HttpServletResponse) ctx.getResponse();
+      
+      UserService userService = UserServiceFactory.getUserService();
+      return userService.createLoginURL(response.encodeUrl(request.getRequestURI()));
+   }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+Once you've done that, you can then add the following code snippet to your page header or wherever to allow the
+user to sign into your application:
+</p>
+
+
+
+<pre class="wikiPreformatted">  &lt;ui:fragment rendered="#{not identity.loggedIn}"&gt;
+    &lt;a href="#{identity.loginUrl}"&gt;Sign In&lt;/a&gt;
+  &lt;/ui:fragment&gt;</pre>
+
+
+
+<p class="wikiPara">
+  
+When the user clicks this link, they will be redirected to a Google Accounts sign in page.  After entering a valid
+username and password, they will then be redirected back to your application as an authenticated user.  
+</p>
+
+<p class="wikiPara">
+To sign out, you can add another method that generates a logout URL:
+</p>
+
+
+
+<pre class="wikiPreformatted">   public String getLogoutUrl() {
+      UserService userService = UserServiceFactory.getUserService();
+      return userService.createLogoutURL("/");
+   }</pre>
+
+
+
+<p class="wikiPara">
+   
+For which the logout link would look like this:
+   
+</p>
+
+
+<pre class="wikiPreformatted">  &lt;ui:fragment rendered="#{identity.loggedIn}"&gt;
+    &lt;a href="#{identity.logoutUrl}"&gt;Sign Out&lt;/a&gt;
+  &lt;/ui:fragment&gt;  </pre>
+
+
+<p class="wikiPara">
+  
+  
+To get a reference to the current user, use the following method:
+</p>
+
+
+
+<pre class="wikiPreformatted">   public User getCurrentUser() {
+      UserService userService = UserServiceFactory.getUserService();
+      return userService.getCurrentUser();
+   }  </pre>
+
+
+
+<p class="wikiPara">
+   
+This gives you a reference to a <tt>com.google.appengine.api.users.User</tt> object, which has methods such as
+<tt>getEmail()</tt>, <tt>getNickname()</tt>, etc for retrieving certain information about the currently-logged in user.  If you
+want to store a reference to a user in the database, use the <tt>String</tt> value returned by the <tt>getUserId()</tt> method.
+This method returns a long identifier value which is unique to that particular user.  This is better than using
+their nickname or e-mail address, both of which can potentially change, whereas the user ID will never change.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Caching"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Caching">Caching</a></h2>
+
+<p class="wikiPara">
+GAE provides a feature called Memcache, which is a high performance distributed cache with 
+<a href="http://code.google.com/appengine/docs/quotas.html#Memcache" target="" class="regularLink">generous daily limits</a>.  For a more detailed overview of
+Memcache, see <a href="http://code.google.com/appengine/docs/java/memcache/overview.html" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+Memcache implements the <tt>javax.cache</tt> API, which is a good thing because it provides us with an API that you would
+use much the same way as you would use a <tt>Map</tt>.  You place stuff into the cache using a familiar <tt>put(key, value)</tt> 
+call, and get it out with a <tt>get(key)</tt> call.  Simple huh?
+</p>
+
+<p class="wikiPara">
+The easiest way to get a reference to the cache is to just use a producer method.  Here's one I prepared earlier:
+</p>
+
+
+
+<pre class="wikiPreformatted">import java.util.Collections;
+
+import javax.cache.Cache;
+import javax.cache.CacheException;
+import javax.cache.CacheManager;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+
+public class CacheProducer {
+   @Produces @ApplicationScoped Cache getCache() throws CacheException {
+      return CacheManager.getInstance().getCacheFactory().createCache(Collections.emptyMap());
+   }
+}</pre>
+
+
+
+
+<p class="wikiPara">
+Once we're written this producer method we can simply inject the cache directly into a bean using 
+<tt>@Inject Cache cache</tt>.  We're going to look at caching a little more, further down in the performance section.
+</p>
+
+<h2 class="wikiHeadline2" id="H-JSF"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-JSF">JSF</a></h2>
+
+<p class="wikiPara">
+I don't want to get too deep into the JSF side of things because it's really outside the scope of this article.
+Basically JSF works as intended in GAE, with very little in the way of gotchas.  Here's a couple of tips though if 
+you're new to JSF 2.
+</p>
+
+<h3 class="wikiHeadline3" id="H-RequestParameters"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-RequestParameters">Request parameters</a></h3>
+
+<p class="wikiPara">
+Request parameters are now defined in the page itself, using the <tt>f:metadata</tt> tag.  Simply use a <tt>f:viewParam</tt> to
+bind each request parameter to a property of your model:
+</p>
+
+
+
+<pre class="wikiPreformatted">  &lt;f:metadata&gt;
+    &lt;f:viewParam name="name" value="#{blogSearch.name}"/&gt;
+    &lt;f:viewParam name="start" value="#{blogSearch.start}"/&gt;
+  &lt;/f:metadata&gt;</pre>
+
+
+
+<p class="wikiPara">
+  
+If the parameter value isn't specified in the request then the value will be <tt>null</tt>, so make sure the property
+receiving the parameter value isn't a primitive (i.e. it must be nullable).
+  
+Using request parameters are a great way of achieving bookmarkable URLs, and of developing a stateless application.
+</p>
+
+<h3 class="wikiHeadline3" id="H-PageActions"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-PageActions">Page actions</a></h3>
+
+<p class="wikiPara">
+This one may be a little strange to you if you're used to using Seam 2's <tt>pages.xml</tt> to define page actions. Like
+request parameters, in JSF 2 you also define page actions in the page itself (which kind of makes sense really).  
+Simply use the <tt>f:event</tt> tag to define a <tt>preRenderView</tt> event, and specify the method you wish to invoke as the 
+listener:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;f:event type="preRenderView" listener="#{blogAction.setup}"/&gt;</pre>
+
+
+
+
+<h2 class="wikiHeadline2" id="H-Logging"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Logging">Logging</a></h2>
+
+<p class="wikiPara">
+My recommendation for logging is to use SLF4J.  It's already included as part of the <tt>weld-servlet</tt> distribution so
+there's no extra libraries to add, and it's a piece of cake to use:
+</p>
+
+
+
+<pre class="wikiPreformatted">import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class MyClass {
+  Logger log = LoggerFactory.getLogger(MyClass.class);
+  
+}</pre>
+
+
+
+
+<p class="wikiPara">
+Log messages created by SLF4J will show up in the GAE dashboard, to view them just click the 'Logs' link in the left 
+hand column.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Performance"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Performance">Performance</a></h2>
+
+<p class="wikiPara">
+Let's get the important stuff out of the way first.  When it comes to performance in GAE, there's a huge elephant in 
+the room which is the JVM cold start issue that every low traffic application suffers from.  To summarise the issue,
+if your application only receives minimal requests then it will spend most of its time in 'cold storage' (that's my
+term, but I give you permission to use it also).  Once a <i class="wikiEmphasis">loading request</i> (this is what Google calls a request that
+initializes the application container) comes in for your application, GAE will start up a
+new container for your application to serve the request, and then after a set amount of time (can be just a minute or 
+two) your application will be put back into cold storage again.  
+</p>
+
+<p class="wikiPara">
+To contrast this with the way you're probably used to developing in Tomcat/JBoss/Glassfish (or whatever), a normal container 
+will perform startup <i class="wikiEmphasis">before</i> any requests are served, meaning that the container is already <i class="wikiEmphasis">hot</i> when the first 
+request comes in.  In GAE however the container initialization itself is done <i class="wikiEmphasis">during</i> the request.
+</p>
+
+<p class="wikiPara">
+Why is this bad?  Well, when you factor in that the basic container startup itself takes around 10 seconds, creating
+an <tt>EntityManagerFactory</tt> is around 3-4 seconds, JSF startup probably takes another few seconds and Weld itself can
+take 5-6 seconds (we're working at reducing this) we're looking at a minimum of 20 seconds or so just to serve that
+request.  Often the request can even exceed the 30 second hard limit that GAE has, which means that the user is 
+simply given an error message.  If you're trying to attract new users to your site you can most likely see the problem
+here - most users aren't willing to wait even 3 seconds let alone 20+, and to give them an error message almost
+guarantees that they'll never be visiting your site again (unless it's your mother).
+</p>
+
+<p class="wikiPara">
+There is some hope though - Google are aware of this severe limitation and there is an open issue to address it:
+</p>
+
+<p class="wikiPara">
+<a href="http://code.google.com/p/googleappengine/issues/detail?id=2456" target="" class="regularLink">http://code.google.com/p/googleappengine/issues/detail?id=2456</a>
+</p>
+
+<p class="wikiPara">
+I strongly recommend you vote for this issue (by starring it) if you are thinking of using GAE for a low traffic site.
+</p>
+
+<p class="wikiPara">
+Now that I've talked about the big issue, let's look at some of the smaller stuff you can do to improve performance
+in your app.  My number one tip is this - CACHE EVERYTHING!  GAE's MemCache feature provides you a place to put
+your data which you can access much faster than performing a database lookup.  If you've got certain queries that are 
+executed on a regular basis then put the results in the cache and use that instead.  The less database access you do
+in your app, the better.
+</p>
+
+<p class="wikiPara">
+Here's an example of caching query results:
+</p>
+
+
+
+<pre class="wikiPreformatted">private static final String CACHE_KEY = "RECENT_POSTS";
+
+@Inject Cache cache;   
+
+public List&lt;RecentPost&gt; getRecentPosts() {
+  if (cache.get(CACHE_KEY) == null) {
+     List&lt;RecentPost&gt; recentPosts = new ArrayList&lt;RecentPost&gt;();         
+     
+     EntityManager em = entityManagerInstance.get();
+     List&lt;Blog&gt; results = em.createQuery("select b from Blog b order by b.entryDate desc")
+           .setMaxResults(5)
+           .getResultList();
+           
+     for (Blog blog : results) {
+        recentPosts.add(new RecentPost(blog.getBlogId(), 
+              userCache.getNameForUserId(blog.getUserId()),
+              blog.getTitle() != null &amp;&amp; !"".equals(blog.getTitle()) ? 
+                    blog.getTitle() : "Untitled Post", blog.getTag()));
+     }
+     
+     cache.put(CACHE_KEY, recentPosts);
+  }
+  
+  return (List&lt;RecentPost&gt;) cache.get(CACHE_KEY);
+}</pre>
+
+
+
+
+<p class="wikiPara">
+By avoiding the database hit here, you'll make dramatic improvements to request times which in the end is one of the
+most important things for your users.
+</p>
+
+<p class="wikiPara">
+Another tip is to use paging whenever possible to constrain the size of your query results (when you're forced to
+query the database).  Make use of the <tt>setMaxResults()</tt> and <tt>setFirstResult()</tt> methods provided by the Query API to
+limit how much data you present to the user in any single request.
+</p>
+
+<h2 class="wikiHeadline2" id="H-UnsupportedFeatures"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-UnsupportedFeatures">Unsupported features</a></h2>
+
+<p class="wikiPara">
+The most glaring omission in features is Weld's support for conversations.  Due to the way that conversation cleanup
+is implemented in Weld (<tt>Future</tt>-based, which is a no-no in GAE) you currently get an exception when attempting to 
+begin a new conversation.  We will hopefully address this issue in a future release of Weld.  My recommendation for
+now is to make your beans <tt>@RequestScoped</tt> wherever possible and model your application to be as stateless as possible.
+Use request parameters wherever it makes sense (see the JSF section above) and make use of the <tt>@Model</tt> stereotype
+(which when placed on a bean makes it <tt>@Named</tt> and <tt>@RequestScoped</tt>).
+</p>
+
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Conclusion">Conclusion</a></h2>
+
+<p class="wikiPara">
+While we've covered a fair bit of ground in this article, there's probably a lot of other useful tips that I've missed.
+It may possibly be useful to convert this article (including Part 1) into a wiki page on seamframework.org which can 
+serve as a central reference point for developing Weld apps in GAE, which anyone could contribute to.  If you think 
+this might be helpful and would like to see it happen, or have any other ideas please let us know in the comments.
+</p>
+</div>

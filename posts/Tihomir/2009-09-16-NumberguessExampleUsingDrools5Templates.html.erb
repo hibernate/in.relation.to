@@ -1,0 +1,106 @@
+---
+title: "Numberguess example using Drools5 Templates"
+author: "Tihomir Surdilovic"
+blogger_name: "Tihomir"
+layout: blog-post
+tags: []
+slug: NumberguessExampleUsingDrools5Templates
+lace: http://in.relation.to/12333.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/NumberguessExampleUsingDrools5Templates">Numberguess example using Drools5 Templates</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Before I dig into the a Fusion example, I wanted to show current integration with <a href="http://downloads.jboss.com/drools/docs/5.0.1.26597.FINAL/drools-expert/html_single/index.html#d0e6212" target="" class="regularLink">Drools5 Templates</a>. Rule templates are helpful when you have a number of rules which follow some sort of pattern(s). In addition you can use templates when you have reoccurring hard-coded values in your rule patterns or actions. The Seam numberguess example is not the best example for rule templates however is good enough for a simple example.
+</p>
+
+<p class="wikiPara">
+If we look at base <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/numberguess.drl" target="" class="regularLink">numberguess.drl</a> DRL, we can see some hard-coded values, for example the guessCount is set to 9, the guess increment value is 1 and we also see hard-coded values for <q>win</q> and <q>loose</q>, all of which we want to externalize from our rule resource. <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/numberguesstemplate.drl" target="" class="regularLink">This</a> is what our new rule template can look like. If we look at rule <q>Lose</q> we can see some relevant changes:
+</p>
+
+
+
+
+<pre class="wikiPreformatted">rule Lose
+   when 
+      Game(guessCount == @{guesscount} )
+   then
+      if ( decision.getOutcome()==null )
+      {
+         decision.setOutcome("@{losetext}");
+      }
+end
+</pre>
+
+
+<p class="wikiPara">
+Please follow the <a href="http://downloads.jboss.com/drools/docs/5.0.1.26597.FINAL/drools-expert/html_single/index.html#d0e6212" target="" class="regularLink">Drools documentation </a> on further explanation on the template syntax. 
+</p>
+
+<p class="wikiPara">
+In order to expand our template, we must provide a data source. With Seam this expansion is driven by custom Seam components which implements the <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/src/main/org/jboss/seam/drools/TemplateDataProvider.java" target="" class="regularLink">TemplateDataProvider</a> interface that defines a single method:
+</p>
+
+
+
+<pre class="wikiPreformatted">
+   public Collection&lt;Map&lt;String,Object&gt;&gt; getTemplateData();
+</pre>
+
+
+<p class="wikiPara">
+For this simple example we implement a template data provider with hard-coded values:
+</p>
+
+
+
+<pre class="wikiPreformatted">@Name("numberGuessTemplateDataProvider")
+public class NumberGuessTemplateDataProvider implements TemplateDataProvider
+{
+   Collection&lt;Map&lt;String, Object&gt;&gt; templateData = new ArrayList&lt;Map&lt;String,Object&gt;&gt;();
+   
+   @Create
+   public void init()
+   {
+      //  We use a Map which provides the values for substituting template parameters.
+      // It should have a (String) key set matching all of the parameter names. 
+      // Values can be from any class, as long as they provide a good toString() method
+      Map&lt;String, Object&gt; m1 = new HashMap&lt;String, Object&gt;();
+      m1.put("wintext", "win");  // substitutes the @{wintext} template parameter
+      m1.put("losetext", "lose"); // substitutes the @{losetext} template parameter
+      m1.put("guesscount", 9); // substitutes the @{guesscount} template parameter
+      m1.put("increment", 1); // substitutes the @{increment} template parameter
+      
+      templateData.add(m1);
+   }
+   
+   // getters and setters
+}
+</pre>
+
+
+<p class="wikiPara">
+Now all that is left is configuration in components.xml. First we define our KnowledgeBase:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;drools:knowledge-base name="kbase" knowledge-builder-config="kbuilderconfig.properties" knowledge-base-config="kbaseconfig.properties"&gt;
+    	&lt;drools:rule-resources&gt;
+    		&lt;value&gt;classpath;numberguesstemplate.drl;DRL;numberGuessTemplateDataProvider&lt;/value&gt;
+    	&lt;/drools:rule-resources&gt;	
+    	&lt;drools:event-listeners&gt;
+    		&lt;value&gt;org.drools.event.knowledgebase.DefaultKnowledgeBaseEventListener&lt;/value&gt;
+    	&lt;/drools:event-listeners&gt;
+&lt;/drools:knowledge-base&gt;</pre>
+
+
+<p class="wikiPara">
+Note here that we have only added the name of our template data provider to the rule-resource string...that's it. Last thing to do is to define our StatefulKnowledgeSession as shown in the <a href="http://relation.to/Bloggers/SeamNumberguessExampleWithDrools5API" target="" class="regularLink">previous post</a>. </p>
+</div>

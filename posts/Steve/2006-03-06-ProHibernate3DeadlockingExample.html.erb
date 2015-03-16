@@ -1,0 +1,113 @@
+---
+title: "Pro Hibernate 3 deadlocking example"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: []
+slug: ProHibernate3DeadlockingExample
+lace: http://in.relation.to/2078.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/ProHibernate3DeadlockingExample">Pro Hibernate 3 deadlocking example</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+A <a href="http://opensource.atlassian.com/projects/hibernate/browse/HHH-1541" target="" class="regularLink">bug </a> report was recently 
+opened in Hibernate's JIRA stating that Hibernate incorrectly handles deadlock scenarios.  
+The basis for the report was an example in the /Pro Hibernate 3/ book (Chapter 9).  For 
+those perhaps not familiar with  the term <q>deadlock</q>, the basic gist is that two processes 
+each hold resource locks that the other needs to complete processing. While this phenomena 
+is not restricted to databases, in database terms the idea is that the first process (P1) 
+holds a write lock on a given row (R1) while the second process (P2) holds a write lock on 
+another row (R2).  Now, to complete its processing P1 needs to 
+acquire a write lock on R2, but cannot do so because P2 already holds its write lock.  
+Conversely, P2 needs to acquire a write lock on R1 in order to complete its processing,
+but cannot because P1 already holds its write lock.  So neither P1 nor P2 can complete
+its processing because each is indefinitely waiting on the other to release the needed 
+lock, which neither can do until its processing is complete.  The two processes are said 
+to be deadlocked in this situation.
+</p>
+
+<p class="wikiPara">
+Almost all databases have support to circumvent this scenario by specifying that locks 
+should be timed-out after a certain period of time; after the time-out period, one of the 
+processes is forced to rollback and release its locks, allowing the other to continue and 
+complete.  While this works, it is not ideal as it requires that the processes remained 
+deadlocked until the underlying timeout period is exceeded.  A better solution is for the 
+database to actively seek out deadlock situations and immediately force one of the deadlock
+participants to rollback and release its locks, which most databases do in fact also
+support.
+</p>
+
+<p class="wikiPara">
+So now back to the /Pro Hibernate 3/ example.  Let me say up front that I have not read
+the book and so do not understand the background discussion in the chapter nor the
+authors' intent/exceptations in regards to the particular example code.  I only know the
+expectations of a (quite possibly mis-guided) reader.  So what this example attempts to
+do is to spawn two threads that each use their own Hibernate Session to load the same
+two objects in reverse order and then modify their properties.  So the above mentioned
+reader expects that this sould cause a deadlock scenario to occur.  But it does not.  
+Or more correctly, in my running of the example, it <i class="wikiEmphasis">typically</i> does not, although the
+results are inconsistent.  Sometimes a deadlock is reported; but the vast majority of runs
+actually just <q>succeed</q>.  Why is that the case?
+</p>
+
+<p class="wikiPara">
+So here is what really happens in this example code.  As I mentioned before, the example 
+attempts to load the same two objects in reverse order.  The example uses the entities <q>Publisher</q> and <q>Subscriber</q>.  The first thread (T1) loads a given <q>Publisher</q> and modifies its 
+state; it is then forced to wait.  The second thread (T2) loads a given <q>Subscriber</q> and
+modified its state; it is then forced to wait.  Then both threads are released from their 
+waiting state.  From there, T1 loads the same <q>Subscriber</q> previously loaded by T2 and modifies
+its state; T2 loads the same <q>Publisher</q> previously loaded by T1 and modifies its state.  The
+thing you need to keep in mind here is that so far neither of these two Sessions have actually
+been flushed, thus no UPDATE statements have actually occurred against the database at this point.
+The flush occurs on each Session after each thread's second <q>load and modify</q> sequence.  Thus,
+until that point neither thread (i.e. the corresponding database process) is actually holding
+any write locks on the underlying data.  Clearly, the outcome here is going to depend upon the 
+manner in which the two threads are actually allowed to <q>re-awaken</q> by the underlying threading 
+model, and in particular whether the UPDATE statements from the two sessions happen to get <q>interleaved</q>.  If the two threads happen to interleave their requests to the database (i.e. T1's UPDATE PUBLISHER happens first, T2's UPDATE SUBSCRIBER hapens second, etc) then a 
+deadlock will occur; if not interleaved, then the outcome will be <q>success</q>.
+</p>
+
+<p class="wikiPara">
+There are three ways to <i class="wikiEmphasis">inequivocally ensure</i> that lock acquisition errors in the database 
+force one of these two transactions to fail in this example:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> use of SERIALIZABLE transaction isolation in the database</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> flushing the sesssion after each state change (and the end of the example code's step1() and step2() methods)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> use of locking (either optimistic or pessimistic)</li>
+</ul>
+
+<p class="wikiPara">
+Seems simple enough.  Yet apparently not simple enough for the reader of the /Pro Hibernate 3/ book
+that opened the previously mentioned JIRA case.  After all this was explained to him, he wrote me some
+ill-tempered, misconception-laden replies in private emails.  I am not going to go into all the 
+misconceptions here, but one in particular I think needs to be exposed as many developers without a
+lot of database background seem to stumble over various concepts relating to transactions.  <i class="wikiEmphasis">Isolation
+and locking are not the same thing</i>.  In fact, to a large degreee, they actually have completely opposite
+goals and purposes.  Transaction isolation aims to isolate or insulate one transaction from other 
+concurrent transactions, such that operations performed in one transaction do not effect (to varying 
+degrees, based on the exact isolation mode employed) operations performed in others.  Locking, on the
+other hand, has essentially the exact opposite goal; it seeks to ensure that certain operations performed in a 
+transaction do have certain effects on other concurrent transactions.  In fact locking really has nothing 
+to do with transactions at all except for the fact that their duration is typically scoped to the
+transaction in which they are acquired and that their presence/absense might affect the outcome of the 
+different transactions.  Perhaps, although I cannot say for sure, this confusion comes from the fact that a 
+lot of databases use locking as the basis for their isolation model.  But that is just an implementation
+detail and some databases such as Oracle, Postgres, and the newest SQL Server have very sophisticated and 
+modern isolation engines not at all based on locking.
+</p>
+</div>

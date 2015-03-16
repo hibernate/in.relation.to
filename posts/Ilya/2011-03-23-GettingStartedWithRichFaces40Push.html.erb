@@ -1,0 +1,633 @@
+---
+title: "Getting started with RichFaces 4.0 Push"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+layout: blog-post
+tags: [Comet,HTML5,JMS,Push,RichFaces,WebSockets]
+slug: GettingStartedWithRichFaces40Push
+lace: http://in.relation.to/18860.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/GettingStartedWithRichFaces40Push">Getting started with RichFaces 4.0 Push</a>
+                    </h1>
+</div>
+<h2 class="wikiHeadline2" id="H-Overview"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-Overview">Overview</a></h2>
+<div style="float: right; margin-left: 20px; margin-bottom: 20px;">
+     <a href="http://labs.jboss.com/richfaces" target="blank"> 
+         <img src="http://design.jboss.org/richfaces/logo/final_logo/richfaces_logo_200px.png">
+     </a>
+</div>
+<p class="wikiPara">
+ <b>RichFaces Push</b> allows you to perform realtime client side updates triggered via events from the server side. We integrate with the <b>Atmosphere framework</b> which provides various transport mechanisms according to concrete browser support(Comet, HTML5 WebSockets). On the server events are managed by integrating <b>Java Messaging Service (JMS)</b>.  This provide enterprise level messaging integration all the way to the browser!
+</p>
+
+<p class="wikiPara">
+In this blog I will describe our <b>irc-client</b> example application that was  created to introduce the RichFaces push features. It provides the following functionality:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Connect to the freenode.org IRC server</li>
+<li class="wikiUnorderedListItem"> Join a channel with choosen nickname</li>
+<li class="wikiUnorderedListItem"> Receive all channel messages (nick change, join, part...)</li>
+<li class="wikiUnorderedListItem"> Send messages to the channel</li>
+<li class="wikiUnorderedListItem"> Observe the list of joined users with real-time updates</li>
+</ul>
+
+<p class="wikiPara">
+In this blog I'm only going to review the important configuration, and source code snippets from the application.  The full source code can be checked out <a href="http://anonsvn.jboss.org/repos/richfaces/branches/4.0.X/examples/irc-client/" target="" class="regularLink">from SVN</a> so you can try it for yourself. Instructions for building and deploying the application is in the <b>readme.txt</b>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Dependencies"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-Dependencies">Dependencies</a></h2>
+
+<p class="wikiPara">
+To save time with application setup I have created a starter application using <a href="http://anonsvn.jboss.org/repos/richfaces/branches/4.0.X/archetypes/richfaces-archetype-simpleapp" target="" class="regularLink">richfaces-archetype-simpleapp archetype</a>.  Next we need to update application pom.xml to add <b><a href="http://atmosphere.dev.java.net/" target="" class="regularLink">Atmosphere fremework</a></b> dependency. For the client side a4j:push uses <b>jquery-atmosphere.js</b> plugin (<i>added implicitly by the component renderer</i>).
+</p>
+
+<blockquote class="wikiBlockquote">
+<b>NOTE:</b> that particular sample targeted for JBoss 6 Application Server. So we will use JBoss HornetQ available out of the box. Using RichFaces Push under Tomcat or Jetty requires additional JMS dependencies and configuration code. We will work on maven profiles and additional optional classes for that case also in future releases. At the moment the only place to review that configuration is with our developer demo which configured for tomcat using external HornetQ dependencies and configuration class for  its initialization.
+</blockquote>
+
+<p class="wikiPara">
+We need to add the <b>atmosphere-runtime</b> to the pom.xml.  This is only needed if you are using the push component.
+</p>
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+    &lt;groupId&gt;org.atmosphere&lt;/groupId&gt;
+    &lt;artifactId&gt;atmosphere-runtime&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p class="wikiPara">
+Also as the demo shown there provides simple IRC client we added one more dependency:
+</p>
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+    &lt;groupId&gt;pircbot&lt;/groupId&gt;
+    &lt;artifactId&gt;pircbot&lt;/artifactId&gt;
+    &lt;version&gt;1.4.2&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p class="wikiPara">
+ <b>PircBot</b> is a simple framework for writing IRC bots.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ConfiguringJMS"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-ConfiguringJMS">Configuring JMS</a></h2>
+
+<p class="wikiPara">
+Lets first discuss why we need JMS at all? Why not just use for example push context object? The answer is pretty straightforward. Usage of JMS at the back-end provides excellent integration with EE containers, and advanced messaging services. It also frees you from managing various entities at your business layer. If you are already using JMS for messaging in your application - you will just continue to send the same messages and you just need to to declare <b>a4j:push</b> at views which should listen that topics.
+</p>
+
+<p class="wikiPara">
+We assume that you're familiar with JMS so will not provide details here. To learn more about it visit <a href="http://download.oracle.com/javaee/1.3/jms/tutorial/" target="" class="regularLink">JMS documentation</a>.
+</p>
+
+<p class="wikiPara">
+Now it is time to configure JMS for our example. We will use <b>JBoss 6 AS</b> for application deployment as mentioned in dependencies section.  So we'll use <a href="http://www.jboss.org/hornetq" target="" class="regularLink">JMS server bundled with JBoss AS</a>. We need to create topics which will be used by Push to check for the messages. Let's start JBoss 6 AS and open http://localhost:8080/admin-console. We will use default admin/admin credentials to log-in. Then click the JMS topics in navigation menu and create new JMS topic with the following settings:
+</p>
+
+<p class="wikiPara">
+ <b>Name:</b> chat
+</p>
+
+<p class="wikiPara">
+ <b>JNDI name:</b> /topic/chat
+All the others: by default.
+</p>
+
+<p class="wikiPara">
+In the same form we need to add roles for that topic. For that demo application we will create single role with next parameters:
+</p>
+
+<p class="wikiPara">
+ <b>Name:</b> guest
+</p>
+
+<p class="wikiPara">
+ <b>Send:</b> yes
+</p>
+
+<p class="wikiPara">
+ <b>Consume:</b> yes
+</p>
+
+<p class="wikiPara">
+ <b>create subscriber:</b> yes
+</p>
+
+<p class="wikiPara">
+ <b>delete subscriber:</b> yes
+</p>
+
+<p class="wikiPara">
+ <b>create durable subscriber: yes</b>
+</p>
+
+<p class="wikiPara">
+ <b>delete durable subscriber: yes</b>
+</p>
+
+<blockquote class="wikiBlockquote">
+<b>IMPORTANT:</b> The last two options are critical for push functionality as we using <a href="http://download.oracle.com/javaee/1.3/jms/tutorial/1_3_1-fcs/doc/advanced.html#1024758" target="" class="regularLink">durable subscriptions</a> in order to be able to receive all the events including ones which were sent while the push was not connected to the server. So if they are set to false - push will not be able to register subscribers.
+</blockquote>
+
+<p class="wikiPara">
+So here is what you should see after JMS setting done:
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/18857" alt="">
+
+<p class="wikiPara">
+That's all. Now we are ready with JMS configuration.
+</p>
+
+<blockquote class="wikiBlockquote">
+<b>NOTE:</b> if you not familiar with JBoss configuration using admin-console visit <a href="http://docs.jboss.org/jbossas/6/Admin_Console_Guide/en-US/html/" target="" class="regularLink">JBoss AS Administration Console User Guide.</a>
+</blockquote>
+
+<h2 class="wikiHeadline2" id="H-WebApplicationConfiguration"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-WebApplicationConfiguration">Web Application Configuration</a></h2>
+
+<p class="wikiPara">
+Now let's add application settings required by <b>RichFaces Push</b>. We need an additional filter and a few context-param's to be added. Here is what we used for that demo application:
+</p>
+
+<pre class="wikiPreformatted">&lt;context-param&gt;
+    &lt;param-name&gt;org.richfaces.push.jms.connectionUsername&lt;/param-name&gt;
+    &lt;param-value&gt;guest&lt;/param-value&gt;
+&lt;/context-param&gt;
+&lt;context-param&gt;
+    &lt;param-name&gt;org.richfaces.push.jms.connectionPassword&lt;/param-name&gt;
+    &lt;param-value&gt;guest&lt;/param-value&gt;
+&lt;/context-param&gt;
+&lt;filter&gt;
+    &lt;filter-name&gt;PushFilter&lt;/filter-name&gt;
+    &lt;filter-class&gt;org.richfaces.webapp.PushFilter&lt;/filter-class&gt;
+    &lt;async-supported&gt;true&lt;/async-supported&gt;
+&lt;/filter&gt;
+&lt;filter-mapping&gt;
+    &lt;filter-name&gt;PushFilter&lt;/filter-name&gt;
+    &lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+&lt;/filter-mapping&gt;</pre>
+
+
+<p class="wikiPara">
+Let's review those parameters in details. At first we need the <b>PushFilter</b> to be installed and mapped to Faces Servlet. It will handle the push request and serve event using the <b>Atmosphere runtime</b>. And <b>connectionUserName</b> and <b>connectionPassword</b> context parameters are needed in order to defined the credentials used to work with JMS for connecting and subscribing to topics. 
+</p>
+
+<p class="wikiPara">
+Here is the table with all the parameters which could be used in your application:
+</p>
+
+<table border="1" cellpadding="3">
+  <thead>
+  	<tr>
+  	<th>context-param Name</th>
+  	<th>Default value</th>
+  	<th>Description</th>
+  	</tr>  
+  </thead>
+  <tbody>
+  <tr>
+    <td>org.richfaces.push.jms.connectionFactory</td>
+    <td>/ConnectionFactory</td>
+    <td>JMS connection factory JNDI name</td>
+  </tr>
+  <tr>
+    <td>org.richfaces.push.jms.topicsNamespace</td>
+    <td>/topic</td>
+    <td>used as a root name from which all topics are resolved: i.e. 'chat' topic by default will be looked up via <q>/topics/chat</q> JNDI name.</td>
+  </tr>
+  <tr>
+    <td>org.richfaces.push.jms.connectionUsername</td>
+    <td>-</td>
+    <td>Username used for connection and topics creation/listening</td>
+  </tr>
+  <tr>
+    <td>org.richfaces.push.jms.connectionPassword</td>
+    <td>-</td>
+    <td>Password used for connection and topics creation/listening</td>
+  </tr>
+  </tbody>
+</table>
+
+<p class="wikiPara">
+ <b>Note:</b> there are also JNDI references to credentials strings available:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> java:comp/env/org.richfaces.push.jms.connectionUsername </li>
+<li class="wikiUnorderedListItem"> java:comp/env/org.richfaces.push.jms.connectionPassword</li>
+</ul>
+
+<p class="wikiPara">
+An alternative to using web.xml definitions is to provide all the parameters using properties file <b>org/richfaces/push.properties</b>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TopicsContextInitialization"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-TopicsContextInitialization">TopicsContext initialization</a></h2>
+
+<p class="wikiPara">
+Now we need to initialize <b>org.richfaces.application.push.TopicsContext</b> with the JMS topics we will listen for. For this purpose we created a <b>JSF 2 System Event listener</b> which handles <b>PostConstructApplicationEvent</b>:
+</p>
+
+<pre class="wikiPreformatted">public class TopicsInitializer implements SystemEventListener {
+   public void processEvent(SystemEvent event) throws AbortProcessingException {
+       TopicsContext topicsContext = TopicsContext.lookup();
+       Topic topic = topicsContext.getOrCreateTopic(new TopicKey("chat"));
+       topic.setMessageDataSerializer(DefaultMessageDataSerializer.instance());
+       topic.addTopicListener(new SessionTopicListener() {...});
+   }
+  public boolean isListenerForSource(Object source) {
+       return true;
+   }
+}</pre>
+
+
+<p class="wikiPara">
+and registered it in <b>faces-config</b>:
+</p>
+
+<pre class="wikiPreformatted">&lt;application&gt;
+    &lt;system-event-listener&gt;
+        &lt;system-event-listener-class&gt;org.ircclient.listeners.TopicsInitializer&lt;/system-event-listener-class&gt;
+        &lt;system-event-class&gt;javax.faces.event.PostConstructApplicationEvent&lt;/system-event-class&gt;
+    &lt;/system-event-listener&gt;
+&lt;/application&gt;</pre>
+
+
+<p class="wikiPara">
+With this we have created new topic in TopicContext with <b>chat</b> name (<i>the same as we defined configuring the JMS</i>). 
+</p>
+
+<p class="wikiPara">
+Actually <b>MessageDataSerializer</b> and <b>TopicListener</b> creation are optional, so let's briefly describe the main idea of these objects. 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <b>Messages serializer</b> is used to serialize the message to the expected format for passing to the client. By default built-in serializer will serialize the message data  to JavaScript. </li>
+<li class="wikiUnorderedListItem"> <b>Session topic listener</b> is used to handle subscriptions (pre and post-processing) and unsubscription events. This could be used for example in order to check user permissions prior to connecting to some topic and perform some additional post-processing after some push component successfully attached to topics. In the sample there are just logging used so the code is omitted there.</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-ApplicationCode"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-ApplicationCode">Application Code</a></h2>
+
+<p class="wikiPara">
+We are done with settings and push initialization stuff, and it's time to actually explore the example code to see how we manage the IRC connections, and how push is used for page updates according to server-side events.
+</p>
+
+<h3 class="wikiHeadline3" id="H-LoggingToIRC"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-LoggingToIRC">Logging to IRC</a></h3>
+
+<p class="wikiPara">
+This section is not directly related to Push but describes the code used for connection to IRC. Here is the simple page used:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:panel header="Connect to IRC"&gt;
+    &lt;h:form&gt;
+        &lt;rich:messages style=”color:red”/&gt;
+            &lt;h:panelGrid columns="2"&gt;
+                &lt;h:outputText value="Your nickname:" /&gt;
+                &lt;h:inputText required="true" id="name" value="#{chatBean.userName}" /&gt;
+                &lt;h:outputText value="Channel:" /&gt;
+                &lt;h:outputText value="RichFaces" style="font-weight:bold"/&gt;                        
+                &lt;h:outputText value="Server:" /&gt;
+                &lt;h:outputText value="irc.freenode.org" style="font-weight:bold"/&gt;                
+            &lt;/h:panelGrid&gt;
+        &lt;h:commandButton value="Connect" action="#{chatBean.connect}" /&gt;
+    &lt;/h:form&gt;
+&lt;/rich:panel&gt;</pre>
+
+
+<p class="wikiPara">
+It's rendered as:
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/18858" alt="">
+
+<p class="wikiPara">
+Note that for simplicity purposes the channel and server names are using constants.  In the future we plan to extend the sample with ability to open multiple channels and so on..
+</p>
+
+<p class="wikiPara">
+And here is the <b>ChatBean.java</b> used:
+</p>
+
+<pre class="wikiPreformatted">@ManagedBean
+@SessionScoped
+public class ChatBean extends PircBot implements Serializable {
+private static final String SERVER_URL = "irc.freenode.org";
+private static final int SERVER_PORT = 6667;
+private static final String CHANNEL_PREFIX = "#";
+private static final String SUBTOPIC_SEPARATOR = "_";
+private static final String DEFAULT_CHANNEL = "richfaces";
+private String channelName;
+private String message;
+public String connect() {
+       try {
+           this.connect(SERVER_URL, SERVER_PORT);
+           this.joinChannel(CHANNEL_PREFIX + DEFAULT_CHANNEL);
+           channelName = DEFAULT_CHANNEL;
+       } catch (NickAlreadyInUseException e) {
+           FacesContext.getCurrentInstance().addMessage(null,
+               new FacesMessage(FacesMessage.SEVERITY_ERROR, this.getName() + " nick 
+               already in use", this.getName()
+               + " nick already in use"));
+           return null;
+       } catch (IOException e) {
+           FacesContext.getCurrentInstance().addMessage(null,
+               new FacesMessage(FacesMessage.SEVERITY_ERROR, "Sorry, server unresponsive. 
+               Try again later.",
+               "Sorry, server unresponsible. Try again later."));
+           return null;
+       } catch (IrcException e) {
+           FacesContext.getCurrentInstance().addMessage(null,
+               new FacesMessage(FacesMessage.SEVERITY_ERROR,
+                   "Sorry, we encountered IRC services problems. Try again later.",
+                   "Sorry, we encountered IRC services problems. Try again later."));
+        return null;
+       }
+       return "chat";
+   }
+...
+}</pre>
+
+
+<p class="wikiPara">
+As you can see our bean extends the PirBot abstract class. So we just using PircBot api in order to get connected to server. And performing redirect to most interesting for us <b>chat.xhtml</b> page.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ClientMainPage"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-ClientMainPage">Client main page</a></h3>
+
+<p class="wikiPara">
+Screenshot below shows you the result we want to achieve on that page:
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/18859" alt="">
+
+<p class="wikiPara">
+Here is the complete listing of the chat.xhtml page. We'll review it in details below:
+</p>
+
+<pre class="wikiPreformatted">&lt;script&gt;
+    function getMessageString(data){
+        return data.author + " - " +data.timestamp+ ": " + data.text;
+    }
+&lt;/script&gt;
+&lt;rich:panel header="Welcome to #{chatBean.channelName} channel at #{chatBean.serverName}" 
+id="chatpanel"&gt;
+    &lt;rich:panel styleClass="chatOutput" bodyClass="#{chatBean.channelName}Output" /&gt;
+    &lt;rich:panel styleClass="chatList"&gt;
+        &lt;rich:list value="#{chatBean.users}" var="user" id="users" type="unordered"&gt;
+            #{user.nick}
+        &lt;/rich:list&gt;
+    &lt;/rich:panel&gt;
+    &lt;br clear="all" /&gt;
+    &lt;hr /&gt;
+    &lt;h:form&gt;
+        &lt;a4j:push address="#{chatBean.listSubtopic}@chat"
+            onerror="alert(event.rf.data)"&gt;
+            &lt;a4j:ajax event="dataavailable" render="users" execute="@none" /&gt;
+        &lt;/a4j:push&gt;
+        &lt;a4j:push address="#{chatBean.messagesSubtopic}@chat"
+            onerror="alert(event.rf.data)" ondataavailable="jQuery('&amp;lt;div/&amp;gt;').
+            prependTo('.#{chatBean.channelName}Output').text(
+            getMessageString(event.rf.data))" /&gt;
+        &lt;h:inputTextarea value="#{chatBean.message}" rows="3" style="width:80%" id="nm" /&gt;
+        &lt;a4j:commandButton value="Send" action="#{chatBean.send}" render="@none" execute="@form" /&gt;
+    &lt;/h:form&gt;
+    &lt;hr /&gt;
+    &lt;h:form&gt;
+        &lt;rich:panel header="Change nickname:"&gt;
+            &lt;h:inputText valueChangeListener="#{chatBean.changeNick}" id="cn" /&gt;
+            &lt;a4j:commandButton value="Change" execute="@form" render="@none"/&gt;
+        &lt;/rich:panel&gt;
+        &lt;h:commandButton value="Disconnect" action="#{chatBean.leave}"/&gt;
+    &lt;/h:form&gt;
+&lt;/rich:panel&gt;</pre>
+
+
+<p class="wikiPara">
+I will show you two options of performing push updates. 
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Using <b>ondataavailable</b> JavaScript handler which will grab the data from the JMS event directly on the client. </li>
+<li class="wikiOrderedListItem"> Using <b>a4j:ajax</b> behavior to trigger an Ajax request which will perform partial update when the push informs us about server event. </li>
+</ol>
+
+<p class="wikiPara">
+So the first panel:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:panel styleClass="chatOutput" bodyClass="#{chatBean.channelName}Output" /&gt;</pre>
+
+
+<p class="wikiPara">
+is just a container for the chat text which will be updated via JavaScript.
+</p>
+
+<p class="wikiPara">
+And the second panel:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:panel styleClass="chatList"&gt;
+    &lt;rich:list value="#{chatBean.users}" var="user" id="users" type="unordered"&gt;
+        #{user.nick}
+    &lt;/rich:list&gt;
+&lt;/rich:panel&gt;</pre>
+
+
+<p class="wikiPara">
+contains the <b>rich:list</b> component which displays the users connected to the channel. It will be updated via an Ajax request that is triggered when the event about list change is populated at server side.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ClientSideUpdatesOnServersideEventsUsingJavaScript"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-ClientSideUpdatesOnServersideEventsUsingJavaScript">Client side updates on server-side events using JavaScript</a></h3>
+
+<p class="wikiPara">
+Let's review the first a4j:push component more closely:
+</p>
+
+<pre class="wikiPreformatted">&lt;a4j:push address="#{chatBean.messagesSubtopic}@chat" onerror="alert(event.rf.data)"
+    ondataavailable="jQuery('&amp;lt;div/&amp;gt;').prependTo('.#{chatBean.channelName}Output').
+    text(getMessageString(event.rf.data))" /&gt;</pre>
+
+
+<p class="wikiPara">
+It's used to get the messages into the main chat window. Here is the TopicContext declaration and main methods from the ChatBean which are generates events for that push:
+</p>
+
+<pre class="wikiPreformatted">import org.richfaces.application.push.TopicKey;
+import org.richfaces.application.push.TopicsContext;
+...
+private transient TopicsContext topicsContext;
+public String getMessagesSubtopic() {
+   return this.getUserName() + SUBTOPIC_SEPARATOR + channelName;
+}
+private TopicsContext getTopicsContext() {
+if (topicsContext == null) {
+topicsContext = TopicsContext.lookup();
+}
+return topicsContext;
+}
+@Override
+protected void onMessage(String channel, String sender, String login, String hostname, String message) {
+   try {
+       Message messageObject = new Message(message, sender, DateFormat.getInstance().format(
+new Date()));
+       getTopicsContext().publish(new TopicKey("chat", getMessagesSubtopic()), messageObject);
+   } catch (MessageException e) {
+       LOGGER.error(e.getMessage(), e);
+   }
+}
+public void send() {
+   this.sendMessage(CHANNEL_PREFIX + channelName, message);
+   try {
+       Message messageObject = new Message(message, this.getName(), 
+DateFormat.getInstance().format(new Date()));
+       getTopicsContext().publish(new TopicKey("chat", getMessagesSubtopic()), messageObject);
+   } catch (MessageException e) {
+       LOGGER.error(e.getMessage(), e);
+   }
+}</pre>
+
+
+<p class="wikiPara">
+ <b>onMessage</b> method - just overriden PircBot method and it's invoked when the message comes from the other chat users. And <b>send</b> method is invoked when we are sending a message.  This is a standard JSF action of the send button. 
+</p>
+
+<p class="wikiPara">
+As you can see in order to raise an event for <b>a4j:push</b> we just publish it to the TopicContext. <b>publish</b> method accepts two parameters:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <b>TopicKey key</b> - adress which consist of topic and subtopic names.</li>
+<li class="wikiUnorderedListItem"> <b>Object data</b> - actual data passed to client side event.</li>
+</ul>
+
+<p class="wikiPara">
+Messages subtopic generated by <b>getMessagesSubtopic()</b> method used by <b>a4j:push</b> component on the page and is unique for every user and channel, so only current user will receive the event populated by the object.
+</p>
+
+<p class="wikiPara">
+The <b>Message</b> object passed as data is pretty simple POJO with three String properties - author, text and timestamp. It's later used on the client in push oncomplete to create formatted string by <b>getMessageString(data)</b> JavaScript method and later add to chat div:
+</p>
+
+<pre class="wikiPreformatted">&lt;script&gt;
+    function getMessageString(data){
+        return data.author + " - " +data.timestamp+ ": " + data.text;
+    }
+&lt;/script&gt;</pre>
+
+
+<blockquote class="wikiBlockquote">
+<b>IMPORTANT:</b> As was mentioned before the other way to publish an event is by just sending it to JMS bus. So you have no need to use our TopicContext in this common case. We've just used this approach for simple example as we have no components other than our simple JSF bean. See Additional Details section for more information about publishing via JMS bus.
+</blockquote>
+
+<h3 class="wikiHeadline3" id="H-AjaxUpdatesOnServersideEventsUsingA4jajax"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-AjaxUpdatesOnServersideEventsUsingA4jajax">Ajax updates on server-side events using a4j:ajax</a></h3>
+
+<p class="wikiPara">
+Now let's review the second approach to perform updates according to events received by <b>a4j:push</b>:
+</p>
+
+<pre class="wikiPreformatted">&lt;a4j:push address="#{chatBean.listSubtopic}@chat" onerror="alert(event.rf.data)"&gt;
+    &lt;a4j:ajax event="dataavailable" render="users" execute="@none" /&gt;
+&lt;/a4j:push&gt;</pre>
+
+
+<p class="wikiPara">
+It's used to update the <b>rich:list</b> which shows the current channel users. Here is the main methods from the ChatBean which are generates events for that push:
+</p>
+
+<pre class="wikiPreformatted">public String getListSubtopic() {
+   return this.getUserName() + SUBTOPIC_SEPARATOR + channelName + "List";
+}
+@Override
+protected void onUserList(String channel, User[] users) {
+   try {
+       getTopicsContext().publish(new TopicKey("chat", getListSubtopic()), null);
+   } catch (MessageException e) {
+       LOGGER.error(e.getMessage(), e);
+   }
+}
+@Override
+protected void onJoin(String channel, String sender, String login, String hostname) {
+   try {
+       getTopicsContext().publish(new TopicKey("chat", getListSubtopic()), null);
+       Message messageObject = new Message("joined channel", sender, 
+           DateFormat.getInstance().format(new Date()));
+       getTopicsContext().publish(new TopicKey("chat", getMessagesSubtopic()), messageObject);
+   } catch (MessageException e) {
+       LOGGER.error(e.getMessage(), e);
+   }
+}</pre>
+
+
+<p class="wikiPara">
+We are using the same publishing through <b>TopicContext</b> at server side just defining different subtopic for that <b>a4j:push</b>. And passing null as data because we do not planning to process anything at client side. That's where:
+</p>
+
+<pre class="wikiPreformatted">&lt;a4j:ajax event="dataavailable" render="users" execute="@none" /&gt;</pre>
+
+
+<p class="wikiPara">
+come in play. When push receives the event an ajax behavior sends a request which just perform <b>rich:list</b> render with new values. Pretty simple isn't it?
+</p>
+
+<h2 class="wikiHeadline2" id="H-AdditionalDetails"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-AdditionalDetails">Additional Details</a></h2>
+
+<p class="wikiPara">
+There I want to pay your attention to some details not covered within the article.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SingleConnection"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-SingleConnection">Single Connection</a></h3>
+
+<p class="wikiPara">
+As you can see in this example we used two <b>a4j:push</b> component on a single page in order to demonstrate two different ways to process push events.  It is important to know that this does not mean wo connections are getting opened. <b>All the instances of the push component uses single connection</b> and only the subscribed one gets the event for processing according to it's adress after some event is received. You can verify that by using Firebug for FireFox for example.
+</p>
+
+<h3 class="wikiHeadline3" id="H-PublishingViaJMSBus"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-PublishingViaJMSBus">Publishing via JMS bus</a></h3>
+
+<p class="wikiPara">
+JMS messages types supported by push are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <b>ObjectMessage</b>
+</li>
+<li class="wikiUnorderedListItem"> <b>TextMessage</b>
+</li>
+</ul>
+
+<p class="wikiPara">
+Corresponding data from <b>getObject</b> or <b>getText</b> passed to <b>DataSerializer</b> and getting serialized to the client data(to JavaScript using default serializer).
+</p>
+
+<h2 class="wikiHeadline2" id="H-ToBeContinued"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-ToBeContinued">To be Continued...</a></h2>
+
+<p class="wikiPara">
+And finally I want to announce topics which planned to be covered in next <b>Push</b> related articles. 
+</p>
+
+<h3 class="wikiHeadline3" id="H-IntegrationWithCDIEvents"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-IntegrationWithCDIEvents">Integration with CDI events</a></h3>
+
+<p class="wikiPara">
+Being a first class citizen in JEE6 ecosystem CDI getting paid much attention during RichFaces development for sure. And <b>support of CDI event system</b> by a4j:push are also topic for upcoming separate blog entry! 
+</p>
+
+<h3 class="wikiHeadline3" id="H-AndMore"><a href="/Bloggers/GettingStartedWithRichFaces40Push#H-AndMore">And more...</a></h3>
+
+<p class="wikiPara">
+There are a lot of possibilities with this component, too many to describe using just a single article. So follow our blogs or <a href="http://twitter.com/richfaces" target="" class="regularLink">RichFaces twitter</a> for any future examples and <a href="http://www.jboss.org/richfaces/docs" target="" class="regularLink">documentation</a> updates related to this great component!
+</p>
+
+<hr>
+
+<p class="wikiPara">
+[<a href="http://twitter.com/ilya_shaikovsky" target="" class="regularLink">Get updates of my blogs in twitter</a>]
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jroller.com/a4j/" target="" class="regularLink">My jroller.com blog</a>]</p>
+</div>

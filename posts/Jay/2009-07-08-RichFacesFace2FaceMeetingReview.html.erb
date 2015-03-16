@@ -1,0 +1,204 @@
+---
+title: "RichFaces Face-2-Face Meeting Review"
+author: "Jay Balunas"
+blogger_name: "Jay"
+layout: blog-post
+tags: [JavaServer Faces,RichFaces,Seam News]
+slug: RichFacesFace2FaceMeetingReview
+lace: http://in.relation.to/11975.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/RichFacesFace2FaceMeetingReview">RichFaces Face-2-Face Meeting Review</a>
+                    </h1>
+</div>
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+ <a href="http://labs.jboss.com/jbossrichfaces" target="blank"> 
+ <img src="http://www.jroller.com/a4j/resource/richfaces_logo_200px.gif" alt="">
+ </a>
+</div>
+
+<div style="float:left;margin-right:20px;margin-bottom:20px;">
+ <a href="/service/File/11979" target="" class="regularLink"><img src="/service/File/11979?thumbnail=true"></a>
+ <br>
+ <i class="wikiEmphasis">Red Hats Brno Office</i>
+</div>
+
+<p class="wikiPara">
+I have finally had the time to sit down and write up a summary of the RichFaces face-2-face meeting that took place a few weeks ago.  I'll outline the major topics and some of the results that came out of it, as well as share some pictures from the meeting and the team event :-)
+</p>
+
+<p class="wikiPara">
+We met in Brno Czech Republic, which is a nice city and not too touristy.  Red Hat has a large office in Brno for both Red Hat and JBoss activities.  It was a nice middle ground to meet at and allowed us all to focus on nothing else but the meeting. 
+</p>
+
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+ <a href="/service/File/11980" target="" class="regularLink"><img src="/service/File/11980?thumbnail=true"></a>
+ <br>
+ <i class="wikiEmphasis">Team shot from Starobrno brewery tour - yum!</i>
+</div>
+
+<h2 class="wikiHeadline2" id="H-RichFaces332"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-RichFaces332">RichFaces 3.3.2</a></h2>
+<p class="wikiPara">
+The 3.3.2 release is going to be a performance &amp; bug fix release.  We are planning on releasing the CR1 in late August and the GA sometime in September.  Some of the highlights are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Remove internal CSS classes for performance optimizations <a href="https://jira.jboss.org/jira/browse/RF-7215" target="" class="regularLink">RF-7215</a>
+</li>
+<li class="wikiUnorderedListItem"> Optimize JavaScipt initialization <a href="https://jira.jboss.org/jira/browse/RF-7215" target="" class="regularLink">RF-7246</a>
+</li>
+<li class="wikiUnorderedListItem"> Example impovements <a href="https://jira.jboss.org/jira/secure/IssueNavigator.jspa?reset=true&amp;&amp;fixfor=12313512&amp;pid=12310341&amp;component=12312448&amp;sorter/field=resolution&amp;sorter/order=ASC&amp;sorter/field=status&amp;sorter/order=ASC&amp;sorter/field=priority&amp;sorter/order=DESC" target="" class="regularLink">Jiras</a>
+</li>
+<li class="wikiUnorderedListItem"> Many others <a href="https://jira.jboss.org/jira/browse/RF/fixforversion/12313512" target="" class="regularLink">3.3.2.CR1 Jiras</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+The 3.3.X branch will go into maintenance mode and will only have releases to cover critical issues, or if there are enough community contributions to warrant a release.  This will allow the team to focus on the 4.0 release.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-RichFaces400"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-RichFaces400">RichFaces 4.0.0</a></h2>
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+ <a href="/service/File/11982" target="" class="regularLink"><img src="/service/File/11982?thumbnail=true"></a>
+ <br>
+ <i class="wikiEmphasis">Nick Belaevski and Jay Balunas (me)</i>
+</div>
+
+<p class="wikiPara">
+Much of what we discussed is already updated and in place in the <a href="http://www.jboss.org/community/wiki/RichFaces40Planning" target="" class="regularLink">RichFaces 4.0 Planning Wiki</a> so I won't get into too many details here.  The key areas with some links and info are below
+</p>
+
+<h3 class="wikiHeadline3" id="H-JSF20Integration"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-JSF20Integration">JSF 2.0 Integration</a></h3>
+<p class="wikiPara">
+Obviously the biggest update in 4.0 is complete JSF 2.0 support.  This is full integration, not just compatibility.  This means we will be leveraging the new features like the event system, behaviors, base AJAX support, and component model.  As you've come to expect we'll also be innovating and adding to the base JSF features.  Some of these include dynamic resource support, and event driven AJAX updates.
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/community/wiki/RichFacesJSF20migration" target="" class="regularLink">JSF Core Wiki</a>] [<a href="http://www.jboss.org/community/wiki/RichFaces40AJAX" target="" class="regularLink">AJAX Wiki</a>]
+</p>
+
+<h4 class="wikiHeadline4" id="H-EventDrivenAJAXUpdate"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-EventDrivenAJAXUpdate">Event Driven AJAX Update</a></h4>
+<p class="wikiPara">
+<a href="http://www.jboss.org/community/wiki/RichFaces40AJAX" target="" class="regularLink">Event Driven Rendering</a> or updates in an interesting idea and would allows components to automatically (via model update events) register to be rerendered.  This would mean if data gets updated the component is automatically rerendered on the client side with the next ajax request.  This is still in the investigation phase and not committed to.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ModularBuildSystem"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-ModularBuildSystem">Modular Build System</a></h3>
+<p class="wikiPara">
+We wanted the build system for 4.0 to be easier to use, and module in nature.  There will also be cleaner version management, and partitioning so working with just one or two parts of the framework will be easier and less cumbersome.
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/community/wiki/RichFaces40BuildSystem" target="" class="regularLink">Build System Update Wiki</a>]
+</p>
+
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+ <a href="/service/File/11983" target="" class="regularLink"><img src="/service/File/11983?thumbnail=true"></a>
+ <br>
+ <i class="wikiEmphasis">Rodney Russ, Pete Muir, and Alex Smirnov</i>
+</div>
+
+<h3 class="wikiHeadline3" id="H-EasierToUseCDK"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-EasierToUseCDK">Easier to use CDK</a></h3>
+<p class="wikiPara">
+We are also going to streamline the CDK and remove all proprietary file formats to make it easier to work with.  With JSF 2.0 there are fewer artifacts required for component creation and we are following suit.  The new CDK will by more annotation and convention driven, as well integrate easier with tooling. 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> XHTML file to generate renderer</li>
+<li class="wikiUnorderedListItem"> Base component classes for functionality</li>
+<li class="wikiUnorderedListItem"> Optional XML configuration file</li>
+<li class="wikiUnorderedListItem"> No more proprietary file formats</li>
+<li class="wikiUnorderedListItem"> Better tool support </li>
+</ul>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/community/wiki/RichFaces40ComponentsDevelopmentKit" target="" class="regularLink">CDK Updates Wiki</a>]
+</p>
+
+<h3 class="wikiHeadline3" id="H-ComponentAndCodeReview"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-ComponentAndCodeReview">Component and Code Review</a></h3>
+<p class="wikiPara">
+We will also be going through the whole component library and reviewing each for functionality, consistency, and performance.  If it makes sense we'll combine components, or deprecate unneeded components and API.  If it is unavoidable we may remove component and code now.  This means changes to TLDs, XSDs, and APIs are possible.  As always there will be more information on this in the meeting minutes, wiki, and forums.  
+</p>
+
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+ <a href="/service/File/11984" target="" class="regularLink"><img src="/service/File/11984?thumbnail=true"></a>
+ <br>
+ <i class="wikiEmphasis">It was not all fun - this is where we spent</i>
+ <br>
+ <i class="wikiEmphasis"> 25-30 hours in 2.5 days.</i>
+ <br>
+<a href="/service/File/11981" target="" class="regularLink"><img src="/service/File/11981?thumbnail=true"></a>
+ <br>
+  <i class="wikiEmphasis">Ilya Shaikovsky and Anton Belevich starting the</i>
+  <br>
+  <i class="wikiEmphasis">RichFaces Revolution!</i>
+</div>
+
+<h3 class="wikiHeadline3" id="H-Misc"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-Misc">Misc:</a></h3>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> XSDs for component relationships and file formats to make tooling support easier</li>
+<li class="wikiUnorderedListItem"> JSP support will be depricated, just like with JSF 2.0.  We will make a best effort to support all features with JSP pages and this should not be a problem, but it will be a lower priority.</li>
+<li class="wikiUnorderedListItem"> JSF 2.1 features and discussions - see <a href="http://seamframework.org/Documentation/JSF21" target="" class="regularLink">Seam's JSF 2.1</a> site for details</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-OtherProjectUpdates"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-OtherProjectUpdates">Other Project Updates</a></h2>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">QE will have a new focus on automation using <a href="http://seleniumhq.org/" target="" class="regularLink">Selenium</a> and <a href="http://www.jboss.org/jsfunit/" target="" class="regularLink">JSFUnit</a> so that we can improve quality and performance across the many browser, OS, and container combinations supported by Richfaces.  </li>
+<li class="wikiUnorderedListItem">Documentation will also be getting a fresh look and review.  We want to make it easier to find the information you need. </li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-NewProjectPage"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-NewProjectPage">New Project Page</a></h3>
+<p class="wikiPara">
+We have a new RichFaces project page under development.  It will have a similar layout as the new <a href="http://www.jboss.org/tools" target="" class="regularLink">JBoss Tools </a> project site.  This is in development now and hope to have something soon.  
+</p>
+
+<h3 class="wikiHeadline3" id="H-WikiUpdates"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-WikiUpdates">Wiki Updates</a></h3>
+<p class="wikiPara">
+Updating the RichFaces wik to make it easier to find what you need
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Updated FAQ in the wiki</li>
+<li class="wikiUnorderedListItem"> <q>How to get involved</q> and <q>Developing RichFaces</q> guides</li>
+<li class="wikiUnorderedListItem"> Meeting transcripts and details</li>
+<li class="wikiUnorderedListItem"> Security issue tips and reporting</li>
+<li class="wikiUnorderedListItem"> Jira policies &amp; usage</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-JiraUsageChanges"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-JiraUsageChanges">Jira usage changes</a></h3>
+<p class="wikiPara">
+We have also created a new jira project to help separate out <a href="https://jira.jboss.org/jira/browse/RFPL" target="" class="regularLink">RichFaces Planning </a> jiras from the actual changes in the releases.  This will make it easier to track your issues and and get a sense of the scope of the releases.  We'll be rolling this out in the next several weeks.
+</p>
+
+<div style="float:left;margin-right:20px;margin-bottom:20px;">
+ <a href="/service/File/11985" target="" class="regularLink"><img src="/service/File/11985?thumbnail=true"></a>
+ <br>
+ <i class="wikiEmphasis">Spilberk Castle and fortifications</i>
+</div>
+
+<h2 class="wikiHeadline2" id="H-TeamEvent"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-TeamEvent">Team Event</a></h2>
+<p class="wikiPara">
+All work and no play makes for a boring project.  We took an afternoon and explored the Starobrno brewery, walked around Spilberk Castle and enjoyed a fair amount of local food (<i class="wikiEmphasis">meat</i>) and beverage (<i class="wikiEmphasis">beer</i>).  
+</p>
+
+<h3 class="wikiHeadline3" id="H-ForMoreDetails"><a href="/Bloggers/RichFacesFace2FaceMeetingReview#H-ForMoreDetails">For More Details</a></h3>
+<p class="wikiPara">
+If you are looking for more details they are either in <a href="http://www.jboss.org/community/wiki/RichFacesWikiHomePage" target="" class="regularLink">RichFaces wiki</a>, or <a href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=262" target="" class="regularLink">RichFaces Design Forum</a>.  For even more details we meet publicly every week on IRC.  For details on the meeting and agenda, minutes, and transcripts see <a href="http://www.jboss.org/community/wiki/RichFacesTeamMeetingInformation" target="" class="regularLink">RichFaces Team Meeting </a> wiki page, and don't forget to follow the project on <a href="http://twitter.com/richfaces" target="" class="regularLink">twitter</a>
+</p>
+
+<p class="wikiPara">
+Comments, ideas and contributions welcome so please join in!
+</p>
+
+<blockquote class="wikiBlockquote">
+
+Overall it was a lot of work and a lot of fun, and I want to thank the people in the Brno office, the RichFaces team, Pete Muir, and Rodney Russ for making it a great and successful meeting, and to Marek Novotny from the Seam team for setting up the team events!
+</blockquote>
+</div>

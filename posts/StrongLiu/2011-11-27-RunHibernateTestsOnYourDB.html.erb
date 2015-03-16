@@ -1,0 +1,63 @@
+---
+title: "Run Hibernate tests on your DB"
+author: "Strong Liu"
+blogger_name: "StrongLiu"
+layout: blog-post
+tags: [Hibernate]
+slug: RunHibernateTestsOnYourDB
+lace: http://in.relation.to/22391.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/RunHibernateTestsOnYourDB">Run Hibernate tests on your DB</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Dear DB vendors, contributors, and others, 
+</p>
+
+<p class="wikiPara">
+If you would like to run hibernate tests on other DB besides the default one (H2), please read <a href="https://github.com/hibernate/hibernate-core/tree/master/buildSrc" target="" class="regularLink">this doc </a> first.
+</p>
+
+<p class="wikiPara">
+For example, if you're working on a dialect to support your DB, it would better to run hibernate tests on it and make sure all tests pass(or at least, skip the failed test with a JIRA and explain why it should be skipped). 
+</p>
+
+<p class="wikiPara">
+Hibernate Core CI can be viewed <a href="https://ci.jboss.org/hudson/job/hibernate-core-master/" target="" class="regularLink">here </a>, you can also download the nightly build from here and view javadoc.
+</p>
+
+<p class="wikiPara">
+Hibernate Core Matrix Testing job is <a href="https://ci.jboss.org/hudson/job/hibernate-core-master-matrix/" target="" class="regularLink">here </a>, currently, we run hibernate tests on :
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> DB2 v9.7</li>
+<li class="wikiOrderedListItem"> Oracle 11gR1</li>
+<li class="wikiOrderedListItem"> Oracle 11gR1 RAC</li>
+<li class="wikiOrderedListItem"> Oracle 11gR2</li>
+<li class="wikiOrderedListItem"> Oracle 11gR2 RAC</li>
+<li class="wikiOrderedListItem"> MySql 5.1</li>
+<li class="wikiOrderedListItem"> Sql Server 2008 R1</li>
+<li class="wikiOrderedListItem"> Sql Server 2008 R2</li>
+<li class="wikiOrderedListItem"> PostgreSql 8.4</li>
+<li class="wikiOrderedListItem"> Sybase ASE 15.5</li>
+</ol>
+
+<p class="wikiPara">
+We're choosing these DBs since they are widely used and they are <a href="http://www.jboss.com/products/platforms/application/supportedconfigurations/" target="" class="regularLink">supported by JBoss product </a>, so JBoss QA team maintains them for us, we (hibernate team) do not have resource/time to maintain DB instances for testing.
+</p>
+
+<p class="wikiPara">
+For other DB(vendors), if you'd like to let us run hibernate tests on your DB, we are happy to add it to our matrix testing job, if you could provide us the DB connection info and maintain the DB instance yourself.
+</p>
+
+<p class="wikiPara">
+BTW, we're working hard to get all failures fixed before Hibernate Core 4.0 Final release, so, any help would be appreciated :D
+</p>
+</div>

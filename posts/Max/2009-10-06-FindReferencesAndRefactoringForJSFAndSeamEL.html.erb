@@ -1,0 +1,98 @@
+---
+title: "Find References and Refactoring for JSF and Seam EL"
+author: "Max Andersen"
+blogger_name: "Max"
+layout: blog-post
+tags: [Eclipse,JBoss Tools,JBoss Tools Eclipse,Seam]
+slug: FindReferencesAndRefactoringForJSFAndSeamEL
+lace: http://in.relation.to/12524.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/FindReferencesAndRefactoringForJSFAndSeamEL">Find References and Refactoring for JSF and Seam EL</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Daniel Azarov have been busy the last few months improving our <q>Find references</q> and Refactoring support for JSF and Seam Expression Language (EL) references.
+</p>
+
+<p class="wikiPara">
+During that work Daniel created a few movies showing of the features and they are added to the individual jira's about the subject. I thought it would be nice
+to also get these shown to a broader audience - so here they are, for you to see.
+</p>
+
+<p class="wikiPara">
+If you want to try this use the M3 release or nightly builds of <a href="http://jboss.org/tools/download" target="" class="regularLink">JBoss Tools</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SearchingFindReferences"><a href="/Bloggers/FindReferencesAndRefactoringForJSFAndSeamEL#H-SearchingFindReferences">Searching/Find references</a></h2>
+
+<p class="wikiPara">
+<a href="http://screencast.com/t/AfBvYUzRN" target="" class="regularLink">Standard search (Ctrl+Shift+G) finds method references in EL</a>
+</p>
+
+<p class="wikiPara">
+By using the standard <q>Find references</q> functionality EL expressions that refer to the method shows up
+next to java references.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Refactoring"><a href="/Bloggers/FindReferencesAndRefactoringForJSFAndSeamEL#H-Refactoring">Refactoring</a></h2>
+
+<p class="wikiPara">
+<a href="http://screencast.com/t/4HZuNNZmd3o" target="" class="regularLink">Refactoring Demo</a> - renaming the <q>booking</q> component to <q>cooking</q>.
+Shows how the rename of a component takes effect in both Java, components.xml, pages.xml and .xhtml files.
+</p>
+
+<p class="wikiPara">
+Notice how it handles changing default injection to explicit naming, i.e. </p>
+<pre class="wikiPreformatted">@In Booking booking;</pre>
+ needs to be changed
+to <pre class="wikiPreformatted">@In(value\="cooking") booking;</pre>
+ to continue to work. 
+
+
+<p class="wikiPara">
+The following movies show a similar rename, just initiated from the components view instead and an example of what
+happens for read only files.
+</p>
+
+<p class="wikiPara">
+<a href="http://screencast.com/t/t37fZjcCnqH" target="" class="regularLink">Rename Seam Component in Seam Components View</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://screencast.com/t/tvOqIlNaQ" target="" class="regularLink">Rename component in read-only files</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-RenamingOfELVariablesUsedInStrings"><a href="/Bloggers/FindReferencesAndRefactoringForJSFAndSeamEL#H-RenamingOfELVariablesUsedInStrings">Renaming of EL variables used in Strings</a></h2>
+
+<p class="wikiPara">
+These are for code that refers to EL inside Strings, for example </p>
+<pre class="wikiPreformatted">log.log("${user.name} did something")</pre>
+.
+The demo shows this applied in various locations:
+
+
+<p class="wikiPara">
+<a href="http://screencast.com/t/9t4kXcyHY" target="" class="regularLink">...in java editor</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://screencast.com/t/dZalmPdWn" target="" class="regularLink">...in xml editor</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://screencast.com/t/HWY7KqA9M" target="" class="regularLink">...in properties editor</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://screencast.com/t/LtJTDYheOM" target="" class="regularLink">...in VPE editor</a>
+</p>
+
+<p class="wikiPara">
+Have fun!</p>
+</div>

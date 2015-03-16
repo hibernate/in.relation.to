@@ -1,0 +1,163 @@
+---
+title: "Annotations and Validation"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: AnnotationsAndValidation
+lace: http://in.relation.to/1880.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/AnnotationsAndValidation">Annotations and Validation</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Annotations are undoubtedly the coolest new thing in Java SE 5 and will deeply change the way we write Java code. In the process of designing EJB 3.0, Hibernate Validator and Seam, we've had a chance to really start to stretch the use of annotations to the limit. It's striking just how many kinds of things may be expressed more elegantly and efficiently in declarative mode when you have a facility for mixing declaration and logic into the same source file. We've seen that in practice, whatever initial misgivings people may have about Java annotations, once they actually start using something like EJB 3.0 in a real project, they experience such a productivity increase that they quickly become comfortable with the approach.
+</p>
+
+<p class="wikiPara">
+Inevitably, there are a number of places where the annotations spec disappoints me. Two problems are already well-documented on this blog and elsewhere: first, annotation member values may not be null; second, annotation definitions do not support inheritance. We regularly need a null default value for an annotation, and have to work around the problem by using some magic value such as the empty string to represent null. This is a truly ugly solution and I really don't understand why JSR-175 could not have allowed null values. Lack of inheritance is inconvenient when defining annotations that share members with the same semantics. I won't belabor these issues since they are now well-understood.
+</p>
+
+<p class="wikiPara">
+Now, in practice, neither of these problems is that big a deal to the aplication code that is actually using the annotations. These problems are mainly an inconvenience to framework developers who define annotations. So we can live with this.
+</p>
+
+<p class="wikiPara">
+The /worst/ limitation of JSR-175, as it stands today, is the incredible paucity of facilities for validating annotated classes. Surprisingly, I have not seen this discussed elsewhere. The only facility provided for constraining annotations is the @Target meta-annotation, which specifies what kind of program element (class, method, field, etc) may be annotated. Compared with the functionality provided by DTDs or XML schemas, this is amazingly primitive. And, unlike the previous limitations we mentioned, this problem burdens the end user of an annotation-based framework rather than the framework designer.
+</p>
+
+<p class="wikiPara">
+We /at least/ need to be able to write down the following constraints:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> This annotation annotates classes that implement or extend a particular class or interface</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> This annotation annotates methods with a particular signature</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> This annotation annotates fields of a particular type</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> This annotation occurs at most once in a class</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> This annotation annotates methods/fields of classes with a particular annotation</li>
+</ul>
+
+<p class="wikiPara">
+Probably, we should also be able to write more sophisticated things such as:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The following annotations are mutually exclusive</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> If this annotation appears, another annotation must also appear</li>
+</ul>
+
+
+<p class="wikiPara">
+Let's show some examples:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The @PersistenceContext annotation only makes sense on a field of type EntityManager, or a method with the signature <tt>void set&lt;Name&gt;(EntityManager)</tt>. If the user puts it somewhere else, it is a mistake!</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The @PostConstruct annotation may only appear on one method in a class. If the user has two @PostConstruct methods, it is an error.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The @Basic annotation only makes sense for @Entity classes and @Embeddable classes. If it appears on a session bean, it is an error.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The @Stateful annotation may only appear on classes which implement Serializable.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The @Lob annotation may only appear on fields or getter methods of type String or <tt>byte[]</tt>
+</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> @Stateless and @Stateful can't appear together on the same class</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Etcetera...</li>
+</ul>
+
+
+<p class="wikiPara">
+In each of these examples, a programming error could be caught at compile time instead of runtime.
+</p>
+
+<p class="wikiPara">
+Actually, the lack of a proper constraint language in the current release of Java is already starting to lead some people down the wrong path. The Java EE 5 draft uses an annotation called @Resource for dependency injection of all kinds of diverse things, many of which are not <q>resources</q> in the usual sense of the word. Some <q>resources</q> require extra information such as authenticationType or mappedName, information which is not even meaningful for other types of <q>resources</q>. So the @Resource annotation is turning into a bag of unrelated stuff, most of which is irrelevant to any given type of <q>resource</q>. This is a construct with extremely weak semantics, and extremely low cohesion. It gets more complex, and less cohesive, each time we discover a new kind of <q>resource</q>. It's the annotation equivalent of a class called Resource with methods like sendJmsMessage(), executeSqlQuery() and listInbox().
+</p>
+
+<p class="wikiPara">
+If we would have a proper constraint facility for Java annotations, the Java EE 5 group would have realized that the @Resource annotation needed to be split into several annotations, each of which was constrained to apply only where it was relevant.
+</p>
+
+<p class="wikiPara">
+Instead of this:
+</p>
+
+<pre class="wikiPreformatted">
+@Resource(authenticationType=APPLICATION) Connection bookingDatabase;
+</pre>
+
+
+<p class="wikiPara">
+We would have ended up with this:
+</p>
+
+<pre class="wikiPreformatted">
+@Inject @AuthenticationType(APPLICATION) Connection bookingDatabase;
+</pre>
+
+
+<p class="wikiPara">
+Which uses finer-grained, more semantic, more cohesive annotations. @AuthenticationType would be constrained to apply only to resource types for which it makes sense. Notice that the @Inject annotation, being less specific to the anticipated kinds of <q>resources</q>, is actually more reuseable by future expert groups who discover new uses for dependency injection.
+</p>
+
+<p class="wikiPara">
+Let's hope that truly validatable annotations are a feature of Java SE 6.
+</p>
+
+<p class="wikiPara">
+A second problem that has regularly bothered me is that JSR-175 defines no standard way to override annotations specified in the Java code via some well-defined external metadata format, and have the overridden values accessible in a uniform way via the reflection API. This forces framework developers to define their own languages for overriding annotations, and their own facilities for parsing the metadata, merging values and exposing the merged values to the application. Why is this important?
+</p>
+
+<p class="wikiPara">
+Well, it is very often useful for other frameworks, or even the application itself, to consume annotations provided by a framework such as EJB3 or Seam. Well-designed annotations express information about the semantics of a component and its role in the system that is useful to other generic code that is built with an awareness of the component model. For example, the @Entity annotation is certainly of interest to aspects other than persistence! (Seam uses it, for one.) But the EJB3 specification provides no straightforward, foolproof way for the application to be able to tell if a class is an entity bean, since the EJB3 container considers both classes annotated @Entity and classes mentioned in the deployment descriptor. Growing an entire API for exposing the merged EJB3 metadata would keep the expert group busy for months.
+</p>
+
+<p class="wikiPara">
+However, in my view, the importance of annotation overriding has been overestimated. JSR-175 was badly named. The word <q>metadata</q> is highly overloaded and so some people have taken Java annotations to be a facility for expressing system /configuration/. In fact, annotations are clearly a terrible place to express configuration! Annotations, used well, enable /declarative programming/, which is a quite different thing. My prediction is that we will discover that in practice people will use annotation overriding much less often than they expect.
+</p>
+
+<p class="wikiPara">
+For example, contrary to certain critiques of EJB3 that have been published in blogs and elsewhere, /nobody is suggesting that you should configure datasources or JMS queues using annotations!/ Rather, an annotation would provide a /logical name/ of a datasource which would be configured elsewhere using XML. There is no reason for a logical name to change between different deployments of the system. A second example comes from the world of ORM. There is almost /never/ a good reason for table and column names to change between different deployments of a system. (If this were really necessary, it would be virtually impossible to build systems using handwritten SQL!) So there is no reason to make your code harder to understand by splitting mapping information out of the definition of the entity bean. On the other hand, schema and catalog names /do/ change, and hence do not belong in annotations.
+</p>
+
+<p class="wikiPara">
+So, while I do hope that a future revision of Java SE will provide a standard annotation overriding facility, I can probably just live without it. My intuition is that, by nature, most of the information that does change between different deployments of the system is of much less interest to the application or additional aspects.
+</p>
+</div>

@@ -1,0 +1,81 @@
+---
+title: "SpringSource's strategy"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: []
+slug: SpringSourcesStrategy
+lace: http://in.relation.to/3497.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SpringSourcesStrategy">SpringSource's strategy</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<i class="wikiEmphasis">It has been interesting to follow the <a href="http://blog.springsource.com/main/author/rodj/" target="" class="regularLink">recent communications</a> made by Rod Johnson as you can transparently read SpringSource's strategy. I wanted to blog about it during the last vacations but never fully finished the entry (they were vacations after all). Some elements are outdated now (including SpringSource acquiring covalent) but here it goes just refreshed with links.</i>
+</p>
+
+<p class="wikiPara">
+Rod Johnson has been quite aggressive <a href="http://blog.springsource.com/main/2007/12/24/is-it-a-tomcat-or-the-elephant-in-the-room/" target="" class="regularLink">against</a> JBoss AS in the <a href="http://blog.springsource.com/main/2008/01/16/the-power-of-adoption-why-no-company-is-big-enough-to-deny-developers-what-they-want/" target="" class="regularLink">last few weeks</a>. It did not really bother me per se but the move is interesting. While it is well known that some JBoss folks and some Interface21 folks has been having tensions in the past, it came to a surprise that Rod joins the arena. Since Rod does not attack people for emotional reasons contrary to <a href="http://bill.burkecentral.com/" target="" class="regularLink">other folks</a>, let's try a guess what's going on.
+</p>
+
+
+<p class="wikiPara">
+Interface21 (now SpringSource) received VC funding last year. Don't be naive, VC do transform a company, they are seeking for quick returns on their investment. Interface21 was mainly a consulting oriented company (in term of business) around the Spring portfolio. While this is a very steady and nobel business, it cannot provide the ROI VC people want to get: SpringSource's strategy had to be adjusted, the most obvious, safe and well defined solution is to follow the JBoss Inc model: go for the support money.
+</p>
+
+<p class="wikiPara">
+Well, to sell support, you need runtime. Unfortunately for SpringSource, Spring as a framework is not appealing enough for customers to jump into the support model. I think SpringSource did some interesting partnership / support deals with the folks at IBM, BEA and possibly Oracle (something JBoss never really did well because of the direct competition), but the only reasonable way to scale up the business is to have and support your own runtime. By the way, you can see the partnership going on in Rod's blogs, his tone is very sympathetic to IBM, BEA and Sun (I will come back to Sun later on). Generally speaking, the broader your platform is, the more likely you will be able to sell support. So SpringSource needs a platform to sell and support.
+</p>
+
+<p class="wikiPara">
+Writing your own proprietary set of platform API is not so much <a href="http://www.apple.com/macbookair/" target="" class="regularLink">in the air</a> (to unquote Steve Jobs). That's why SpringSource joined the JCP and <a href="http://blog.interface21.com/main/2007/07/03/java-ee-6-gets-it-right/" target="" class="regularLink">started to bless Sun and the Java EE 6 efforts, especially the profile effort</a>. They need a <a href="http://en.wikipedia.org/wiki/Mini-Me" target="" class="regularLink">mini-EE</a> they can reach implementation-wise. If I were SpringSource, I would then try and get the smallest web-ish profile as possible out of the Java EE expert group, implement it and then raise the Java EE compliant flag to sell supports.
+</p>
+
+<p class="wikiPara">
+Side note on profiles. While everybody agrees Java EE needs some profile, I am sure nobody agrees on what to put in which profile: every application has different needs. What people really need is an ability to deploy and buy infrastructure components a la carte (whether it be one vendor or several) with the warranty of well defined API / SPI so that the whole platform keep a coherent vision freeing the customer from any integration work (component integration or programmatic model integration). Nothing a rigid profiling set can do. But that is a hard job.
+</p>
+
+<p class="wikiPara">
+Back to the main story. Even with the smallest possible Java EE profile, SpringSource is lacking some important pieces, the first one being the servlet container. And here comes the reason why Rod has been trying to not so subtly sent the message that <a href="http://blog.springsource.com/main/2007/12/24/is-it-a-tomcat-or-the-elephant-in-the-room/" target="" class="regularLink">JBoss AS is crap (I summarize here) and Tomcat is great</a>. The only obvious choice for SpringSource is Tomcat. They need to enter the platform/runtime by the low end and gain market share (as in support market share). I would not be surprised if SpringSource announce a fully supported platform effort based on Tomcat and Spring at it's core. Of course, they need to hire some of the key contributors of Tomcat to gain some credibility. Let's imagine this done, the first competition they think they will face is JBoss AS, so seeing Rod poopooing on JBoss AS and EJB 3 is not a surprise. The first competition they will face though is people that do not want support for Tomcat: JBoss has been offering Tomcat support for a long time but not surprisingly monetizing Tomcat never succeeded. Most applications deployed on Tomcat do not want need (of course exceptions apply). Maybe Tomcat + Spring will be the silver bullet but I seriously doubt it for a bunch of reasons. The second biggest competition will probably be their own ecosystem. When you start to compete with them, your partners tend to be pissed, that's life. Ask Larry about that.
+</p>
+
+<p class="wikiPara">
+By the way, Rod does not seem to know that JBoss uses an enhanced version of Tomcat as a web container named JBoss Web. Remy (Tomcat) and Mladen (Apache httpd) sat down and wrote a native integration between Tomcat and APR to make this server the best of both Tomcat and Apache httpd. Maybe he wants to check it out and fork it :) Oh, one more thing, anybody that has been charged by an elephant tend to smile at the cat vs elephant analogy.
+</p>
+
+<p class="wikiPara">
+Tomcat + Spring will still be a weak platform, SpringSource will have to beef it up with some additional components:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">a persistence framework (and no Spring is not a persistence framework :) )</li>
+<li class="wikiUnorderedListItem">a transaction manager</li>
+<li class="wikiUnorderedListItem">a messaging system</li>
+<li class="wikiUnorderedListItem">maybe some webservices thingy stuffs</li>
+</ul>
+
+<p class="wikiPara">
+    and a few more components. They probably will also have to announce a developer tooling strategy around that.
+    I will only comment on the persistence piece of their platform as I know the field quite well. They can technically chose between Hibernate, OpenJPA, and Toplink. Hibernate would be the smartest move for them and the most aligned with their customer base but this probably will be a tough call for Rod. The two alternative strategie are Toplink (aka EclipseLink) and OpenJPA. If I were them, I guess I would go for OpenJPA as a second choice but they will have to invest R&amp;D in the pieces that differenciate OpenJPA from Kodo.
+</p>
+
+<p class="wikiPara">
+    Rod, please be more open with your strategy. I always liked Marc Fleury's own way to tell everyone what strategy he was following and what will be the next moves. To everyone, including the competition :)
+</p>
+
+<p class="wikiPara">
+    Good luck anyway, I am eager to have competition in this field as I think JBoss AS, Seam, Web Beans and the technologies around them (JPA, EJB 3, JSF and so on) are more appealing to the next leap forward.
+</p>
+
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Usual disclamer, this represents my own thoughts not necessarily my current, past, future, potential employer, etc etc.</i>
+</p>
+
+</div>

@@ -1,0 +1,225 @@
+---
+title: "REST support in latest Seam 2.1"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: [REST,Seam,Seam News]
+slug: RESTSupportInLatestSeam21
+lace: http://in.relation.to/11745.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/RESTSupportInLatestSeam21">REST support in latest Seam 2.1</a>
+                    </h1>
+</div>
+<div style="float:right; margin-left:15px;margin-bottom:15px">
+<img src="http://www.seamframework.org/themes/sfwkorg/img/seam_icon_large.png">
+</div>
+
+<p class="wikiPara">
+Norman released <a href="/Bloggers/Seam212" target="" class="regularLink">Seam 2.1.2</a> yesterday and it comes with much improved support for REST processing, compared to previous 2.1.x versions. We started integrating <a href="http://www.jboss.org/resteasy/" target="" class="regularLink">RESTEasy</a> - an implementation of JAX-RS (<a href="http://jcp.org/en/jsr/detail?id=311" target="" class="regularLink">JSR 311</a>) - with Seam almost a year ago in a <a href="/Bloggers/RESTEasySupportNowAvailableInSeam" target="" class="regularLink">first prototype</a>. We then waited for the JAX-RS spec to be finalized and for RESTEasy to be GA, which happened a few months ago. So based on that stable foundation we were able to finish the integration with Seam. 
+</p>
+
+<p class="wikiPara">
+I'm going to demonstrate some of the unique features of that integration here, how you can create a RESTful Seam application or simply add an HTTP web service interface to an existing one.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DeployingResourcesAndProviders"><a href="/Bloggers/RESTSupportInLatestSeam21#H-DeployingResourcesAndProviders">Deploying resources and providers</a></h2>
+
+<p class="wikiPara">
+With JAX-RS you write a plain Java class and put <tt>@javax.ws.rs.Path("/customer")</tt> on it to make it available under the HTTP base URI path <tt>/customer</tt>. You then map methods of that class to particular sub-paths and HTTP methods with <tt>@javax.ws.rs.GET</tt>, <tt>@POST</tt>, <tt>@DELETE</tt>, and so on. These classes are called <i class="wikiEmphasis">Resource</i> classes. The default life cycle of an instance is per-HTTP-request, an instance is created for a request and destroyed when processing completes and the response has been sent.
+</p>
+
+<p class="wikiPara">
+Converting HTTP entities (the body of an HTTP request) is the job of <i class="wikiEmphasis">Provider</i> classes, annotated with <tt>@javax.ws.rs.ext.Provider</tt> and usually stateless or singleton. They transform content between HTTP and Java types, say <tt>my.Customer</tt> entity to and from XML with JAXB. Providers also are the extension point in JAX-RS for custom exception converters, etc.
+</p>
+
+<p class="wikiPara">
+RESTEasy has its own classpath scanning routine that detects all resources and providers by looking for annotations. That requires a servlet context listener configured in <tt>web.xml</tt>. You'd also have to configure a request dispatcher servlet. Finally, if you'd like to make your resource classes EJBs, for automatic transaction demarcation and persistence context handling, you'd have to list these EJBs in web.xml as well. This last feature is a RESTEasy enhancement and not part of the JAX-RS specification.
+</p>
+
+<p class="wikiPara">
+If you use Seam with RESTEasy, none of this extra work is necessary. Of course it still needs to be done but you most likely have already configured the basic Seam listener and resource servlet in <tt>web.xml</tt> - almost all Seam applications have. 
+</p>
+
+<p class="wikiPara">
+You do not have to configure RESTEasy at all. Just drop in the right JAR files (see the <a href="http://docs.jboss.com/seam/2.1.2/reference/en-US/html/webservices.html#d0e21974" target="" class="regularLink">reference docs</a>) and your Seam application will automatically find all <tt>@Path</tt> resources and <tt>@Provider</tt>'s. Your stateless EJBs still need to be listed to be found, but that can be done in Seam's <a href="http://docs.jboss.com/seam/2.1.2/reference/en-US/html/webservices.html#d0e21989" target="" class="regularLink">components.xml</a> or programmatically through the usual Seam APIs. All the other RESTEasy configuration options and some useful other configuration features are available as well.
+</p>
+
+<p class="wikiPara">
+So without changing any code, you get easier deployment and integrated configuration of JAX-RS artifacts in your Seam application.
+</p>
+
+<h2 class="wikiHeadline2" id="H-UtilizingSeamComponents"><a href="/Bloggers/RESTSupportInLatestSeam21#H-UtilizingSeamComponents">Utilizing Seam components</a></h2>
+
+<p class="wikiPara">
+Resources and providers can be made Seam components, with bijection, life cycle management, authorization, interception, etc. Just put an <tt>@Name</tt> on your resource class:
+</p>
+
+<pre class="wikiPreformatted">@Name("customerResource")
+@Scope(ScopeType.EVENT) // Default
+@Path("/customer")
+public class MyCustomerResource {
+
+    @In
+    CustomerDAO customerDAO;
+
+    @GET
+    @Path("/{customerId}")
+    @Produces("text/xml")
+    @Restrict("#{s:hasRole('admin')}")
+    public Customer getCustomer(@PathParam("customerId") int id) {
+         return customerDAO.find(id);
+    }
+}</pre>
+
+
+<p class="wikiPara">
+Naturally REST-oriented architecture assumes that clients are maintaining application state, so your resource components would be EVENT or APPLICATION scoped, or STATELESS. Although SESSION scope is available, by default a session only spans a single HTTP request and it's automatically destroyed after the HTTP request. This behavior and how to configure it if you really want to transmit a session identifier between the REST client and server and utilize server-side SESSION scope across requests is explained in more detail in the <a href="http://docs.jboss.com/seam/2.1.2/reference/en-US/html/webservices.html#d0e22151" target="" class="regularLink">reference docs</a>. We already have some ideas for CONVERSATION scope integration, follow <a href="http://www.seamframework.org/Documentation/RESTfulApplicationsWithSeam" target="" class="regularLink">this design document</a> fore more info.
+</p>
+
+<p class="wikiPara">
+Of course your resource Seam component doesn't have to be a POJO, you can also use <tt>@Stateless</tt> and turn it into an EJB. Another advantage here is that you do not have to list that EJB in <tt>components.xml</tt> or <tt>web.xml</tt> anymore as all Seam components are automatically found and registered according to their type.
+</p>
+
+<p class="wikiPara">
+The <tt>@Restrict</tt> annotation is just a regular Seam authorization check, currently you can configure <tt>Basic</tt> or <tt>Digest</tt> authentication as you'd for any other Seam application.
+</p>
+
+<h2 class="wikiHeadline2" id="H-CRUDFrameworkIntegration"><a href="/Bloggers/RESTSupportInLatestSeam21#H-CRUDFrameworkIntegration">CRUD framework integration</a></h2>
+
+<p class="wikiPara">
+Seam has a framework for building basic CRUD database applications quickly, you probably already have seen <tt>EntityHome</tt> and <tt>EntityQuery</tt> in other Seam examples. <a href="http://www.seamframework.org/user/jharting" target="" class="regularLink">Jozef Hartinger</a> built an extension that allows you to create a basic CRUD application with full HTTP/REST support in minutes. You can declare it through <tt>components.xml</tt>:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;framework:entity-home name="customerHome"
+                       entity-class="my.Customer"
+                       auto-create="true"/&gt;
+
+&lt;framework:entity-query name="customerQuery"
+		        ejbql="select c from Customer c" order="lastname"/&gt;
+
+&lt;resteasy:resource-home path="/customer" name="resourceCustomerHome"
+                        entity-home="#{customerHome}" entity-id-class="java.lang.Long"
+                        media-types="application/xml application/json"/&gt;
+
+&lt;resteasy:resource-query path="/customer" name="resourceCustomerQuery"
+                         entity-query="#{customerQuery}" entity-class="my.Customer"
+                         media-types="application/xml application/json"/&gt;
+</pre>
+
+
+<p class="wikiPara">
+You only have to create the <tt>my.Customer</tt> entity and you are ready to read from and write to the database through HTTP. 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A <tt>GET</tt> request to <tt>/customer?start=30&amp;show=10</tt> will execute the <tt>resourceCustomerQuery</tt> component and return a list of all customers with pagination, starting at row 30 with 10 rows in the result. </li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> You can <tt>GET</tt>, <tt>PUT</tt>, and <tt>DELETE</tt> a particular customer instance by sending HTTP requests to <tt>/customer/&lt;customerId&gt;</tt>. </li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Sending a <tt>POST</tt> request to <tt>/customer</tt> creates a new customer entity instance and persists it.</li>
+</ul>
+
+<p class="wikiPara">
+Note that the <tt>&lt;framework:...&gt;</tt> mappings are part of the regular Seam CRUD framework with all the usual options such as query customization. The content will be transformed by the built-in RESTEasy providers for XML and JSON, for example. The XML transformation will use any JAXB bindings on your entity class.
+</p>
+
+<p class="wikiPara">
+You do not have to use XML configuration; as you'd with the Seam CRUD superclasses <tt>ResourceHome</tt> and <tt>ResourceQuery</tt>, you can write subclasses instead and configure the mapping with annotations.
+</p>
+
+<p class="wikiPara">
+There is a reason this CRUD framework feature is not documented in the current release: We are not sure the API will stay as it is. Consider this release as our proposal and we really need feedback on it, what works and what can be improved. Jozef also wrote a full-featured RESTful application with a jQuery based client for regular webbrowsers to demonstrate the CRUD framework. Have a look at the <a href="http://fisheye.jboss.com/browse/Seam/branches/community/Seam_2_1/examples/tasks" target="" class="regularLink">Tasks example in the Seam distribution</a>. You can find more demo code and tests in the <a href="http://fisheye.jboss.com/browse/Seam/branches/community/Seam_2_1/examples/restbay" target="" class="regularLink">Restbay example</a> which we use for general RESTEasy integration testing and demonstration.
+</p>
+
+<h2 class="wikiHeadline2" id="H-FeatureShortlist"><a href="/Bloggers/RESTSupportInLatestSeam21#H-FeatureShortlist">Feature shortlist</a></h2>
+
+<p class="wikiPara">
+I've only highlighted three of the main features of Seam and RESTEasy but there is more available and more to come:
+</p>
+
+<p class="wikiPara">
+Exceptions in JAX-RS applications are mapped to HTTP responses for clients with provider classes called <i class="wikiEmphasis">ExceptionMapper</i>. That can be much more work than it should, so you can also map exceptions in Seam's <tt>pages.xml</tt> declaratively, see <a href="http://docs.jboss.com/seam/2.1.2/reference/en-US/html/webservices.html#d0e22237" target="" class="regularLink">docs</a>.
+</p>
+
+<p class="wikiPara">
+You can write unit tests that pass mock HTTP request and response through Seam and RESTEasy, all with local calls not TCP sockets. We use them in the integration tests and so can you to test your application. See the <a href="http://docs.jboss.com/seam/2.1.2/reference/en-US/html/webservices.html#d0e22294" target="" class="regularLink">reference docs</a>.
+</p>
+
+<p class="wikiPara">
+There is already talk about <q>MVC and REST</q>. What this all comes down to, at least from my standpoint, is that <a href="http://roy.gbiv.com/untangled/2008/rest-apis-must-be-hypertext-driven" target="" class="regularLink">hypertext should drive the application state</a> through linked resources (HATEOAS, Hypertext as the engine of application state). From a technical perspective, it simply means that we need more control over how the <q>view</q> is rendered, not just marshaling dumb XML documents from <tt>Customer</tt> entities with JAXB defaults. We should render XHTML representations - which of course may include JAXB-rendered XML blobs in addition to links and forms - and be able to customize them with templates. 
+</p>
+
+<p class="wikiPara">
+Facelets seems like a natural fit for this and we have a prototype for sending templated XHTML responses:
+</p>
+
+<pre class="wikiPreformatted">@GET
+@Path("/customer/{id}")
+@ProduceMime("application/xhtml+xml")
+@FaceletsXhtmlResponse(
+    template = "/some/path/to/template/#{thisCanEvenBeEL}/foo.xhtml"
+)
+@Out(value = "currentCustomer", scope = ScopeType.EVENT)
+public Customer getCustomer(@PathParam("id") String id) { ... }
+</pre>
+
+
+<p class="wikiPara">
+This is just pseudo-code, this feature is not available in the release. It wouldn't be very useful as it is, because we don't know how to transform incoming HTTP requests with XHTML payload back into a Facelet view. It's not trivial to implement either and we'll probably wait for JSF2 before we finalize this. But it shows that providing a JSF-based human client interface and a RESTful HTTP web service interface in the same application might be a natural fit with the given technologies.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NextVersion"><a href="/Bloggers/RESTSupportInLatestSeam21#H-NextVersion">Next version?</a></h2>
+
+<p class="wikiPara">
+The currently available RESTEasy version is still not GA, although it is a release candidate. There are also a few open issues with the integration code that we'd like to close, and we have to finalize the CRUD framework interface. This is all expected to happen in the Seam 2.2 releases.
+</p>
+
+<p class="wikiPara">
+More elaborate additional features such as conversation integration, representation templating, or additional authentication schemes are probably reserved for Seam3 as we might want to build on the new JSF2/JCDI standards as much as possible. Follow <a href="http://www.seamframework.org/Documentation/RESTfulApplicationsWithSeam" target="" class="regularLink">this wiki page</a> for updates.
+</p>
+
+<p class="wikiPara">
+P.S. <a href="http://oreilly.com/catalog/9780596529260/" target="" class="regularLink">This book</a> is an excellent starting point if you are wondering what this stuff is all about.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Update:</i> I forgot to mention one important feature that some of you might like. You can annotate your Seam component (POJO or EJB) interface and not the bean class. For EJB Seam components, you actually <i class="wikiEmphasis">have</i> to annotate the local business interface.
+</p>
+
+<pre class="wikiPreformatted">
+@Path("/customer")
+public interface MyCustomerResource {
+
+    @GET
+    @Path("/{customerId}")
+    @Produces("text/xml")
+    public Customer getCustomer(@PathParam("customerId") int id);
+}</pre>
+
+
+<pre class="wikiPreformatted">@Name("customerResource")
+public class MyCustomerResourceBean implements MyCustomerResource {
+
+    @In
+    CustomerDAO customerDAO;
+
+    @Restrict("#{s:hasRole('admin')}")
+    public Customer getCustomer(int id) {
+         return customerDAO.find(id);
+    }
+}
+</pre>
+
+
+</div>

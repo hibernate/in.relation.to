@@ -1,0 +1,119 @@
+---
+title: "Making Eclipse look good on Linux (revisited)"
+author: "Max Andersen"
+blogger_name: "Max"
+layout: blog-post
+tags: [JBoss Tools Eclipse,Linux]
+slug: MakingEclipseLookGoodOnLinuxRevisited
+lace: http://in.relation.to/3439.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MakingEclipseLookGoodOnLinuxRevisited">Making Eclipse look good on Linux (revisited)</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+This is an updated version of <a href="http://blog.xam.dk/archives/81-Making-Eclipse-look-good-on-Linux.html" target="" class="regularLink">Making Eclipse look good on Linux</a> that  integrates the comments and the changes relevant for Fedora 8 (which I finally got around to update to).
+</p>
+
+<p class="wikiPara">
+I'm still bothered by the <q>clumsy</q> look that Eclipse has on my Fedora box compared to how it looks on Windows and Mac.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Eclipse33RunningOnWindowsXP"><a href="/Bloggers/MakingEclipseLookGoodOnLinuxRevisited#H-Eclipse33RunningOnWindowsXP">Eclipse 3.3 running on Windows XP</a></h1>
+
+<p class="wikiPara">
+<img src="/service/File/3441" width="723" height="320">
+</p>
+
+<h1 class="wikiHeadline1" id="H-Eclipse33RunningOnFedora8ButLooksVerySimilarOnOtherDistros"><a href="/Bloggers/MakingEclipseLookGoodOnLinuxRevisited#H-Eclipse33RunningOnFedora8ButLooksVerySimilarOnOtherDistros">Eclipse 3.3 running on Fedora 8 (but looks very similar on other distros)</a></h1>
+
+<p class="wikiPara">
+<img src="/service/File/3442" width="844" height="327">
+</p>
+
+<p class="wikiPara">
+Notice that the font size is bigger ( 10 vs 8 ) and that there is a lot of extra spacing between elements (The package tree and problem view is much more compact on windows). 
+</p>
+
+<p class="wikiPara">
+I tried changing the GTK themes but the issue prevailed - the themes doesn't seem to adjust the fonts only the component <q>look</q>.
+</p>
+
+<p class="wikiPara">
+But with some help from my Red Hat friends on our tech-list I got some tips and ended up getting close.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheTweaks"><a href="/Bloggers/MakingEclipseLookGoodOnLinuxRevisited#H-TheTweaks">The tweaks</a></h1>
+
+<p class="wikiPara">
+Install <a href="https://www.redhat.com/promo/fonts/" target="" class="regularLink">Red Hat Liberation fonts</a> if you don't already have them. They are free/liberated Windows fonts available for any OS and readily available in Fedora's repositories so they are very easy to install via /yum/.
+</p>
+
+<p class="wikiPara">
+After they are installed I ran /gnome-appearance-properties/ (/gnome-font-properties/ in Fedora 6) and used the following settings:
+</p>
+
+<p class="wikiPara">
+/Application/Document/Desktop font:/ Liberation Sans, size 9<br>
+/Window title font:/ Liberation Sans Bold, size 10<br>
+/Fixed with font:/ Liberation Mono, 10<br>
+/Font rendering:/ Best contrast (the others left weird artifacts)
+</p>
+
+<p class="wikiPara">
+/Under details:/<br>
+/Resolution:/ 97 dpi (to avoid the letters to get too close, need at least 1 px between them ;)<br>
+/Smoothing:/ Grayscale<br>
+</p>
+
+<p class="wikiPara">
+/Hinting:/ Full 
+</p>
+
+<p class="wikiPara">
+Depending on your Eclipse font settings the above will be enough, but if you already have tweaked some settings remember to check your Font settings under Eclipse preferences and verify that you are actually using the System default or the Liberated fonts to get the smoother more compact look. And finally, the above settings are much up to personal taste and they might even be different per distro since I had to use different values for F8 than for F6 to get what I liked.
+</p>
+
+<p class="wikiPara">
+The last thing is to remove some of that unneeded extra spacing in the tree views. The easiest way I found around that was to create an /~/.gtkrc-2.0/ file with the following content:
+</p>
+
+<pre class="wikiPreformatted">
+style "gtkcompact" {
+GtkTreeView::vertical-separator=1
+GtkTreeView::horizontal-separator=1
+# Makes treeviews less spacy
+GtkWidget::focus-line-width=1
+GtkWidget::focus_padding=0
+}
+class "GtkWidget" style "gtkcompact"
+</pre>
+
+
+<p class="wikiPara">
+Those settings will take effect when you restart Eclipse.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Eclipse33WithLiberationFontTweaks"><a href="/Bloggers/MakingEclipseLookGoodOnLinuxRevisited#H-Eclipse33WithLiberationFontTweaks">Eclipse 3.3 with Liberation font + tweaks</a></h1>
+
+<p class="wikiPara">
+<img src="/service/File/3440" width="723" height="320">
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Much</i> better, but unfortunately GTK still thinks it needs to have 1-2 extra pixels between the text in the tab components. If anyone know which gtkrc setting that can reduce that please leave a comment.
+</p>
+
+
+
+
+
+
+
+
+</div>

@@ -1,0 +1,56 @@
+---
+title: "Hibernate Validator 5.1.0.CR1 is out - one step closer to final!"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Hibernate Validator,hv51]
+slug: HibernateValidator510CR1IsOutOneStepCloserToFinal
+lace: http://in.relation.to/24874.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateValidator510CR1IsOutOneStepCloserToFinal">Hibernate Validator 5.1.0.CR1 is out - one step closer to final!</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I am happy to announce Hibernate Validator 5.1.0.CR1, hopefully (fingers crossed) the last release prior Final.
+We used the release for last adjustments and some bug fixes.
+</p>
+
+<p class="wikiPara">
+On the bug fix side, we addressed issues with the CDI integration (<a href="https://hibernate.atlassian.net/browse/HV-858" target="" class="regularLink">HV-858</a>),
+EL message interpolation (<a href="https://hibernate.atlassian.net/browse/HV-834" target="" class="regularLink">HV-834</a>) and validated
+value unwrapping in conjunction with <tt>Validator#validateValue</tt> and <tt>Validator#validateProperty</tt> 
+(<a href="https://hibernate.atlassian.net/browse/HV-860" target="" class="regularLink">HV-860</a>).
+</p>
+
+<p class="wikiPara">
+We also gave <a href="http://docs.jboss.org/hibernate/validator/5.1/api/org/hibernate/validator/constraints/Mod10Check.html" target="" class="regularLink">@Mod10Check</a> 
+and <a href="http://docs.jboss.org/hibernate/validator/5.1/api/org/hibernate/validator/constraints/Mod11Check.html" target="" class="regularLink">@Mod11Check</a> a final overhaul and made the parameter
+naming more consistent and changed the semantics of <tt>startIndex</tt>, <tt>endIndex</tt> and <tt>checkDigitIndex</tt>. 
+They are now all inclusive and always relative to the original validated value, indepent of <tt>ignoreNonDigitCharacters</tt>.
+If you are already using these new constraints, I recommend you review the linked Javadocs to understand
+the updated semantics. 
+</p>
+
+<p class="wikiPara">
+Last but not least, we added yet another checksum related constraint - <tt>@EAN</tt>. It allows
+you to validate <a href="http://en.wikipedia.org/wiki/International_Article_Number_%28EAN%29" target="" class="regularLink">International Article Numbers</a> (EAN-13 and EAN-8).
+</p>
+
+<p class="wikiPara">
+The full change log can be found <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10060&amp;version=15550" target="" class="regularLink">here</a>. Maven artefacts are on the JBoss Maven repository under the GAV <a href="https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate~hibernate-validator~5.1.0.CR1~~" target="" class="regularLink">org.hibernate:hibernate-validator:5.1.0.CR1</a> and <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/5.1.0.CR1/" target="" class="regularLink">distribution bundles</a> are available on SourceForge.
+</p>
+
+<p class="wikiPara">
+Feedback and questions are always welcome via the Hibernate Validator <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a> or 
+on stackoverflow using the <a href="http://stackoverflow.com/questions/tagged/hibernate-validator" target="" class="regularLink">hibernate-validator</a> tag.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>

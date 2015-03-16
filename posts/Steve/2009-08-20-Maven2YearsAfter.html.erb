@@ -1,0 +1,37 @@
+---
+title: "Maven, 2 years after"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: [Hibernate,Maven]
+slug: Maven2YearsAfter
+lace: http://in.relation.to/12116.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/Maven2YearsAfter">Maven, 2 years after</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Let me preface this by saying up front that, yes, I am fed up with Maven.  In the 2 years since I decided to switch Hibernate over to use Maven for its build tool I don't think that Maven has lived up to making builds any easier.  Quite the contrary, in fact.  Previously though there was not really been any other option.  At that time ant/ivy combo was just starting to gain traction.  Not to mention that I do like the notion of build-by-convention which Ant just does not provide.
+</p>
+
+<p class="wikiPara">
+Bugs aside, most of the problems I have with Maven in dealing with Hibernate stem from Maven's assumption that all projects are independently releasable.  The problem here is that this extends to sub-projects or <q>modules</q> as well.  With Hibernate, the decision to utilize sub-projects was made solely for the purpose of isolating dependencies to various pieces of optional Hibernate functionality.  For example, we have a sub-project specific to dealing with c3p0 as a provider of JDBC connections.  The dependency in Hibernate on the c3p0 artifact is isolated completely in this module.  So as a user you can simply tell maven that you are using hibernate-core and hibernate-c3p0 and have the transitive dependencies set up correctly.  I did not set up these sub-projects so that I could release hibernate-c3p0 independently at some time.  I have no desire do go that route as it causes nothing but confusion IMO.  Even if nothing were to change in the classes in hibernate-c3p0 I would much rather have that get bumped to the new standardized version.
+</p>
+
+<p class="wikiPara">
+So anyway, what are the issues with this assumption?  Well the first is that I cannot simply 'change directory' into a sub-project directory and build it and expect Maven to build the other projects upon which this sub-project depends for me automatically.  For example, I cannot 'cd' into the hibernate-c3p0 project directory and run 'mvn compile' and expect Maven to first compile the hibernate-core project for me even though hibernate-c3p0 depends upon it.  This may not sound like a big deal, but Hibernate is a big project with 14 jar-producing projects (not to mention numerous support projects like documentation and distribution-builders).  Having to 'cd' around all those different projects just to compile a dependency graph that Maven already know about seems silly.  But again, Maven must do this because of this assumption of <q>project independence</q>
+</p>
+
+<p class="wikiPara">
+The other issue has to do with the notoriously bad support for performing releases.  This has bitten me every time I have tried to do a Hibernate release with Maven using it's release plugin.  In fact it just caused a 3 day delay in the Hibernate 3.5.0.Beta-1 release.  I know the release plugin is just a wrapper around a few mvn commands you can run yourself (in fact that's how I finally ended the 3 day 3.5.0.Beta-1 release marathon); the issue is again back to Maven's <q>support</q> for multi-project builds.  The release plugin is the only current plugin which offers support for managing the numerous version declarations that are required throughout all the sub-projects.  So when releasing a project with multiple sub-projects you have 2 options: (1) use the release plugin or (2) (a) update the pom versions manually (b) commit (c) r-tag (d) update the pom versions manually (e) commit (f) checkout the tag (g) perform the mvn deploy.  Sure would be nice if the <q>version management</q> stuff from the release plugin were usable separately.
+</p>
+
+<p class="wikiPara">
+The other build tools I have been looking at briefly are (1) gradle, (2) buildr and (3) simple-build-tool.  Anyone have practical experience with any of these, or suggestions on others we should look at?</p>
+</div>

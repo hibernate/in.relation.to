@@ -1,0 +1,162 @@
+---
+title: "Web Beans Sneak Peek Part III: Declaring components using XML"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Web Beans,Web Beans Sneak Peek]
+slug: WebBeansSneakPeekPartIIIDeclaringComponentsUsingXML
+lace: http://in.relation.to/2434.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/WebBeansSneakPeekPartIIIDeclaringComponentsUsingXML">Web Beans Sneak Peek Part III: Declaring components using XML</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+/This is the third installment of a series of articles describing the current status of the Web Beans specification. You can find the first installment 
+<a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans" target="" class="regularLink">here</a> and the second 
+installment <a href="/Bloggers/WebBeansSneakPeekPartIIInjectionBindingAnnotationsAndComponentTypes" target="" class="regularLink">here</a>./
+</p>
+
+<p class="wikiPara">
+So far, we've seen plenty of examples of components declared using annotations.
+However, there are a couple of occasions when we can't use annotations to define
+the component:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> when the implementation class comes from some pre-existing library</li>
+<li class="wikiUnorderedListItem"> when there should be multiple components with the same implementation class</li>
+</ul>
+
+<p class="wikiPara">
+In either of these cases, Web Beans gives us two options:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> write a /resolver method/</li>
+<li class="wikiUnorderedListItem"> declare the component using XML</li>
+</ul>
+
+<p class="wikiPara">
+In a future installment we'll talk more about all the crazy kinds of things
+we can do with resolver methods. First, let's just prove that Web Beans is
+not entirely annotation-centric.
+</p>
+
+<p class="wikiPara">
+We can declare a component in <tt>web-beans.xml</tt>:
+</p>
+
+<pre class="wikiPreformatted">&lt;component&gt;
+    &lt;class&gt;java.util.Date&lt;/class&gt;
+&lt;/component&gt;</pre>
+
+
+<p class="wikiPara">
+Then an instance of <tt>Date</tt> could be injected by another component:
+</p>
+
+<pre class="wikiPreformatted">@In Date date;</pre>
+
+
+<p class="wikiPara">
+By default, any component declared in XML has the component type <tt>@Component</tt>.
+We can use a custom component type:
+</p>
+
+<pre class="wikiPreformatted">&lt;component&gt;
+    &lt;class&gt;java.util.Date&lt;/class&gt;
+    &lt;type&gt;org.jboss.test.Mock&lt;/type&gt;
+&lt;/component&gt;</pre>
+
+
+<p class="wikiPara">
+We can override the default component name:
+</p>
+
+<pre class="wikiPreformatted">&lt;component&gt;
+    &lt;class&gt;java.util.Date&lt;/class&gt;
+    &lt;name&gt;now&lt;/name&gt;
+&lt;/component&gt;</pre>
+
+
+<p class="wikiPara">
+Or we can specify a scope for the component:
+</p>
+
+<pre class="wikiPreformatted">&lt;component&gt;
+    &lt;class&gt;java.util.Date&lt;/class&gt;
+    &lt;scope&gt;javax.webbeans.SessionScoped&lt;/scope&gt;
+&lt;/component&gt;</pre>
+
+
+<p class="wikiPara">
+We can even specify binding annotations using XML, to distinguish between 
+multiple components with the same implementation class:
+</p>
+
+<pre class="wikiPreformatted">&lt;component&gt;
+    &lt;class&gt;java.util.Date&lt;/class&gt;
+    &lt;name&gt;now&lt;/name&gt;
+    &lt;binding&gt;org.jboss.eg.Now&lt;/binding&gt;
+&lt;/component&gt;
+
+&lt;component&gt;
+    &lt;class&gt;java.util.Date&lt;/class&gt;
+    &lt;name&gt;logInTime&lt;/name&gt;
+    &lt;scope&gt;javax.webbeans.SessionScoped&lt;/scope&gt;
+    &lt;binding&gt;org.jboss.eg.LogInTime&lt;/binding&gt;
+&lt;/component&gt;
+
+&lt;component&gt;
+    &lt;class&gt;java.util.Date&lt;/class&gt;
+    &lt;name&gt;startupTime&lt;/name&gt;
+    &lt;scope&gt;javax.webbeans.ApplicationScoped&lt;/scope&gt;
+    &lt;binding&gt;org.jboss.eg.StartupTime&lt;/binding&gt;
+&lt;/component&gt;</pre>
+
+
+<p class="wikiPara">
+Where <tt>@Now</tt>, <tt>@LogIn</tt> and <tt>@Startup</tt> are binding annotations used at
+the injection points:
+</p>
+
+<pre class="wikiPreformatted">@In @Now Date currentTime;
+@In @LogInTime Date loginTime
+@In @StartupTime Date startupTime</pre>
+
+
+<p class="wikiPara">
+As usual, a component may support multiple binding annotations:
+</p>
+
+<pre class="wikiPreformatted">&lt;component&gt;
+    &lt;class&gt;org.jboss.eg.AsynchronousChequePaymentProcessor&lt;/class&gt;
+    &lt;binding&gt;org.jboss.eg.PayByCheque&lt;/binding&gt;
+    &lt;binding&gt;org.jboss.eg.Asynchronous&lt;/binding&gt;
+&lt;/component&gt;</pre>
+
+
+<p class="wikiPara">
+Eventually, Web Beans will also support XML-based configuration of component
+properties, using literal or EL values, something like this:
+</p>
+
+<pre class="wikiPreformatted">&lt;component&gt;
+    &lt;class&gt;org.jboss.framework.Captcha&lt;/class&gt;
+    &lt;property name="strategy"&gt;math2digit&lt;/property&gt;
+    &lt;property name="language"&gt;#{user.language}&lt;/property&gt;
+&lt;/component&gt;</pre>
+
+
+<p class="wikiPara">
+However, we've not yet worked out all the details of this. In particular, I
+would love to support a namespaced approach to component configuration, as
+seen in Seam or Spring 2.0.
+</p>
+</div>

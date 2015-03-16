@@ -1,0 +1,84 @@
+---
+title: "Using Abstraction frameworks to maintain control? Wrong bet."
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: []
+slug: UsingAbstractionFrameworksToMaintainControlWrongBet
+lace: http://in.relation.to/2174.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/UsingAbstractionFrameworksToMaintainControlWrongBet">Using Abstraction frameworks to maintain control? Wrong bet.</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I've seen lot's of people writing (or using) third party abstraction frameworks on
+top of ORM solutions like Hibernate so that they can potentially get rid of one ORM 
+engine to another (or even an other technology).
+Such frameworks are even considered by some architectsas a must-have.
+</p>
+
+<p class="wikiPara">
+Praiseworthy, but raising more issues than fixing ones. When you abstract technologies
+like Hibernate to make them <q>portable</q>, you end up sacrificing
+lot's of power and functionalities. Simply because semantics are slightly different from
+one engine to an other.
+</p>
+
+<p class="wikiPara">
+Let's play with statistics:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> in 1% of the applications, the need for a switch from one ORM engine to an other arise</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> in 99% of the applications, the need for one or several advanced features of ORM arise</li>
+</ul>
+
+
+<p class="wikiPara">
+You should focus on using and knowing your ORM engine and not on spending time in writing 
+(or using) an abstraction framework.
+</p>
+
+<p class="wikiPara">
+When using abstraction frameworks you haven't written, other kind of problems actually show up.
+</p>
+
+<p class="wikiPara">
+When your ORM engine introduce new APIs or new features, you have to wait for the abstraction
+framework to release accordingly making you dependent on someone else's agenda.
+</p>
+
+<p class="wikiPara">
+You no longer know (either by heart or at all) the actual method abstraction (or semantic alteration) 
+introduced on top of your ORM engine. This <a href="http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;p=3960827" target="" class="regularLink">user</a> 
+learnt it the hard way (and he is unfortunately not alone), Spring's /HibernateTemplate/ wraps 
+the Hibernate methods without even giving you a hint about the actual semantic.
+</p>
+
+<p class="wikiPara">
+The only proper abstraction between an ORM engine and another is a common specification
+they adhere to. This is one of the reasons why JPA (EJB 3.0) has been introduced. Why is it 
+the only way? Because a specification describes in a very detailed way the common semantic 
+the various ORM engines have to follow.
+</p>
+
+<p class="wikiPara">
+So please, think twice before using some random proprietary abstraction framework (open source or not).
+They usually bring <i class="wikiEmphasis">no</i> value add but increasing bug areas...
+Specifications are here to solve the engine abstraction problem (but once again, this is 
+a concern in very few applications).
+</p>
+
+<p class="wikiPara">
+PS in case someone is misleading, I'm not arguing against DAO layers
+</p>
+</div>

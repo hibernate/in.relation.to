@@ -1,0 +1,155 @@
+---
+title: "Seam.Next Announcement"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+layout: blog-post
+tags: [Contexts and Dependency Injection,News,Seam,Seam News]
+slug: SeamNextAnnouncement
+lace: http://in.relation.to/22405.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SeamNextAnnouncement">Seam.Next Announcement</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I’m very happy to announce the details for the first phase of our Seam.Next plan.  I’d like to thank everyone for waiting patiently while we worked on this, and for providing feedback either directly via e-mail or IRC, or through the Seam forums.  I’d also like to thank the module leads, key community members and other people that were involved in helping to shape this plan, it was very much a collaborative effort and we are very excited about the ideas and goals that were discussed and direction going forward.
+</p>
+
+<p class="wikiPara">
+Before I get into the nitty gritty of the details, I’d first like to describe the motivations for wanting to make such significant changes, and talk about the overall goals that drive us.  I think the best starting point for describing this is Seam 2.
+</p>
+
+
+
+<h1 class="wikiHeadline1" id="H-Seam2"><a href="/Bloggers/SeamNextAnnouncement#H-Seam2">Seam 2</a></h1>
+
+
+
+<p class="wikiPara">
+Looking back at how we did things in Seam 2, I think it’s safe to say that many of the aspects of the framework were quite successful.  I think that one of the most defining factors of its success was the integration - Seam 2 provided the core framework features (Dependency Injection, Contexts, Events, etc) and enough useful features built on top of that core framework to make application development quite a productive activity.  
+</p>
+
+<p class="wikiPara">
+It also provided integration with a number of third party technologies, such as Drools, jBPM, Wicket, Spring and others.  On top of that, it provided excellent documentation that tied the whole lot together, and did a pretty good job of bringing new developers up to speed, and not to mention decent tooling in the form of seam-gen and JBoss Tools.
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/22401">
+
+
+<p class="wikiPara">
+All in all, Seam 2 has proven to be a mature, well rounded framework that solved many of the problems that developers face when building modern web applications.
+</p>
+
+<h1 class="wikiHeadline1" id="H-AlongCameCDI"><a href="/Bloggers/SeamNextAnnouncement#H-AlongCameCDI">Along Came CDI</a></h1>
+
+<p class="wikiPara">
+CDI changed everything.  By standardizing many of the core framework features of Seam and making them part of the Java EE platform, with an added focus on type-safety and extensibility, there is no longer a requirement to BYO framework - any compliant Java EE 6 container provides a comprehensive programming model out of the box, without having to supplement it with additional libraries to provide core services.
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/22402">
+
+<p class="wikiPara">
+This was a great step forward - writing your application against a standard is a good thing.  It helps you to avoid vendor lock-in, and means that as a developer your knowledge is portable.  It also puts you into a great position for tapping into a growing ecosystem of extensions and tooling.
+</p>
+
+<h1 class="wikiHeadline1" id="H-CDIEverywhere"><a href="/Bloggers/SeamNextAnnouncement#H-CDIEverywhere">CDI Everywhere</a></h1>
+
+<p class="wikiPara">
+Since CDI was released, one of the principles underlying all our work is that of CDI Everywhere.  By enabling CDI support in as many places as possible, our goal is to make developer productivity stronger than ever.  To that end, we have been encouraging and assisting other project teams to provide CDI integration directly from their own projects.  We believe this is one of the key ingredients in strengthening the CDI ecosystem, and providing an environment where the developer can concentrate more on solving business problems and less on fighting with his tools.
+</p>
+
+<p class="wikiPara">
+This of course means that you no longer require an integration framework like Seam to provide support for a number of CDI-enabled technologies, such as Drools and jBPM (CDI support coming soon), GWT, Wicket and many others.  Furthermore, since the tooling we provided for Seam 2 (i.e. seam-gen and JBoss Tools) was based on its proprietary core framework, any new tooling going forward should naturally be focused on the now standards-based component model provided by CDI.  This is the reason why Forge is now a standalone, top level project in its own right, with a focus on building Java EE applications.
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/22403">
+
+<h1 class="wikiHeadline1" id="H-Seam3"><a href="/Bloggers/SeamNextAnnouncement#H-Seam3">Seam 3</a></h1>
+
+<p class="wikiPara">
+Looking at the previous diagram, we can now see that as a result of standardization, quite a few of the bits that made up Seam have moved outside the scope of the original project.  This has meant a change in focus for Seam.  Instead of providing a fully integrated framework stack, Seam 3 has taken the remaining bits and turned them into a collection of portable extensions for CDI.  Essentially, what we did was implement many of the most useful features that were present in Seam 2, as well as adding a number of new features, in a modular structure so that Java EE developers can easily add support for these features to their application by simply dropping a jar file into their project.
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/22404">
+
+
+<p class="wikiPara">
+At this point, in hindsight we think we made a poor choice here by calling this new project Seam 3, seeing as the nature of the project has changed so drastically from the previous version.  While it is most definitely a worthwhile goal to create a set of useful extensions for CDI, Seam 3 by itself is no longer the fully integrated framework stack that Seam 2 was.  As a direct result of this change in focus many of you have been disappointed with the documentation and getting started experience for new users.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatDoUsersWant"><a href="/Bloggers/SeamNextAnnouncement#H-WhatDoUsersWant">What do users want?</a></h1>
+
+<p class="wikiPara">
+The feedback we received from the community covered a broad spectrum of concerns, however there were some common areas such as:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Documentation</li>
+<li class="wikiUnorderedListItem"> Getting Started Experience</li>
+<li class="wikiUnorderedListItem"> Tooling</li>
+<li class="wikiUnorderedListItem"> Lack of Drools/jBPM support</li>
+<li class="wikiUnorderedListItem"> Lack of certain features, e.g. entity framework</li>
+<li class="wikiUnorderedListItem"> Lack of migration guide</li>
+</ul>
+
+<p class="wikiPara">
+Underlying these, we also noticed two strong messages:
+</p>
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Some developers are interested mainly in portability.  They don’t want their application locked into any particular container implementation, and it’s important to them that they have the freedom to use the framework in different environments.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Many developers just want an end-to-end framework that works, without having to piece together all the bits themselves and work out how to integrate them.  They don’t want to have to read multiple sets of documentation from different projects, and their primary requirement for an application framework is productivity, i.e. getting the job done quickly and efficiently.</li>
+</ul>
+
+
+
+<p class="wikiPara">
+So the question is, how can we return to the fully integrated framework stack and productivity that Seam 2 provided, and also provide a set of portable extensions, optionally consumed a la carte, that will run in any environment where CDI is present?  We’ve been working with community leaders and module leads, and have come up with a proposal that we think will rise to the challenge of addressing these concerns.
+</p>
+
+<p class="wikiPara">
+The first step we will take is to create a community-owned set of portable CDI extensions; a de-facto set of features that developers can take and use within their own applications, in whichever container they wish to deploy to.  One of the major goals of this project is to grow and unify the Java EE community.  By joining forces with other CDI extension developers, such as the Apache MyFaces CODI team and the CDISource team, as well as other key members of the Java EE community, we are creating a community that is stronger than the sum of its separate parts.
+</p>
+
+<p class="wikiPara">
+This must be a real community project, without any corporate affiliation to ensure that the project remains neutral.  We’ve identified Apache as being a great place to host this project, as they are a non-profit organization with no corporate agenda, and have a strong reputation in the community for producing successful open source projects.  So without further ado, let me introduce the Apache DeltaSpike project.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ApacheDeltaSpike"><a href="/Bloggers/SeamNextAnnouncement#H-ApacheDeltaSpike">Apache DeltaSpike</a></h1>
+
+<p class="wikiPara">
+By the time you’re reading this the proposal for Apache DeltaSpike <a href="http://wiki.apache.org/incubator/DeltaSpikeProposal" target="" class="regularLink">has been submitted to the Apache Incubator</a> and begun the process toward becoming a top level Apache project.  DeltaSpike is a set of portable CDI extensions, built collaboratively by the Java EE community.  It will be seeded by code contributed from various Java EE open source vendors, and provide a number of essential features for building enterprise applications.  Portability will be the main principal of this project, satisfying the need of many developers for a framework that will run in a number of different environments.
+</p>
+
+<p class="wikiPara">
+After its initial release, the existing Seam development team (consisting of both full time and volunteer contributors), along with the MyFaces CODI team, CDISource team and other members of the greater Java EE community will carry out ongoing development on DeltaSpike - this includes the creation of new features and innovations, bug fixes and other enhancements.  While it is not my place to talk about the release schedule for DeltaSpike (this is decided by the Apache DeltaSpike Podling Project Management Committee (PPMC)), I am 100% confident that it will be a lively, active project that receives the attention and contributions that it deserves, and produce many ongoing releases.
+</p>
+
+<p class="wikiPara">
+The first release of Apache DeltaSpike will consist of a common core, a set of extensions that will provide the base on which to build other extensions.  It will be tested extensively across multiple Java EE containers to ensure portability, and provide a solid foundation for the development of other features.  Eventually the plan is for Apache DeltaSpike to incorporate many of the features that you can find today in Seam.
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/22400">
+
+<h1 class="wikiHeadline1" id="H-AnIntegratedFramework"><a href="/Bloggers/SeamNextAnnouncement#H-AnIntegratedFramework">An Integrated Framework</a></h1>
+
+<p class="wikiPara">
+We have also mentioned that we’d like to address the needs for developers that require an end-to-end development stack.  While we’re still working out the details for this, I’d like to reassure everyone that it is a high priority for us to provide a fully integrated framework in the spirit of Seam 2 but with even better productivity.  We have some great ideas in motion to provide a full integrated framework for your needs.  We know you’ll be excited as we are about what’s in store, so please watch this space over the coming months for more details.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatAboutSeam"><a href="/Bloggers/SeamNextAnnouncement#H-WhatAboutSeam">What about Seam?</a></h1>
+
+<p class="wikiPara">
+For those developers who have already invested heavily in Seam, don’t worry, we’re looking after you also.  We’ll be continuing development on Seam 3 for the foreseeable future, in fact Seam 3.1 which is due for release shortly contains a number of exciting new modules and other improvements.  We’d like to also reiterate that we are fully committed to the Seam Community - the initiatives that we’ve described above are all for the benefit of you guys, to give you the most productive framework and tools for building your applications that run the world.  We ask that you be patient with us as we roll out this vision over the coming months, and thank you for your continued support.
+</p>
+</div>

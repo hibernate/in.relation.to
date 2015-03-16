@@ -1,0 +1,89 @@
+---
+title: "JSF 2 SNAPSHOTS and RichFaces 4.0 ALPHA1 release problem"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+layout: blog-post
+tags: [Mojara 2,RichFaces 4]
+slug: JSF2SNAPSHOTSAndRichFaces40ALPHA1ReleaseProblem
+lace: http://in.relation.to/12261.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JSF2SNAPSHOTSAndRichFaces40ALPHA1ReleaseProblem">JSF 2 SNAPSHOTS and RichFaces 4.0 ALPHA1 release problem</a>
+                    </h1>
+</div>
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+     <a href="http://labs.jboss.com/richfaces" target="blank"> 
+         <img src="http://www.jroller.com/a4j/resource/richfaces_logo_200px.gif" alt="">
+     </a>
+</div>
+
+<p class="wikiPara">
+Unfortunatelly we encountered some problems just after <b>RichFaces 4.0 A1</b> released. And the problems caused by the fact that we currently using <b>JSF 2 snapshots</b> as base for the releases and current development.
+</p>
+
+<p class="wikiPara">
+<a href="http://www.jboss.org/index.html?module=bb&amp;op=viewtopic&amp;p=4252985#4252985" target="" class="regularLink">Problem report</a>
+</p>
+
+<p class="wikiPara">
+Guys who downloaded the <a href="http://download.jboss.com/jboss-richfaces/richfaces-demo-4.0.0.ALPHA1-tomcat6.war" target="" class="regularLink">richfaces-demo war for tomcat</a> were able to see the demo working fine. But guys who built it from sources using maven or used <b>jee5 targeted war file</b> and downloaded latest JSF snapshots manually were not able to run demo application.
+</p>
+
+<p class="wikiPara">
+These <b>RichFaces 4.0 A1</b> issues relies on two <b>Mojara 2.0</b> issues:
+</p>
+
+<p class="wikiPara">
+<a href="https://javaserverfaces.dev.java.net/issues/show_bug.cgi?id=1282" target="" class="regularLink">issue-1282</a>
+</p>
+
+<p class="wikiPara">
+This issue causes composite components which used to build simple layout for demo to be broken.
+</p>
+
+<p class="wikiPara">
+<a href="https://javaserverfaces.dev.java.net/issues/show_bug.cgi?id=1274" target="" class="regularLink">issue-1274</a>
+</p>
+
+<p class="wikiPara">
+And this issue fix in Mojara actually broke the RichFaces related code and we are working on it currently to fix the problem:
+<a href="https://jira.jboss.org/jira/browse/RF-7799" target="" class="regularLink">RF-7799</a>
+</p>
+
+<p class="wikiPara">
+Both issues apeeared right after A1 release so we had no chance to look into them before.
+</p>
+
+<p class="wikiPara">
+We decided not spend time on rebuilding A1 because of that issues but continue our A2 works. And in order to get all the A1 stuff working we propose you to use <b>Mojara 2.0 SNAPSHOT from 27 Aug</b> (could exposed from our tomcat 6 richfaces-demo war file).
+</p>
+
+<p class="wikiPara">
+You could place richfaces-demo for tomcat(<i class="wikiEmphasis">richfaces-demo-4.0.0.ALPHA1-tomcat6.war - do not rename it</i>) to some temporary folder and execute next script from command line:
+</p>
+
+
+<pre class="wikiPreformatted">jar xvf richfaces-demo-4.0.0.ALPHA1-tomcat6.war WEB-INF/lib/jsf-api-2.0.0-SNAPSHOT.jar
+jar xvf richfaces-demo-4.0.0.ALPHA1-tomcat6.war WEB-INF/lib/jsf-impl-2.0.0-SNAPSHOT.jar
+
+cd WEB-INF/lib
+
+jar xvf jsf-api-2.0.0-SNAPSHOT.jar META-INF/maven/com.sun.faces/jsf-api/pom.xml
+jar xvf jsf-impl-2.0.0-SNAPSHOT.jar META-INF/maven/com.sun.faces/jsf-impl/pom.xml
+
+call mvn install:install-file -Dfile=jsf-api-2.0.0-SNAPSHOT.jar -DpomFile=META-INF/maven/com.sun.faces/jsf-api/pom.xml
+call mvn install:install-file -Dfile=jsf-impl-2.0.0-SNAPSHOT.jar -DpomFile=META-INF/maven/com.sun.faces/jsf-impl/pom.xml
+
+cd ../..</pre>
+
+
+
+<p class="wikiPara">
+For UNIX environment just remove <q>call</q>'s from the script. It will expose the jsf jars from war file and deploy to your local repository overriding newer ones. Then you will be able to run the demos using <b>mvn jetty:run-war</b> from sources normally.
+</p>
+</div>

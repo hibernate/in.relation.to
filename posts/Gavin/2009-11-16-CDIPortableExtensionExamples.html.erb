@@ -1,0 +1,234 @@
+---
+title: "CDI Portable extension examples"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Portable Extensions,Weld]
+slug: CDIPortableExtensionExamples
+lace: http://in.relation.to/12981.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/CDIPortableExtensionExamples">CDI Portable extension examples</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+One of the nicest features of CDI is the portable extension SPI. According to the spec:
+</p>
+
+<blockquote class="wikiBlockquote">
+A portable extension may integrate with the container by:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Providing its own beans, interceptors and decorators to the container</li>
+<li class="wikiUnorderedListItem"> Injecting dependencies into its own objects using the dependency injection service</li>
+<li class="wikiUnorderedListItem"> Providing a context implementation for a custom scope</li>
+<li class="wikiUnorderedListItem"> Augmenting or overriding the annotation-based metadata with metadata from some other source</li>
+</ul>
+
+
+</blockquote>
+
+<p class="wikiPara">
+We've got plenty of examples of CDI application code floating about, but not much in the way of examples for framework developers who want to integrate with CDI, or augment the built-in functionality. So here's a little taste of the what a CDI portable extension looks like.
+</p>
+
+<p class="wikiPara">
+Let's start with an example of an extension that provides support for the use of <tt>@Named</tt> at the package level. The package-level name is used to qualify the EL names of all beans defined in that package.
+</p>
+
+<p class="wikiPara">
+Portable extensions implement the marker interface <tt>Extension</tt> and observe container lifecycle events, in this case <tt>ProcessAnnotatedType</tt>, an event that is fired by the container when it discovers a class or interface in a bean archive. The portable extension wraps the <tt>AnnotatedType</tt> object and overrides the <tt>value()</tt> of the <tt>@Named</tt> annotation of the bean.
+</p>
+
+<pre class="wikiPreformatted brush:java;">public class QualifiedNameExtension implements Extension {
+
+    &lt;X&gt; void processAnnotatedType(@Observes ProcessAnnotatedType&lt;X&gt; pat) {
+
+        //wrap this to override the annotations of the class
+        final AnnotatedType&lt;X&gt; at = pat.getAnnotatedType();
+
+        AnnotatedType&lt;X&gt; wrapped = new AnnotatedType&lt;X&gt;() {
+
+            @Override
+            public Set&lt;AnnotatedConstructor&lt;X&gt;&gt; getConstructors() {
+                return at.getConstructors();
+            }
+
+            @Override
+            public Set&lt;AnnotatedField&lt;? super X&gt;&gt; getFields() {
+                return at.getFields();
+            }
+
+            @Override
+            public Class&lt;X&gt; getJavaClass() {
+                return at.getJavaClass();
+            }
+
+            @Override
+            public Set&lt;AnnotatedMethod&lt;? super X&gt;&gt; getMethods() {
+                return at.getMethods();
+            }
+
+            @Override
+            public &lt;T extends Annotation&gt; T getAnnotation(final Class&lt;T&gt; annType) {
+                if ( Named.class.equals(annType) ) {
+                    class NamedLiteral 
+                            extends AnnotationLiteral&lt;Named&gt; 
+                            implements Named {
+                        @Override
+                        public String value() {
+                            Package pkg = at.getClass().getPackage();
+                            String unqualifiedName = at.getAnnotation(Named.class).value();
+                            final String qualifiedName;
+                            if ( pkg.isAnnotationPresent(Named.class) ) {
+                                qualifiedName = pkg.getAnnotation(Named.class).value() 
+                                      + '.' + unqualifiedName;
+                            }
+                            else {
+                                qualifiedName = unqualifiedName;
+                            }
+                            return qualifiedName;
+                        }
+                    }
+                    return (T) new NamedLiteral();
+                }
+                else {
+                    return at.getAnnotation(annType);
+                }
+            }
+
+            @Override
+            public Set&lt;Annotation&gt; getAnnotations() {
+                return at.getAnnotations();
+            }
+
+            @Override
+            public Type getBaseType() {
+                return at.getBaseType();
+            }
+
+            @Override
+            public Set&lt;Type&gt; getTypeClosure() {
+                return at.getTypeClosure();
+            }
+
+            @Override
+            public boolean isAnnotationPresent(Class&lt;? extends Annotation&gt; annType) {
+                return at.isAnnotationPresent(annType);
+            }
+            
+        };
+
+        pat.setAnnotatedType(wrapped);
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+We need to deploy this portable extension in a jar containing a file named <tt>javax.enterprise.inject.spi.Extension</tt> in the <tt>META-INF/services</tt> directory. This file should contain the full name of our <tt>QualifiedNameExtension</tt> class.
+</p>
+
+<p class="wikiPara">
+Here's a second example, of a portable extension that creates <tt>Bean</tt> objects for each class in a set of classes and registers the beans with the container. This is similar to what the container does for classes it discovers in bean archives.
+</p>
+
+<pre class="wikiPreformatted brush:java;">public class RegisterExtension implements Extension {
+    
+    List&lt;Class&lt;?&gt;&gt; getBeanClasses() { 
+        //get some classes from somewhere
+    }
+    
+    void afterBeanDiscovery(@Observes AfterBeanDiscovery abd, BeanManager bm) {
+        for ( final Class c: getBeanClasses() ) {
+            
+            //use this to read annotations of the class
+            AnnotatedType at = bm.createAnnotatedType(c); 
+
+            //use this to create the class and inject dependencies
+            final InjectionTarget it = bm.createInjectionTarget(at); 
+
+            abd.addBean( new Bean() {
+    
+                @Override
+                public Class&lt;?&gt; getBeanClass() {
+                    return c;
+                }
+    
+                @Override
+                public Set&lt;InjectionPoint&gt; getInjectionPoints() {
+                    return it.getInjectionPoints();
+                }
+    
+                @Override
+                public String getName() {
+                    return null;
+                }
+    
+                @Override
+                public Set&lt;Annotation&gt; getQualifiers() {
+                    Set&lt;Annotation&gt; qualifiers = new HashSet&lt;Annotation&gt;();
+                    qualifiers.add( new AnnotationLiteral&lt;Default&gt;() {} );
+                    qualifiers.add( new AnnotationLiteral&lt;Any&gt;() {} );
+                    return qualifiers;
+                }
+    
+                @Override
+                public Class&lt;? extends Annotation&gt; getScope() {
+                    return Dependent.class;
+                }
+    
+                @Override
+                public Set&lt;Class&lt;? extends Annotation&gt;&gt; getStereotypes() {
+                    return Collections.emptySet();
+                }
+    
+                @Override
+                public Set&lt;Type&gt; getTypes() {
+                    Set&lt;Type&gt; types = new HashSet&lt;Type&gt;();
+                    types.add(c);
+                    types.add(Object.class);
+                    return types;
+                }
+    
+                @Override
+                public boolean isAlternative() {
+                    return false;
+                }
+    
+                @Override
+                public boolean isNullable() {
+                    return false;
+                }
+    
+                @Override
+                public Object create(CreationalContext ctx) {
+                    Object instance = it.produce(ctx);
+                    it.inject(instance, ctx);
+                    it.postConstruct(instance);
+                    return instance;
+                }
+    
+                @Override
+                public void destroy(Object instance, CreationalContext ctx) {
+                    it.preDestroy(instance);
+                    it.dispose(instance);
+                    ctx.release();
+                }
+                
+            } );
+        }
+    }
+    
+}</pre>
+
+
+
+<p class="wikiPara">
+UPDATE: I've finally got a proper chapter on portable extensions written up in the Weld reference documentation. Check out chapter 16 of this <a href="http://seamframework.org/Community/UpdatedWeldReferenceWithGuideToPortableExtensions" target="" class="regularLink">version</a> if this post piqued your interest.</p>
+</div>

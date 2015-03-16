@@ -1,0 +1,333 @@
+---
+title: "Migration to RichFaces 4 - RichFaces Data Models."
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+layout: blog-post
+tags: []
+slug: MigrationToRichFaces4RichFacesDataModels
+lace: http://in.relation.to/20029.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels">Migration to RichFaces 4 - RichFaces Data Models.</a>
+                    </h1>
+</div>
+<h2 class="wikiHeadline2" id="H-Overview"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-Overview">Overview</a></h2>
+
+<p class="wikiPara">
+I believe that this probably one of the most expected articles to come.  It will touch the RichFaces iteration component in-depth, covering advanced models which we are using under the hood. Actually real enterprise application using huge data sets, applies paging with lazy data loading, uses sorting, filtering, selection and the other features which makes then application really rich and interactive. So in most cases you could not rely on simple lists or maps with data wrapped using default models. And in order to achieve the best RichFaces tables experience with a good performance and scalability you need to understand the base principles of our models.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ModelsSample"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-ModelsSample">Models sample</a></h2>
+<p class="wikiPara">
+At first I would like to introduce new sample available on our live demo – <b><a href="http://richfaces-showcase.appspot.com/richfaces/component-sample.jsf?demo=dataTable&amp;sample=arrangeableModel&amp;skin=blueSky" target="" class="regularLink">Arrangeable Model Sample</a></b>. It works using Hibernate Entity Manager and all the paging/sorting/filtering operations really performed at DB level instead of performing in wrapped model.
+</p>
+
+<p class="wikiPara">
+In that article I will guide you through the base points which you should look in that sample in order to get main ideas and be able to work on your own models.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhyDoWeNeedTheModels"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-WhyDoWeNeedTheModels">Why do we need the models</a></h2>
+
+<p class="wikiPara">
+Let's start from a good question – why RichFaces introduces custom models having JSF <b>javax.faces.model.DataModel</b> contract already. And the reason is pretty simple. In difference with JSF 2 implementation which is supposed just to provide basic stuff RichFaces introduces new rich components and adds new features on top of them. Here is just overview:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Trees components family. With support of swing-based data models and RichFaces custom data models. With additional providers which allows to create data model declaratively from any custom non-hierarchical model. With selection feature plugged and available using different modes (Ajax, client, server)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Tables components family. RichFaces unifies sorting/filtering/paging features among two rich tables. It adds the ability of master-detail layouts creation in rich:dataTable with the built-in feature of collapse/expand details subtables. It adds Ajax lazy loading of the data on vertical scroll and selection with rich:extendedDataTable. And so on..</li>
+</ul>
+
+<p class="wikiPara">
+Of course all that stuff requires good model base. And in order to standardize the API between different components providing unified contract to the RichFaces developers we designed our models.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ExtendedDataModelOverview"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-ExtendedDataModelOverview">ExtendedDataModel Overview</a></h2>
+
+<p class="wikiPara">
+From the beginning let me introduce our models principles and then later we will see how them are implemented in the showcase demo.
+</p>
+
+<b>ExtendedDataModel</b><p class="wikiPara">
+ is a base model abstract class which provides the contract for all the other models particular implementations. Let’s see closer to that class:
+</p>
+
+
+<pre class="wikiPreformatted">public abstract class ExtendedDataModel&lt;E&gt; extends DataModel&lt;E&gt; {
+
+    public abstract void setRowKey(Object key);
+
+    public abstract Object getRowKey();
+
+    public abstract void walk(FacesContext context, DataVisitor visitor, Range range, Object argument);
+
+}</pre>
+
+
+
+<p class="wikiPara">
+Well, we seeing new entity introduced there. And it’s <b>rowKey</b>. Let’s see the goal of that entity. Working with complex data structures (like trees) and using advanced UI component features like filtering/sorting/paging/selection in tables we need to have a simple way to identify the object in the model. And just <b>rowIndex</b>’es doesn’t play nice enough as requires additional complex look-up mechanisms (to identify db object according to index in wrapped model) to do that. And with the <b>rowKey</b> you could just use the same id which you are using at db level.
+</p>
+
+<p class="wikiPara">
+Besides you see <b>walk()</b> method introduced there. RichFaces iteration components uses visitor pattern while working with model. So that method should perform model iteration and call the visitor passed as a parameter in order to handle every object in the model.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ExtendedDataModelImplementations"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-ExtendedDataModelImplementations">ExtendedDataModel implementations</a></h2>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <b>SequenceDataModel</b> – default implementation of the <b>ExtendedDataModel</b> for the tables. Used when filtering and sorting not used by the component.</li>
+<li class="wikiUnorderedListItem"> <b>ArrangeableModel</b> – implementation of the <b>ExtendedDataModel</b> which implements <b>Arrangeable</b> interface additionally which are used to add sorting and filtering support. </li>
+<li class="wikiUnorderedListItem"> <b>TreeSequenceKeyModel</b> abstract model and all the models which extends it used by the tree component family. That model is out of scope for that article.</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-SampleCode"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCode">Sample Code</a></h2>
+<p class="wikiPara">
+At first I would like to say that will not describe all the code used in the sample. You could easily check it at showcase live or obtain from <a href="http://anonsvn.jboss.org/repos/richfaces/branches/4.0.X/examples/richfaces-showcase/" target="" class="regularLink">SVN repository</a> and explore in your favorite IDE. Besides the fact that it will be boring and will make article really huge I also want to say that the goal of that write-up – to guide you in the right direction while reviewing RichFaces data models usage principles.
+</p>
+
+<p class="wikiPara">
+And overview of that sample functionality:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Obtaining the list of <b>Person</b> object s from the db according to given filtering and sorting rules</li>
+<li class="wikiUnorderedListItem"> Displaying objects using the <b>rich:dataTable</b>
+</li>
+<li class="wikiUnorderedListItem"> Addition of the controls which control <b>sorting</b> and <b>filtering</b>
+</li>
+<li class="wikiUnorderedListItem"> Addition of the <b>rich:dataScroller</b> which allows breaking the data loading from db to the pages.</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-SampleCodeBasePersonEntity"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeBasePersonEntity">Sample Code – Base Person entity</a></h2>
+
+<p class="wikiPara">
+That would be self-explanatory I believe. We just using simple and frequently used classes to define Person object.
+</p>
+
+<pre class="wikiPreformatted">@Entity
+public class Person {
+    
+    private String name;
+    private String surname;
+    private String email;
+    @Id
+    @GeneratedValue
+    private Long id;
+//getters and setters
+}</pre>
+
+
+
+<h2 class="wikiHeadline2" id="H-SampleCodeGenericModel"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeGenericModel">Sample Code – Generic Model</a></h2>
+
+<p class="wikiPara">
+Now let’s look closer to the model code.
+</p>
+
+<b>JPADataModel</b><p class="wikiPara">
+ –is a generic model which supposed to provide unified approach of working with data for all implementers. It’s parameterized with the class which should be defined to work with particular entity classes in models which will implement it. And besides it passed with the <b>EntityManager</b> in order the implementer classes to be responsible for particular <b>EntityManager</b> lookup.
+</p>
+
+<p class="wikiPara">
+Also from the beginning you should note abstract <b>getId(T t)</b> method which should be also implemented in the model which implements that abstract model. It should return the id of the particular entity which will be used as <b>rowKey</b> in that model.
+</p>
+
+<p class="wikiPara">
+Now let’s review two most important methods there. And let’s look to <b>arrange()</b> method from the beginning. It probably too simple to have it listed but any way:
+</p>
+
+
+<pre class="wikiPreformatted">public void arrange(FacesContext context, ArrangeableState state) {
+    arrangeableState = state;
+}</pre>
+
+
+<p class="wikiPara">
+Just wanted to give some simple explanation of why we perform just simple storing of the passed state in the model property without any further processing. If you will look or already looked to RichFaces sources you will see that default <b>ArrangeableModel</b> implementation of that method performs actual sorting and filtering. But that’s done because our default model works with wrapped model (e.g. simple list or map passed as <b>rich:dataTable</b> value). But in our case we will load the data from db according to current data table page and apply sorting and filtering using db queries also. So we just need to store all the information passed from component in <b>ArrangeableState </b> object for future usage in <b>walk()</b>.
+</p>
+
+<p class="wikiPara">
+Now let’s look to <b>walk()</b> method:
+</p>
+
+<pre class="wikiPreformatted">    @Override
+    public void walk(FacesContext context, DataVisitor visitor, Range range, Object argument) {
+        CriteriaQuery&lt;T&gt; criteriaQuery = createSelectCriteriaQuery();
+        TypedQuery&lt;T&gt; query = entityManager.createQuery(criteriaQuery);
+        
+        SequenceRange sequenceRange = (SequenceRange) range;
+        if (sequenceRange.getFirstRow() &gt;= 0 &amp;&amp; sequenceRange.getRows() &gt; 0) 
+	{
+            query.setFirstResult(sequenceRange.getFirstRow());
+            query.setMaxResults(sequenceRange.getRows());
+        }
+        
+        List&lt;T&gt; data = query.getResultList();
+        for (T t : data) {
+            visitor.process(context, getId(t), argument);
+        }
+    }</pre>
+
+
+
+<p class="wikiPara">
+The component calls that method a few times during lifecycle and expects it to iterate over the model calling the <b>DataVisitor</b> which will process every object (e.g. encode row for the object at render phase).
+</p>
+
+<p class="wikiPara">
+Besides visitor, table component passes the <b>Range</b> object there which contains information about from which row the table wants get the data (defined using first attribute or set by <b>rich:dataScroller</b> while switching pages) and the number of rows to fetch (defined using <b>rows</b> attribute). So all we are doing here – just creating query with given sort, filtering and range parameters, loading data from db to the List of entities and finally iterate over that list passing every object to <b>DataVisitor</b> for processing.. You probably will be interested in <b>createSelectCriteriaQuery()</b> method as it performs actual applying of sort and filter parameters. But actually I would like to leave it just to you because JPA queries creation question really out of scope of that article and well explained already at more specific resources.
+</p>
+
+<p class="wikiPara">
+Besides you may be interested to look into <b>getRowCount()</b> method:
+</p>
+
+<pre class="wikiPreformatted">    @Override
+    public int getRowCount() {
+        CriteriaQuery&lt;Long&gt; criteriaQuery = createCountCriteriaQuery();
+        return entityManager.createQuery(
+	    criteriaQuery).getSingleResult().intValue();
+    }</pre>
+
+
+
+<p class="wikiPara">
+So there we’re applying sorting and filtering creating the criteria in order to return the <b>rowCount</b> for current component state. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-SampleCodeSpecificModelClass"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeSpecificModelClass">Sample Code – Specific Model Class</a></h2>
+
+<p class="wikiPara">
+The implementation of our generic model placed in <b>PersonBean</b> and defined with the next code:
+</p>
+
+
+
+<pre class="wikiPreformatted">@ManagedBean
+@SessionScoped
+public class PersonBean implements Serializable {
+    //...
+    private static final class PersonDataModel extends JPADataModel&lt;Person&gt; {
+        private PersonDataModel(EntityManager entityManager) {
+            super(entityManager, Person.class);
+        }
+        @Override
+        protected Object getId(Person t) {
+            return t.getId();
+        }
+    }
+    //...
+    private EntityManager lookupEntityManager() {
+        FacesContext facesContext = FacesContext.getCurrentInstance();
+        PersistenceService persistenceService = 
+	    facesContext.getApplication().
+	    evaluateExpressionGet(facesContext, "#{persistenceService}", 
+      PersistenceService.class);
+        return persistenceService.getEntityManager();
+    }
+
+    public Object getDataModel() {
+        return new PersonDataModel(lookupEntityManager());
+    }
+    //...
+}</pre>
+
+
+
+<p class="wikiPara">
+So actually all we are doing there - performing lookup of entity manager and initiating the particular model implementation with the <b>Person</b> class as entity class and that entity manager.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SampleCodePageCode"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCodePageCode">Sample Code – Page Code</a></h2>
+
+<p class="wikiPara">
+We used two pages there. At first <b>arrangeableModel-sample.xhtml</b>:
+</p>
+
+<pre class="wikiPreformatted">&lt;h:form id="form"&gt;
+    &lt;rich:dataTable keepSaved="true" id="richTable" var="record" 
+	value="#{personBean.dataModel}" rows="20"&gt;
+        &lt;ui:include src="jpaColumn.xhtml"&gt;
+            &lt;ui:param name="bean" value="#{personBean}" /&gt;
+        	&lt;ui:param name="property" value="name" /&gt;
+            &lt;/ui:include&gt;
+            &lt;ui:include src="jpaColumn.xhtml"&gt;
+        	&lt;ui:param name="bean" value="#{personBean}" /&gt;
+        	&lt;ui:param name="property" value="surname" /&gt;
+            &lt;/ui:include&gt;
+            &lt;ui:include src="jpaColumn.xhtml"&gt;
+        	&lt;ui:param name="bean" value="#{personBean}" /&gt;
+        	&lt;ui:param name="property" value="email" /&gt;
+            &lt;/ui:include&gt;
+            &lt;f:facet name="footer"&gt;
+		&lt;rich:dataScroller id="scroller" /&gt;
+            &lt;/f:facet&gt;
+    &lt;/rich:dataTable&gt;
+&lt;/h:form&gt;</pre>
+
+
+
+<p class="wikiPara">
+Nothing pretty interesting there. We just defining table pointed to our model and including the columns passing properties of the person and the bean to it.
+</p>
+
+<p class="wikiPara">
+And the second is <b>jpaColumn.xhtml</b>:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;ui:composition&gt;
+    &lt;rich:column sortBy="#{property}"
+	sortOrder="#{bean.sortOrders[property]}" filterValue="#{bean.filterValues[property]}"
+	filterExpression="#{property}"&gt;
+	&lt;f:facet name="header"&gt;
+            &lt;h:commandLink action="#{bean.toggleSort}"&gt;
+            	#{bean.sortOrders[property]}	
+            	&lt;a4j:ajax render="richTable" /&gt;
+            	&lt;f:setPropertyActionListener target="#{bean.sortProperty}" 
+		    value="#{property}" /&gt;
+	     &lt;/h:commandLink&gt;
+	     &lt;br /&gt;
+	     &lt;h:inputText value="#{bean.filterValues[property]}"&gt;
+	         &lt;a4j:ajax render="richTable@body scroller" event="keyup" /&gt;
+	     &lt;/h:inputText&gt;
+	&lt;/f:facet&gt;
+	&lt;h:outputText value="#{record[property]}" /&gt;
+    &lt;/rich:column&gt;
+&lt;/ui:composition&gt;</pre>
+
+
+
+<p class="wikiPara">
+That’s actually more interesting for us. Most important what you should note there that we passing just <b>Person</b> properties names as <b>sortBy</b> and <b>filterExpression</b> values. Usually you used EL binding to iteration object property and boolean expression in case you using our default models. But that’s not the case for us. As we implementing our model with in-db sorting and filtering – all we need to know just properties names and we will apply the rules in queries like you could see in the model.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Exercises"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-Exercises">Exercises</a></h2>
+
+<p class="wikiPara">
+That sample is still not ideal for sure. Most important you could easily see that there is absolutely no caching. Every time when <b>walk()</b> or <b>getRowCount()</b> called it queries the db with the request for data. You should add it on your own because there is actually no unified recipe for all the situations. Somebody could need just to read the data from db once when filtering sorting or page changes and be sure that it never changes more between requests. In some cases you should consider that data could be inserted/deleted/edited concurrently by different users so the List obtained in <b>walk()</b> method could be changed even between different walk calls and so on. So it’s up to you to define the rules for that. The same applied to <b>rowCount</b>. It’s highly important to cache it also as possible because it’s called also multiple time during request (by both table and data scroller)
+</p>
+
+<p class="wikiPara">
+Besides you might want to add <b>Weld/Seam</b> in order to be able to tie beans, entities and services in more graceful way.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheResult"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-TheResult">The result</a></h2>
+<p class="wikiPara">
+Even considering all you could open the demo that blog article would be boring without at least single screenshot of the result we achieved. So here is the table after we performed <b>sorting by surname</b> and filtered by emails to obtain only persons with <b>emails in <q>.com</q> domain</b>:
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/20028" alt="">
+
+<h2 class="wikiHeadline2" id="H-MoreInformation"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-MoreInformation">More information</a></h2>
+<p class="wikiPara">
+As usually please refer to <a href="http://jboss.org/richfaces/docs" target="" class="regularLink">RichFaces Documentation</a> to get more info from JavaDoc's and references.</p>
+</div>

@@ -1,0 +1,73 @@
+---
+title: "Some tips on using Hibernate in JBoss AS 7.0.0.Final"
+author: "Marius Bogoevici"
+blogger_name: "Marius"
+layout: blog-post
+tags: [Hibernate,as7 ,jbossas7]
+slug: SomeTipsOnUsingHibernateInJBossAS700Final
+lace: http://in.relation.to/21342.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SomeTipsOnUsingHibernateInJBossAS700Final">Some tips on using Hibernate in JBoss AS 7.0.0.Final</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Here are a few quick tips when migrating Hibernate 3-based applications to JBoss AS7, covering the options available for JBoss AS 7.0.0.Final. 
+</p>
+
+<p class="wikiPara">
+In previous versions of JBoss AS, a version of Hibernate was always present on the classpath. As a result, applications that used Hibernate directly have traditionally avoided to include it in the deployment in order to avoid classloading conflicts, or have taken additional steps to enforce classloader isolation.
+</p>
+
+<p class="wikiPara">
+The visibility rules have changed in AS7 due to the new modular classloading model, and so Hibernate libraries are made visible by default only to JPA deployments. The changes may affect existing Hibernate applications, so this is a short breakdown on the available options when running on JBoss AS7. Wherever this is subject to change in future versions, we also provide a succint description of the forthcoming enhancements.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NativeHibernateApplications"><a href="/Bloggers/SomeTipsOnUsingHibernateInJBossAS700Final#H-NativeHibernateApplications">Native Hibernate applications</a></h2>
+
+<p class="wikiPara">
+As of the 7.0.0.Final version of JBoss AS, native (i.e. non-JPA) Hibernate applications can opt between:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> packaging a Hibernate version of their choice inside the application;</li>
+<li class="wikiUnorderedListItem"> adding the 'org.hibernate' module as a dependency to the application (adds Hibernate 4), e.g. by adding to the deployment a META-INF/MANIFEST.MF file that contains the following line: <pre class="wikiPreformatted">Dependencies: org.hibernate</pre>
+</li>
+<li class="wikiUnorderedListItem"> creating a custom Hibernate 3 module, and adding it as a dependency to the application,e.g. <pre class="wikiPreformatted">Dependencies: my-custom-hibernate-module</pre>
+ - noting that future versions of JBoss AS7 may already provide a skeleton Hibernate 3 module.</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-ApplicationcreatedPersistenceUnits"><a href="/Bloggers/SomeTipsOnUsingHibernateInJBossAS700Final#H-ApplicationcreatedPersistenceUnits">Application-created persistence units</a></h2>
+
+<p class="wikiPara">
+JPA applications that create an EntityManagerFactory on their own, either using the PersistenceProvider SPI directly or through an intermediary mechanism such as Spring's LocalContainerEntityManagerFactoryBean have the same options as native Hibernate applications, noting that the 'org.hibernate' module may be added by default as a dependency as described <a href="https://docs.jboss.org/author/display/AS7/Implicit+module+dependencies+for+deployments" target="" class="regularLink">here</a> - so you may need to exclude it explicitly if you want to provide a version of your own. Therefore, under typical circumstances such applications can:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> use the default setup (and use Hibernate 4)</li>
+<li class="wikiUnorderedListItem"> package a Hibernate version of their choice and exclude the default 'org.hibernate' module by adding a WEB-INF/jboss-deployment-structure.xml or META-INF/jboss-deployment-structure.xml file (depending whether the deployment is a WAR or not) as follows: <pre class="wikiPreformatted">&lt;jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.0"&gt;
+  &lt;deployment&gt;
+    &lt;exclusions&gt;
+       &lt;module name="org.hibernate"/&gt;
+    &lt;/exclusions&gt;
+  &lt;deployment&gt;
+&lt;/jboss-deployment-structure&gt;</pre>
+</li>
+<li class="wikiUnorderedListItem"> create a custom module and using it instead of the default 'org.hibernate';</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-ContainerdeployedPersistenceUnits"><a href="/Bloggers/SomeTipsOnUsingHibernateInJBossAS700Final#H-ContainerdeployedPersistenceUnits">Container-deployed persistence units</a></h2>
+
+<p class="wikiPara">
+Generally speaking, standard Java EE-applications may ignore the provider implementation and rely on the standard features provided by the container - JBoss AS7 supporting standard JPA 1.0 and 2.0. 
+</p>
+
+<p class="wikiPara">
+However, in future versions of JBoss AS7 it will be possible to use alternative persistence provider implementations - for more details please follow <a href="https://issues.jboss.org/browse/AS7-566" target="" class="regularLink">AS7-566</a>.
+</p>
+</div>

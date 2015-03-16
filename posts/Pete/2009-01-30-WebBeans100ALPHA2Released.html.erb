@@ -1,0 +1,96 @@
+---
+title: "WebBeans 1.0.0.ALPHA2 released"
+author: "Pete Muir"
+blogger_name: "Pete"
+layout: blog-post
+tags: [Seam News,Web Beans]
+slug: WebBeans100ALPHA2Released
+lace: http://in.relation.to/10568.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/WebBeans100ALPHA2Released">WebBeans 1.0.0.ALPHA2 released</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I'm pleased to announce the release of <a href="http://seamframework.org/WebBeans" target="" class="regularLink">Web Beans</a> 1.0.0.ALPHA2. This release implements around 80% of the JSR-299, Java Contexts and Dependency Injection specification and represents the second major milestone on the road towards the GA release. The only major features missing from this release are conversations (already on their way!) and support for annotating your beans using XML. 
+</p>
+
+<p class="wikiPara">
+The <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/en-US/html/" target="" class="regularLink">Web Beans reference guide</a> has been translated into <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/ko-KR/html" target="" class="regularLink">Korean</a>, <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/zh-TW/html" target="" class="regularLink">Traditional Chinese</a>, <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/es-ES/html" target="" class="regularLink">Spanish</a> and <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/it-IT/html" target="" class="regularLink">Italian</a>. There is a more detailed feature list below.
+</p>
+
+<p class="wikiPara">
+JSR-299 specificies a set of services for the Java EE environment that makes applications much easier to develop. JSR-299 layers an enhanced lifecycle and interaction model over existing Java component types including JavaBeans and Enterprise Java Beans.
+</p>
+
+<p class="wikiPara">
+Since the last release of Web Beans, JSR-299 has undergone a <a href="/Bloggers/RevisedPublicDraftOfJSR299JavaContextsAndDependencyInjection" target="" class="regularLink">name change</a>, and is now called Java Contexts and Dependency Injection. We've decided to keep Web Beans as the project name for the Reference Implementation of JSR-299.
+</p>
+
+<p class="wikiPara">
+The release also includes three examples, a full EE example, with enterprise beans, a war example with simple beans and the login example from the reference docs. To learn more about JSR-299 and the Web Beans project, I suggest you <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/en-US/html/" target="" class="regularLink">read the reference guide</a> or browse <a href="http://www.seamframework.org/" target="" class="regularLink">seamframework.org</a>.
+</p>
+
+<p class="wikiPara">
+This release wouldn't have been possible without the sterling work of a number of people. Thanks go to: David Allen (injection point metadata), Nik Karlsson (passivating scopes, @New and much more), Ales Justin (JBoss Microcontainer integration), Nicola Benaglia (Italian Translation), Gladys Guerrero (Spanish Translation), Eun-Ju Ki (Korean Translation), Terry Chuang (Traditional Chinese Translation) and Francesco Milesi (Italian Translation).
+</p>
+
+<p class="wikiPara">
+In detail, this release adds support for:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Injection of new instances via @New</li>
+<li class="wikiUnorderedListItem"> Support for passivating scope</li>
+<li class="wikiUnorderedListItem"> Updates to metadata inheritance rules</li>
+<li class="wikiUnorderedListItem"> specialization</li>
+<li class="wikiUnorderedListItem"> realization</li>
+<li class="wikiUnorderedListItem"> injection point metadata</li>
+<li class="wikiUnorderedListItem"> injection via @Resource, @EJB and @PersistenceContext into simple beans </li>
+</ul>
+
+<p class="wikiPara">
+and, previously released in ALPHA1, provides support for:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> support for simple beans</li>
+<li class="wikiUnorderedListItem"> support for enterprise beans and enterprise bean remove methods</li>
+<li class="wikiUnorderedListItem"> typesafe and name based resolution</li>
+<li class="wikiUnorderedListItem"> producer methods</li>
+<li class="wikiUnorderedListItem"> producer fields</li>
+<li class="wikiUnorderedListItem"> the dependent context</li>
+<li class="wikiUnorderedListItem"> support for JBoss 5</li>
+<li class="wikiUnorderedListItem"> the servlet contexts: application, session and request</li>
+<li class="wikiUnorderedListItem"> field and constructor injection</li>
+<li class="wikiUnorderedListItem"> @Initializer methods</li>
+<li class="wikiUnorderedListItem"> Event support (firing and observing events)</li>
+<li class="wikiUnorderedListItem"> definition of observer methods through annotations</li>
+<li class="wikiUnorderedListItem"> injection of event producers</li>
+<li class="wikiUnorderedListItem"> conditional events</li>
+<li class="wikiUnorderedListItem"> stereotypes</li>
+<li class="wikiUnorderedListItem"> support for lifecycle callbacks (@PostConstruct and @PostDestroy)</li>
+<li class="wikiUnorderedListItem"> an SPI to integrate with other containers</li>
+</ul>
+
+<p class="wikiPara">
+There is also preview support for:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> transactional observers</li>
+<li class="wikiUnorderedListItem"> dynamic lookup through @Obtains</li>
+</ul>
+
+<p class="wikiPara">
+We'll be moving fast over the next few weeks to deliver BETA1, and then BETA2 (which will include Seam, Spring and jBPM integration). Watch this space!
+</p>
+
+<p class="wikiPara">
+[<a href="https://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=303713&amp;release_id=657211" target="" class="regularLink">Download</a>] [<a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/en-US/html/" target="" class="regularLink">Reference Documentation</a> | <a href="http://docs.jboss.org/webbeans/apidocs/1.0.0.ALPHA2/" target="" class="regularLink">API Javadoc</a> | <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/es-ES/html/" target="" class="regularLink">Spanish</a> | <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/ko-KR/html/" target="" class="regularLink">Korean</a> | <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/zh-TW/html/" target="" class="regularLink">Traditional Chinese</a> | <a href="http://docs.jboss.org/webbeans/reference/1.0.0.ALPHA2/it-IT/html/" target="" class="regularLink">Italian</a>]  [<a href="http://jira.jboss.com/jira/browse/WBRI" target="" class="regularLink">JIRA</a>] [<a href="https://jira.jboss.org/jira/secure/ReleaseNote.jspa?projectId=12310650&amp;styleName=Html&amp;version=12312664" target="" class="regularLink">Release Notes</a>] </p>
+</div>

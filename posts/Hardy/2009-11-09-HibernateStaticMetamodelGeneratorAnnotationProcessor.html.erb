@@ -1,0 +1,187 @@
+---
+title: "Hibernate Static Metamodel Generator Annotation Processor"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: []
+slug: HibernateStaticMetamodelGeneratorAnnotationProcessor
+lace: http://in.relation.to/12805.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateStaticMetamodelGeneratorAnnotationProcessor">Hibernate Static Metamodel Generator Annotation Processor</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Steve mentioned in his Hibernate 3.5.0 Beta2 <a href="http://in.relation.to/12696.lace" target="" class="regularLink">blog entry</a> briefly the Hibernate Static Metamodel Generator Annotation Processor. Time to have a closer look what this annotation processor actually does.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TypesafeCriteriaAPI"><a href="/Bloggers/HibernateStaticMetamodelGeneratorAnnotationProcessor#H-TypesafeCriteriaAPI">Typesafe Criteria API</a></h1>
+
+<p class="wikiPara">
+Let's start with a look at one of the new features of JPA 2 - the type-safe Criteria API. The key to this new API are metamodel classes generated for their corresponding managed entities. These metamodel classes allow the construction of object based queries. Lets look at an example:
+</p>
+
+<pre class="wikiPreformatted">@Entity public class Order {
+    @Id 
+    Integer id;
+    @ManyToOne 
+    Customer customer;
+    @OneToMany 
+    Set&lt;Item&gt; items;
+    BigDecimal totalCost;
+    ...
+}
+</pre>
+
+
+<p class="wikiPara">
+In the above example we have a managed entity <i class="wikiEmphasis">Order</i> with an id, a reference to a customer, a list of order items and the total costs. The corresponding metamodel class looks like this:
+</p>
+
+<pre class="wikiPreformatted">@StaticMetamodel(Order.class)
+public class Order_ {
+    public static volatile SingularAttribute&lt;Order, Integer&gt; id;
+    public static volatile SingularAttribute&lt;Order, Customer&gt; customer;
+    public static volatile SetAttribute&lt;Order, Item&gt; items;
+    public static volatile SingularAttribute&lt;Order, BigDecimal&gt; totalCost;
+}
+</pre>
+
+<p class="wikiPara">
+Having such a metamodel class allows for queries of the form:
+</p>
+
+<pre class="wikiPreformatted">CriteriaBuilder cb = ordersEntityManager.getCriteriaBuilder();
+CriteriaQuery&lt;Order&gt; cq = cb.createQuery(Order.class);
+SetJoin&lt;Order, Item&gt; itemNode = cq.from(Order.class)
+	.join(Order_.orderItems);
+cq.where( cb.equal(itemNode.get(Item_.id), 5 ) ) 
+	.distinct(true);
+</pre>
+
+
+<p class="wikiPara">
+I don't want to go any deeper into the actual Criteria API here. Refer to <a href="http://jcp.org/en/jsr/detail?id=317" target="" class="regularLink">JSR-317</a> for more information. Instead I would like to answer the question on how to generate this metamodel classes? Of course a developer could manually maintain them, but that would hardly be productive. A better solution is to utilize the <a href="http://java.sun.com/javase/6/docs/technotes/guides/apt/index.html" target="" class="regularLink">annotation processing</a> facilities officially available since Java 6. In Java 6 <i class="wikiEmphasis">javac</i> behaves analogously to the apt command in Java 5. This is specified by <a href="http://jcp.org/en/jsr/detail?id=269" target="" class="regularLink">JSR-269</a>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-HibernateStaticMetamodelGenerator"><a href="/Bloggers/HibernateStaticMetamodelGeneratorAnnotationProcessor#H-HibernateStaticMetamodelGenerator">Hibernate Static Metamodel Generator</a></h1>
+
+<p class="wikiPara">
+Hibernate Static Metamodel Generator is an implementation of such an annotation processor with the task of creating the static metamodel classes for entities (as seen in the example above). In the following I will show how to integrate the annotation processor into your build environment. The good news is that in most cases the annotation processor will automatically run provided the annotation processor jar is on the classpath. This happens due to Java's <a href="http://java.sun.com/javase/6/docs/technotes/guides/jar/jar.html#Service%20Provider" target="" class="regularLink">Service Provider</a> contract and the fact the the Hibernate Static Metamodel Generator jar files contains the file <tt>javax.annotation.processing.Processor</tt> in the <tt>META-INF/services</tt> listing <i class="wikiEmphasis">org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor</i> as annotation processor. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-Maven"><a href="/Bloggers/HibernateStaticMetamodelGeneratorAnnotationProcessor#H-Maven">Maven</a></h2>
+
+<p class="wikiPara">
+There are several ways of running the annotation processor as part of a Maven build. It will automatically run if you are using a JDK 6 compiler and the annotation processor jar is on the classpath. In case you have more than one annotation processors on your classpath you can explicitly pass  the <i class="wikiEmphasis">processor</i> option to the compiler plugin:
+</p>
+
+<pre class="wikiPreformatted">&lt;plugin&gt;
+    &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;source&gt;1.6&lt;/source&gt;
+        &lt;target&gt;1.6&lt;/target&gt;
+        &lt;compilerArguments&gt;
+        	&lt;processor&gt;org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor&lt;/processor&gt;
+        &lt;/compilerArguments&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</pre>
+
+
+<p class="wikiPara">
+The <i class="wikiEmphasis">maven-compiler-plugin</i> approach has the disadvantage that the maven compiler plugin does currently not allow to specify multiple compiler arguments (<a href="http://jira.codehaus.org/browse/MCOMPILER-62" target="" class="regularLink">MCOMPILER-62</a>) and that messages from the <a href="http://java.sun.com/javase/6/docs/api/javax/annotation/processing/Messager.html" target="" class="regularLink">Messenger API</a>  are suppressed (<a href="http://jira.codehaus.org/browse/MCOMPILER-66" target="" class="regularLink">MCOMPILER-66</a>). A better approach is to disable annotation processing for the compiler plugin:
+</p>
+
+<pre class="wikiPreformatted">&lt;plugin&gt;
+    &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+    &lt;configuration&gt;
+        &lt;source&gt;1.6&lt;/source&gt;
+        &lt;target&gt;1.6&lt;/target&gt;
+        &lt;compilerArgument&gt;-proc:none&lt;/compilerArgument&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;</pre>
+
+
+<p class="wikiPara">
+and use the <a href="http://code.google.com/p/maven-annotation-plugin/" target="" class="regularLink">maven-annotation-plugin</a> for annotation processing (you will need the following additional maven repositories - <a href="http://maven-annotation-plugin.googlecode.com/svn/trunk/mavenrepo" target="" class="regularLink">maven-annotation-plugin</a> and <a href="http://www.jfrog.org/artifactory/plugins-releases" target="" class="regularLink">jfrog</a>):
+</p>
+
+<pre class="wikiPreformatted">&lt;plugin&gt;
+    &lt;groupId&gt;org.bsc.maven&lt;/groupId&gt;
+    &lt;artifactId&gt;maven-processor-plugin&lt;/artifactId&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;id&gt;process&lt;/id&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;process&lt;/goal&gt;
+            &lt;/goals&gt;
+            &lt;phase&gt;generate-sources&lt;/phase&gt;
+            &lt;configuration&gt;
+                &lt;!-- source output directory --&gt;
+                &lt;outputDirectory&gt;target/metamodel&lt;/outputDirectory&gt;
+            &lt;/configuration&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+&lt;/plugin&gt;
+&lt;plugin&gt;
+    &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+    &lt;artifactId&gt;build-helper-maven-plugin&lt;/artifactId&gt;
+    &lt;version&gt;1.3&lt;/version&gt;
+    &lt;executions&gt;
+        &lt;execution&gt;
+            &lt;id&gt;add-source&lt;/id&gt;
+            &lt;phase&gt;generate-sources&lt;/phase&gt;
+            &lt;goals&gt;
+                &lt;goal&gt;add-source&lt;/goal&gt;
+            &lt;/goals&gt;
+            &lt;configuration&gt;
+                &lt;sources&gt;
+                    &lt;source&gt;target/metamodel&lt;/source&gt;
+                &lt;/sources&gt;
+            &lt;/configuration&gt;
+        &lt;/execution&gt;
+    &lt;/executions&gt;
+&lt;/plugin&gt;</pre>
+
+
+<p class="wikiPara">
+Last, but not least one could also use the <i class="wikiEmphasis">antrun-plugin</i> to run the annotation processor. This approach can be seen <a href="http://fisheye.jboss.org/browse/Hibernate/core/trunk/entitymanager/pom.xml?r=17892" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Ant"><a href="/Bloggers/HibernateStaticMetamodelGeneratorAnnotationProcessor#H-Ant">Ant</a></h2>
+
+<p class="wikiPara">
+As mentioned before, the annotation processor will run automatically in a Java 6 environment. In case you want configure the processor explicitly or disable it you can use the <i class="wikiEmphasis">compilerarg</i> option of the <a href="http://ant.apache.org/manual/CoreTasks/javac.html" target="" class="regularLink">Javac Task</a>. The supported command <i class="wikiEmphasis">javac</i> line options are listed <a href="http://java.sun.com/javase/6/docs/technotes/tools/windows/javac.html" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Eclipse"><a href="/Bloggers/HibernateStaticMetamodelGeneratorAnnotationProcessor#H-Eclipse">Eclipse</a></h2>
+
+<p class="wikiPara">
+Of course you also want to have annotation processing available in your favorite IDE. In Eclipse (at least since the latest Galileo release) exists an additional configuration section under <i class="wikiEmphasis">Java Compiler</i> where you can configure all kinds of aspects of annotation processing. Just check the <q>Enable annotation processing</q> option, configure the directory for the generated sources and finally add the Hibernate Static Metamodel Generator and JPA 2 jar files to the factory path.
+</p>
+
+<p class="wikiPara">
+<a href="/service/File/12804" target="" class="regularLink"><img src="/service/File/12804?thumbnail=true"></a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-Idea"><a href="/Bloggers/HibernateStaticMetamodelGeneratorAnnotationProcessor#H-Idea">Idea</a></h2>
+
+<p class="wikiPara">
+Idea does not have an explicit configuration section for annotation processing yet. Instead do you have to rely on the fact that the processing will automatically occur in the case the Hibernate Static Metamodel Generator is on the classpath and you are using a Java 6 compiler. You can, however, specify additional compiler command line options under the <q>Compiler - Java Compiler</q> section.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Feeback"><a href="/Bloggers/HibernateStaticMetamodelGeneratorAnnotationProcessor#H-Feeback">Feeback</a></h2>
+
+<p class="wikiPara">
+Hopefully this gets you started with the Hibernate Static Metamodel Generator. It would be great to get some feedback. The source code is currently part of the Hibernate svn repository. The trunk is <tt>http://anonsvn.jboss.org/repos/hibernate/jpamodelgen/trunk/</tt>. The latest SNAPSHOT of the jar file can be retrieved from the <a href="http://snapshots.jboss.org/maven2/org/hibernate/hibernate-jpamodelgen/1.0.0-SNAPSHOT/" target="" class="regularLink">JBoss snapshot repository</a>. Bugs should be reported in <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN" target="" class="regularLink">METAGEN</a>.
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+</div>

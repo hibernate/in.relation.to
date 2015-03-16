@@ -1,0 +1,200 @@
+---
+title: "Designing \"query by criteria\""
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: DesigningQueryByCriteria
+lace: http://in.relation.to/1455.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/DesigningQueryByCriteria">Designing "query by criteria"</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+One of the great improvements in Hibernate 2.1 is that we finally have a mature Criteria query API. For a very long time I let this feature languish because I just wasn't sure what it should really look like. Every QBC API I've looked at is designed differently and there is certainly nothing like a standard API to learn from. I've seen everything from this:
+</p>
+
+<pre class="wikiPreformatted">
+new Criteria(Project.class)
+  .addEq("name", "Hibernate")
+  .addLike("description", "%ORM%")
+  .execute();
+</pre>
+
+
+<p class="wikiPara">
+to this:
+</p>
+
+<pre class="wikiPreformatted">
+Criteria crit = new Criteria(Project.class)
+crit.getProperty("name").eq("Hibernate);
+crit.getProperty("description).like("%ORM%");
+crit.execute();
+
+</pre>
+
+
+<p class="wikiPara">
+I don't like either of these approaches because the addition of new types of criterion requires the uncontrolled growth of a single central interface (Criteria, in the first case; Property in the second). 
+</p>
+
+<p class="wikiPara">
+I like the second approach even less because it is very difficult to chain method calls. What should the eq() method return? Well, it seems most reasonable that it would return the receiving object (ie. the property). But it is very unusual to apply multiple criteria to the same property! So we would really prefer it to return the Criteria if we wanted to chain method calls. Well, I don't know about you, but I think that any API that returned the receiver from two calls ago might not be considered <q>intuitive</q>. So we are stuck with that evil temp variable.
+</p>
+
+<p class="wikiPara">
+I'd seriously consider improving this second approach to look like this:
+</p>
+
+<pre class="wikiPreformatted">
+new Criteria(Project.class)
+  .getProperty("name").eq("Hibernate)
+  .and()
+  .getProperty("description).like("%ORM%");
+  .execute();
+
+</pre>
+
+
+<p class="wikiPara">
+Which is actually very clean. Unfortunately, the interfaces themselves are quite bizzare: and() is an operation defined by .... Criterion? The and() method returns .... the Criteria? This doesn't feel like a very natural OO design. And I think it would confuse new users. I'll come back to another reason why <q>and</q> and <q>or</q> should not be operations at all. 
+</p>
+
+<p class="wikiPara">
+As a variation upon the first approach, I have seen the following:
+</p>
+
+<pre class="wikiPreformatted">
+new Criteria(Project.class)
+  .add( new Equals("name", "Hibernate") )
+  .add( new Like("description", "%ORM%") )
+  .execute();
+</pre>
+
+
+<p class="wikiPara">
+This avoids the problem of the Criteria interface growing out of control. But I hate Java constructors almost as much as I hate temp variables! The problem with constructors in Java is that they cannot be given meaningful names. We can't call a constructor EqualsIgnoreCase() if the class is named Equals. Secondly, once we start using constructors, we pretty much permanently nail down the Criterion class hierarchy. We tie client code directly to the concrete classes. I can't change my mind later and decide that Equals and EqualsIgnoreCase should be different classes.
+</p>
+
+<p class="wikiPara">
+Eventually I ended up being most influenced by the Cayenne query API (whch I presume was in turn influenced by Apple's WebObjects). Cayenne uses a class with static factory methods to create Criterion instances. Actually, Cayenne misnames the criterion class Expression and I stupidly inherited this misnaming in our (Hibernate) factory class. So, we ended up with:
+</p>
+
+<pre class="wikiPreformatted">
+session.createCriteria(Project.class)
+  .add( Expression.eq("name", "Hibernate") )
+  .add( Expression.like("description", "%ORM%") )
+  .list();
+</pre>
+
+
+<p class="wikiPara">
+Notice that this code does not use any concrete classes other than the static factory class - its all interfaces!
+</p>
+
+<p class="wikiPara">
+The downside of this design is that there are more characters in <q>add( Expression.eq())</q> than in <q>add( new Eq())</q> or <q>addEq()</q>. So it is certainly more verbose. It is also noisy. What stands out in the code above is the two occurrences of <q>Expression</q>. But they are the least important thing in the code.
+</p>
+
+<p class="wikiPara">
+Fortunately for me, JDK1.5 will come along and give us static imports. Static imports have been very unfairly maligned in the past, so let me try to set the record straight. If I add <tt>import net.sf.hibernate.expression.Expression.*</tt>, the code example above becomes:
+</p>
+
+<pre class="wikiPreformatted">
+session.createCriteria(Project.class)
+  .add( eq("name", "Hibernate") )
+  .add( like("description", "%ORM%") )
+  .list();
+</pre>
+
+
+<p class="wikiPara">
+This is now less verbose and more readable than the version that used constructors. I'm halfway done.
+</p>
+
+<p class="wikiPara">
+A second problem is the logical combination of criterions. <q>and</q> and <q>or</q> are each associative, but a string of both <q>and</q>s and <q>or</q>s is certainly not associative. So it seemed critically important to me that the precedence of the logical operators is crystal clear from the structure of the code. I hate the following:
+</p>
+
+<pre class="wikiPreformatted">
+session.createCriteria(Project.class)
+  .addAnd( eq("name", "Hibernate") )
+  .addAnd( like("description", "%ORM%") )
+  .addOr( like("description", "%object/relational%") )
+  .list();
+</pre>
+
+
+<p class="wikiPara">
+I've seen a number of APIs like this and I still don't have a clue how the previous code is intended to be read. The same problem applies to this variation:
+</p>
+
+<pre class="wikiPreformatted">
+new Criteria(Project.class)
+   .getProperty("name").eq("Hibernate)
+   .and()
+   .getProperty("description).like("%ORM%")
+   .or()
+   .getProperty("description).like("%object/relational%")
+   .execute();
+</pre>
+
+
+<p class="wikiPara">
+OK, OK, I actually do know that conjunction usually has a higher precendence than disjunction - but I would never, ever write code that depended upon this. It just isn't readable. And we certainly can't always rely upon operator precedence - we do need some way to express grouping. Anyway, I think this problem would affect any API which offers and() and or() as methods. So let's not make and() and or() be operations at all.
+</p>
+
+<p class="wikiPara">
+By the way, worst of all is this:
+</p>
+
+<pre class="wikiPreformatted">
+new Criteria(Project.class)
+   .getProperty("name").eq("Hibernate)
+   .and( crit.getProperty("description).like("%ORM%") )
+   .execute();
+</pre>
+
+
+<p class="wikiPara">
+ <q>And</q> is a symmetrical operation! This symmetry should be obvious.
+</p>
+
+<p class="wikiPara">
+The solution is to treat Conjunction and Disjunction in exactly the same way as atomic Criterions. Make them Criterions, not operations.
+</p>
+
+<pre class="wikiPreformatted">
+session.createCriteria(Project.class)
+  .add( Expression.disjunction()
+      .add( eq("name", "Hibernate") )
+      .add( like("description", "%ORM%") )
+  )
+  .list();
+</pre>
+
+
+<p class="wikiPara">
+Well, that's a couple too many parentheses for my taste. I'm considering supporting something like the following in Hibernate:
+</p>
+
+<pre class="wikiPreformatted">
+session.createCriteria(Project.class)
+  .createDisjunction()
+      .add( eq("name", "Hibernate") )
+      .add( like("description", "%ORM%") )
+  .list();
+</pre>
+
+
+<p class="wikiPara">
+My big problem here is that createDisjunction() would need to return a new instance of Criteria (wrapping a Disjunction) just so that we can call list() without needing a new temp variable. I'm not sure if I like this. Currently Expression.disjunction() just returns an instance of Disjunction directly - and Disjunction implements only the Criterion interface. I guess we're still searching for perfection...
+</p>
+</div>

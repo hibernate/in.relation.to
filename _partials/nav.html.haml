@@ -1,0 +1,39 @@
+- real_page = page["real_page"]
+.navbar.navbar-inverse
+  .navbar-inner
+    %a.btn.btn-navbar(data-toggle="collapse" data-target=".nav-collapse")
+      %span.icon-bar
+      %span.icon-bar
+      %span.icon-bar
+    .nav-collapse.collapse
+      %ul.nav.pull-left
+        %li<
+          %a(href="/orm/") ORM
+        %li<
+          %a(href="/search/") Search
+        %li<
+          %a(href="/validator/") Validator
+        %li<
+          %a(href="/ogm/") OGM
+        %li<
+          %a(href="/tools/") Tools
+        %li<
+          %a(href="/others/") Others
+      %ul.nav.pull-right
+        %li.active<
+          %a(href="http://in.relation.to") Blog
+        %li<
+          %a(href="#{relative("/community/", real_page)}") Community
+        %li.dropdown
+          %a.dropdown-toggle(href="#" data-toggle="dropdown")<
+            = precede 'Follow Us ' do
+              %b.caret>
+          %ul.dropdown-menu.projectsocialmedia
+            %li<
+              %a(href="https://twitter.com/hibernate")<
+                %img(src="#{relative("#{site.jborg_images_url}/common/socialmedia_icon40_twitter.png", real_page)}")
+            %li<
+              %a(href="https://plus.google.com/112681342290762837955/posts")<
+                %img(src="#{relative("#{site.jborg_images_url}/common/socialmedia_icon40_googleplus.png", real_page)}")
+          
+

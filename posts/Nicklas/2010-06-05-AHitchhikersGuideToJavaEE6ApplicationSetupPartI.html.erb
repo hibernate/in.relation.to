@@ -1,0 +1,422 @@
+---
+title: "A Hitchhikers Guide to Java EE 6 application setup, Part I"
+author: "Nicklas Karlsson"
+blogger_name: "Nicklas"
+layout: blog-post
+tags: [Arquillian,CDI,EJB,Eclipse,Maven,Weld,m2eclipse]
+slug: AHitchhikersGuideToJavaEE6ApplicationSetupPartI
+lace: http://in.relation.to/15721.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartI">A Hitchhikers Guide to Java EE 6 application setup, Part I</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+The goal of this blog post is to walk you through an Java EE 6 application from a simple, static
+web page until we have a full blown stack that consist of the stuff in the list below. I'm calling this
+stack <q>Summer</q> because after a long, hard winter Spring may be nice but boy, wait until Summer kicks in ;-)
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> CDI (Weld)</li>
+<li class="wikiUnorderedListItem"> JSF 2 (facelets, ICEfaces 2)</li>
+<li class="wikiUnorderedListItem"> JPA 2 (Hibernate, Envers)</li>
+<li class="wikiUnorderedListItem"> EJB 3.1 (no-local-view, asynchronous, singletons, scheduling)</li>
+<li class="wikiUnorderedListItem"> Bean Validation (Hibernate Validator)</li>
+<li class="wikiUnorderedListItem"> JMS (MDB)</li>
+<li class="wikiUnorderedListItem"> JAX-RS (RESTEasy)</li>
+<li class="wikiUnorderedListItem"> JAX-WS</li>
+<li class="wikiUnorderedListItem"> Arqullian (incontainer-AS6)</li>
+</ul>
+
+<p class="wikiPara">
+We will pack all this in a single WAR. Just because we can (spoiler: in part IV). Noticed that apart from the component and 
+testing frameworks, they are all standards? That's a lot of stuff. Fortunately, the appserver already provides
+most of the stuff so you're app will still be reasonably small.
+</p>
+
+<p class="wikiPara">
+As for the environment I'm using
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Eclipse (Galileo SR2)</li>
+<li class="wikiUnorderedListItem"> JBoss 6.0 M3</li>
+<li class="wikiUnorderedListItem"> Maven 3 (beta1)</li>
+<li class="wikiUnorderedListItem"> Sun JDK 6</li>
+<li class="wikiUnorderedListItem"> m2eclipse 0.10</li>
+</ul>
+
+<p class="wikiPara">
+This will not be your typical blog post where everything goes well - we will hit bugs. There will be curses, blood and guts and drama and
+we will do workarounds and rewrites as we move along. Pretty much the same as your average day as a software developer probably looks like.
+I'm also no expert in the technologies I use here so there are probably things that could be done better. Consider this more of a write-down
+of my experiences in EE6-land that will probably mirror what others are going through. I will also not point you to links or additional information,
+I assume that if I say <q>RESTEasy</q>, you can google up more information if you are interested.
+</p>
+
+<p class="wikiPara">
+And I almost forgot: don't panic.
+</p>
+
+<h1 class="wikiHeadline1" id="H-InTheBeginningProjectSetup"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartI#H-InTheBeginningProjectSetup">In the beginning: Project setup</a></h1>
+
+<p class="wikiPara">
+So, lets start things off - go and download the stuff mentioned in the environment if you don't already have it. I'm not going to insult
+your intelligense by walking you through that (remind me to insult it later). Besides, it's pretty straightforward.
+</p>
+
+<p class="wikiPara">
+Let's make a new Maven project (File -&gt; New -&gt; Project... -&gt; Maven -&gt; Maven Project.
+We skip the archetype selection and just make a simple project with group id <q>com.acme</q>, artifact id <q>Greetings</q> of version <q>1.0.0-SNAPSHOT</q> 
+packed as a WAR. Now finish the wizard and now you should have a nice, perfect project. It will never be this perfect
+again as our next step is adding code to it.
+</p>
+
+<p class="wikiPara">
+Maven tip-of-the-day for Windows users. Google up on how you change the path to your local repo as it might be somewhere under <q>Documents And Settings</q>
+which has two effects: classpath gets huge and there could be problems due to the spaces. Change it to something like c:\java\m2repo
+</p>
+
+<p class="wikiPara">
+The first thing we notice that m2eclipse has J2SE-1.4 as default. How 2002. Besides, that will make using annotations impossible so lets
+change that. Edit the pom.xml and throw in 
+</p>
+
+
+<pre class="wikiPreformatted">
+&lt;build&gt;
+	&lt;plugins&gt;
+		&lt;plugin&gt;
+			&lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+			&lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+			&lt;version&gt;2.3.1&lt;/version&gt;
+			&lt;configuration&gt;
+				&lt;source&gt;1.6&lt;/source&gt;
+				&lt;target&gt;1.6&lt;/target&gt;
+			&lt;/configuration&gt;
+		&lt;/plugin&gt;
+	&lt;/plugins&gt;
+&lt;/build&gt;
+</pre>
+
+<p class="wikiPara">
+	
+Save and right-click the project root and go Maven -&gt; Update Project Configuration. Aah, that's better
+</p>
+
+<h1 class="wikiHeadline1" id="H-JSF"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartI#H-JSF">JSF</a></h1>
+
+<p class="wikiPara">
+Let's wake up JSF. We create a folder WEB-INF in src/main/webapp and throw in a web.xml because no web app is complete without it
+(enforced by the maven war plugin). OK, actually this can be configured in the plugin but let's keep the web.xml since we'll need it later.
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;web-app version="3.0" xmlns="http://java.sun.com/xml/ns/javaee"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"/&gt;
+</pre>
+
+
+<p class="wikiPara">
+and an empty faces-config.xml next to it
+</p>
+
+<pre class="wikiPreformatted">
+&lt;faces-config xmlns="http://java.sun.com/xml/ns/javaee"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_2_0.xsd"
+              version="2.0"/&gt;
+</pre>
+
+<p class="wikiPara">
+	
+and in webapp we add a greeting.xhtml like
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+	&lt;h:head&gt;
+		&lt;title&gt;
+			Greetings
+		&lt;/title&gt;
+	&lt;/h:head&gt;
+
+	&lt;h:body&gt;
+		&lt;h:outputText value="Hello world"/&gt;
+	&lt;/h:body&gt;
+&lt;/html&gt;
+</pre>
+
+
+<p class="wikiPara">
+Will it blend? I mean, will it deploy? Do a <q>mvn clean package</q> and you should have a Greetings-1.0.0-SNAPSHOT in your projects target directory. 
+Throw it into the AS server/default/deploy directory and start up the server and go to
+</p>
+
+<p class="wikiPara">
+http://localhost:8080/Greetings-1.0.0-SNAPSHOT/faces/greetings.xhtml
+</p>
+
+<p class="wikiPara">
+The url is not pretty, but the server port, web context root, welcome files and JSF mappings can all be tuned later, let's focus on
+technologies and dependencies for now. But wait - at which point did we define the JSF servlet and mappings in web.xml? We didn't. It's
+automagic for JSF-enabled applications.
+</p>
+
+<h1 class="wikiHeadline1" id="H-EJBAndCDI"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartI#H-EJBAndCDI">EJB and CDI</a></h1>
+
+<p class="wikiPara">
+Next step is bringing in some backing beans, let's outsource our greeting. We make a stateless EJB and use it in CDI
+</p>
+
+<p class="wikiPara">
+package com.acme.greetings;
+</p>
+
+<pre class="wikiPreformatted">
+@Stateful
+@Model
+public class GreetingBean 
+{
+	public String getGreeting()
+	{
+		return "Hello world";
+	}
+}
+</pre>
+
+
+
+<p class="wikiPara">
+The @Stateful defines a stateful session EJB (3.1 since it's a POJO) and the @Model is a CDI stereotype that is @RequestScoped and @Named
+(which means the lifecycle is bound to a single HTTP request and it has a name that can be referenced in EL and defaults to <q>greetingBean</q>
+in this case). But we have a problem - the annotations don't resolve to anything. So we need to pick them up from somewhere(tm). Fortunately
+we can have all the APIs picked up for us by adding the following to our pom.xml
+</p>
+
+<pre class="wikiPreformatted">
+&lt;dependencies&gt;
+	&lt;dependency&gt;
+		&lt;groupId&gt;org.jboss.spec&lt;/groupId&gt;
+		&lt;artifactId&gt;jboss-javaee-6.0&lt;/artifactId&gt;
+		&lt;version&gt;1.0.0.Beta4&lt;/version&gt;
+		&lt;type&gt;pom&lt;/type&gt;
+		&lt;scope&gt;provided&lt;/scope&gt;
+	&lt;/dependency&gt;
+&lt;/dependencies&gt;
+</pre>
+
+
+<p class="wikiPara">
+Sun Java API artifacts are a bit amusing since getting hold of them can be a bit tricky. First they publish them in the JSR:s and then they treat them like they're top secret. Fortunately Glassfish and now JBoss have started making them available in their repositories (although under their own artifact names, but still)...
+</p>
+
+<p class="wikiPara">
+	
+We also need to make sure we have set up the JBoss repositories for this according to http://community.jboss.org/wiki/MavenGettingStarted-Users.
+Have a look at what happened in the projects <q>Maven Dependencies</q>. Good. Now close it and back away. It's getting hairy in there so better trust 
+Maven to keep track of the deps from now on.
+</p>
+
+<p class="wikiPara">
+The imports should now be available in our bean so we import
+</p>
+
+<pre class="wikiPreformatted">
+import javax.ejb.Stateful;
+import javax.enterprise.inject.Model;
+</pre>
+
+
+<p class="wikiPara">
+and EL-hook the bean up with
+</p>
+
+<pre class="wikiPreformatted">
+&lt;h:body&gt;
+	&lt;h:outputText value="#{greetingBean.greeting}"/&gt;
+&lt;/h:body&gt;
+</pre>
+
+
+<p class="wikiPara">
+in greetings.xhtml. 
+</p>
+
+<p class="wikiPara">
+Just as no web application is complete without web.xml, no CDI application is complete without beans.xml. Let's add it to WEB-INF
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;beans xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+      http://java.sun.com/xml/ns/javaee 
+      http://java.sun.com/xml/ns/javaee/beans_1_0.xsd" /&gt;
+</pre>
+
+
+<p class="wikiPara">
+Package and redeploy. We get a warning about encoding when compiling so lets add this to our pom.xml
+</p>
+
+<pre class="wikiPreformatted">
+&lt;properties&gt;
+	&lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+&lt;/properties&gt;
+</pre>
+
+<p class="wikiPara">
+	
+Back to http://localhost:8080/Greetings-1.0.0-SNAPSHOT/faces/greetings.xhtml SUCCESS! No. Wait. Huge stack trace hits you for
+300 points of damage. Let's back up on our EJB, there are still some issues with 3.1 style EJBs in WAR-only-packaging on AS 6 M3.
+Remove the @Stateful annotation and it becomes a normal CDI managed POJO. Repackage. Redploy. Recoyce.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Testing"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartI#H-Testing">Testing</a></h1>
+
+<p class="wikiPara">
+Testing is hip nowadays so let's bring in Arquillian. Arquillian is the latest and greatest in EE testing (embedded or incontainer).
+Start using it now. In a year or so when everone else catch up you can go <q>I've been using it since Alpha</q>. Add the following property to pom.xml:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;arquillian.version&gt;1.0.0.Alpha2&lt;/arquillian.version&gt;
+</pre>
+
+<p class="wikiPara">
+	
+and these deps
+</p>
+
+<pre class="wikiPreformatted">
+&lt;dependency&gt;
+	&lt;groupId&gt;org.jboss.arquillian&lt;/groupId&gt;
+	&lt;artifactId&gt;arquillian-junit&lt;/artifactId&gt;
+	&lt;version&gt;${arquillian.version}&lt;/version&gt;
+	&lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+	&lt;groupId&gt;junit&lt;/groupId&gt;
+	&lt;artifactId&gt;junit&lt;/artifactId&gt;
+	&lt;version&gt;4.8.1&lt;/version&gt;
+	&lt;scope&gt;test&lt;/scope&gt;
+&lt;/dependency&gt;
+</pre>
+
+
+<p class="wikiPara">
+and this profile
+</p>
+
+<pre class="wikiPreformatted">
+&lt;profiles&gt;	
+	&lt;profile&gt;
+		&lt;id&gt;jbossas-local-60&lt;/id&gt;
+		&lt;dependencies&gt;
+			&lt;dependency&gt;
+				&lt;groupId&gt;org.jboss.arquillian.container&lt;/groupId&gt;
+				&lt;artifactId&gt;arquillian-jbossas-local-60&lt;/artifactId&gt;
+				&lt;version&gt;1.0.0.Alpha2&lt;/version&gt;
+			&lt;/dependency&gt;
+			&lt;dependency&gt;
+				&lt;groupId&gt;org.jboss.jbossas&lt;/groupId&gt;
+				&lt;artifactId&gt;jboss-server-manager&lt;/artifactId&gt;
+				&lt;version&gt;1.0.3.GA&lt;/version&gt;
+			&lt;/dependency&gt;
+			&lt;dependency&gt;
+				&lt;groupId&gt;org.jboss.jbossas&lt;/groupId&gt;
+				&lt;artifactId&gt;jboss-as-client&lt;/artifactId&gt;
+				&lt;version&gt;6.0.0.20100429-M3&lt;/version&gt;
+				&lt;type&gt;pom&lt;/type&gt;
+			&lt;/dependency&gt;
+		&lt;/dependencies&gt;
+	&lt;/profile&gt;
+&lt;/profiles&gt;
+</pre>
+
+
+<p class="wikiPara">
+Maven will probably now download the entire internet for you.
+</p>
+
+<p class="wikiPara">
+Let's write our first test and place it in the test source folder:
+</p>
+
+<pre class="wikiPreformatted">
+package com.acme.greetings.test;
+
+import javax.inject.Inject;
+
+import org.jboss.arquillian.api.Deployment;
+import org.jboss.arquillian.junit.Arquillian;
+import org.jboss.shrinkwrap.api.ArchivePaths;
+import org.jboss.shrinkwrap.api.ShrinkWrap;
+import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.jboss.shrinkwrap.impl.base.asset.ByteArrayAsset;
+import org.junit.Assert;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import com.acme.greetings.GreetingBean;
+
+@RunWith(Arquillian.class)
+public class GreetingTest 
+{
+	@Inject
+	GreetingBean greetingBean;
+
+	@Deployment
+	public static JavaArchive createTestArchive() 
+	{
+		return ShrinkWrap.create("test.jar", JavaArchive.class).addClass(
+				GreetingBean.class).addManifestResource(
+				new ByteArrayAsset("&lt;beans/&gt;".getBytes()),
+				ArchivePaths.create("beans.xml"));
+	}
+
+	@Test
+	public void testInjection() 
+	{
+		Assert.assertEquals("Hello World", greetingBean.getGreeting());
+	}
+
+}
+</pre>
+
+
+<p class="wikiPara">
+and then we try it out with <q>mvn test -Pjbossas-local-60</q>. If we have the AS running we can save some time, otherwise the manager will start it 
+automagically. Setting the JBOSS_HOME env helps. What happens here is we use Shrinkwrap to create a deployment which consist of our GreetingBean 
+and an empty beans.xml file (for CDI) and the bean is then injected for use in our tests.
+</p>
+
+<p class="wikiPara">
+This concludes Part I. In part II we will set up ICEfaces and expand our application and in part III we'll set up JPA. Part IV is for MDB and EJB and part V
+for adding JAX-RS and JAX-WS for importing and exporting stuff.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartII" target="" class="regularLink">part II </a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII" target="" class="regularLink">part III </a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIV" target="" class="regularLink">part IV </a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartV" target="" class="regularLink">part V </a>
+</li>
+</ul>
+</div>

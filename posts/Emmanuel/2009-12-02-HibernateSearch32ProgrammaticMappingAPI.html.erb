@@ -1,0 +1,135 @@
+---
+title: "Hibernate Search 3.2: programmatic mapping API"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: [Hibernate Search]
+slug: HibernateSearch32ProgrammaticMappingAPI
+lace: http://in.relation.to/13235.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch32ProgrammaticMappingAPI">Hibernate Search 3.2: programmatic mapping API</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+One of the innovations we have brought to Hibernate Search is an alternative way to define the mapping information: a programmatic API.
+</p>
+
+<p class="wikiPara">
+The traditional way to map an entity into Hibernate Search is to use annotations. And it's perfectly fine for 95% of the use cases. In some cases though, some people had had a need for a more dynamic approach:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> they use a metamodel to generate or customize what is indexed in their entities and need to reconfigure things either on redeployment or on the fly based on some contextual information.</li>
+<li class="wikiUnorderedListItem"> they ship a product to multiple customers that require some customization.</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-WhatPeopleAskedForTheXMLWaytm"><a href="/Bloggers/HibernateSearch32ProgrammaticMappingAPI#H-WhatPeopleAskedForTheXMLWaytm">What people asked for: the XML Way(tm)</a></h1>
+
+<p class="wikiPara">
+For a while, people with this requirement have asked for an XML format equivalent to what annotations could do. Now the problem with XML is that:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> it's very verbose in it's way to duplicate the structural information of your code</li>
+</ul>
+
+<pre class="wikiPreformatted">&lt;class name="Address"&gt;
+  &lt;property name="street1"&gt;
+    &lt;field&gt;
+      &lt;analyzer definition="ngram"/&gt;
+    &lt;/field&gt;
+   &lt;/property&gt;
+   &lt;!-- ... --&gt;
+&lt;/class&gt;</pre>
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> while XML itself is type-safe, XML editors are still close to stone age, and developers writing XML in notepad are unfortunately quite common</li>
+<li class="wikiUnorderedListItem"> even if XML is type-safe, one cannot refactor the Java code and expect to get compile time errors or even better automatic integrated refactoring. For example, if I rename <tt>Address</tt> to <tt>Location</tt>, I still need to remember to change this in my xml file</li>
+<li class="wikiUnorderedListItem"> and finally, dynamically generating an XML stream to cope with the dynamic reconfiguration use case is not what I would call an intuitive solution</li>
+</ul>
+
+<p class="wikiPara">
+So we took a different road.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatTheyGetAFluentProgrammaticAPI"><a href="/Bloggers/HibernateSearch32ProgrammaticMappingAPI#H-WhatTheyGetAFluentProgrammaticAPI">What they get: a fluent programmatic API</a></h1>
+
+<p class="wikiPara">
+Instead of writing the mapping in XML, let's write it in Java. And to make things easier let's use a fluent contextual API (have intuitive method names, only expose the relevant operations).
+</p>
+
+<pre class="wikiPreformatted">SearchMapping mapping = new SearchMapping();
+
+mapping
+    .analyzerDef( "ngram", StandardTokenizerFactory.class )
+        .filter( LowerCaseFilterFactory.class )
+        .filter( NGramFilterFactory.class )
+            .param( "minGramSize", "3" )
+            .param( "maxGramSize", "3" )
+
+    .entity(Address.class)
+        .indexed()
+        .property("addressId", METHOD)
+            .documentId()
+        .property("street1", METHOD)
+            .field()
+            .field()
+                .name("street1_ngram")
+                .analyzer("ngram")
+        .property("country", METHOD)
+            .indexedEmbedded()
+        .property("movedIn", METHOD)
+            .dateBridge(Resolution.DAY);</pre>
+
+
+<p class="wikiPara">
+As you can see, it's very easy to figure out what is going on here. But something you cannot see in this example is that your IDE only offers the relevant methods contextually. For example, unless you have just declared a <tt>property()</tt>, you won't be able to add a <tt>field()</tt> to it. Likewise, you can set an analyzer on a field, only if you are defining a field.
+It's like the dynamic languages fluent APIs be better ;)
+</p>
+
+<p class="wikiPara">
+The next step is to associate the programmatic mapping object to the Hibernate configuration.
+</p>
+
+<pre class="wikiPreformatted">//in Hibernate native
+Configuration configuration = ...;
+configuration.setProperty( "hibernate.search.model_mapping", mapping );
+SessionFactory factory = configuration.buildSessionFactory();
+</pre>
+
+<pre class="wikiPreformatted">//in JPA
+Map&lt;String,String&gt; properties = new HashMap&lt;String,String)(1);
+properties.put( "hibernate.search.model_mapping", mapping );
+EntityManagerFactory emf = Persistence.createEntityManagerFactory( "userPU", properties );
+</pre>
+
+<p class="wikiPara">
+And voila!
+</p>
+
+<h1 class="wikiHeadline1" id="H-Extensibility"><a href="/Bloggers/HibernateSearch32ProgrammaticMappingAPI#H-Extensibility">Extensibility</a></h1>
+<p class="wikiPara">
+The beauty of this API is that it's very easy for XML fan boys to create their own XML schema descriptors and use the programmatic API when parsing the XML stream. 
+More interestingly, an application can expose specific configuration options (via a simple configuration file, a UI or any other form) and use this configuration to customize the mapping programmatically.
+</p>
+
+<p class="wikiPara">
+Please give this API a try, tell us what works and what does not, we are still figuring out things to make it as awesome as possible :)
+</p>
+
+<h1 class="wikiHeadline1" id="H-Download"><a href="/Bloggers/HibernateSearch32ProgrammaticMappingAPI#H-Download">Download</a></h1>
+
+<p class="wikiPara">
+Many thanks to Amin Mohammed-Coleman for taking my half done initiative and polishing it up. 
+</p>
+
+<p class="wikiPara">
+You can get Hibernate Search 3.2 Beta 1 <a href="https://www.hibernate.org/6.html" target="" class="regularLink">here</a>, the complete API documentation is present in the distribution; chapter 4.4.</p>
+</div>

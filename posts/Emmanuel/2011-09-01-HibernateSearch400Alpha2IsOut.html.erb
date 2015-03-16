@@ -1,0 +1,132 @@
+---
+title: "Hibernate Search 4.0.0 Alpha2 is out"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: [Hibernate,Hibernate Search]
+slug: HibernateSearch400Alpha2IsOut
+lace: http://in.relation.to/21796.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch400Alpha2IsOut">Hibernate Search 4.0.0 Alpha2 is out</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Continuing on the Hibernate Search 4 rails, we have just released Hibernate Search 4.0.0 Alpha2. It's the usual lot of bug fixes but also contains some interesting new features
+made possible by the refactoring started in the 4 series.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NearRealtimeSearch"><a href="/Bloggers/HibernateSearch400Alpha2IsOut#H-NearRealtimeSearch">Near Realtime Search</a></h2>
+
+<p class="wikiPara">
+Traditionally Lucene has focused on tremendous Search performance, but
+writes to the index could be costly even for small changes (by triggering segment 
+reorganization).
+</p>
+
+<p class="wikiPara">
+So far in Hibernate Search, every time the changes related to
+a transaction where applied to the index, a commit was needed on the
+index to make sure newly started Queries would <i class="wikiEmphasis">see</i> the new data.
+</p>
+
+<p class="wikiPara">
+Taking advantage of <a href="http://wiki.apache.org/lucene-java/NearRealtimeSearch" target="" class="regularLink">Lucene's new Near Realtime advancements</a>,
+Hibernate Search can now <i class="wikiEmphasis">search the uncommitted buffers</i> which are still in memory,
+avoiding costly commits and let the <tt>IndexWriter</tt> flush periodically as
+it needs for optimal memory management. Note that Hibernate Search still makes 
+sure that a Query will only <i class="wikiEmphasis">see</i> fully committed transactions (no dirty reads).
+</p>
+
+<p class="wikiPara">
+To experience this new writing performance yourself, <a href="http://docs.jboss.org/hibernate/search/4.0/reference/en-US/html_single/#configuration-indexmanager" target="" class="regularLink">a single configuration line is required</a>.
+Is that not a good motivation to upgrade now?
+</p>
+
+<p class="wikiPara">
+There are a few limitations though:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> You cannot use it in a cluster using Hibernate Search's JMS or JGroups clustering approaches</li>
+<li class="wikiUnorderedListItem"> You cannot use it in a cluster using Infinispan but you don't need to anyways as Infinispan is in-memory</li>
+<li class="wikiUnorderedListItem"> Index changes are flushed periodically so updates might be lost in case of crashes - you will of course be able to recover the state by reindexing the database if that happens</li>
+</ul>
+
+<p class="wikiPara">
+To summarize near real time: it's much faster for writes, the index is less safe (crash might lose data), it cannot be used in a cluster
+</p>
+
+<h2 class="wikiHeadline2" id="H-PluggableIndexManagerImplementations"><a href="/Bloggers/HibernateSearch400Alpha2IsOut#H-PluggableIndexManagerImplementations">Pluggable IndexManager implementations</a></h2>
+
+<p class="wikiPara">
+The <i class="wikiEmphasis">Near Realtime</i> IndexManager is the first alternative
+implementation to the default IndexManager of a series to come.
+You can now provide your own and plug any indexing backend ; you can
+<a href="http://docs.jboss.org/hibernate/search/4.0/reference/en-US/html_single/#configuration-indexmanager" target="" class="regularLink">override the whole design of how to interact with the Lucene index</a>.
+Of course if you do, we would love to hear about it and even accept
+contributions :)
+</p>
+
+<h2 class="wikiHeadline2" id="H-LongRequestedFeatures"><a href="/Bloggers/HibernateSearch400Alpha2IsOut#H-LongRequestedFeatures">Long requested features</a></h2>
+
+<p class="wikiPara">
+This has been a long requested feature, you can now use <tt>@IndexedEmbedded</tt> on 
+collections of basic types
+</p>
+
+<pre class="wikiPreformatted">@Entity
+@Indexed
+class User {
+    [...]
+    @IndexedEmbedded
+    @ElementCollection
+    public Set&lt;String&gt; getNicknames() { return nicknames; }
+}</pre>
+
+
+<p class="wikiPara">
+Another requested feature: you can use full-text queries with a Criteria query that will restrict your 
+results (ie with a where clause) - only criteria queries redefining the fetching strategy were allowed before. 
+However, in this particular case, <tt>query.getResultSize()</tt> 
+is not supported (exception). You need to use <tt>query.list().size()</tt> instead.
+</p>
+
+<p class="wikiPara">
+Mixing full-text query and criteria restrictions is useful when you want to refine 
+the query further based on data not present in the index. However, we do not recommend
+this approach, you are better off putting the necessary information in the full-text index.
+</p>
+
+<h2 class="wikiHeadline2" id="H-More"><a href="/Bloggers/HibernateSearch400Alpha2IsOut#H-More">More</a></h2>
+
+<p class="wikiPara">
+There are a few additional interesting features including support for JGroups on IPv6 and a 
+much improved serialization layer based on Avro. It's now faster than in Alpha1 and the 
+sample payload is 6.6 times smaller than what it used to be in Hibernate Search 3.4.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Java7Warning"><a href="/Bloggers/HibernateSearch400Alpha2IsOut#H-Java7Warning">Java 7 warning</a></h2>
+
+<p class="wikiPara">
+Java 7 has a few bugs that have not been fixed at the time this blog hits the press.
+It is not safe to use it with Lucene and Hibernate Search. 
+<a href="http://docs.jboss.org/hibernate/search/4.0/reference/en-US/html_single/#java7bugWarning" target="" class="regularLink">More info here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-GetTheRelease"><a href="/Bloggers/HibernateSearch400Alpha2IsOut#H-GetTheRelease">Get the release</a></h2>
+
+<p class="wikiPara">
+<a href="http://hibernate.org/subprojects/search/download" target="" class="regularLink">Check out the release</a> and as usual, make sure you read the <a href="http://community.jboss.org/wiki/HibernateSearchMigrationGuide" target="" class="regularLink">Migration guide</a>
+when you upgrade from a previous version.
+</p>
+
+<p class="wikiPara">
+The community has been stellar. Special thanks to Davide D'Alto and Elmer van
+Chastelet for going through the laser scrutiny of our design and code review process :)</p>
+</div>

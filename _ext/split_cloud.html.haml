@@ -1,0 +1,9 @@
+---
+---
+
+- css_class = "#{page.split_property}"
+%div{:class=>"#{page.split_property}-cloud"}
+  - split_value = page.send( "#{page.split_property}" )
+  - for split in split_value
+    %span{:class=>"#{page.split_property} #{page.split_property}-#{split.group}"}
+      %a{:href=>site.base_url + split.primary_page.url}= split

@@ -1,0 +1,100 @@
+---
+title: "EJB3, the new JavaBeans?"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: EJB3TheNewJavaBeans
+lace: http://in.relation.to/1659.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/EJB3TheNewJavaBeans">EJB3, the new JavaBeans?</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+This item is a prediction about the future. Predicting the future is a dangerous business, and exposes the author to ridicule in both the future and present. Nevertheless, articulating a /nice/ vision of the future can help bring about that future.
+</p>
+
+<p class="wikiPara">
+My prediction is that the EJB3 programming model will eventually be to Java development what JavaBeans is now.
+</p>
+
+<p class="wikiPara">
+That's a big call, and somewhat hubristic. JavaBeans is such a wildly successful component model that we now barely think about using it. We don't say <q>I'm going to write a JavaBean to do blah</q>; we usually just say <q>I'm going to write a class to do blah</q>, and then unconsciously follow the JavaBeans conventions. We long ago forgot the original definition of a JavaBeans container (BeanBox, anyone?), and use JavaBeans just about everywhere. The JavaBeans definition is part of Java culture more than it is part of any JCP specification. 
+</p>
+
+<p class="wikiPara">
+I'm really interested in what makes a programming model successful. So I've tried to put together a list of reasons why I think JavaBeans was so successful. 
+</p>
+
+<p class="wikiPara">
+JavaBeans components are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> easy to write and easy to change</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> object oriented</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> somewhat self-documenting</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> sufficiently general - the component model does not really assume much about the nature of the bean container, nor about the purpose of the component</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> fine grained</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> executable completely outside /any/ container</li>
+</ul>
+
+
+<p class="wikiPara">
+These attributes make it easy to use the JavaBeans model for things that were /unanticipated by the designers/. JavaBean <q>containers</q> now have a much different shape to what was expected by the creators of the programming model. Meanwhile, we use the JavaBeans themselves to build all kinds of things, not just GUI components!
+</p>
+
+
+<p class="wikiPara">
+EJB before JSR-220 failed on most of the above points. I'm not going to rehash the problems with the current EJB model, for this is by now an incredibly boring topic. I'll focus on one particular part of the model, which I think is key: the deployment descriptor. 
+</p>
+
+<p class="wikiPara">
+An EJB 2.x deployment descriptor is neither useful for documentation purposes nor sufficiently general. It's too noisy to help document the component and too specific to the EJB container environment - as understood by the EJB spec designers - to be reusable by other containers.
+</p>
+
+<p class="wikiPara">
+Interestingly, the annotation-based metadata defined by JSR-220 does /not/ seem to suffer from these problems. Annotations make excellent self-documentation, and the nature of the annotations is somewhat general. Annotations like @Stateful, @Stateless, @Entity, @Table, @Remote, @ManyToOne, etc, say much more about the semantics of the component itself than they say about the container! This is a huge break from the deployment descriptor approach, which I think implicitly assumes that the behavior defined in metadata is /independant/ of - and external to - the semantics of the component.
+</p>
+
+<p class="wikiPara">
+The generality of these new EJB3-style annotations means that when I write my EJB, I am always expressing my solution to the business problem, not the requirements of the container. And, critically, it means that a <q>container</q> that is not a JSR-220 complaint EJB3 container will be able to consume these annotations, and do useful things with them.
+</p>
+
+<p class="wikiPara">
+Sure, there are certain annotations and annotation attributes which are pretty specific to the wording of the specification, but I think they are the exception rather than the rule.
+</p>
+
+<p class="wikiPara">
+I think the other provisions of the EJB3 component model are equally general. Actually, they don't go far beyond the JavaBeans conventions. And so, like JavaBeans, the EJB3 model satisfies each point item of the list above. So I'm inclined to interpret the EJB3 component model as an enhancement to JavaBeans: JavaBeans with <q>extra</q> semantics, defined by these general-purpose annotations. 
+</p>
+
+<p class="wikiPara">
+Hopefully, people who are not building EJB containers will be able to re-use the EJB3 annotations and component programming model.
+</p>
+
+<p class="wikiPara">
+Here's a concrete example of the kind of thing I expect to see happen. I think session beans make perfect web framework actions! Currently, if we want to call into the EJB container from Struts, we have to write an Action and explicitly look up and invoke the session bean. But imagine if the action were /itself/ a local, stateless session bean: we'd get all the services of the EJB container, right there in the web tier. It gets better. If our actions are session beans, then instead of keeping state associated with the user in that demon-spawned-son-of-HashMap, the HttpSession (I usually need a shower after touching that thing), we could keep the session state in stateful beans (one per application transaction, of course). I know you're thinking <q>oh but I don't want to have to write a whole EJB just to get a web action</q>. Back up: it's not a <q>whole EJB</q>; it's <q>just an EJB</q>. Remember, in EJB3, a session bean is just a JavaBean with maybe two or three annotations. In fact, you won't even be thinking about <q>writing an EJB</q>; you'll just be writing a <q>@Stateless class</q>.
+</p>
+</div>

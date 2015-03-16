@@ -1,0 +1,214 @@
+---
+title: "The Web Beans Manifesto"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Web Beans]
+slug: TheWebBeansManifesto
+lace: http://in.relation.to/2672.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/TheWebBeansManifesto">The Web Beans Manifesto</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+The theme of Web Beans is:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Loose coupling with strong typing!</i>
+</li>
+</ul>
+
+<p class="wikiPara">
+/Loose coupling/ comes in a variety of guises:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> deployment time polymorphism</li>
+<li class="wikiUnorderedListItem"> runtime polymorphism</li>
+<li class="wikiUnorderedListItem"> lifecyle independence</li>
+<li class="wikiUnorderedListItem"> decoupling of technical concerns</li>
+<li class="wikiUnorderedListItem"> decoupling of event producers from event consumers</li>
+</ul>
+
+<p class="wikiPara">
+Loose coupling makes a system more /dynamic/. The system can respond to change in a well-defined manner. In the past, frameworks that attempted to provide the facilities listed above invariably did it by sacrificing type safety. For example, many frameworks use XML deployment descriptors, or string-based identifiers to wire components together and define their lifecycle. Other frameworks use some kind of string-based expression language to bind interceptors to components (the most disgusting example of this is the use of regexes in AOP pointcut expressions).
+</p>
+
+<p class="wikiPara">
+Web Beans lets components interact in a loosley coupled way without /ever/ resorting to XML or String-based identifiers. The only time component /names/ are used is for binding Web Beans components to a non-typesafe language such as Unified EL.
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> deployment time polymorphism is provided via typesafe /binding annotations/ and /component types/</li>
+<li class="wikiOrderedListItem"> runtime polymorphism is provided via typesafe binding annotations on /producer methods/</li>
+<li class="wikiOrderedListItem"> lifecycle independence is a feature of the /contextual component model/</li>
+<li class="wikiOrderedListItem"> technical concerns are decoupled by interceptors bound via typesafe /interceptor binding annotations/</li>
+<li class="wikiOrderedListItem"> event producers and event consumers are decoupled via a typesafe /event object/ and event binding annotations</li>
+</ol>
+
+<p class="wikiPara">
+You don't see string-based identifiers in Web Beans code, not because the framwork is hiding them from you using clever defaulting rules (<q>configuration by convention</q>, as the Ruby folks say, or <q>configuration by exception</q>, as we used to say in the EJB3 expert group), but because there are simply no strings there to begin with!
+</p>
+
+<p class="wikiPara">
+This provides obvious benefits in that /any/ IDE can provide autocompletion, validation and refactoring without the need for special tooling. But it also provides a less-immediately-obvious benefit. It turns out that when you start thinking of identifying components, events or interceptors via annotations instead of names, you have an opportunity to lift the semantic level of your code. 
+</p>
+
+<p class="wikiPara">
+Web Beans encourages you develop reusable annotations that model concepts, for example,
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>@Asynchronous</tt>,</li>
+<li class="wikiUnorderedListItem"> <tt>@Mock</tt>,</li>
+<li class="wikiUnorderedListItem"> <tt>@Secure</tt>,</li>
+<li class="wikiUnorderedListItem"> <tt>@Action</tt> or</li>
+<li class="wikiUnorderedListItem"> <tt>@Updated</tt>,</li>
+</ul>
+
+<p class="wikiPara">
+instead of non-reusable compound names like 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>asyncPaymentProcessor</tt>,</li>
+<li class="wikiUnorderedListItem"> <tt>mockPaymentProcessor</tt>,</li>
+<li class="wikiUnorderedListItem"> <tt>SecurityInterceptor</tt>,</li>
+<li class="wikiUnorderedListItem"> <tt>LoginAction</tt> or</li>
+<li class="wikiUnorderedListItem"> <tt>DocumentUpdatedEvent</tt>.</li>
+</ul>
+
+<p class="wikiPara">
+When I look at Java code today, and I see these kind of compound names, it reminds me of old-fashioned naming conventions for variables in dynamic languages, which embed the type of the variable in the variable name, for example <tt>str_username</tt>. These naming conventions were a clear workaround for the fact that the language had no primitives for expressing typing information.
+</p>
+
+<p class="wikiPara">
+Compare the following observer methods:
+</p>
+
+<pre class="wikiPreformatted">void onDocumentUpdate(@Observes DocumentUpdatedEvent event) { ... }</pre>
+
+
+<pre class="wikiPreformatted">void onDocumentUpdate(@Observes @Updated Document doc) { ... }</pre>
+
+
+<p class="wikiPara">
+Both are correct, but the second approach is more <q>Web-Beansy</q>. The <tt>@Updated</tt> binding annotation models a reusable notion. We can use it for other events:
+</p>
+
+<pre class="wikiPreformatted">void onDocumentUpdate(@Observes @Updated Order order) { ... }</pre>
+
+
+<p class="wikiPara">
+And notice how much more /literate/ this code is.
+</p>
+
+<p class="wikiPara">
+Or compare the following implementations of <tt>Login</tt>:
+</p>
+
+<pre class="wikiPreformatted">public 
+@SessionScoped
+@Component 
+@Interceptors(SecurityInterceptor.class)
+class Login { ... }</pre>
+
+
+<pre class="wikiPreformatted">public
+@SessionScoped
+@Secure
+@Component 
+class Login { ... }</pre>
+
+
+<p class="wikiPara">
+The second form is more Web-Beansy - the code is more decoupled and more literate.
+</p>
+
+<p class="wikiPara">
+The nirvana of this kind of literate programming is a new feature of Web Beans called /stereotypes/. A stereotype lets you encapsulate scope, interceptor bindings, component type, etc, into a single package that models a /role/ in the application architecture. For example, instead of defining:
+</p>
+
+<pre class="wikiPreformatted">public 
+@RequestScoped
+@Named
+@Secure
+@Transactional
+@Component
+class LoginAction extends BaseAction { ... }</pre>
+
+
+<p class="wikiPara">
+We could create a stereotype:
+</p>
+
+<pre class="wikiPreformatted">@RequestScoped
+@Named
+@Secure
+@Transactional
+@Component
+@Stereotype(requiredTypes=BaseAction.class)
+@Target(TYPE)
+@Retention(RUNTIME)
+public @interface Action {}</pre>
+
+
+<p class="wikiPara">
+And reuse it for all our actions:
+</p>
+
+<pre class="wikiPreformatted">public @Action class LoginAction extends BaseAction { ... }</pre>
+
+<pre class="wikiPreformatted">public @Action class UpdateDocumentAction extends BaseAction { ... }</pre>
+
+
+<p class="wikiPara">
+Another example is a stereotype for singletons. Of course, we /could/ write:
+</p>
+
+<pre class="wikiPreformatted">public 
+@ApplicationScoped 
+@Component 
+class ReferenceData { ... }</pre>
+
+
+<pre class="wikiPreformatted">public 
+@ApplicationScoped 
+@Mock 
+class DummyReferenceData extends ReferenceData { ... }</pre>
+
+
+<p class="wikiPara">
+But I would prefer:
+</p>
+
+<pre class="wikiPreformatted">@ApplicationScoped
+@Component
+@Stereotype
+@Target(TYPE)
+@Retention(RUNTIME)
+public @interface Singleton {}</pre>
+
+
+<pre class="wikiPreformatted">public 
+@Singleton 
+class ReferenceData { ... }</pre>
+
+
+<pre class="wikiPreformatted">public 
+@Mock 
+@Singleton 
+class DummyReferenceData extends ReferenceData { ... }</pre>
+
+
+<p class="wikiPara">
+Well, this stereotype did not save much typing. But on the other hand, it tells us more about the <tt>ReferenceData</tt> class. The code is more literate and understandable. Even better, it's /much/ easier for me to find all singletons in my code, or to add an interceptor to singletons. It also makes it easier to ensure that certain <q>patterns</q> are followed consistently in a large project.
+</p>
+</div>

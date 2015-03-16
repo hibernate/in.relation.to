@@ -1,0 +1,59 @@
+---
+title: "Hibernate Search 4.0.0.Beta1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Hbernate,Hibernate Search]
+slug: HibernateSearch400Beta1
+lace: http://in.relation.to/21951.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch400Beta1">Hibernate Search 4.0.0.Beta1</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Moving from Alpha2 to Beta1, I am happy to announce the release of Hibernate Search 4.0.0.Beta1. For a full list of changes refer to the <a href="https://hibernate.onjira.com/secure/ReleaseNote.jspa?projectId=10061&amp;version=11360" target="" class="regularLink">Jira release notes</a>. Let's look at some of the changes in detail though.
+</p>
+
+<p class="wikiPara">
+The parameter list of the annotation <tt>org.hibernate.search.annotation.Field</tt> has changed (<a href="https://hibernate.onjira.com/browse/HSEARCH-710" target="" class="regularLink">HSEARCH-710</a>, <a href="https://hibernate.onjira.com/browse/HSEARCH-711" target="" class="regularLink">HSEARCH-711</a>). The annotation mixed the concepts of analyzing and storing of norms into a single index parameter (<tt>NO</tt>, <tt>TOKENIZED</tt>, <tt>UN_TOKENIZED</tt> and <tt>NO_NORMS</tt>). There was no option for analyzed indexing while storing no norms and the terminology was using the term <i class="wikiEmphasis">tokenizing</i> instead of <i class="wikiEmphasis">analyzing</i>. For this reason we changed the API and made the different choices more explicit:
+</p>
+
+<pre class="wikiPreformatted"> @Field(index=Index.YES|NO, analyze=Analyze.YES|NO, norms=Norms.YES|NO, ...) </pre>
+
+
+<p class="wikiPara">
+Another important API change is the ability to access an <tt>IndexReader</tt> by name (<a href="https://hibernate.onjira.com/browse/HSEARCH-903" target="" class="regularLink">HSEARCH-903</a>). For this purpose an new interface <tt>IndexReaderAccessor</tt> got introduced. It can be accessed via <tt>SearchFactory#getIndexReaderAccessor</tt>. The interface offers the following methods:
+</p>
+
+<pre class="wikiPreformatted">
+public interface IndexReaderAccessor {
+	IndexReader open(Class&lt;?&gt;... entities);
+
+	IndexReader open(String... indexNames);
+
+	void close(IndexReader indexReader);
+}
+</pre>
+
+
+<p class="wikiPara">
+Last but not least, you can now project on fields added by custom bridges (<a href="https://hibernate.onjira.com/browse/HSEARCH-890" target="" class="regularLink">HSEARCH-890</a>).
+</p>
+
+<p class="wikiPara">
+Make sure to read the <a href="http://community.jboss.org/wiki/HibernateSearchMigrationGuide" target="" class="regularLink">Hibernate Search Migration Guide</a> when trying to upgrade to Hibernate Search 4.
+</p>
+
+<p class="wikiPara">
+The release is available via the <a href="http://repository.jboss.org/nexus" target="" class="regularLink">JBoss Maven Repository</a> under the GAV <tt>org.hibernate:hibernate-search:4.0.0.Beta1</tt> or via <a href="http://sourceforge.net/projects/hibernate/files/hibernate-search/4.0.0.Beta1" target="" class="regularLink">SourceForge</a>. The latest documentation is on the <a href="http://docs.jboss.org/hibernate/search/3.4/reference/en-US" target="" class="regularLink">JBoss Docs Server</a>.
+</p>
+
+<p class="wikiPara">
+--Hardy</p>
+</div>

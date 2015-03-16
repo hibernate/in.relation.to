@@ -1,0 +1,51 @@
+---
+title: "Hibernate + Gradle Pointers"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: [Git,Gradle,Hibernate,Hints]
+slug: HibernateGradlePointers
+lace: http://in.relation.to/17395.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateGradlePointers">Hibernate + Gradle Pointers</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Hibernate 4 (master branch on <a href="http://github.com/hibernate/hibernate-core" target="" class="regularLink">GitHub</a>) has been switched to use <a href="http://gradle.org" target="" class="regularLink">Gradle</a> for its builds.  Mainly I just liked the alliteration of Git and Gradle... :)
+</p>
+
+<p class="wikiPara">
+The <a href="http://www.gradle.org/0.9-rc-1/docs/userguide/userguide_single.html" target="" class="regularLink">Gradle User Guide</a> is a good reference obviously.  Most of what we use gets introduced by the <a href="http://www.gradle.org/0.9-rc-1/docs/userguide/userguide_single.html#java_plugin" target="" class="regularLink">JavaPlugin</a>
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">gradle -t</i> is a handy thing to know.  It will tell you all the <q>main</q> tasks available in a project.  Note however that it does not reach into subprojects.  For example, assuming you are at the root of the Hibernate project checkout if you run <i class="wikiEmphasis">gradle -t</i> you would see nothing about tasks related to compiling, which is obviously essential :)  In Gradle when you run a task against a project, that task request is passed along to any subprojects also.  So I'd suggest cd'ing around a bit and doing <i class="wikiEmphasis">gradle -t</i> to get a feel for the tasks available.  An alternative is to run <i class="wikiEmphasis">gradle -t --all</i> which shows <i class="wikiEmphasis">all</i> tasks for that project; just beware that that can get extremely verbose.
+</p>
+
+<p class="wikiPara">
+That being said, the here is a list of the most common tasks you will use:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> <i class="wikiEmphasis">clean</i> - Deletes the build directory.</li>
+<li class="wikiOrderedListItem"> <i class="wikiEmphasis">build</i> - Assembles (jars) and tests this project.</li>
+<li class="wikiOrderedListItem"> buildDependents - Assembles and tests this project and all projects that depend on it.  So think of running this in hibernnate-entitymanager.. Gradle would assemble and test hibernate-entitymanager as well as hibernate-envers because envers depends on entitymanager.  See below.</li>
+<li class="wikiOrderedListItem"> <i class="wikiEmphasis">classes</i> - compiles the main classes</li>
+<li class="wikiOrderedListItem"> <i class="wikiEmphasis">testClasses</i> - compiles the test classes.</li>
+<li class="wikiOrderedListItem"> <i class="wikiEmphasis">test</i> - Runs the tests for this project</li>
+<li class="wikiOrderedListItem"> <i class="wikiEmphasis">jar</i> - Generates a jar archive with all the compiled classes.</li>
+<li class="wikiOrderedListItem"> <i class="wikiEmphasis">uploadArchives</i> - think Maven deploy</li>
+<li class="wikiOrderedListItem"> <i class="wikiEmphasis">install</i> - I have also enabled the <a href="http://www.gradle.org/0.9-rc-1/docs/userguide/userguide_single.html#maven_plugin" target="" class="regularLink">MavenPlugin</a> throughout the projects, which adds this task.  <i class="wikiEmphasis">install</i> installs the project jar into the local maven repository cache (usually ~/.m2/repository), which is important to inter-operate between projects using Maven to build and those using Gradle to build (otherwise you'd have to push your artifacts to Nexus to <q>share</q>)</li>
+</ol>
+
+<p class="wikiPara">
+A note about <i class="wikiEmphasis">build</i> and <i class="wikiEmphasis">buildDependents</i>.  Gradle, unlike Maven, acts better in the face of inter-module dependences.  In Gradle, if I cd into hibernate-entitymanager and perform a build, Gradle will automatically try to build hibernate-core for me if it needs to.  For <i class="wikiEmphasis">build</i> it stops there.  If you also want it to recompile things that depend on your changes, you would instead use <i class="wikiEmphasis">buildDependents</i>.  So from hibernate-entitymanager again, if I this time run <i class="wikiEmphasis">buildDependents</i> it will first build hibernate-core, then hibernate-entitymanager and then hibernate-envers.
+</p>
+
+</div>

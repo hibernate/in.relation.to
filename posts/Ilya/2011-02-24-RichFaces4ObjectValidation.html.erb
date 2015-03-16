@@ -1,0 +1,186 @@
+---
+title: "RichFaces 4 - Object Validation"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+layout: blog-post
+tags: []
+slug: RichFaces4ObjectValidation
+lace: http://in.relation.to/18381.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/RichFaces4ObjectValidation">RichFaces 4 - Object Validation</a>
+                    </h1>
+</div>
+<b>Article updated. Mistake with 3.3.x functionality description corrected in <q>Implementation details</q> section</b>
+
+<h2 class="wikiHeadline2" id="H-Introduction"><a href="/Bloggers/RichFaces4ObjectValidation#H-Introduction">Introduction</a></h2>
+<div style="float: right; margin-left: 20px; margin-bottom: 20px;">
+     <a href="http://labs.jboss.com/richfaces" target="blank"> 
+         <img src="http://design.jboss.org/richfaces/logo/final_logo/richfaces_logo_200px.png">
+     </a>
+</div>
+<p class="wikiPara">
+As we reviewed in a <a href="http://in.relation.to/18340.lace" target="" class="regularLink">previous blog</a> with <b>JSF 2</b> and <b>RichFaces 4</b> you already have the <b>Bean Validation</b> support all the way to the browser with our client side validation. So you can effectively work with your server side object without any additional view level code related to validation.
+</p>
+
+<p class="wikiPara">
+This blog is going to review the last (<i>but not least</i>) validation feature which RichFaces 4 adds to JSF 2 . It's called <b>Object Validation</b> and provides a way to validate all your model Object fields considering even ones which were not used in the current view.
+</p>
+
+<p class="wikiPara">
+Why do you need that? The very first example which came to my mind as it appears  frequently on various forums is dependent fields validation. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-PasswordValidationExample"><a href="/Bloggers/RichFaces4ObjectValidation#H-PasswordValidationExample">Password Validation Example</a></h2>
+
+<p class="wikiPara">
+Let's check the password validation example:
+</p>
+
+<pre class="wikiPreformatted">&lt;h:form&gt;
+	&lt;rich:panel header="Change password" style="width:500px"&gt;
+		&lt;h:panelGrid columns="3"&gt;
+			&lt;h:outputText value="Enter new password:" /&gt;
+			&lt;h:inputSecret value="#{userBean.password}" id="pass"/&gt;
+			&lt;rich:message for="pass"/&gt;
+			&lt;h:outputText value="Confirm the new password:" /&gt;
+			&lt;h:inputSecret value="#{userBean.confirm}" id="conf"/&gt;
+			&lt;rich:message for="conf"/&gt;
+		&lt;/h:panelGrid&gt;
+		&lt;a4j:commandButton value="Store changes"
+			action="#{userBean.storeNewPassword}" /&gt;
+	&lt;/rich:panel&gt;
+&lt;/h:form&gt;</pre>
+
+
+<p class="wikiPara">
+And the simple managed bean source:
+</p>
+
+<pre class="wikiPreformatted">@ManagedBean
+@RequestScoped
+public class UserBean {
+
+    @Size(min = 5, max = 15, message="Wrong size for password")
+    private String password;
+    @Size(min = 5, max = 15, message="Wrong size for confirmation")
+    private String confirm; 
+//...
+    public void storeNewPassword(){
+        FacesContext.getCurrentInstance().addMessage("", new FacesMessage(FacesMessage.SEVERITY_INFO, "Succesfully changed!", "Succesfully changed!"));
+    }
+
+//Getters and setters
+}</pre>
+
+
+<p class="wikiPara">
+So we solved half of the problem:
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/18374" alt="">
+
+<p class="wikiPara">
+We are seeing the error messages if the password fields do not satisfy the validation rules given. Nothing is checking if passwords are the same though, just that they are independently valid.  So what is the easiest way to validate if the fields are equals? We could perform that in action but that is quite late in the JSF lifecycle for validation. We could use some solutions using f:attribute in order to pass dependent field id to the other input and find the component by that id in custom validate method. There are also some other ways which are pretty easy to find across different knowledge-bases'. But most of them are either invoked in an improper phase (<i>like action at INVOKE_APPLICATION</i>) or has possible maintenance problems(<i>f:attribute solution requires us to be patient with id's changes in view as validation depends on them</i>). 
+</p>
+
+<h2 class="wikiHeadline2" id="H-RichFaces4ObjectValidationForCrossfieldValidation"><a href="/Bloggers/RichFaces4ObjectValidation#H-RichFaces4ObjectValidationForCrossfieldValidation">RichFaces 4 Object Validation for cross-field validation</a></h2>
+<p class="wikiPara">
+This is where RichFaces 4 Object Validation feature come in play! Here is what we propose to use:
+</p>
+
+
+<pre class="wikiPreformatted">
+&lt;h:form&gt;
+	&lt;rich:graphValidator value="#{userBean}" id="gv"&gt;
+		&lt;rich:panel header="Change password" style="width:500px"&gt;
+			&lt;rich:messages globalOnly="true"/&gt;
+			&lt;rich:messages for="gv"/&gt;
+			&lt;h:panelGrid columns="3"&gt;
+				&lt;h:outputText value="Enter new password:" /&gt;
+				&lt;h:inputSecret value="#{userBean.password}" id="pass"/&gt;
+				&lt;rich:message for="pass"/&gt;
+				&lt;h:outputText value="Confirm the new password:" /&gt;
+				&lt;h:inputSecret value="#{userBean.confirm}" id="conf"/&gt;
+				&lt;rich:message for="conf"/&gt;
+			&lt;/h:panelGrid&gt;
+			&lt;a4j:commandButton value="Store changes"
+				action="#{userBean.storeNewPassword}" /&gt;
+		&lt;/rich:panel&gt;
+	&lt;/rich:graphValidator&gt;
+&lt;/h:form&gt;</pre>
+
+
+
+<p class="wikiPara">
+And the Bean(<b>Updated with implements Cloneable</b>):
+</p>
+
+
+<pre class="wikiPreformatted">@ManagedBean
+@RequestScoped
+public class UserBean implements Cloneable{
+
+    @Size(min = 5, max = 15, message="Wrong size for password")
+    private String password="";
+    @Size(min = 5, max = 15, message="Wrong size for confirmation")
+    private String confirm="";
+
+    @AssertTrue(message = "Different passwords entered!")
+    public boolean isPasswordsEquals() {
+        return password.equals(confirm);
+    }
+
+    public void storeNewPassword(){
+        FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(FacesMessage.SEVERITY_INFO, "Succesfully changed!", "Succesfully changed!"));
+    }</pre>
+
+
+<p class="wikiPara">
+	So lets look through the sample details. <b>rich:graphValidator</b> tag should wrap the inputs bound to the object which we are interested in validating. The <b>value</b> attribute should be pointed to that bean name. Then at PROCESS_VALIDATION phase all the object fields will be validated according to constraints added. And in that particular case <b>isPassWordEquals</b> will be validated using <b>AssertTrueValidator</b>. That looks just like we expected!
+</p>
+
+<p class="wikiPara">
+ <i>Different passwords entered(but valid according to size):</i>
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/18375" alt="">
+
+<p class="wikiPara">
+ <i>Verification successful:</i>
+</p>
+
+<img src="&lt;%=%20site.base_url%20%&gt;/images/18376" alt="">
+
+<h2 class="wikiHeadline2" id="H-ImplementationDetails"><a href="/Bloggers/RichFaces4ObjectValidation#H-ImplementationDetails">Implementation Details</a></h2>
+
+<b><u>UPDATED(28.02) section below. Actually 3.3.x used the same way. Was written that it worked at model updates by mistake.</u></b>
+
+<p class="wikiPara">
+Just one question appears. Those who know the JSF life-cycle will ask immediately about how the bean could be validated before the model updates? Does RichFaces propose to use validation after process updates phase? No. We perform a <u>clone()</u> on your bean instance at validation phase and updating new instance with all the new values submitted(<i>that's why we still need to wrap all the inputs related to rich:graphValidator</i>).  We then validate the cloned object firing validation messages if needed. Your model objects remains clean, lifecycle gets interrupted properly after Process Validations phase and messages encoded to client during Render Response.
+</p>
+
+<blockquote class="wikiBlockquote">
+<b>NOTE:</b> if cloneNotSupportedException thrown from the object – validation will be done at model updates. And that is the only exception to our architecture which really can't be workaround-ed.
+</blockquote>
+
+<h2 class="wikiHeadline2" id="H-TryItOut"><a href="/Bloggers/RichFaces4ObjectValidation#H-TryItOut">Try it out!</a></h2>
+
+<p class="wikiPara">
+Now having JSF 2 Bean Validation support standardized, RichFaces 4 Client Side Validation and Object Validation features we believe you will be able completely concentrate on your business tasks and will not spend time for any additional JSF development in the validation phase. Try our new features in <a href="http://in.relation.to/Bloggers/RichFaces400Milestone6Released" target="" class="regularLink">RichFaces 4.0.0.M6 </a> and let us know about any problems or questions appeared. That will help us greatly to provide those features stable and well documented prior to <b>RichFaces 4 Final</b> release!
+</p>
+
+<hr>
+
+<p class="wikiPara">
+[<a href="http://twitter.com/ilya_shaikovsky" target="" class="regularLink">Get updates of my blogs in twitter</a>]
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jroller.com/a4j/" target="" class="regularLink">My jroller.com blog</a>]</p>
+</div>

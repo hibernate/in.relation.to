@@ -1,0 +1,175 @@
+---
+title: "RichFaces 4 Overview. Part II – Skinning Mechanism"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+layout: blog-post
+tags: []
+slug: RichFaces4OverviewPartIISkinningMechanism
+lace: http://in.relation.to/16484.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/RichFaces4OverviewPartIISkinningMechanism">RichFaces 4 Overview. Part II – Skinning Mechanism</a>
+                    </h1>
+</div>
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+     <a href="http://labs.jboss.com/richfaces" target="blank"> 
+         <img src="http://www.jroller.com/a4j/resource/richfaces_logo_200px.gif" alt="">
+     </a>
+</div>
+
+<h2 class="wikiHeadline2" id="H-ReturningBackToThisSeries"><a href="/Bloggers/RichFaces4OverviewPartIISkinningMechanism#H-ReturningBackToThisSeries">Returning back to this series</a></h2>
+
+<p class="wikiPara">
+After the short vacation I’m planning to spend more time to this series of articles. If you have not seen the previous post – the series started from <a href="http://in.relation.to/15978.lace" target="" class="regularLink">Ajax Requests Queuing</a> article. And current one (<i>pretty simple to smoothly start after good rest</i> :) )  will be related to our skinning mechanism which was reworked in 4.x. The main redesign reasons:
+</p>
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Proprietary XML based xcss format of stylesheets in 3.3.x</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> JSF 2 provides resources API and which we should reuse instead of providing our own one</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-Overview"><a href="/Bloggers/RichFaces4OverviewPartIISkinningMechanism#H-Overview">Overview</a></h2>
+
+<p class="wikiPara">
+Nothing changed from the main concept point of view – just the same good known 3-level scheme:
+</p>
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Skin property file which contains limited set of properties which reused in style sheets for different components.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Stylesheets for the components which contains predefined classes for the components which are based on skin parameters and additional specific properties. That predefined classes intended to be used by end-developers in order to make bulk changes for all the components which uses them in the view.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A class attributes for all the components parts available on components. They allow customizing concrete components in view making them looks differently from the other similar ones.</li>
+</ul>
+
+<p class="wikiPara">
+ <b>Note:</b> if you not familiar with that base principles but just starting evaluating RichFaces starting from 4.x – just check <a href="http://docs.jboss.org/richfaces/latest_3_3_X/en/devguide/html/ArchitectureOverview.html#Skinnability" target="" class="regularLink">reference guide from 3.3.3 Final</a>. It contains them well described.
+</p>
+
+<h2 class="wikiHeadline2" id="H-UsageProblemsFrom33x"><a href="/Bloggers/RichFaces4OverviewPartIISkinningMechanism#H-UsageProblemsFrom33x">Usage problems from 3.3.x</a></h2>
+
+<p class="wikiPara">
+The main problem was in xcss stylesheets format which we are used for development. Look to the simple panel stylesheet from RichFaces 3.3.3:
+</p>
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;f:template xmlns:f='http:/jsf.exadel.com/template'
+   xmlns:u='http:/jsf.exadel.com/template/util' 
+   xmlns="http://www.w3.org/1999/xhtml" &gt;
+ 	&lt;u:selector name=".rich-panel"&gt;
+		&lt;u:style name="background-color" skin="generalBackgroundColor" /&gt;
+		&lt;u:style name="border-color" 	 skin="panelBorderColor" /&gt;
+	&lt;/u:selector&gt;
+	&lt;u:selector name=".rich-panel-header"&gt;
+		&lt;u:style name="background-image" &gt;
+    	    &lt;f:resource f:key="org.richfaces.renderkit.html.GradientA"/&gt;
+		&lt;/u:style&gt;
+		…
+	&lt;/u:selector&gt;
+… more selectors
+	&lt;f:verbatim&gt;
+		&lt;![CDATA[
+		.rich-panel{
+			border-width: 1px;
+			border-style: solid;
+			padding : 1px;
+		}
+… more classes   
+	&lt;/f:verbatim&gt;
+&lt;/f:template&gt;</pre>
+
+
+<p class="wikiPara">
+At first – <b>it’s not the CSS</b> we all are known. And that’s the main problem for the developer and designer which should learn new formats in order to work successfully with the xcss files during components development. The second problem – <b>IDE knows nothing about that format</b> – so the file can’t be conveniently edited there.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheNewApproachToStylesheetsDefinitions"><a href="/Bloggers/RichFaces4OverviewPartIISkinningMechanism#H-TheNewApproachToStylesheetsDefinitions">The new approach to stylesheets definitions</a></h2>
+
+<p class="wikiPara">
+But we can’t change our stylesheets just to CSS ones.  And the reasons are pretty simple. At first - we need them to be based on our skin properties and so allow EL expressions inside.  You could say that JSF already allows EL in css.. And that’s true. But it’s configurable there and could be turned off. But we can’t allow it as skinning is core RichFaces feature and components relies on that functionality much. So we implemented new ECSS(extended css stylesheets) proposal and now the stylesheets looks like standard css files but with EL expressions inside. 
+</p>
+
+<p class="wikiPara">
+Let’s see the same panel stylesheet but from 4.0.0.M1:
+</p>
+
+
+
+<pre class="wikiPreformatted">.rf-panel{
+	background-color:'#{richSkin.generalBackgroundColor}';
+	color:'#{richSkin.panelBorderColor}';
+	border-width:1px;
+	border-style:solid;
+	padding:1px;
+}
+   
+.rf-panel-header{
+background-image:"url(#{resource['org.richfaces.renderkit.html.GradientA']})";
+}
+… other classes</pre>
+
+
+<p class="wikiPara">
+Now it looks much better and could be easily read by the persons which working on skins implementation.  Also opened in CSS editor it should be displayed fine and allow to use extended editor options as for standard CSS ones.
+</p>
+
+<h2 class="wikiHeadline2" id="H-HowToLoadTheCustomEcssStylesheets"><a href="/Bloggers/RichFaces4OverviewPartIISkinningMechanism#H-HowToLoadTheCustomEcssStylesheets">How to load the custom ecss stylesheets</a></h2>
+
+<p class="wikiPara">
+There is nothing new for those who read the numerous blog entries about new JSF 2 features. You still need the same resources inclusion with <b>h:outputStyleSheet</b> from the pages:
+</p>
+
+
+<pre class="wikiPreformatted">&lt;h:outputStylesheet name="panel.ecss"/&gt;</pre>
+
+
+<p class="wikiPara">
+Or to use <b>ResourceDependency</b> annotation for your class:
+</p>
+
+<pre class="wikiPreformatted">@ResourceDependency(name = "panel.ecss")</pre>
+
+
+<i>Supposed that resources plased in the root of resources folder.</i>
+
+<h2 class="wikiHeadline2" id="H-OtherChangesAndWhatOnOurWay"><a href="/Bloggers/RichFaces4OverviewPartIISkinningMechanism#H-OtherChangesAndWhatOnOurWay">Other changes and what on our way:</a></h2>
+
+<p class="wikiPara">
+In RichFaces 3.3.2 and 3.3.3 releases we made good work on eliminating unnecessary predefined style classes which caused HTML code to be grown up to 50% for complex components like tables and trees. That’s good result for sure. But in 4.x we added one more minor improvement. We defined <a href="http://community.jboss.org/wiki/richCSSclassesnamingconvention" target="" class="regularLink">CSS classes naming convention</a> which intended to reduce them more and so produce less HTML code in the result.
+</p>
+
+<p class="wikiPara">
+ <b>The next big step for us</b> is to defer java2d buffered image usage which causes RichFaces to be incompatible with Google Applications Engine. That could be tracked in our <a href="https://jira.jboss.org/browse/RFPL-567" target="" class="regularLink">Jira</a> and the questions always welcome at our <a href="http://community.jboss.org/en/richfaces" target="" class="regularLink">Forum</a>!
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatsNextOnMyWayThere"><a href="/Bloggers/RichFaces4OverviewPartIISkinningMechanism#H-WhatsNextOnMyWayThere">What's next on my way there</a></h2>
+
+<p class="wikiPara">
+ <b>This series will be continued</b> in order to describe the main components which already ported to 4.x codebase. I expect to have about one article in a week and will do my best to help you start with RichFaces 4 in your development!
+</p>
+
+<p class="wikiPara">
+ <b>Besides</b> - I was offered to review <a href="http://www.packtpub.com/jsf-2-0-cookbook/book?utm_source=in.relation.to&amp;utm_medium=link&amp;utm_content=blog&amp;utm_campaign=mdb_003953" target="" class="regularLink">JSF 2.0 Cookbook</a> from Packt Publishing and accepted it with pleasure. So will post my review soon. 
+</p>
+
+<div>
+     <a href="http://www.packtpub.com/jsf-2-0-cookbook/book?utm_source=in.relation.to&amp;utm_medium=link&amp;utm_content=blog&amp;utm_campaign=mdb_003953" target="blank"> 
+         <img src="http://mkblog.exadel.com/wp-content/uploads/2010/07/JSF_2.0-243x300.jpg" alt="">
+     </a>
+</div>
+</div>

@@ -1,0 +1,129 @@
+---
+title: "Batch processing in Hibernate"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: BatchProcessingInHibernate
+lace: http://in.relation.to/1716.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/BatchProcessingInHibernate">Batch processing in Hibernate</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I gotta preface this post by saying that we are very skeptical of the idea that Java is the right place to do processing that works with data in bulk. By extension, ORM is probably not an especially appropriate way to do batch processing. We think that most databases offer excellent solutions in this area: stored procedure support, and various tools for import and export. Because of this, we've neglected to properly explain to people how to use Hibernate for batch processing if they really feel they /have/ to do it in Java. At some point, we have to swallow our pride, and accept that lots of people are actually doing this, and make sure they are doing it the Right Way.
+</p>
+
+<p class="wikiPara">
+A naive approach to inserting 100 000 rows in the database using Hibernate might look like this:
+</p>
+
+<pre class="wikiPreformatted">
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+for ( int i=0; i&lt;100000; i++ ) {
+   Customer customer = new Customer(.....);
+   session.save(customer);
+}
+tx.commit();
+session.close();
+</pre>
+
+
+<p class="wikiPara">
+This would fall over with an OutOfMemoryException somewhere after the 50 000th row. That's because Hibernate cache's all the newly inserted Customers in the session-level cache. Certain people have expressed the view that Hibernate should manage memory better, and not simply fill up all available memory with the cache. One very noisy guy who used Hibernate for a day and noticed this is even going around posting on all kinds of forums and blog comments, shouting about how this demonstrates what <q>shitty code</q> Hibernate is. For his benefit, let's remember why the first-level cache is not bounded in size:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> persistent instances are /managed/ - at the end of the transaction, Hibernate synchronizes any change to the managed objects to the database (this is sometimes called /automatic dirty checking/)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> in the scope of a single persistence context, persistent identity is equivalent to Java identity (this helps eliminate data /aliasing/ effects)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the session implements /asynchronous write-behind/, which allows Hibernate to transparently batch together write operations</li>
+</ul>
+
+
+<p class="wikiPara">
+For typical OLTP work, these are all very, very useful features. Since ORM is really intended as a solution for OLTP problems, I usually ignore criticisms of ORM which focus upon OLAP or batch stuff as simply missing the point.
+</p>
+
+<p class="wikiPara">
+However, it turns out that this problem is incredibly easy to work around. For the record, here is how you do batch inserts in Hibernate.
+</p>
+
+<p class="wikiPara">
+First, set the JDBC batch size to a reasonable number (say, 10-20):
+</p>
+
+<pre class="wikiPreformatted">
+hibernate.jdbc.batch_size 20
+</pre>
+
+
+<p class="wikiPara">
+Then, flush() and clear() the session every so often:
+</p>
+
+<pre class="wikiPreformatted">
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+
+for ( int i=0; i&lt;100000; i++ ) {
+   Customer customer = new Customer(.....);
+   session.save(customer);
+   if ( i % 20 == 0 ) {
+      //flush a batch of inserts and release memory:
+      session.flush();
+      session.clear();
+   }
+}
+
+tx.commit();
+session.close();
+</pre>
+
+
+<p class="wikiPara">
+What about retreiving and updating data? Well, in Hibernate 2.1.6 or later, the scroll() method is the best approach:
+</p>
+
+<pre class="wikiPreformatted">
+Session session = sessionFactory.openSession();
+Transaction tx = session.beginTransaction();
+
+ScrollableResults customers = session.getNamedQuery("GetCustomers")
+   .scroll(ScrollMode.FORWARD_ONLY);
+int count=0;
+while ( customers.next() ) {
+   Customer customer = (Customer) customers.get(0);
+   customer.updateStuff(...);
+   if ( ++count % 20 == 0 ) {
+      //flush a batch of updates and release memory:
+      session.flush();
+      session.clear();
+   }
+}
+
+tx.commit();
+session.close();
+</pre>
+
+
+<p class="wikiPara">
+Not so difficult, or even <q>shitty</q>, I guess. Actually, I think you'll agree that this was much easier to write than the equivalent JDBC code messing with scrollable result sets and the JDBC batch API.
+</p>
+
+<p class="wikiPara">
+One caveat: if Customer has second-level caching enabled, you can still get some memory management problems. The reason for this is that Hibernate has to notify the second-level cache /after the end of the transaction/, about each inserted or updated customer. So you should disable caching of customers for the batch process.
+</p>
+</div>

@@ -1,0 +1,117 @@
+---
+title: "JBoss Tools 3.1 M2 now with Maven!"
+author: "Max Andersen"
+blogger_name: "Max"
+layout: blog-post
+tags: [Eclipse,JBoss Tools,JBoss Tools Eclipse]
+slug: JBossTools31M2NowWithMaven
+lace: http://in.relation.to/11992.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JBossTools31M2NowWithMaven">JBoss Tools 3.1 M2 now with Maven!</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I'm happy to be able to announce that you can now download JBoss Tools 3.1 M2. Those who loves Maven will hopefully also love this release!
+</p>
+
+<div align="center">
+<img src="/service/File/10824" width="600" height="145">
+<h2>3.1 Milestone 2: Maven Allowed</h2>
+</div>
+
+<div align="center">
+[<a href="http://www.jboss.org/tools/download" target="" class="regularLink">Download</a>]
+[<a href="http://download.jboss.org/jbosstools/updates/development" target="" class="regularLink">Update Site</a>] 
+[<a href="http://docs.jboss.org/tools/whatsnew" target="" class="regularLink">What's New</a>]
+[<a href="http://docs.jboss.org/tools/movies/" target="" class="regularLink">Movies</a>]
+[<a href="http://docs.jboss.org/tools/3.1.0.M2/" target="" class="regularLink">Documentation</a>] 
+[<a href="http://www.jboss.com/index.html?module=bb&amp;op=viewforum&amp;f=201" target="" class="regularLink">Forums</a>] 
+[<a href="http://jira.jboss.com/jira/browse/JBIDE" target="" class="regularLink">JIRA</a>]
+[<a href="http://twitter.com/jbosstools" target="" class="regularLink">Twitter</a>]
+</div>
+
+<h2 class="wikiHeadline2" id="H-Installation"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-Installation">Installation</a></h2>
+
+<p class="wikiPara">
+Don't forget to read the <a href="http://www.jboss.org/tools/download/installation" target="" class="regularLink">installation instructions for JBoss Tools</a> if this is the first time installing JBoss Tools (it is not so hard, you just need as a minimum Eclipse 3.5 JEE bundle).
+</p>
+
+<p class="wikiPara">
+This release works with Eclipse 3.5/Galileo which is avaliable from <a href="http://www.eclipse.org/downloads" target="" class="regularLink">eclipse.org</a>. 
+</p>
+
+<p class="wikiPara">
+Please remember that this release is a  milestone build hence it is not fully QA'ed and some features might not be fully implemented yet. This release is made available so you can provide feedback to the upcoming final releases of JBoss Tools.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NewFeatures"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-NewFeatures">New Features</a></h2>
+
+<p class="wikiPara">
+This release have been spent on many bugfixes and making sure we worked well on Eclipse 3.5 GA, but a few new features and improvements have sneaked in. The following is the highlights and you can see the details with screenshots in <a href="http://docs.jboss.org/tools/whatsnew" target="" class="regularLink">What's New</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Maven"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-Maven">Maven</a></h3>
+
+<p class="wikiPara">
+Support for Maven have been the most <a href="https://jira.jboss.org/jira/browse/JBIDE-3874" target="" class="regularLink">requested feature</a> in JBoss Tools for a long time. I hope you find it worth the wait now that we are integrating with <a href="http://m2eclipse.sonatype.org/" target="" class="regularLink">m2eclipse</a> to provide a good experience where we try and treat Maven and Eclipse as equals. For this release we focused on making the Seam Wizard or rather Eclipse WTP's project wizards capable of creating Maven ready projects, upcoming releases will improve the usecase of importing existing Maven projects.
+</p>
+
+<p class="wikiPara">
+Note: shortly before M2 release, m2eclipse released a 0.9.9 on their update-dev updatesite which changed the API we dependend on. We have fixed that in M3/trunk build, so for M2 it is important to use m2eclipse <a href="http://m2eclipse.sonatype.org/update/" target="" class="regularLink">stable updatesite</a> or the <a href="http://m2eclipse.sonatype.org/releases/0.9.9.200906081351" target="" class="regularLink">latest integration build</a> we developed M2 against. If you want to use latest development release of m2eclipse you need to use the <a href="http://download.jboss.org/jbosstools/updates/nightly/trunk/" target="" class="regularLink">nightly builds</a> of JBoss Tools.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ArchivedUpdateSite"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-ArchivedUpdateSite">Archived Update Site</a></h3>
+
+<p class="wikiPara">
+Now that P2 have matured immensly in Eclipse 3.5 we are moving away from dropin-installation zip's and instead provide an archived update site zip for local download. This archive can be used to properly install the various JBoss Tools
+plugins via P2 instead of via the now deprecated dropin's mechanism. This also means you can just download one .zip file for all supported platforms, instead of four.
+</p>
+
+<h3 class="wikiHeadline3" id="H-XHTMLValidation"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-XHTMLValidation">XHTML Validation</a></h3>
+
+<p class="wikiPara">
+We enabled proper XML validation of .xhtml files so you now get proper warnings for namespaced tags.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ConditionalRenderingInVisualPageEditor"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-ConditionalRenderingInVisualPageEditor">Conditional rendering in Visual Page Editor</a></h3>
+
+<p class="wikiPara">
+Until now configured EL expressions in the Visual Page Editor were only used for including resources. In this release we started evaluating EL expressions in <code>rendered</code> attributes to 
+allow you to hide parts of the rendering in the editor just as it would look like in your application when running. No more <q>double-vision</q>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ImprovedIncrementalValidation"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-ImprovedIncrementalValidation">Improved incremental validation</a></h3>
+
+<p class="wikiPara">
+The speed of validation of EL expressions when you save a file is now greatly improved.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Smooks"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-Smooks">Smooks</a></h3>
+
+<p class="wikiPara">
+The Smooks editor have undergone massive changes in M1 and M2. This release continues adding more features and improvements to the Smooks configuration editor.
+</p>
+
+
+<h3 class="wikiHeadline3" id="H-JBPM4"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-JBPM4">jBPM 4</a></h3>
+
+<p class="wikiPara">
+We have included jBPM 4 into this release, making the tools support both jBPM 3 and 4.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Feedback"><a href="/Bloggers/JBossTools31M2NowWithMaven#H-Feedback">Feedback</a></h2>
+
+<p class="wikiPara">
+Use our <a href="http://www.jboss.com/index.html?module=bb&amp;op=viewforum&amp;f=201" target="" class="regularLink">forum</a> and/or <a href="http://jira.jboss.com/jira/browse/JBIDE" target="" class="regularLink">JIRA</a> to let us know what you think and open feature requests/bug reports - we are all ears!
+</p>
+
+<p class="wikiPara">
+Have fun!
+</p>
+</div>

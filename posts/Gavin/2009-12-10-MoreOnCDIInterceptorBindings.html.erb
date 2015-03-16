@@ -1,0 +1,132 @@
+---
+title: "More on CDI interceptor bindings"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Interceptors]
+slug: MoreOnCDIInterceptorBindings
+lace: http://in.relation.to/13480.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MoreOnCDIInterceptorBindings">More on CDI interceptor bindings</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+In reply to <a href="/Bloggers/OnCDIInterceptorBindings" target="" class="regularLink">this post</a>, <a href="http://smokeandice.blogspot.com/" target="" class="regularLink">Matt</a> writes:
+</p>
+
+<blockquote class="wikiBlockquote">
+Where I still have a bit of trouble with this is if we implement each of the six EJB <tt>TransactionAttributeType</tt>s with separate interceptors and bindings, and package them in a <tt>.jar</tt> file... I'm ok with having some kind of enablement in the <tt>beans.xml</tt> file for my <tt>.war</tt>, but to have the user enter all six interceptors is awkward for a library developer to force on someone...
+</blockquote>
+
+<p class="wikiPara">
+For a couple of hours I thought he had me on this one, but it turns out that CDI has a fairly neat solution. 
+</p>
+
+<p class="wikiPara">
+What Matt is trying to do is have a different annotation for each transaction propagation style, for example <tt>@RequiresTransaction</tt>, <tt>@RequiresNewTransaction</tt>, <tt>@MandatoryTransaction</tt>, etc, instead of having a single <tt>@Transactional</tt> annotation which specifies the propagation style using an annotation member. He's worried that CDI will force him to use a separate interceptor for each annotation, and then declare all these interceptor classes in <tt>beans.xml</tt>.
+</p>
+
+<p class="wikiPara">
+But there's a better way :-)
+</p>
+
+<p class="wikiPara">
+First, let's create an interceptor binding type that specifies the propagation style using a member. Note that we're not going to use this directly in our beans.
+</p>
+
+<pre class="wikiPreformatted brush: java;">@Inherited 
+@InterceptorBinding 
+@Target({TYPE, METHOD}) 
+@Retention(RUNTIME) 
+public @interface Transactional {
+    @Nonbinding
+    TransactionPropagation value() default REQUIRED;
+}</pre>
+
+
+<p class="wikiPara">
+Where <tt>TransactionPropagation</tt> is an enumeration of propagation styles:
+</p>
+
+<pre class="wikiPreformatted">public enum TransactionPropagation { REQUIRED, REQUIRES_NEW, MANDATORY, ... }</pre>
+
+
+<p class="wikiPara">
+CDI interceptor bindings can be inherited by other interceptor bindings. This feature allows us to use our <tt>@Transactional</tt> annotation as a meta-annotation. So let's apply <tt>@Transactional</tt> to Matt's annotations, for example:
+</p>
+
+<pre class="wikiPreformatted brush: java;">@Inherited 
+@Transactional(REQUIRED)
+@InterceptorBinding 
+@Target({TYPE, METHOD}) 
+@Retention(RUNTIME) 
+public @interface RequiresTransaction {}</pre>
+
+
+<pre class="wikiPreformatted brush: java;">@Inherited
+@Transactional(REQUIRES_NEW)
+@InterceptorBinding 
+@Target({TYPE, METHOD}) 
+@Retention(RUNTIME) 
+public @interface RequiresNewTransaction {}</pre>
+
+
+<p class="wikiPara">
+We use these interceptor bindings by annotating the bean class, for example:
+</p>
+
+<pre class="wikiPreformatted brush: java;">@RequiresTransaction
+public class Users {
+    @RequiresNewTransaction
+    public void login() { ... }
+}</pre>
+
+
+<p class="wikiPara">
+An annotation at the method level should override an annotation at the class level.
+</p>
+
+<p class="wikiPara">
+Now we can implement transaction management using a single interceptor class:
+</p>
+
+<pre class="wikiPreformatted brush: java;">@Transactional @Interceptor
+class TransactionInterceptor {
+
+    @AroundInvoke
+    public Object manageTransaction(InvocationContext ctx) throws Exception {
+        TransactionPropagation tp = getTransactionPropagation(ctx.getMethod());
+        ...
+    }
+    
+    /**
+     * Get the TransactionPropagation for the meta-annotation
+     */
+    private TransactionPropagation getTransactionPropagation(Method m) {
+        //first look at method-level annotations, since they take priority
+        for (Annotation a: m.getAnnotations()) {
+            if (a.annotationType().isAnnotationPresent(Transactional.class)) {
+                return a.annotationType().getAnnotation(Transactional.class).value();
+            }
+        }
+        //now try class-level annotations
+        for (Annotation a: m.getDeclaringClass().getAnnotations()) {
+            if (a.annotationType().isAnnotationPresent(Transactional.class)) {
+                return a.annotationType().getAnnotation(Transactional.class).value();
+            }
+        }
+        return null;
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+This interceptor class that implements all of the transaction propagation styles. Neat, huh?</p>
+</div>

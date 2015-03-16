@@ -1,0 +1,70 @@
+---
+title: "Bean Validation: restricting the metadata results"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: [Bean Validation,Hibernate,Hibernate Validator]
+slug: BeanValidationRestrictingTheMetadataResults
+lace: http://in.relation.to/16570.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/BeanValidationRestrictingTheMetadataResults">Bean Validation: restricting the metadata results</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Gunnar asked me an interesting question on Bean Validation.
+Instead of keeping the knowledge private, I thought it would be useful to share more wildly.
+</p>
+
+<blockquote class="wikiBlockquote">
+Is it possible to determine whether a given constraint is specified at field or property level using the constraint metadata API?
+</blockquote>
+
+<p class="wikiPara">
+First off, in many case you don't need to do the distinction. Had Java support properties from the ground up, we would not have this problem (sigh).
+</p>
+
+<p class="wikiPara">
+Anyways, the answer is yes. You can fine tune what is returned from the metadata API.
+</p>
+
+<pre class="wikiPreformatted">PropertyDescriptor property = 
+    validator.getConstraintsForClass(Address.class)
+               .getConstraintsForProperty("street1");
+
+Set&lt;ConstraintDescriptor&lt;?&gt;&gt; fieldConstraints =
+    property
+        .findConstraints()
+            .lookingAt(Scope.LOCAL_ELEMENT)
+            .declaredOn(ElementType.FIELD)
+            .getConstraintDescriptors();
+
+Set&lt;ConstraintDescriptor&lt;?&gt;&gt; propertyConstraints =
+    property
+        .findConstraints()
+            .lookingAt(Scope.LOCAL_ELEMENT)
+            .declaredOn(ElementType.METHOD)
+            .getConstraintDescriptors();
+</pre>
+
+
+<p class="wikiPara">
+The key here is the use of the findConstraints() fluent API. You have three ways to restrict the metadata retrieved:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>declaredOn(ElementType... types)</tt>: defines where to look the constraints (METHOD, FIELD etc)</li>
+<li class="wikiUnorderedListItem"> <tt>lookingAt(Scope scope)</tt>: defines whether to look for constraints hosted on superclass/interfaces (default) or not</li>
+<li class="wikiUnorderedListItem"> <tt>unorderedAndMatchingGroups(Class&lt;?&gt;... groups)</tt>: restrict to the constraints matching a given set of groups for this element (note that the ordering of group sequences is not respected)</li>
+</ul>
+
+<p class="wikiPara">
+That's all.
+</p>
+
+</div>

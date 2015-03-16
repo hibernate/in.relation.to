@@ -1,0 +1,91 @@
+---
+title: "Hibernate OGM nominated for Duke's Choice Award 2014"
+author: "Gunnar Morling"
+blogger_name: "Gunnar"
+layout: blog-post
+tags: [Dukes Choice Award,Hibernate,Hibernate OGM,News]
+slug: HibernateOGMNominatedForDukesChoiceAward2014
+lace: http://in.relation.to/29096.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateOGMNominatedForDukesChoiceAward2014">Hibernate OGM nominated for Duke's Choice Award 2014</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Sometimes life is full of surprises. And I can say I was quite surprised when I learned that <a href="http://hibernate.org/ogm/" target="" class="regularLink">Hibernate OGM</a> has been nominated for this year's <a href="https://www.java.net/" target="" class="regularLink">Duke's Choice Award</a>.
+</p>
+
+<p class="wikiPara">
+Being nominated is a great honor for us, so kudos to those who brought this on its way! But winning the award would be even better; so go to <a href="https://www.java.net/" target="" class="regularLink">java.net</a> and vote for Hibernate OGM (upper right corner on the landing page). Every vote counts, and if you ever wanted to give back to Hibernate, this is your chance!
+</p>
+
+<h3 class="wikiHeadline3" id="H-HibernateOGMWhatIsItAboutAndWhyShouldYouVoteForIt"><a href="/Bloggers/HibernateOGMNominatedForDukesChoiceAward2014#H-HibernateOGMWhatIsItAboutAndWhyShouldYouVoteForIt">Hibernate OGM - What is it about and why should you vote for it?</a></h3>
+
+<img src="https://duke.kenai.com/thumbsup/DukeWithHelmet.png" align="left" style="width:250px; margin-left:0px">
+
+<p class="wikiPara">
+In a word, Hibernate OGM (Object/Grid Mapper) gives you peace of mind when you need to persist Java domain models in NoSQL stores such as <a href="http://www.mongodb.org/" target="" class="regularLink">MongoDB</a>, <a href="http://www.infinispan.org/" target="" class="regularLink">Infinispan</a> or <a href="http://www.neo4j.org/" target="" class="regularLink">Neo4j</a>. Based on the well-known semantics of JPA and re-using many parts of the proven Hibernate ORM engine, it provides simple access to this new world known as NoSQL.
+</p>
+
+<p class="wikiPara">
+For example consider an existing RDBMS-based application for address management which should be enhanced with some sort of <q>friendship graph</q>. Now handling and querying graph-like data is not exactly the specialty of RDBMS/SQL. Dedicated graph databases such as Neo4j are much better at this. With the help of Hibernate OGM, you could implement the friendship graph feature using the same persistence API you work with in the rest of the application. But for queries, you’d have the option to resort to powerful native queries written in Neo4j's <a href="http://docs.neo4j.org/chunked/stable/cypher-query-lang.html" target="" class="regularLink">Cypher language</a>.
+</p>
+
+<p class="wikiPara">
+Hibernate OGM's vision is to enable applications to leverage those datastores being most beneficial for different use cases. Need deeply-nested hierarchical data? Use MongoDB. Need to distribute your data to hundreds of nodes with awesome performance? Use Infinispan. Need to work with graph-like data structures... You get the picture. But rather than using datastore-specific object mappers or even falling back to a store's native low-level API, you enjoy the comfort and power provided by the Hibernate engine.
+</p>
+
+<b>Really, ORM for NoSQL?!</b>
+
+<p class="wikiPara">
+Now when we talk about this vision, we often get a glance from people which seems to ask <q>But is JPA/ORM really a good fit for NoSQL?</q>. To be honest, we were asking ourselves the same when starting the project. But over time it became apparent that the general idea of OxM (where x may stand for <q>document</q>, <q>graph</q> etc.) is not limited to relational datastores.
+</p>
+
+<p class="wikiPara">
+Most of JPA’s logical concepts - how do you define entities, their associations and so on - map excellently to NoSQL stores, sometimes arguably even better than to a RDMBS. Just to give an example, <tt>@ElementCollection</tt> is perfect for mapping nested dependent data in document stores such as MongoDB, which then can be accessed with a simple <q>get</q>, not requiring any joins; you don’t need to think about fetching strategies, orphan removal and the like.
+</p>
+
+<p class="wikiPara">
+Hibernate OGM benefits from many features of the Hibernate framework and the eco-system which has evolved around it. Any solution working with Hibernate will work with Hibernate OGM as well without further ado.
+</p>
+
+<p class="wikiPara">
+You need to validate your data but your store does not support check constraints or similar? No problem, just add <a href="http://www.beanvalidation.org/" target="" class="regularLink">Bean Validation</a> constraints to your model and have them automatically validated when persisting your data. Your datastore doesn't provide sufficient query capabilities? Let <a href="http://hibernate.org/search/" target="" class="regularLink">Hibernate Search</a> help you. It transparently indexes your data via Apache Lucene and allows to execute queries returning managed entities. If you like, even via JP-QL which is transformed into corresponding Lucene queries on the fly.
+</p>
+
+<p class="wikiPara">
+Of course you choose a certain store because of its specific capabilities, and not all of those may be exposed by a high-level abstraction such as JPA. Hibernate OGM gets out of your way as far as possible and for example allows you to specify queries in the store's native syntax (such as Cypher in the case of Neo4j). Also it's possible to apply store-specific options in a consistent and comfortable manner, via annotations or programmatically. For instance you can configure MongoDB's write concern and read preference settings individually for each of your mapped entities.
+</p>
+
+<p class="wikiPara">
+So is Hibernate OGM the perfect solution for all the possible challenges you may have when dealing with NoSQL?
+</p>
+
+<b>Of course. NOT.</b>
+
+<p class="wikiPara">
+It will be very useful when dealing with well-defined domain models which need to be persisted, but as always there are situations in which an OxM tool may not be the best choice.
+</p>
+
+<h3 class="wikiHeadline3" id="H-WhatsNext"><a href="/Bloggers/HibernateOGMNominatedForDukesChoiceAward2014#H-WhatsNext">What's next?</a></h3>
+
+<p class="wikiPara">
+The Hibernate OGM project has come a long way since its beginnings.
+</p>
+
+<p class="wikiPara">
+All the basics are in place, and at the moment we're fine-tuning some last details for the next release. It will be recommended for general usage and is to be expected soon. We're fixing some remaining glitches in the supported grid dialects and are validating that all the SPI contracts (which you may implement to add support for your favorite NoSQL store) are complete and correct. We’re also have a look on the performance side of things.
+</p>
+
+<p class="wikiPara">
+In future versions you may expect many more useful functionality such as support for true polyglot persistence (one domain model being spread across several data stores), implicit data migrations upon data load (for schema-less datastores) and declarative de-normalization of your data (ensuring fast retrieval in different use cases).
+</p>
+
+<p class="wikiPara">
+You like all this? Then don't forget to give your vote for the Duke's Choice Award on <a href="https://www.java.net/" target="" class="regularLink">java.net</a> to Hibernate OGM. And please spread the word about the project and ask your friends to vote for it, too! If you want to learn more, take a look at our <a href="https://docs.jboss.org/hibernate/ogm/4.1/reference/en-US/html_single/" target="" class="regularLink">reference documentation</a>. Or check out a complete <a href="https://github.com/hibernate/hibernate-demos/tree/master/hibernate-ogm/hiking-demo" target="" class="regularLink">sample application</a> which has been built for <a href="http://www.redhat.com/summit/sessions/index.html#274" target="" class="regularLink">a session at Red Hat Summit</a> earlier this year.</p>
+</div>

@@ -1,0 +1,272 @@
+---
+title: "Practical tips on JDK 1.5 annotations"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: []
+slug: PracticalTipsOnJDK15Annotations
+lace: http://in.relation.to/2156.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/PracticalTipsOnJDK15Annotations">Practical tips on JDK 1.5 annotations</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Maybe you haven't noticed, but every single piece of information on JDK 1.5 Metadata
+Annotations is nothing but a simple /Hello World/ tutorial (of course, I exclude the
+specification). There is no real world implementation. This is especially true for
+codes processing the annotations. I'll call such an application an annotation reader.
+</p>
+
+<p class="wikiPara">
+I was publicly cursing about that and Cedric Beust answered in
+<a href="http://beust.com/weblog/archives/000117.html" target="" class="regularLink">his blog </a> and gave me some hints.
+</p>
+
+<p class="wikiPara">
+I want to add some more tips and comments about Cedric's list, based on my
+experience with the development of Hibernate annotations:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> default values, what about null?</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> faking a non-existing annotation programmatically</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> no <tt>extends</tt>, what about code duplication?</li>
+</ul>
+
+
+<h2 class="wikiHeadline2" id="H-DefaultValuesWhatAboutNull"><a href="/Bloggers/PracticalTipsOnJDK15Annotations#H-DefaultValuesWhatAboutNull">default values, what about null?</a></h2>
+
+<p class="wikiPara">
+Nothing to declare, except that Cedric is right. The whole point is that
+there should be something that let's the annotation reader know whether the 
+user set the value or used the default one. However, no such mechanism
+has been provided by the JSR.
+</p>
+
+<p class="wikiPara">
+As a workaround I've also build my own BooleanImplied enum type that takes
+care of values not explicitly set by the user. With Strings, I don't really
+like using some restricted key-string, such as <q><tt>#implied</tt></q>. For now,
+my special key-string works like a charm, but one day it will face the
+what-if-I-want-to-use-that-keyword-as-a-value syndrome. I've no better
+answer :-(
+</p>
+
+<h2 class="wikiHeadline2" id="H-FakingANonExistingAnnotationProgrammatically"><a href="/Bloggers/PracticalTipsOnJDK15Annotations#H-FakingANonExistingAnnotationProgrammatically">faking a non existing annotation programmatically</a></h2>
+
+<p class="wikiPara">
+In annotation reader code, there is no way to programmatically build a
+new annotation /instance/, whether with or without default values. Of course,
+an annotation is an interface and there is no implementation provided! However,
+building your own annotation could be useful to keep the code as generic as
+possible and to fake a user provided annotation. (Especially if most of
+your annotations have default values).
+</p>
+
+<p class="wikiPara">
+Let's have a look at an example:
+</p>
+
+<pre class="wikiPreformatted">
+public @interface Column {
+    /** 
+     * column name
+     * default value means the name is guessed.
+     */
+    String name() default "#implied";
+
+    /**
+     * column length
+     * Default value 255  
+     */
+    int length() default 255;
+
+    [...]
+}
+
+public @interface Property {
+
+    /**
+     * column(s) used
+     * Default is guessed programmatically based on the default @Column()
+     */
+    Column[] columns() default {};
+
+    [...]
+}
+
+@Property()
+public String getMyProperty() {
+    return myProperty;
+}
+</pre>
+
+
+<p class="wikiPara">
+I want to use the default values of @Column() when the user does not set
+any @Column() array in @property(). Why? Because I want the simplest
+annotations, I want implicit and default values to be the rule, and I
+don't want to duplicated my annotation processing code.
+</p>
+
+<p class="wikiPara">
+Two solutions:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> duplicate the default values somewhere in a value holder class (don't like that one)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> keep a fake method somewhere with the default @Column() inside:</li>
+</ul>
+
+
+<pre class="wikiPreformatted">
+/**
+ * Get default value for annotation here
+ * (I couldn't find a way to build an annotation programatically)
+ */
+@Column()
+private static void defaultColumnAnnHolder() {}
+</pre>
+
+
+<p class="wikiPara">
+You'll then be able to read and reuse this method in your annotation reader
+code. I think some bytecode manipulation framework can easily and elegantly 
+provide such feature without the ugly extra method in your code.
+(Javassist 3.0 should be able to do that if I understand Bill Burke, but
+I've not tested it yet)
+</p>
+
+<h2 class="wikiHeadline2" id="H-NoTtextendsttWhatAboutCodeDuplication"><a href="/Bloggers/PracticalTipsOnJDK15Annotations#H-NoTtextendsttWhatAboutCodeDuplication">no <tt>extends</tt>, what about code duplication?</a></h2>
+
+<p class="wikiPara">
+That one that really sucks. The extends keyword is not allowed for annotation.
+Without it, we can't build a generic method, handling an annotation hierarchy.
+Bye-bye to the beauty of OO.
+</p>
+
+<p class="wikiPara">
+Suppose I have @CoreProperty() and then @ComplexProperty():
+</p>
+
+<pre class="wikiPreformatted">
+public void handleProperties(CoreProperty ann) {
+    [...]
+}
+</pre>
+
+
+<p class="wikiPara">
+This can't process @ComplexProperty(), as there is no way to let
+@ComplexProperty inherit @CoreProperty.
+</p>
+
+<p class="wikiPara">
+Some solutions:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> force your user to set @ComplexProperty() <i class="wikiEmphasis">and</i> @CoreProperty() on its annoted method (I don't consider this as an option)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> use composition</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> copy annotation data into a new class hierarchy (or flatten it)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> use reflection on annotation</li>
+</ul>
+
+
+<p class="wikiPara">
+The second one is pretty simple but it may not be appropriate for every model:
+</p>
+
+<pre class="wikiPreformatted">
+@ComplexProperty(
+    @CoreProperty(...)
+)
+</pre>
+
+
+<p class="wikiPara">
+If the CoreProperty is an implementation concept, it's pretty ugly to show that
+in the annotation.
+</p>
+
+<p class="wikiPara">
+The third solution kind of sucks, but that is the one I'm using now. The annotation
+reader has to be implemented with two layers:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> a layer reading and flatteninng the annotation (or putting it in an extra class hierarchy)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> a process method, handling properties in flat (or hierarchical) representation:</li>
+</ul>
+
+
+<pre class="wikiPreformatted">
+public void processPropertyAnn(Ann property) {
+    [...]
+    String name = property.name();
+    processFlatProperty(name, null);
+}
+
+/**
+ * Process a property
+ * @param name property name
+ * @param extraValue this extraValue can be set using ComplexProperty
+ */
+private void processFlatProperty(String name, String extraValue) {
+    [...]
+}
+</pre>
+
+
+<p class="wikiPara">
+This leads to some extra metadata structure: the good old <q>DTO are evil</q> issue
+appears in annotation!
+</p>
+
+<p class="wikiPara">
+The fourth solution will probably be complex and unreadable code, it seems
+to me that reflection is overkill in this case (I haven't implemented it,
+however).
+</p>
+
+<h2 class="wikiHeadline2" id="H-TimeToConclude"><a href="/Bloggers/PracticalTipsOnJDK15Annotations#H-TimeToConclude">Time to conclude</a></h2>
+<p class="wikiPara">
+Well, I stayed focused on JSR 175 practical flaws and gave some tips to 
+make life easier. I still strongly believe annotations are good and will 
+give us a new way of thinking metadata in our apps. I don't care which 
+one is best: XDoclet or JSR 175, I care about a <i class="wikiEmphasis">standard</i> metadata facility 
+(this topic is mature enough for standardization). I care about a <i class="wikiEmphasis">standard</i>
+metatada desription to easily plug tools on top of frameworks like Hibernate.
+</p>
+
+<p class="wikiPara">
+This spec will evolve. But for now, don't curse about it, use it for real!
+</p>
+</div>

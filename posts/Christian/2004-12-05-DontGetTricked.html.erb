@@ -1,0 +1,63 @@
+---
+title: "Don't get tricked"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: []
+slug: DontGetTricked
+lace: http://in.relation.to/1309.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/DontGetTricked">Don't get tricked</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Yesterday, another vendor marketing statement was posted on TSS. I usually
+ignore these, but when it is about data management, I just have to reply. What
+is always surprising to me is how little we Java developers still know about
+data management. Here is a statement made by Maxim Kramarenko in the 
+discussion thread:
+</p>
+
+<pre class="wikiPreformatted">
+"OO/network DBMS can be very useful when you need to handle large 
+hierarchies - simple graph navigation can be times more fast and simple 
+way to fetch data then SQL. Even ORACLE START WITH/CONNECT BY statement 
+works VERY slow for hierarchies." </pre>
+
+
+<p class="wikiPara">
+Now, this statement has several fundamentally different (and important) things mixed together, and in the end confuses everyone more than it helps. I expressed my disbelief (yes, I should have been more verbose and friendly...) and then was asked to contribute to the discussion. Here is my (rather long) response:
+</p>
+
+<p class="wikiPara">
+I'm using the <tt>EXPLODE</tt> operator provided by my database management system if I'd like to get a hierarchical view of my data (which is the most common operation when it cames to data hierarchies, I think). If no such operator is available or if I find its performance characteristics unacceptable I call my DBMS vendor and complain until they fix it. Of course, I only do that after optimizing my query execution plans, etc. (this should eliminate most issues). 
+</p>
+
+<p class="wikiPara">
+If all of this is not sufficient, I might consider using a <a href="http://dbazine.com/tropashko4.shtml" target="" class="regularLink">nested set model or materialized path</a> to represent my tree information, variations of the simple adjacency list. Again, this is certainly the last step I'd take (which still happens way too often with the poor quality of the SQL products we have today), and is highly likely only acceptable for read-mostly trees. What we have in SQL, the recursive <tt>WITH foo as ()</tt> or the proprietary <tt>CONNECT BY</tt> variation, is not neccessarily what I have in mind if I think about a good <tt>EXPLODE</tt> operator. But see below for a reference with a better and complete explanation.
+</p>
+
+<p class="wikiPara">
+I would certainly not sacrifice any of the (with SQL very rare) advantages I get from the relational data model if I can't find a good operator for my implementation in my DBMS product. After all, its a logical data model, and any performance concern is a physical implementation detail. I don't see how both are related, but I know we are in bad shape if we start messing up the differences between the two.
+ 
+There is no reason why a network/graph-based logical model or a relational model couldn't be implemented with the same performance characteristics. Just because some products are not implemented optimal doesn't mean we should ditch the whole concept of data independence!
+</p>
+
+<p class="wikiPara">
+Complain to your DBMS vendor. Ask them why their product doesn't fully support state of the art relational data management, such as a relational (and possibly polymorphic) data type system, or a query language that supports closures/explosion for data hierarchies. The list of deficiencies in todays SQL products is unfortunately much longer than this. It's not the fault of the data model if you can't do something in a particular product, or if a specification has serious problems.
+</p>
+
+<p class="wikiPara">
+It's easy for the snake oil salesman to sell you his old wine if you let yourself get confused about logical data models and physical implementations.  It hurts everyone in the end, as we all have to tell our software vendors what we would like to see and what support we need in a product. If we are not able to clearly articulate our needs and if we forget history (ie. what worked and what didn't work in the past), we might get tricked. I'm not feeling comfortable with that.
+</p>
+
+<p class="wikiPara">
+Finally, a recommendation I can make is the book <a href="http://www.amazon.com/exec/obidos/tg/detail/-/0201485559" target="" class="regularLink">Practical Issues in Database Management</a> by Fabian Pascal. It is a small book, having only 250 pages. Fabian shows you 10 common issues you will face in your daily practice, but instead of simply explaining how to work your way through SQL, he first explains the relational data model basics for each problem. He then looks at the current practice and explains what you can do in SQL (or what we would need in a DBMS) to solve or work around the issue. A quick read for a weekend and definitely recommended. If you want to brush up your data management basics, buy it in a bundle with Chris Date's <q>Introduction to Database Systems</q>.
+</p>
+</div>

@@ -1,0 +1,94 @@
+---
+title: "Java Server Faces 1.2 components Book Review"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+layout: blog-post
+tags: [Books,JavaServer Faces,RichFaces]
+slug: JavaServerFaces12ComponentsBookReview
+lace: http://in.relation.to/14903.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JavaServerFaces12ComponentsBookReview">Java Server Faces 1.2 components Book Review</a>
+                    </h1>
+</div>
+<div style="float:left;margin-right:20px;margin-bottom:20px;">
+     <a href="http://www.packtpub.com/jsf-1-2-components-develop-advanced-ajax-enabled-applications/book?utm_source=in.relation.to&amp;utm_medium=bookrev&amp;utm_content=blog&amp;utm_campaign=mdb_002502" target="blank"> 
+         <img src="https://www.packtpub.com/images/100x123/1847197620.png" alt="">
+     </a>
+</div>
+
+<p class="wikiPara">
+I finally got some free time and read the new <b><a href="http://www.packtpub.com/jsf-1-2-components-develop-advanced-ajax-enabled-applications/book?utm_source=in.relation.to&amp;utm_medium=bookrev&amp;utm_content=blog&amp;utm_campaign=mdb_002502"><q>JSF 1.2 Components</q></a></b> book written by <b>Ian Hlavats</b> and I wanted to share my impressions with you. 
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-VeryFirstLook"><a href="/Bloggers/JavaServerFaces12ComponentsBookReview#H-VeryFirstLook">Very first look</a></h1>
+
+
+<p class="wikiPara">
+When I was done with the first chapter I decided that I was reading a book which is written for beginner JSF GUI developers. Perhaps they learned some very high level basics of what JSF is and need to get quick overview of component libraries which exist in the ecosystem. It seemed the author almost didn’t care about the JSF lifecycle and some other architectural points of JSF.  At first Ian just describes how to create the pages using standard components. That chapter is likely not interesting for the guys who have already looked at some JSF kick-start projects which exists in any IDE.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-InsightfulFaceletsChapterForTheFutureFaceletsDeveloper"><a href="/Bloggers/JavaServerFaces12ComponentsBookReview#H-InsightfulFaceletsChapterForTheFutureFaceletsDeveloper">Insightful Facelets chapter for the future Facelets developer</a></h1>
+
+
+<p class="wikiPara">
+The next chapter on “Facelets” is really cool and after reading ahead I think it’s the best chapter in the book and the main reason to buy it. Basic principles, features and advantages over JSP explained very clear in a simple way. I think the choice between facelets and JSP will be simple after reading that chapter and it would be enough to just start development without reading official documentation or any external articles additionally.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-MyFacesTomahawkAndTrinidadChapters"><a href="/Bloggers/JavaServerFaces12ComponentsBookReview#H-MyFacesTomahawkAndTrinidadChapters">MyFaces Tomahawk and Trinidad Chapters</a></h1>
+
+
+<p class="wikiPara">
+The Tomahawk chapter, much like the chapter on standard components is just a brief usage overview of the components.  These are represented in a way, and have a set of good simple samples of usage in applications.
+The Trinidad chapter will be more interesting for the reader as contains not only tag a library overview but good common feature descriptions such as Ajax, skinning and client side validation/conversion. That chapter is very good as a common overview of the features and startup for reading detailed references of the library. There will be separate overview of the mistakes in the book later but the one which confused me in this chapter needs to be highlighted there – “launching the dialog window” section has a piece of code (to build list and select one the products) which completely differs from screenshot after it(just picking the color from color picker) and this is really weird.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-IceFacesChapter"><a href="/Bloggers/JavaServerFaces12ComponentsBookReview#H-IceFacesChapter">IceFaces Chapter</a></h1>
+
+
+<p class="wikiPara">
+	This chapter also contains a good overview of the IceFaces components. In general it only lacks some coverage of Direct To Dom technique used for updates which is one of the key features of the framework. After reading the chapter I am left with many questions about the framework, but this is not the fault of the book itself. The author describes good points that need to be answered by the framework documentation before usage.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-SeamAjax4jsfAndRichFacesChapters"><a href="/Bloggers/JavaServerFaces12ComponentsBookReview#H-SeamAjax4jsfAndRichFacesChapters">Seam, Ajax4jsf and RichFaces chapters</a></h1>
+
+
+<p class="wikiPara">
+So now we get to the chapters I have waited for, especially since I am a core developer of RichFaces.  Unfortunately the chapters were very confusing to me. 
+</p>
+
+<p class="wikiPara">
+We'll start with the Seam chapter.  Our beginner JSF GUI developer should now be a J2EE experienced guy.  The big difference in this chapter and all the previous ones is that developer should now care about the back-end objects and services.  While in the first part of the book those topics were skimmed over.  It does not look good to me as the overall level of the book changed significantly. 
+</p>
+
+<p class="wikiPara">
+Then I need to highlight the confusion with the information in general among these chapters. The Seam and RichFaces sections, for example, contain some pieces of core Ajax4jsf information (some of which are missing in Ajax4jsf chapter) and reading Ajax4jsf you need to divert your attention to some Seam points highlighted again. Code detail level grew significantly in this chapter and this is also the reason of some confusions and losing some points sometimes.
+One of the more concerning issues is that the RichFaces chapter highlights and demonstrates some bad practices.  For example, like using heavy components in table columns which could result in performance issues in a real application (unless handled specifically). Also there is confusion with the data iteration components logical grouping. a4j:repeat which is a base component for all the iteration components set combined together with one of the lists and the other lists came separately.
+But in general, if not take into consideration that information slightly messed among the chapters and that fact that level is differs from the other book chapters – all the basic points seems covered and the reader will take good overview of the technologies after reading.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-Errors"><a href="/Bloggers/JavaServerFaces12ComponentsBookReview#H-Errors">Errors</a></h1>
+
+
+<p class="wikiPara">
+I think mistakes are the major problem with the book.  It spoiled all the good impressions which could arise during reading. Many(considering the fact that it went through editing process) code snippets and descriptions contain misprints, copy and paste problems, and some problems with repeating of the same sentences again and again which makes me for example to disperse attention from the main points. 
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-Summary"><a href="/Bloggers/JavaServerFaces12ComponentsBookReview#H-Summary">Summary</a></h1>
+
+
+<p class="wikiPara">
+So my impressions after reading are ambivalent. The book really carries its prices as a good review for beginners. But it should not be claimed for something more.  Also low level of samples details in cases where it’s really need for the understanding and the errors sometimes through the samples and sometimes through the overviews is really prevent from starring it much than 4 from 10.</p>
+</div>

@@ -1,0 +1,381 @@
+---
+title: "Some questions about the design of Ceylon"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon]
+slug: SomeQuestionsAboutTheDesignOfCeylon
+lace: http://in.relation.to/21322.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon">Some questions about the design of Ceylon</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Over the last couple of days, I've exchanged a few emails with <a href="http://www.jroller.com/scolebourne/" target="" class="regularLink">Stephen Colebourne</a> regarding Ceylon, and some of the decisions we made in designing the syntax of Ceylon. 
+</p>
+
+<p class="wikiPara">
+I believe that syntax is an extremely important part of language design. Developers work in teams. We spend all day reading each others code. We spend much more time <i class="wikiEmphasis">reading</i> code than we spend <i class="wikiEmphasis">writing</i> code. Therefore, languages should be designed to optimize the process of reading and understanding someone else's code. (Indeed, since I have such an atrocious memory, when I read code that I wrote more than a month ago, I may as well be reading someone else's code!)
+</p>
+
+<p class="wikiPara">
+Well, I thought some of Stephen's questions/criticisms, and my responses to them, might be of interest to a wider audience, so I asked his permission to clean up some of our exchange and publish it here. He's kindly agreed. Note that what follows is mostly my own words, and doesn't purport to do justice to Stephen's side of the argument, or by any means completely represent his views of the language. I've included mainly just the items where there is a clear choice between alternatives, and I can clearly express the reasons for taking the path we took.
+</p>
+
+<p class="wikiPara">
+I hope that this helps you guys understand why we made certain decisions, and some of the forces that operate on the language design process, forces that aren't always completely obvious when you look at the final shape of a language.
+</p>
+
+<h3 class="wikiHeadline3" id="H-StringInterpolation"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-StringInterpolation">String interpolation</a></h3>
+
+<blockquote class="wikiBlockquote">
+Why does Ceylon use <tt>"Hello, " name.uppercase "!"</tt> for string interpolation instead of the more familiar <tt>Hello, ${name.uppercase}!"</tt>?
+</blockquote>
+
+<p class="wikiPara">
+We originally wanted to use the <tt>${...}</tt> escape syntax, but it turns out that this can't be lexed using the regular expression-based lexer technology in ANTLR. We took a look at how Groovy handles this, and it seems like they wind up using a hand-coded lexer. We wanted to be sure that our language was easy to lex and parse, since that helps the compiler give meaningful feedback to the user about syntax errors.
+</p>
+
+<p class="wikiPara">
+The other thing we had in mind was that our primary motivation for having string interpolation in the language was <i class="wikiEmphasis">not</i> for writing everyday procedural code, but rather for use in defining <q>templates</q> (for example web pages) using the declarative <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart9#H-DeclarativeObjectInstantiationSyntax" target="" class="regularLink">object builder syntax</a>. We think that the <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-StringsAndStringInterpolation" target="" class="regularLink">syntax we ended up settling on for string interpolation</a> works out much better for this application, even if it can be slightly harder to read in typical procedural code.
+</p>
+
+<h3 class="wikiHeadline3" id="H-OutOutDamnSemicolon"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-OutOutDamnSemicolon">Out, out, damn semicolon!</a></h3>
+
+<blockquote class="wikiBlockquote">
+Why require semicolons at line end?
+</blockquote>
+
+<p class="wikiPara">
+A number of recent languages use significant whitespace to eliminate the need for a <tt>;</tt> statement terminator. Typically, I believe, this is implemented as some kind of auto-semicolon-insertion that happens in the lexer. So the actual formal grammar of the language, which produces the parser, still features required semicolons. You just don't have to actually <i class="wikiEmphasis">type</i> them.
+</p>
+
+<p class="wikiPara">
+Unfortunately, auto-semicolon-insertion doesn't play well with the annotation syntax we wanted to use. An <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart12" target="" class="regularLink">annotation in Ceylon</a> looks syntactically like an expression statement (because, in fact, semantically it <i class="wikiEmphasis">is</i> an expression). So there's no way for the parser, let alone the lexer, to distinguish an annotation sitting on its own line from an expression statement.
+</p>
+
+<p class="wikiPara">
+So languages which have both annotations and auto-semicolon-insertion need to introduce some ugly characters to distinguish annotations. The two things I've seen are <tt>@Annotation @OtherAnnotation</tt>, following Java, and <tt>[Annotation OtherAnnotation]</tt>, following C#. But then the designers of these languages find this syntax so offensive that they can't actually bear to use it for their <i class="wikiEmphasis">own</i> annotation! So they find themselves having to introduce reserved-word <q>modifiers</q> like <tt>public</tt>, <tt>abstract</tt>, <tt>virtual</tt>, etc.
+</p>
+
+<p class="wikiPara">
+In Ceylon, <q>modifiers</q> are just ordinary annotations. They aren't keywords. You can have an attribute called <tt>shared</tt> or <tt>abstract</tt> or <tt>default</tt>. Basically, given the choice between requiring <tt>@</tt> on all annotations, or <tt>;</tt> on all statements, and a bunch of extra reserved words, we chose the <tt>;</tt> as the lesser of two evils. 
+</p>
+
+<h3 class="wikiHeadline3" id="H-SyntaxForControlStructures"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-SyntaxForControlStructures">Syntax for control structures</a></h3>
+
+<blockquote class="wikiBlockquote">
+The null checking syntax <tt>if (exists name)</tt> seems verbose. Wouldn't a symbol be better? What's wrong with <tt>if (name==null)</tt> like in Java?
+</blockquote>
+
+<p class="wikiPara">
+Well, we wanted to avoid the extremely thorny problem of trying to define equality for <tt>null</tt>. In Java, the expression <tt>person.address==org.address</tt> evaluates to <tt>true</tt> if both <tt>person.address</tt> and <tt>org.address</tt> are <tt>null</tt>. This is almost certainly not what the programmer intends.  In SQL, the equivalent expression evaluates to null, resulting in the whole somewhat doubtful machinery of ternary logic (which has some pretty unintuitive consequences). 
+</p>
+
+<p class="wikiPara">
+Ceylon sidesteps this whole problem by simply <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">not defining equality</a> for the <tt>null</tt> value. The compiler won't let you write <tt>person.address==org.address</tt> if either <tt>person.address</tt> or <tt>org.address</tt> might be <tt>null</tt>.
+</p>
+
+<p class="wikiPara">
+Anyway, <tt>exists</tt> is actually less verbose than <tt>==null</tt>. Yes, it's the same number of characters, but the more relevant measure from a readability perspective is the number of <i class="wikiEmphasis">tokens</i>. (Your eyes read tokens, not characters.)
+</p>
+
+<p class="wikiPara">
+Sure, I suppose we could have gone with something like <tt>if (name?)</tt>, but then we would have had to come up with symbols for <tt>nonempty</tt> and <tt>is</tt>, which begins to make the language cryptic to people who don't use it every day.
+</p>
+
+<blockquote class="wikiBlockquote">
+I don't like <tt>if (nonempty seq)</tt> either. Sure its clear, but its over-verbose.
+</blockquote>
+
+<p class="wikiPara">
+Again, neither <tt>if (!seq.empty)</tt> nor <tt>if (!seq is Empty)</tt> is significantly less verbose that <tt>if (nonempty seq)</tt>. And I simply don't want to introduce some cryptic symbol, like, say <tt>??</tt> to mean non-empty.
+</p>
+
+<blockquote class="wikiBlockquote">
+The <tt>for</tt> loop is fine and readable. And the collections hierarchy and integration with the type system looks good. But <tt>for (Natural i -&gt; String op in entries(operators))</tt> seems quite complex. As does <tt>if (exists String op = operators[i])</tt>.
+</blockquote>
+
+<p class="wikiPara">
+Actually we recently decided to let you simply eliminate type annotations from control structures, letting you write, for example:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">for (name in names) { ... }</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">for (i-&gt;op in entries(operators)) { ... }</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">if (exists op = operators[i]) { ... }</pre>
+
+
+<p class="wikiPara">
+This turns out to be more readable in real code. The tutorial doesn't yet reflect this change.
+</p>
+
+<blockquote class="wikiBlockquote">
+I'm struggling with <tt>if (is Hello obj)</tt>. I think because the keyword is in the wrong place.
+</blockquote>
+
+<p class="wikiPara">
+Yes, all these constructs look <q>backwards</q>. The reason we did it this way is to be regular with the full form which introduces a variable name:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">if (exists first = seq.first) { ... }</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">if (is Ngo org = person.employer) { ... }</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">if (nonempty tags = form.tags.value.tokens) { ... }</pre>
+
+
+<p class="wikiPara">
+But I definitely don't love the backwardness of it.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TtsharedttVsTtpublicprotectedprivatett"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-TtsharedttVsTtpublicprotectedprivatett"><tt>shared</tt> vs <tt>public/protected/private</tt></a></h3>
+
+<blockquote class="wikiBlockquote">
+I use <tt>protected</tt> all the time, and losing that seems dubious.
+</blockquote>
+
+<p class="wikiPara">
+I disagree. To me, there is no objective software-engineering justification for ever choosing Java's <tt>protected</tt> over <tt>public</tt>. Visibility modifiers exist to control dependencies between independent units of software. It doesn't matter if a dependency comes from a subclass or from a client class. What matters is <i class="wikiEmphasis">in what unit</i> the subclass or client class is defined.
+</p>
+
+<p class="wikiPara">
+<a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-HidingImplementationDetails" target="" class="regularLink">Ceylon's visibility model</a> can be used to localize the visibility of a program element to a unit of any of the following levels of granularity:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the containing scope</li>
+<li class="wikiUnorderedListItem"> the package</li>
+<li class="wikiUnorderedListItem"> the module</li>
+<li class="wikiUnorderedListItem"> all modules.</li>
+</ul>
+
+<p class="wikiPara">
+That's already more expressive than Java, since Java doesn't have the notion of modules, or module-private visibility. And Ceylon can express all this with just one annotation, instead of three!
+</p>
+
+<h3 class="wikiHeadline3" id="H-Attributes"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-Attributes">Attributes</a></h3>
+
+<blockquote class="wikiBlockquote">
+Attributes look like properties. So why the different name of the feature?
+</blockquote>
+
+<p class="wikiPara">
+Well, to me the word <q>property</q> implies a getter or getter/setter pair. In Ceylon, <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-AbstractingStateUsingAttributes" target="" class="regularLink">not all attributes are getters</a>. <q>Attribute</q> is a collective name to describe both property-style attributes and simple attributes. You can override a simple attribute with a property-style attribute and vice versa.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TypeInference"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-TypeInference">Type inference</a></h3>
+
+<blockquote class="wikiBlockquote">
+Why not use <tt>val</tt> instead of <tt>local</tt> for type inference?
+</blockquote>
+
+<p class="wikiPara">
+Actually, a few weeks ago, we finally made the decision to go with <tt>value</tt> for attributes/locals, and <tt>function</tt> for methods. That change isn't yet reflected in the tutorial. One reason (out of several) for doing this was that we might someday change our minds and let you use <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-TypeInference" target="" class="regularLink">type inference</a> for <tt>shared</tt> declarations. (Only if we can figure out how to do this without too much negative impact upon compiler performance.)
+</p>
+
+<h3 class="wikiHeadline3" id="H-SyntaxForInheritance"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-SyntaxForInheritance">Syntax for inheritance</a></h3>
+
+<blockquote class="wikiBlockquote">
+Why not use a colon instead of <tt>extends</tt>?
+</blockquote>
+
+<p class="wikiPara">
+Well, it's partly a matter of taste. But the objective reasoning is that if you use <tt>:</tt> for <tt>extends</tt>, you then need to come up with punctuation that means <tt>satisfies</tt>, <tt>abstracts</tt>, <tt>adapts</tt>, <tt>of</tt>, etc, and 
+you wind up in a rabbit hole of cryptic symbols like <tt>:&gt;</tt>, <tt>&lt;:</tt>, <tt>&lt;%</tt>, etc. Imagine what it looks like to combine these together in the same type definition!
+</p>
+
+<blockquote class="wikiBlockquote">
+Using <tt>satisfies</tt> also seems another arbitrary change from Java.
+</blockquote>
+
+<p class="wikiPara">
+Lots of people think that when they first see it, but actually it's not an arbitrary change. We did it this way for two reasons:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> So that <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart6#H-GenericTypeConstraints" target="" class="regularLink">upper bound type constraints</a> can use a syntax that is regular with class and interface declarations. The keywords <tt>extends</tt> and <tt>implements</tt> simply don't sound right for defining an upper bound type constraint.</li>
+<li class="wikiOrderedListItem"> Because the type that appears in the <tt>extends</tt> clause in a class definition <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-InheritanceAndRefinement" target="" class="regularLink">comes with arguments to the superclass constructor</a>. If we reused <tt>extends</tt> for interface extension like Java does, the grammar for the <tt>extends</tt> clause would be extremely irregular. And, on the other hand, <tt>implements</tt> doesn't sound right for interface inheritance. </li>
+</ol>
+
+<p class="wikiPara">
+The keyword <tt>satisfies</tt> reads correctly for all three cases: interface extension by another interface, interface implementation by a class, and upper bound constraints on a type parameter.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Ttabstractdefaultformalactualtt"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-Ttabstractdefaultformalactualtt"><tt>abstract/default/formal/actual</tt></a></h3>
+
+<blockquote class="wikiBlockquote">
+Why <tt>actual</tt> instead of the more common <tt>override</tt>?
+</blockquote>
+
+<p class="wikiPara">
+The word <q>override</q> is a verb, and so it usually doesn't read well in a list of several annotations. Annotations read best together when they are all adjectives.
+</p>
+
+<blockquote class="wikiBlockquote">
+And the <tt>formal/abstract</tt> stuff gives the impression of being complex. I think its partly because it is a different model of working and partly because the keywords are unfamiliar.
+</blockquote>
+
+<p class="wikiPara">
+It's really just the excellent overriding model used in C#, but we're using different annotation names.
+</p>
+
+<p class="wikiPara">
+We had to separate <tt>formal</tt> from <tt>abstract</tt> because they actually perform semantically different roles. Java and C# can get away with overloading the meaning of <tt>abstract</tt>, because an inner class can't be overridden. In Ceylon, where we have <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-MemberClassesAndMemberClassRefinement" target="" class="regularLink">member class overriding</a>, a <tt>formal</tt> class and an <tt>abstract</tt> class are semantically quite different creatures, and we need to be able to distinguish between them.
+</p>
+
+<p class="wikiPara">
+We could have used <tt>virtual</tt> like in C++ or C#, instead of <tt>default</tt>, but since Java doesn't have a modifier for this, and since we had already had to introduce the new terms <tt>actual</tt> and <tt>formal</tt>, I felt okay about choosing a name that I subjectively thought was clearer.
+</p>
+
+<h3 class="wikiHeadline3" id="H-UnionTypes"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-UnionTypes">Union types</a></h3>
+
+<blockquote class="wikiBlockquote">
+I'm not so enthusiastic about the use of union types underlying the typesafety of null values and empty sequences, but so long as they are rarely seen it is no big deal.
+</blockquote>
+
+<p class="wikiPara">
+So it turns out that <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-MoreAboutUnionTypes" target="" class="regularLink">union types</a> can be more transparent here than using an algebraic type like in functional languages. For example, you never need to instantiate <q>wrappers</q>. In Haskell, for example, you need to write <tt>Just 1</tt> if you want to assign <tt>1</tt> to <tt>Maybe Int</tt>.
+</p>
+
+<p class="wikiPara">
+We do hide the union type under some <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">syntax sugar</a>, but that's definitely a leaky abstraction. Union types are an integral part of Ceylon's type system that anyone will need to get comfortable with if they want to be effective in the language. I think most people will come around to liking them.
+</p>
+
+<blockquote class="wikiBlockquote">
+The type inference section is where the union types start to appear useful.
+</blockquote>
+
+<p class="wikiPara">
+Yeah, they even work nicely for generic type argument inference, which is not yet covered in the tutorial. One of the problems in Java's generics is that the compiler often infers types that are <q>non-denotable</q>, i.e. not representable within the Java language. This results in <i class="wikiEmphasis">really</i> confusing error messages. That <i class="wikiEmphasis">never</i> happens in Ceylon, since union types are denotable and the compiler never needs to infer any kind of existential type. This really is one of the nicest properties of our type system. An invisible cost of a more complex/powerful type system is more subtle/confusing error messages.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Introductions"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-Introductions">Introductions</a></h3>
+
+<blockquote class="wikiBlockquote">
+Introductions look interesting, but I don't have an immediate similarity to map them to. As you rightly point out, implicits are a poor feature.
+</blockquote>
+
+<p class="wikiPara">
+<a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-Introduction" target="" class="regularLink">Introductions</a> are like a compromise between two features you'll find in other languages. <i class="wikiEmphasis">Extension methods</i> are best known from C#, but actually have a long prior history. <i class="wikiEmphasis">Implicit type conversions</i> are featured in several languages including C++ and Scala.
+</p>
+
+<p class="wikiPara">
+Extension methods are a safe, convenient feature that let you add new members to a pre-existing type. Unfortunately, they don't give you the ability to introduce a new supertype to the type.
+</p>
+
+<p class="wikiPara">
+Implicit type conversions are a dangerous feature that, although they seem simple to understand, actually <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions" target="" class="regularLink">screw up several useful properties of the type system</a> (including transitivity of assignability), introducing complexity into mechanisms like member resolution and type argument inference, and can easily be abused.
+</p>
+
+<p class="wikiPara">
+Introduction is a disciplined way to introduce a new supertype to an existing type, using a mechanism akin to extension methods, without the downsides of implicit type conversions.
+</p>
+
+<h3 class="wikiHeadline3" id="H-MemberClassesAndMemberTtobjecttts"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-MemberClassesAndMemberTtobjecttts">Member classes and member <tt>object</tt>s</a></h3>
+
+<blockquote class="wikiBlockquote">
+Member classes look quite clever and easy to understand at first  glance. I can't quickly grasp why I'd want nested <tt>object</tt> instances.
+</blockquote>
+
+<p class="wikiPara">
+Member <tt>object</tt>s turn out to be super-convenient once you actually start writing Ceylon code. I often use them instead of a nested class if the nested class would have no initializer parameters. They're a bit like a Java-style anonymous inner class, in that they give you a quick way to extend an existing type, while giving you access to state in the containing scope, but the <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-AnonymousClasses" target="" class="regularLink">syntax is a little cleaner</a>, and an <tt>object</tt> may have multiple supertypes. 
+</p>
+
+<p class="wikiPara">
+For example, a member <tt>object</tt> is a convenient way to implement the <tt>Iterator</tt> interface for an <tt>Iterable</tt> object.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Generics"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-Generics">Generics</a></h3>
+
+<blockquote class="wikiBlockquote">
+So, my thoughts on the generics part is that there is a lot of power there with the type system performing better than Java. But the syntax is very verbose.
+</blockquote>
+
+<p class="wikiPara">
+It's intentionally verbose. <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart6" target="" class="regularLink">Generic declarations</a> are something most developers write <i class="wikiEmphasis">much</i> less often than they read. Certain kinds of verbosity can make code <i class="wikiEmphasis">more</i> readable, not less.
+</p>
+
+<p class="wikiPara">
+There's some languages I've seen - not naming names - which, at least to the outside observer, seem to operate on the principle that the more <q>advanced</q> a language feature is, the more cryptic the syntax can be. I think that's exactly backwards. Cryptic syntax is <i class="wikiEmphasis">perhaps</i> acceptable for optimizing very common things, but it should be avoided for expressing things that are uncommon or otherwise difficult to understand.
+</p>
+
+<blockquote class="wikiBlockquote">
+Perhaps that will work out. But I think that deep down I feel SQL and wordy languages are from the past not the future.
+</blockquote>
+
+<p class="wikiPara">
+The thing is that as you start getting to languages that are as feature-rich as the ones we're looking at as potential <q>Java replacements</q>, you simply run out of punctuation characters on the keyboard. ;-) 
+</p>
+
+<p class="wikiPara">
+So you have the choice between: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> arbitrary cryptic combinations of symbols and and reuse of the same punctuation to mean totally different things in different contexts, or</li>
+<li class="wikiUnorderedListItem"> a slightly more <q>wordy</q> style which I think ultimately is much easier for your brain to parse, especially if you're new to the language, or if it isn't the language you use every day.</li>
+</ul>
+
+<p class="wikiPara">
+What I'm hoping is that when people who are <i class="wikiEmphasis">not</i> Ceylon programmers see Ceylon code in a blog, they'll be able to get the gist of what it is doing. (Even if they don't immediately understand all the details.) There are languages like this (Python is a shining example), and languages which are not like this. That's not really a value judgement, just a statement about the goals of <i class="wikiEmphasis">this particular</i> language that we're working on.
+</p>
+
+<blockquote class="wikiBlockquote">
+More generally, and with Fantom in my mind, I'm not sure that trying to use the type system to this degree actually makes sense. Using the  type system to prevent bugs is good, but using it to tie you down to absolutely precise inputs is increasingly something I see as unnecessary.
+</blockquote>
+
+<p class="wikiPara">
+I've written Java code before Java had generics and it wasn't a nice experience. I'll never go back to a language without parametric polymorphism. That's not to say that Java's generics system is perfect. On the contrary, I get the feeling that they kinda panicked and rushed something ever so slightly half-baked into the language when they saw C# come out with this feature. But the addition of generics certainly improved the language, even given the imperfections.
+</p>
+
+<p class="wikiPara">
+Now, I suppose that my point of view on this mainly comes from the fact that I'm a totally IDE-oriented guy. I have never even once in my career written Java code without the help of an IDE. If you asked me to run <tt>javac</tt> from the commandline I would go racing off to google to figure out how to do that. And so I don't want my IDE to be crippled by not being able to properly analyze the types of things. Really, the whole reason we even <i class="wikiEmphasis">have</i> statically typed languages is to enable this kind of sophisticated tooling. A statically typed language without generics cripples that tooling.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Immutability"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-Immutability">Immutability</a></h3>
+
+<blockquote class="wikiBlockquote">
+The distinctions between immutable and mutable, the <tt>variable</tt> annotation, and <tt>=</tt> and <tt>:=</tt> look like a lot of rules to remember.
+</blockquote>
+
+<p class="wikiPara">
+The <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart7#H-Variables" target="" class="regularLink">rules</a> are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> If you want to be able to assign a value to something more than once, you need to annotate it <tt>variable</tt>. It's the precise opposite of Java where you need to annotate something <tt>final</tt> if you don't want to be able to assign to it.</li>
+<li class="wikiUnorderedListItem"> To assign to a <tt>variable</tt>, you use <tt>:=</tt>. Otherwise, you use <tt>=</tt>.</li>
+</ul>
+
+<p class="wikiPara">
+Like in ML, this is to warn you that the code is doing something side-effecty.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Concurrency"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-Concurrency">Concurrency</a></h3>
+
+<blockquote class="wikiBlockquote">
+Also, concurrency does seem to be missing from the tutorial.
+</blockquote>
+
+<p class="wikiPara">
+That's a job for the SDK and other libraries.
+</p>
+
+<h3 class="wikiHeadline3" id="H-UPDATE"><a href="/Bloggers/SomeQuestionsAboutTheDesignOfCeylon#H-UPDATE">UPDATE</a></h3>
+
+<p class="wikiPara">
+On one issue that Stephen and I <i class="wikiEmphasis">do</i> completely agree on, <a href="http://www.jroller.com/scolebourne/entry/reversed_type_declarations" target="" class="regularLink">Stephen's latest post</a> puts the case for prefix type annotations far more comprehensively than I did. (So as not to reopen the flamewar here in this site, I'll be deleting comments relating to this issue.)
+</p>
+</div>

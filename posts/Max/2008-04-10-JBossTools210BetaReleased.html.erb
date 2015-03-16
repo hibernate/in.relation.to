@@ -1,0 +1,98 @@
+---
+title: "JBoss Tools 2.1.0.Beta released"
+author: "Max Andersen"
+blogger_name: "Max"
+layout: blog-post
+tags: [JBoss Tools,JBoss Tools Eclipse]
+slug: JBossTools210BetaReleased
+lace: http://in.relation.to/8828.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JBossTools210BetaReleased">JBoss Tools 2.1.0.Beta released</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Today we are releasing JBoss Tools 2.1.0.Beta.  <a href="http://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=242269&amp;release_id=590905" target="" class="regularLink">Go download it</a> or use the <a href="http://download.jboss.org/jbosstools/updates/development/" target="" class="regularLink">development update site</a>.
+</p>
+
+<blockquote>
+<b>Important:</b> Use <a href="http://download.eclipse.org/webtools/downloads/drops/R2.0/R-2.0.1-20070926042742/" target="" class="regularLink">Eclipse Europe Fall / WTP 2.0.1</a>, do not use Eclipse Europe Winter / WTP 2.0.2 since it has a <a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=222531" target="" class="regularLink">regression bug</a> around deployment. We will have that fixed or worked around for 2.1.GA.
+</blockquote>
+
+<p class="wikiPara">
+In this release we have the usual bug fixes and a good set of new features and improvements. 
+</p>
+
+<p class="wikiPara">
+We compiled a list of the <a href="http://docs.jboss.org/tools/whatsnew/" target="" class="regularLink">new and noteworthy</a> with screenshots and videos of the new features. The reference documentation is available at <a href="http://docs.jboss.org/tools/2.1.0.Beta1" target="" class="regularLink">docs.jboss.org</a>, and if you want the full Release notes look <a href="http://jira.jboss.com/jira/secure/IssueNavigator.jspa?reset=true&amp;pid=10020&amp;fixfor=12312094" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+My favorite new improvements for this release are described below.
+</p>
+
+<h1 class="wikiHeadline1" id="H-OpenSeamComponentFindReferencesDeclarations"><a href="/Bloggers/JBossTools210BetaReleased#H-OpenSeamComponentFindReferencesDeclarations">Open Seam component, Find References/Declarations</a></h1>
+
+<p class="wikiPara">
+One of my most wanted feature for Seam tooling have been to quickly open Seam components and be able to find which EL expressions that refer to  my components. 
+That is now possible with Ctrl+Shift+Z that gives you an Open Seam Component dialog and Ctrl+Shift+G in Java now includes matches found in .xhtml, pages.xml, components.xml etc. 
+</p>
+
+<h1 class="wikiHeadline1" id="H-FlexibleProjectStructureForSeamProjects"><a href="/Bloggers/JBossTools210BetaReleased#H-FlexibleProjectStructureForSeamProjects">Flexible project structure for Seam projects</a></h1>
+
+<p class="wikiPara">
+This feature is for all the maven, seam-gen-commandline and <q>I want my own project structure</q>-fan users out there. 
+</p>
+
+<p class="wikiPara">
+We now expose all the various folder and project settings in the Seam project preferences to allow you to configure to your favorite project structure and 
+thus still be able to use the Seam artifact wizards such as New Action, New Entity etc.
+</p>
+
+<h1 class="wikiHeadline1" id="H-SaferIncrementalDeployment"><a href="/Bloggers/JBossTools210BetaReleased#H-SaferIncrementalDeployment">Safer incremental deployment</a></h1>
+
+<p class="wikiPara">
+We now use JMX calls to suspend and resume JBoss's automatic deployment to ensure the incremental deployments gets fully copied before the files are redeployed by the container. 
+</p>
+
+<h1 class="wikiHeadline1" id="H-BigPerformanceAndMemoryUsageImprovements"><a href="/Bloggers/JBossTools210BetaReleased#H-BigPerformanceAndMemoryUsageImprovements">Big performance and memory usage improvements</a></h1>
+
+<p class="wikiPara">
+Both the Seam Model and the Visual Page Editor have been profiled for hotspots and memory usage. The biggest issues have been fixed in this release. Visual Page editing is now faster and existing Seam projects opens faster.
+</p>
+
+<h1 class="wikiHeadline1" id="H-IClasswikiEmphasisExperimentali64bitBuild"><a href="/Bloggers/JBossTools210BetaReleased#H-IClasswikiEmphasisExperimentali64bitBuild"><i class="wikiEmphasis">Experimental</i> 64-bit build</a></h1>
+
+<p class="wikiPara">
+This release includes an experimental build of the tools which includes a 64-bit Linux XULRunner that should allow you to go fully 64-bit. Let us know how that works out.
+</p>
+
+<h1 class="wikiHeadline1" id="H-IClasswikiEmphasisExperimentaliJBossESBXmlEditor"><a href="/Bloggers/JBossTools210BetaReleased#H-IClasswikiEmphasisExperimentaliJBossESBXmlEditor"><i class="wikiEmphasis">Experimental</i> JBoss ESB xml editor</a></h1>
+
+<p class="wikiPara">
+We started work on a <code>jboss-esb.xml</code> structured editor similar to what we have done earlier for <code>components.xml</code>. It is still in an early stage, but let us know what you think about it.
+</p>
+
+<h1 class="wikiHeadline1" id="H-FinalWords"><a href="/Bloggers/JBossTools210BetaReleased#H-FinalWords">Final words</a></h1>
+
+<p class="wikiPara">
+Thanks to the whole JBoss Tools team for making this happen and especially a big thanks to all the feedback and bugreports we received from users!
+</p>
+
+<p class="wikiPara">
+There is more to this release so go take a look at <a href="http://docs.jboss.org/tools/whatsnew/" target="" class="regularLink">new and noteworthy</a> and enjoy the beta.
+</p>
+
+<p class="wikiPara">
+We encourage you to continue to dig into the new features and post your feedback on our <a href="http://www.jboss.com/index.html?module=bb&amp;op=main&amp;c=20" target="" class="regularLink">forum</a> and <a href="http://jira.jboss.com/jira/browse/JBIDE" target="" class="regularLink">jira</a> so we can get even closer to GA. 
+</p>
+
+<p class="wikiPara">
+p.s. These features (sans the experimental parts) will be be available in a JBoss Developer Studio 1.1.0.Beta for JBDS customers soon.
+</p>
+</div>

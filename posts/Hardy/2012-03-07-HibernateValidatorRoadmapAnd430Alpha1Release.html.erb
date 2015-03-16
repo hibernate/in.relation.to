@@ -1,0 +1,82 @@
+---
+title: "Hibernate Validator Roadmap and 4.3.0.Alpha1 release"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Hibernate Validator]
+slug: HibernateValidatorRoadmapAnd430Alpha1Release
+lace: http://in.relation.to/22988.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateValidatorRoadmapAnd430Alpha1Release">Hibernate Validator Roadmap and 4.3.0.Alpha1 release</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+A question which came up recently a lot was the question about the release plan for Hibernate 
+Validator 4.3. It is time for an answer.
+</p>
+
+<p class="wikiPara">
+I used to say that Validator 4.3 will align with Bean Validation 1.1, incorporating any changes 
+required for this specification update. Work on BV 1.1 is still in full swing and it is still time
+to raise your voice for your long missed validation feature. Check out 
+<a href="http://beanvalidation.org/" target="" class="regularLink">beanvalidation.org</a> for more information.
+</p>
+
+<p class="wikiPara">
+Back to Hibernate Validator though. Over the last few months we incorporated a bunch of useful
+changes and bug fixes into the code base. For example all string based <i class="wikiEmphasis">ConstraintValidator</i>s 
+work now on any subclass of <i class="wikiEmphasis">CharSequence</i> (<a href="https://hibernate.onjira.com/browse/HV-502" target="" class="regularLink">HV-502</a>) 
+and the email validator now supports <a href="http://en.wikipedia.org/wiki/Internationalized_domain_name" target="" class="regularLink">internationalized domain names</a> (<a href="https://hibernate.onjira.com/browse/HV-472" target="" class="regularLink">HV-472</a>, Java 6 required). Or check out the new 
+generic <a href="http://docs.jboss.org/hibernate/validator/4.3/api/org/hibernate/validator/constraints/ModCheck.html" target="" class="regularLink">MOD11</a> constraint (<a href="https://hibernate.onjira.com/browse/HV-491" target="" class="regularLink">HV-491</a>) and its application 
+in the new constraints <a href="http://docs.jboss.org/hibernate/validator/4.3/api/org/hibernate/validator/constraints/br/CNPJ.html" target="" class="regularLink">CNPJ</a>,
+<a href="http://docs.jboss.org/hibernate/validator/4.3/api/org/hibernate/validator/constraints/br/CPF.html" target="" class="regularLink">CPF</a> and <a href="http://docs.jboss.org/hibernate/validator/4.3/api/org/hibernate/validator/constraints/br/TituloEleitoral.html" target="" class="regularLink">TituloEleitoral</a> (used for Brazilian individual taxpayer
+and voting registration numbers). We also have some performance improvements via <a href="https://hibernate.onjira.com/browse/HV-550" target="" class="regularLink">HV-550</a> and <a href="https://hibernate.onjira.com/browse/HV-515" target="" class="regularLink">HV-515</a>.
+</p>
+
+<p class="wikiPara">
+As you can see quite a bunch of useful changes which we want to release as soon as possible. 
+We also want to offer these improvements for users who don't want to upgrade to Bean Validation 1.1
+right away (some of the expected changes will break backwards compatibility with Hibernate Validator 4.2).
+For this reason we just released Hibernate Validator 4.3.0.Alpha1 with the plan to move to a 
+final release as fast as possible. Two more issues are worth mentioning though: <a href="https://hibernate.onjira.com/browse/HV-481" target="" class="regularLink">HV-481</a> and <a href="https://hibernate.onjira.com/browse/HV-484" target="" class="regularLink">HV-484</a>.
+The former is the switch to <a href="https://community.jboss.org/wiki/JBossLoggingTooling" target="" class="regularLink">JBoss Logging</a> 
+and the latter is the start of a package refactoring which
+will (<a href="https://hibernate.onjira.com/browse/HV-557" target="" class="regularLink">once completed</a>) introduce a clear separation between API/SPI and internal parts on a 
+package level. This change is in accordance with the changes already introduced by the other Hibernate projects.
+Have a look at the <a href="https://community.jboss.org/wiki/HibernateValidatorMigrationGuide" target="" class="regularLink">Hibernate Validator Migration Guide</a> to see what these changes imply.
+</p>
+
+<p class="wikiPara">
+Hibernate Validator 4.3.0.Alpha1 is available via the <a href="http://repository.jboss.org/nexus" target="" class="regularLink">JBoss Maven Repository</a> under the GAV <i class="wikiEmphasis">org.hibernate:hibernate-validator:4.3.0.Alpha1</i> or via 
+<a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/4.3.0.Alpha1" target="" class="regularLink">SourceForge</a>. 
+The changelog is available <a href="http://hibernate.onjira.com/secure/ReleaseNote.jspa?projectId=10060&amp;version=11240" target="" class="regularLink">here</a>. Feedback is welcome via the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Validator Forum</a> and the <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV" target="" class="regularLink">issue tracker</a>.
+</p>
+
+<p class="wikiPara">
+As a result, <a href="https://hibernate.onjira.com/browse/HV/fixforversion/11750" target="" class="regularLink">Hibernate Validator 5</a> 
+will become the reference implementation of Bean Validation 1.1.
+</p>
+
+<p class="wikiPara">
+Thanks to all the people suggesting features and reporting bugs. Special thanks to <a href="https://community.jboss.org/people/gastaldi" target="" class="regularLink">George Gastaldi</a>, <a href="https://community.jboss.org/people/kevinpollet" target="" class="regularLink">Kevin Pollet</a> and <a href="https://community.jboss.org/people/gunnar.morling" target="" class="regularLink">Gunnar Morling</a> for your continuous commitment. 
+You guys rock!
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+
+
+
+
+
+
+
+
+</div>

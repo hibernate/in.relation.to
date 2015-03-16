@@ -1,0 +1,43 @@
+---
+title: "Hibernate Search 4.1 CR2"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: [Hibernate,Hibernate Search]
+slug: HibernateSearch41CR2
+lace: http://in.relation.to/23016.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch41CR2">Hibernate Search 4.1 CR2</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+We have decided to do a second release candidate for Hibernate Search 4.1. We fixed a couple of issues related to 
+clustering and how it works in a modular environment like JBoss AS 7. In particular, we made sure it works fine for <a href="http://www.jboss.org/jbossas" target="" class="regularLink">JBoss AS 7.1</a>.
+</p>
+
+<p class="wikiPara">
+But we could not resist adding a couple more bug fixes and improvements. We now use the new Lucene primitive <tt>UPDATE</tt> which should 
+give you an interesting performance boost in write heavy environments. To the feature to kick in, you must not share the same index 
+for several entity types. Apart from that, this will be enabled by default. Upgrade and enjoy the show.
+</p>
+
+<h2 class="wikiHeadline2" id="H-GetTheRelease"><a href="/Bloggers/HibernateSearch41CR2#H-GetTheRelease">Get the release</a></h2>
+
+<p class="wikiPara">
+Try it out, the final version should come soon now:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://hibernate.org/subprojects/search/download" target="" class="regularLink">download the release or get it via Maven</a>
+</li>
+<li class="wikiUnorderedListItem"> report issues on <a href="https://hibernate.onjira.com/browse/HSEARCH" target="" class="regularLink">JIRA</a>
+</li>
+<li class="wikiUnorderedListItem"> get the source on <a href="https://github.com/hibernate/hibernate-search" target="" class="regularLink">GitHub</a>, pull requests welcome :)</li>
+</ul>
+</div>

@@ -1,0 +1,130 @@
+---
+title: "JBoss JCA 1.0.0.Alpha4 is out"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+layout: blog-post
+tags: []
+slug: JBossJCA100Alpha4IsOut
+lace: http://in.relation.to/12455.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JBossJCA100Alpha4IsOut">JBoss JCA 1.0.0.Alpha4 is out</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I'm very happy to announce the 4th developer snapshot of the JBoss JCA project.
+</p>
+
+<h2 class="wikiHeadline2" id="H-EnterEmbeddedJCA"><a href="/Bloggers/JBossJCA100Alpha4IsOut#H-EnterEmbeddedJCA">Enter Embedded JCA</a></h2>
+
+<p class="wikiPara">
+The focus of this release was to provide the initial version of our embedded JCA platform. This is actually a big step in the right direction for embedding a JCA container inside your own application or to create an unit testing environment for your resource adapters.
+</p>
+
+<p class="wikiPara">
+Lets focus on the latter use-case as it'll most likely cover the majority of deployments.
+</p>
+
+<p class="wikiPara">
+Below is a JUnit 4 test case which starts the embedded container and verifies a deployment of a resource adapter.
+</p>
+
+<pre class="wikiPreformatted">
+import org.jboss.jca.embedded.EmbeddedJCA;
+
+import java.net.URL;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class MyTestCase
+{
+   /* Embedded */
+   private static EmbeddedJCA embedded;
+
+   /**
+    * Simple test to verify deployment of myresourceadapter.rar
+    * @throws Throwable throwable exception 
+    */
+   @Test
+   public void testDeployment() throws Throwable
+   {
+      URL archive = getURL("myresourceadapter.rar");
+ 
+      try
+      {
+         embedded.deploy(archive);
+      }
+      catch (Throwable t)
+      {
+         fail(t.getMessage());
+      }
+      finally
+      {
+         embedded.undeploy(archive);
+      }
+   }
+
+   @BeforeClass
+   public static void beforeClass() throws Throwable
+   {
+      // Create an embedded JCA instance
+      embedded = new EmbeddedJCA();
+
+      // Startup
+      embedded.startup();
+   }
+
+   @AfterClass
+   public static void afterClass() throws Throwable
+   {
+      // Shutdown
+      embedded.shutdown();
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+As you can see the embedded JCA API is simple to use :) The above test case runs in about 2 seconds (yes, <b>two</b> seconds) on my old machine - of course there is still room for improvement in that area ;)
+</p>
+
+<p class="wikiPara">
+We have integrated the embedded environment in our build environment and it now provides the foundation for our testing platform of our JCA container configurations - eating our own dog-food.
+</p>
+
+<p class="wikiPara">
+The embedded environment is still in development and of course depends on the functionality of the standalone JCA container environment. We are working on making the integration between JBoss JCA Embedded and your application even easier - if you want to help out drop by our forum.
+</p>
+
+<p class="wikiPara">
+The detailed release notes are <a href="https://jira.jboss.org/jira/secure/ReleaseNote.jspa?version=12313873&amp;styleName=Text&amp;projectId=12310691&amp;Create=Create" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NewCommitter"><a href="/Bloggers/JBossJCA100Alpha4IsOut#H-NewCommitter">New committer</a></h2>
+
+<p class="wikiPara">
+I'm also happy to announce that our community member Gurkan Erdogdu has been promoted to a core developer in this release cycle. Congrats !
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheNextRelease"><a href="/Bloggers/JBossJCA100Alpha4IsOut#H-TheNextRelease">The next release</a></h2>
+
+<p class="wikiPara">
+We will focus on the connection manager implementation in our next release, but be sure that there will be a lot of other updates as well.
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/jca" target="" class="regularLink">WebSite</a>] [<a href="http://www.jboss.org/jca/downloads.html" target="" class="regularLink">Download</a>] [<a href="https://jira.jboss.org/jira/browse/JBJCA" target="" class="regularLink">JIRA</a>] [<a href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=136" target="" class="regularLink">Forum</a>]
+</p>
+</div>

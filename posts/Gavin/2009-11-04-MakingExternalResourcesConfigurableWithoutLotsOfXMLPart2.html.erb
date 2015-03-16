@@ -1,0 +1,108 @@
+---
+title: "Making external resources configurable without lots of XML Part 2"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Web Beans,XML Hell]
+slug: MakingExternalResourcesConfigurableWithoutLotsOfXMLPart2
+lace: http://in.relation.to/12732.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/MakingExternalResourcesConfigurableWithoutLotsOfXMLPart2">Making external resources configurable without lots of XML Part 2</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+In my <a href="/Bloggers/MakingExternalResourcesConfigurableWithoutLotsOfXML" target="" class="regularLink">previous little rant</a>, I showed you how to use <tt>@Alternative</tt> and alternative stereotypes to easily change bean implementations based upon deployment scenario. But that's not the end of the story. There's two other things I would sometimes like to be able to change at deployment time:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> interceptors</li>
+<li class="wikiUnorderedListItem"> decorators</li>
+</ul>
+
+<p class="wikiPara">
+Let's consider security. Suppose I have an interceptor that implements method-level role-based security for beans in the <q>business layer</q>.
+</p>
+
+<pre class="wikiPreformatted brush:java;">@Secure @Interceptor
+class SecurityInterceptor {
+    @Inject User user;
+
+    @AroundInvoke
+    Object checkRole(InvocationContext ctx) throws Exception {
+        String[] roles = ctx.getMethod().getAnnotation(Secure.class).value();
+        for (String role: role) {
+            if ( !user.getRoles().contains(role) ) throw new AuthorizationException(role);
+        }
+        return ctx.proceed();
+    }
+}</pre>
+
+
+<p class="wikiPara">
+I also have a separate data access layer, consisting of beans that implement the following interface:
+</p>
+
+<pre class="wikiPreformatted brush:java;">public interface DataAccess&lt;T, V&gt; {
+    public V getId(T object);
+    public T load(V id); 
+    public void save(T object); 
+    public void delete(T object);
+    public Class&lt;T&gt; getDataType();
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+And I have a decorator that adds row-level security to my data access layer.
+</p>
+
+<pre class="wikiPreformatted brush:java;">@Decorator
+class DataSecurityDecorator&lt;T, V&gt; implements DataAccess&lt;T, V&gt; {
+    @Inject @Delegate DataAccess&lt;T, V&gt; delegate;
+    @Inject User user;
+
+    public void save(T object) { 
+        authorize(SecureAction.SAVE, object); 
+        delegate.save(object);
+    }
+
+    public void delete(T object) { 
+        authorize(SecureAction.DELETE, object); 
+        delegate.delete(object);
+    }
+
+    private void authorize(SecureAction action, T object) { 
+        V id = delegate.getId(object); 
+        Class&lt;T&gt; type = delegate.getDataType(); 
+        if ( !user.getPermissions().contains( new Permission(action, type, id) ) ) {
+            throw new AuthorizationException(action);
+        }
+    }
+}</pre>
+
+
+
+<p class="wikiPara">
+Well, that's all very well, but in my test environment I don't want these interceptors and decorators to be enabled. And that's why, by default, they aren't.
+</p>
+
+<p class="wikiPara">
+We need to expilicity enable the interceptor and decorator for all deployments that require security access controls by declaring them in <tt>beans.xml</tt>.
+</p>
+
+<pre class="wikiPreformatted brush:xml;">&lt;beans&gt;
+    &lt;interceptors&gt;
+        &lt;class&gt;org.mycompany.security.SecurityInterceptor&lt;/class&gt;
+    &lt;/interceptors&gt;
+    &lt;decorators&gt;
+        &lt;class&gt;org.mycompany.security.DataSecurityDecorator&lt;/class&gt;
+    &lt;/decorators&gt;
+&lt;/beans&gt;</pre>
+
+</div>

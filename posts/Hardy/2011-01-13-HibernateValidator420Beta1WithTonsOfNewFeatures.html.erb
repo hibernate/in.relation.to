@@ -1,0 +1,108 @@
+---
+title: "Hibernate Validator 4.2.0 Beta1 with tons of new features"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: []
+slug: HibernateValidator420Beta1WithTonsOfNewFeatures
+lace: http://in.relation.to/18074.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateValidator420Beta1WithTonsOfNewFeatures">Hibernate Validator 4.2.0 Beta1 with tons of new features</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I am happy to announce the first beta release of Hibernate Validator 4.2. You can download this release as usual from the <a href="http://repository.jboss.org/nexus/content/groups/public-jboss/org/hibernate/hibernate-validator/4.2.0.Beta1" target="" class="regularLink">JBoss Maven Repository</a> or from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/4.2.0.Beta1" target="" class="regularLink">SourceForge</a>.
+</p>
+
+<p class="wikiPara">
+As announced <a href="http://in.relation.to/15996.lace" target="" class="regularLink">earlier</a>, the highlight of the 4.2 release is the implementation of method level constraints (<a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-347" target="" class="regularLink">HV-347</a>) as described in Appendix C of the Bean Validation specification. Many thanks to Gunnar for implementing this new feature.
+Method level validation allows to apply constraints to method parameters or return values like this:</p>
+<pre class="wikiPreformatted">
+public @NotNull String saveItem(@Valid @NotNull Item item, @Max(23) BigDecimal price)
+</pre>
+
+To validate these constraints you would get hold of a <i class="wikiEmphasis">MethodValidator</i> via the <i class="wikiEmphasis">Validator.unwrap()</i> method:<pre class="wikiPreformatted">
+MethodValidator validator = Validation.byProvider( HibernateValidator.class )
+    .configure()
+    .buildValidatorFactory()
+    .getValidator()
+    .unwrap( MethodValidator.class );
+</pre>
+
+and use one of the following methods of this new interface:<pre class="wikiPreformatted">
+public interface MethodValidator {
+    public &lt;T&gt; Set&lt;MethodConstraintViolation&lt;T&gt;&gt; validateParameter(T object, Method method, Object parameterValue, int parameterIndex, Class&lt;?&gt;... groups);
+    public &lt;T&gt; Set&lt;MethodConstraintViolation&lt;T&gt;&gt; validateParameters(T object, Method method, Object[] parameterValues, Class&lt;?&gt;... groups);
+    public &lt;T&gt; Set&lt;MethodConstraintViolation&lt;T&gt;&gt; validateReturnValue(T object, Method method, Object returnValue, Class&lt;?&gt;... groups);
+}
+</pre>
+
+The returned <i class="wikiEmphasis">MethodConstraintViolation</i> is derived from <i class="wikiEmphasis">ConstraintViolation</i> and provides additional method level validation specific information. For example it can contain the method name and index of the parameter which caused the constraint violation. The documentation for this feature is still work in progress and will be completed in the following releases.
+
+
+<p class="wikiPara">
+We except that the new MethodValidator API is in particular interesting when used in conjunction with APIs or frameworks like Contexts and Dependency Injection (JSR-299) or aspect oriented frameworks. With the help of these frameworks it is very simple to create an interceptor/aspect which automatically triggers validation of all method invocations and throws a <i class="wikiEmphasis">MethodConstraintViolationExcepion</i> in case of any validation errors. Let us know how you are going to use this new API. 
+</p>
+
+<p class="wikiPara">
+Next to method level validation we also introduced boolean composition for composed constraints (<a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-390" target="" class="regularLink">HV-390</a>). So far composing constraints were always a conjunction of all specified constraints. With this release Hibernate Validator introduces the <i class="wikiEmphasis">@ConstraintComposition</i> annotation together with the <i class="wikiEmphasis">CompositionType</i> enum. This allows you to define composing constraints like this:</p>
+<pre class="wikiPreformatted">
+@ConstraintComposition(OR)
+@Pattern(regexp = "K")
+@Size(min = 2, max = 10)
+@ReportAsSingleViolation
+@Target({ METHOD, FIELD })
+@Retention(RUNTIME)
+@Constraint(validatedBy = { })
+public @interface PatternOrSize {
+	public abstract String message() default "OR";
+	public abstract Class&lt;?&gt;[] groups() default { };
+	public abstract Class&lt;? extends Payload&gt;[] payload() default { };
+}
+</pre>
+  
+This is yet another contribution from the community. Thanks a lot for your support :)
+
+
+<p class="wikiPara">
+Another new feature worth mentioning is the new <i class="wikiEmphasis">ValueFormatterMessageInterpolator</i> which allows you to interpolate the validated value in the message templates. To enable this new interpolator use the configuration API:</p>
+<pre class="wikiPreformatted">
+Validation.byProvider( HibernateValidator.class ).configure().messageInterpolator( new ValueFormatterMessageInterpolator() ).buildValidatorFactory();
+</pre>
+
+Using the message parameter <i class="wikiEmphasis">validatedValue</i> and an optional <a href="http://download.oracle.com/javase/6/docs/api/java/util/Formatter.html#syntax" target="" class="regularLink">format string</a> you can interpolate the validated value. 
+As example take a custom @Future constraint message - <i class="wikiEmphasis">"${validatedValue:%1$td.%1$tm.%1$ty} is not in the future"</i>, which would interpolate into something like <i class="wikiEmphasis">"13.01.11 is not in the future"</i>.
+
+
+<p class="wikiPara">
+One note regarding backwards compatibility. Due to <a href="http://opensource.atlassian.com/projects/hibernate/browse/BVTCK-12" target="" class="regularLink">BVTCK-12</a> resp. <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-395" target="" class="regularLink">HV-395</a> the <i class="wikiEmphasis">javax.validation.Path</i> implementation of Hibernate Validator needed some changes. The good news is, however, that unless you iterate over the <i class="wikiEmphasis">Path</i> instance returned by <i class="wikiEmphasis">Constraint.getPropertyPath()</i> you are not affected by this change.
+</p>
+
+<p class="wikiPara">
+Also the programmatic configuration of generic constraints has changes and looks like this now:</p>
+<pre class="wikiPreformatted">
+ConstraintMapping mapping = new ConstraintMapping();
+mapping.type( Foo.class )
+    .property( "bar", FIELD )
+    .genericConstraint( MyConstraint.class ).param( "value", 1 );
+</pre>
+
+We also added a new type parameter to <i class="wikiEmphasis">ConstraintDef</i> which simplifies the creation of definition types for custom constraints. It is now not longer necessary to provide methods for standard constraint attributes such as message(). If you are using a custom <i class="wikiEmphasis">ConstraintDef</i> you will have to retrofit your implementation.
+
+
+<p class="wikiPara">
+Of course this release contains also a whole range of other bug fixes and improvements. You can view the full changelog <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10060&amp;version=11030" target="" class="regularLink">here</a>. Thanks to Kevin who helped to fix many of these issues. To point out one of his contributions have a look at <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-307" target="" class="regularLink">HV-307</a> which adds support for Joda Time types such as DateTime. These types can be annotated with @Past and @Future just as the standard JDK date types.
+</p>
+
+<p class="wikiPara">
+We are looking forward to your feedback on the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Validator Forum</a>.
+For bug reports please use the <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV" target="" class="regularLink">issue tracker</a>. 
+</p>
+
+</div>

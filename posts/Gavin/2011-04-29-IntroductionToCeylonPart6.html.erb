@@ -1,0 +1,403 @@
+---
+title: "Introduction to Ceylon Part 6"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon,Introduction to Ceylon]
+slug: IntroductionToCeylonPart6
+lace: http://in.relation.to/19634.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/IntroductionToCeylonPart6">Introduction to Ceylon Part 6</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<i class="wikiEmphasis">This is the sixth installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
+</p>
+
+<h1 class="wikiHeadline1" id="H-DefiningGenericTypes"><a href="/Bloggers/IntroductionToCeylonPart6#H-DefiningGenericTypes">Defining generic types</a></h1>
+
+<p class="wikiPara">
+We've seen plenty of parameterized types in this series of articles, but now let's explore a few more details.
+</p>
+
+<p class="wikiPara">
+Programming with generic types is one of the most difficult parts of Java. That's still true, to some extent, in Ceylon. But because the Ceylon language and SDK were designed for generics from the ground up, Ceylon is able to alleviate the most painful aspects of Java's bolted-on-later model.
+</p>
+
+<p class="wikiPara">
+Just like in Java, only types and methods may declare type parameters. Also just like in Java, type parameters are listed before ordinary parameters, enclosed in angle brackets.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Iterator&lt;out Element&gt; { ... }</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">class Array&lt;Element&gt;(Element... elements) satisfies Sequence&lt;Element&gt; { ... }</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared Entries&lt;Natural,Value&gt; entries&lt;Value&gt;(Value... sequence) { ... }</pre>
+
+
+<p class="wikiPara">
+As you can see, the convention in Ceylon is to use meaningful names for type parameters.
+</p>
+
+<p class="wikiPara">
+Unlike Java, we always <i class="wikiEmphasis">do</i> need to specify type arguments in a type declaration (there are no raw types in Ceylon). The following will not compile:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Iterator it = ...;   //error: missing type argument to parameter Element of Iterator</pre>
+
+
+<p class="wikiPara">
+We <i class="wikiEmphasis">always</i> have to specify a type argument in a type declaration:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Iterator&lt;String&gt; it = ...;</pre>
+
+
+<p class="wikiPara">
+On the other hand, we shouldn't need to explicitly specify type arguments in most method invocations or class instantiations. In principle it's very often possible to infer the type arguments from the ordinary arguments. The following code should be possible, just like it is in Java:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Array&lt;String&gt; strings = Array("Hello", "World");
+Entries&lt;Natural,String&gt; entries = entries(strings);</pre>
+
+
+<p class="wikiPara">
+But we haven't yet figured out what exactly the type inference algorithm will be (probably something involving union types!) and so the Ceylon compiler currently requires that all type arguments be explicitly specified like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Array&lt;String&gt; strings = Array&lt;String&gt;("Hello", "World");
+Entries&lt;Natural,String&gt; entries = entries&lt;Natural,String&gt;(strings);</pre>
+
+
+<p class="wikiPara">
+On the other hand, the following code does already compile:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">local strings = Array&lt;String&gt;("Hello", "World");
+local entries = entries&lt;Natural,String&gt;(strings);</pre>
+
+
+<p class="wikiPara">
+The root cause of very many problems when working with generic types in Java is <i class="wikiEmphasis">type erasure</i>. Generic type parameters and arguments are discarded by the compiler, and simply aren't available at runtime. So the following, perfectly sensible, code fragments just wouldn't compile in Java:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">if (is List&lt;Person&gt; list) { ... }</pre>
+
+<pre class="wikiPreformatted brush:ceylon">if (is Element obj) { ... }</pre>
+
+
+<p class="wikiPara">
+(Where <tt>Element</tt> is a generic type parameter.)
+</p>
+
+<p class="wikiPara">
+A major goal of Ceylon's type system is support for <i class="wikiEmphasis">reified generics</i>. Like Java, the Ceylon compiler performs erasure, discarding type parameters from the schema of the generic type. But unlike Java, type arguments are supposed to be reified (available at runtime). Of course, generic type arguments won't be checked for typesafety by the underlying virtual machine at runtime, but type arguments are at least available at runtime to code that wants to make use of them explicitly. So the code fragments above are supposed to compile and function as expected. You will even be able to use reflection to discover the type arguments of an instance of a generic type.
+</p>
+
+<p class="wikiPara">
+The bad news is we haven't implemented this yet ;-)
+</p>
+
+<p class="wikiPara">
+Finally, Ceylon eliminates one of the bits of Java generics that's really hard to get your head around: wildcard types. Wildcard types were Java's solution to the problem of <i class="wikiEmphasis">covariance</i> in a generic type system. Let's first explore the idea of covariance, and then see how covariance in Ceylon works.
+</p>
+
+<h1 class="wikiHeadline1" id="H-CovarianceAndContravariance"><a href="/Bloggers/IntroductionToCeylonPart6#H-CovarianceAndContravariance">Covariance and contravariance</a></h1>
+
+<p class="wikiPara">
+It all starts with the intuitive expectation that a collection of <tt>Geek</tt>s is a collection of <tt>Person</tt>s. That's a reasonable intuition, but especially in non-functional languages, where collections can be mutable, it turns out to be incorrect. Consider the following possible definition of <tt>Collection</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Collection&lt;Element&gt; { 
+    shared formal Iterator&lt;Element&gt; iterator(); 
+    shared formal void add(Element x);
+}</pre>
+
+
+<p class="wikiPara">
+And let's suppose that <tt>Geek</tt> is a subtype of <tt>Person</tt>. Reasonable.
+</p>
+
+<p class="wikiPara">
+The intuitive expectation is that the following code should work:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Collection&lt;Geek&gt; geeks = ... ; 
+Collection&lt;Person&gt; people = geeks;    //compiler error 
+for (Person person in people) { ... }</pre>
+
+
+<p class="wikiPara">
+This code is, frankly, perfectly reasonable taken at face value. Yet in both Java and Ceylon, this code results in a compiler error at the second line, where the <tt>Collection&lt;Geek&gt;</tt> is assigned to a <tt>Collection&lt;Person&gt;</tt>. Why? Well, because if we let the assignment through, the following code would also compile:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Collection&lt;Geek&gt; geeks = ... ; 
+Collection&lt;Person&gt; people = geeks;    //compiler error 
+people.add( Person("Fonzie") );</pre>
+
+
+<p class="wikiPara">
+We can't let that code by — Fonzie isn't a <tt>Geek</tt>!
+</p>
+
+<p class="wikiPara">
+Using big words, we say that <tt>Collection</tt> is <i class="wikiEmphasis">nonvariant</i> in <tt>Element</tt>. Or, when we're not trying to impress people with opaque terminology, we say that <tt>Collection</tt> both <i class="wikiEmphasis">produces</i> — via the <tt>iterator()</tt> method — and <i class="wikiEmphasis">consumes</i> — via the <tt>add()</tt> method — the type <tt>Element</tt>.
+</p>
+
+<p class="wikiPara">
+Here's where Java goes off and dives down a rabbit hole, successfully using wildcards to squeeze a covariant or contravariant type out of a nonvariant type, but also succeeding in thoroughly confusing everybody. We're not going to follow Java down the hole.
+</p>
+
+<p class="wikiPara">
+Instead, we're going to refactor <tt>Collection</tt> into a pure producer interface and a pure consumer interface:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Producer&lt;out Output&gt; { 
+    shared formal Iterator&lt;Output&gt; iterator();
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Consumer&lt;in Input&gt; { 
+    shared formal void add(Input x);
+}</pre>
+
+
+<p class="wikiPara">
+Notice that we've annotated the type parameters of these interfaces.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The <tt>out</tt> annotation specifies that <tt>Producer</tt> is covariant in <tt>Output</tt>; that it produces instances of <tt>Output</tt>, but never consumes instances of <tt>Output</tt>.</li>
+<li class="wikiUnorderedListItem"> The <tt>in</tt> annotation specifies that <tt>Consumer</tt> is contravariant in <tt>Input</tt>; that it consumes instances of <tt>Input</tt>, but never produces instances of <tt>Input</tt>.</li>
+</ul>
+
+<p class="wikiPara">
+The Ceylon compiler validates the schema of the type declaration to ensure that the variance annotations are satisfied. If you try to declare an <tt>add()</tt> method on <tt>Producer</tt>, a compilation error results. If you try to declare an <tt>iterate()</tt> method on <tt>Consumer</tt>, you get a similar compilation error.
+</p>
+
+<p class="wikiPara">
+Now, let's see what that buys us:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Since <tt>Producer</tt> is covariant in its type parameter <tt>Output</tt>, and since <tt>Geek</tt> is a subtype of <tt>Person</tt>, Ceylon lets you assign <tt>Producer&lt;Geek&gt;</tt> to <tt>Producer&lt;Person&gt;</tt>.</li>
+<li class="wikiUnorderedListItem"> Furthermore, since <tt>Consumer</tt> is contravariant in its type parameter <tt>Input</tt>, and since <tt>Geek</tt> is a subtype of <tt>Person</tt>, Ceylon lets you assign <tt>Consumer&lt;Person&gt;</tt> to <tt>Consumer&lt;Geek&gt;</tt>.</li>
+</ul>
+
+<p class="wikiPara">
+We can define our <tt>Collection</tt> interface as a mixin of <tt>Producer</tt> with <tt>Consumer</tt>.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Collection&lt;Element&gt; 
+        satisfies Producer&lt;Element&gt; &amp; Consumer&lt;Element&gt; {}</pre>
+
+
+<p class="wikiPara">
+Notice that <tt>Collection</tt> remains nonvariant in <tt>Element</tt>. If we tried to add a variance annotation to <tt>Element</tt> in <tt>Collection</tt>, a compile time error would result.
+</p>
+
+<p class="wikiPara">
+Now, the following code finally compiles:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Collection&lt;Geek&gt; geeks = ... ; 
+Producer&lt;Person&gt; people = geeks; 
+for (Person person in people) { ... }</pre>
+
+
+<p class="wikiPara">
+Which matches our original intuition.
+</p>
+
+<p class="wikiPara">
+The following code also compiles:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Collection&lt;Person&gt; people = ... ; 
+Consumer&lt;Geek&gt; geekConsumer = people; 
+geekConsumer.add( Geek("James") );</pre>
+
+
+<p class="wikiPara">
+Which is also intuitively correct — James is most certainly a <tt>Person</tt>!
+</p>
+
+<p class="wikiPara">
+There's two additional things that follow from the definition of covariance and contravariance:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>Producer&lt;Void&gt;</tt> is a supertype of <tt>Producer&lt;T&gt;</tt> for any type <tt>T</tt>, and</li>
+<li class="wikiUnorderedListItem"> <tt>Consumer&lt;Bottom&gt;</tt> is a supertype of <tt>Consumer&lt;T&gt;</tt> for any type <tt>T</tt>.</li>
+</ul>
+
+<p class="wikiPara">
+These invariants can be very helpful if you need to abstract over all <tt>Producer</tt>s or all <tt>Consumer</tt>s. (Note, however, that if <tt>Producer</tt> declared upper bound type constraints on <tt>Output</tt>, then <tt>Producer&lt;Void&gt;</tt> would not be a legal type.)
+</p>
+
+<p class="wikiPara">
+You're unlikely to spend much time writing your own collection classes, since the Ceylon SDK has a powerful collections framework built in. But you'll still appreciate Ceylon's approach to covariance as a user of the built-in collection types. The collections framework defines two interfaces for each basic kind of collection. For example, there's an interface <tt>List&lt;Element&gt;</tt> which represents a read-only view of a list, and is covariant in <tt>Element</tt>, and <tt>OpenList&lt;Element&gt;</tt>, which represents a mutable list, and is nonvariant in <tt>Element</tt>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-GenericTypeConstraints"><a href="/Bloggers/IntroductionToCeylonPart6#H-GenericTypeConstraints">Generic type constraints</a></h1>
+
+<p class="wikiPara">
+Very commonly, when we write a parameterized type, we want to be able to invoke methods or evaluate attributes upon instances of the type parameter. For example, if we were writing a parameterized type <tt>Set&lt;Element&gt;</tt>, we would need to be able to compare instances of <tt>Element</tt> using <tt>==</tt> to see if a certain instance of <tt>Element</tt> is contained in the <tt>Set</tt>. Since <tt>==</tt> is only defined for expressions of type <tt>Equality</tt>, we need some way to assert that <tt>Element</tt> is a subtype of <tt>Equality</tt>. This is an example of a <i class="wikiEmphasis">type constraint</i> — in fact, it's an example of the most common kind of type constraint, an <i class="wikiEmphasis">upper bound</i>.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Set&lt;out Element&gt;(Element... elements) 
+        given Element satisfies Equality {
+    ...
+
+    shared Boolean contains(Object obj) { 
+        if (is Element obj) {
+            return obj in bucket(obj.hash);
+        }
+        else {
+            return false;
+        }
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+A type argument to <tt>Element</tt> must be a subtype of <tt>Equality</tt>.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Set&lt;String&gt; set = Set("C", "Java", "Ceylon"); //ok</pre>
+
+<pre class="wikiPreformatted brush:ceylon">Set&lt;String?&gt; set = Set("C", "Java", "Ceylon", null); //compile error</pre>
+
+
+<p class="wikiPara">
+In Ceylon, a generic type parameter is considered a proper type, so a type constraint looks a lot like a class or interface declaration. This is another way in which Ceylon is more regular than some other C-like languages.
+</p>
+
+<p class="wikiPara">
+An upper bound lets us call methods and attributes of the bound, but it doesn't let us instantiate new instances of <tt>Element</tt>. Once we implement reified generics, we'll be able to add a new kind of type constraint to Ceylon. An <i class="wikiEmphasis">initialization parameter specification</i> lets us actually instantiate the type parameter.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Factory&lt;out Result&gt;() 
+        given Result(String s) {
+
+    shared Result produce(String string) { 
+        return Result(string);
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+A type argument to <tt>Result</tt> of <tt>Factory</tt> must be a class with a single initialization parameter of type <tt>String</tt>.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Factory&lt;Hello&gt; = Factory&lt;PersonalizedHello&gt;(); //ok</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">Factory&lt;Hello&gt; = Factory&lt;DefaultHello&gt;(); //compile error</pre>
+
+
+<p class="wikiPara">
+A third kind of type constraint is an <i class="wikiEmphasis">enumerated type bound</i>, which constrains the type argument to be one of an enumerated list of types. It lets us write an exhaustive <tt>switch</tt> on the type parameter:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Value sqrt&lt;Value&gt;(Value x) 
+        given Value of Float | Decimal {
+    switch (Value)
+    case (satisfies Float) {
+        return sqrtFloat(x);
+    } 
+    case (satisfies Decimal) {
+        return sqrtDecimal(x);
+    }
+}</pre>
+
+
+<p class="wikiPara">
+This is one of the workarounds we mentioned earlier for Ceylon's lack of overloading.
+</p>
+
+<p class="wikiPara">
+Finally, the fourth kind of type constraint, which is much less common, and which most people find much more confusing, is a <i class="wikiEmphasis">lower bound</i>. A lower bound is the opposite of an upper bound. It says that a type parameter is a supertype of some other type. There's only really one situation where this is useful. Consider adding a <tt>union()</tt> operation to our <tt>Set</tt> interface. We might try the following:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Set&lt;out Element&gt;(Element... elements) 
+        given Element satisfies Equality {
+    ...
+    
+    shared Set&lt;Element&gt; union(Set&lt;Element&gt; set) {   //compile error
+        return ....
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+This doesn't compile because we can't use the covariant type parameter <tt>T</tt> in the type declaration of a method parameter. The following declaration would compile:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Set&lt;out Element&gt;(Element... elements) 
+        given Element satisfies Equality {
+    ...
+    
+    shared Set&lt;Object&gt; union(Set&lt;Object&gt; set) { 
+        return ....
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+But, unfortunately, we get back a <tt>Set&lt;Object&gt;</tt> no matter what kind of set we pass in. A lower bound is the solution to our dilemma:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Set&lt;out Element&gt;(Element... elements) 
+        given Element satisfies Equality {
+    ...
+    
+    shared Set&lt;UnionElement&gt; union(Set&lt;UnionElement&gt; set) 
+            given UnionElement abstracts Element {
+        return ...
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+With type inference, the compiler chooses an appropriate type argument to <tt>UnionElement</tt> for the given argument to <tt>union()</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Set&lt;String&gt; strings = Set("abc", "xyz") ; 
+Set&lt;String&gt; moreStrings = Set("foo", "bar", "baz"); 
+Set&lt;String&gt; allTheStrings = strings.union(moreStrings);</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">Set&lt;Decimal&gt; decimals = Set(1.2.decimal, 3.67.decimal) ; 
+Set&lt;Float&gt; floats = Set(0.33, 22.0, 6.4); 
+Set&lt;Number&gt; allTheNumbers = decimals.union(floats);</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">Set&lt;Hello&gt; hellos = Set( DefaultHello(), PersonalizedHello(name) ); 
+Set&lt;Object&gt; objects = Set("Gavin", 12, true); 
+Set&lt;Object&gt; allTheObjects = hellos.union(objects);</pre>
+
+
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart6#H-TheresMore">There's more...</a></h1>
+
+<p class="wikiPara">
+I was about to start talking about <i class="wikiEmphasis">sequenced type parameters</i>, the foundation of Ceylon's typesafe metamodel. But I realize I already hit my word limit. If you're really impatient, you can skip forward to <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAFunction" target="" class="regularLink">Part 8</a>.
+</p>
+
+<p class="wikiPara">
+In <a href="/Bloggers/IntroductionToCeylonPart7" target="" class="regularLink">Part 7</a> we're going to back up a bit and cover a couple of topics that got kinda glossed over.
+</p>
+</div>

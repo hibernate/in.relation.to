@@ -1,0 +1,106 @@
+---
+title: "JBoss JCA 1.0.0.Alpha2 is out"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+layout: blog-post
+tags: []
+slug: JBossJCA100Alpha2IsOut
+lace: http://in.relation.to/12047.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JBossJCA100Alpha2IsOut">JBoss JCA 1.0.0.Alpha2 is out</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+We are happy to announce the second developer snapshot of the JBoss JCA project which implements the upcoming Java Connector Architecture 1.6 (<a href="http://jcp.org/en/jsr/detail?id=322" target="" class="regularLink">JSR-322</a>) specification.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheRelease"><a href="/Bloggers/JBossJCA100Alpha2IsOut#H-TheRelease">The release</a></h2>
+
+<p class="wikiPara">
+We have worked in various areas for this release and the container now features
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A new logging framework which bridges all existing Java logging frameworks out there</li>
+<li class="wikiUnorderedListItem"> A remotable POJO naming server</li>
+<li class="wikiUnorderedListItem"> Initial support for the JCA 1.6 annotations</li>
+</ul>
+
+<p class="wikiPara">
+Our community member Gurkan Erdogdu have been working on the new WorkManager implementation which have seen a lot of activity during this development cycle.
+</p>
+
+<p class="wikiPara">
+Of course there are other changes too - check out our <a href="https://jira.jboss.org/jira/secure/ReleaseNote.jspa?version=12313710&amp;styleName=Text&amp;projectId=12310691&amp;Create=Create" target="" class="regularLink">release notes</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Annotations"><a href="/Bloggers/JBossJCA100Alpha2IsOut#H-Annotations">Annotations</a></h2>
+
+<p class="wikiPara">
+The JCA 1.6 specification features annotations which will help ease the development of a resource adapter, since you now don't have to specify a long ra.xml file :)
+</p>
+
+<pre class="wikiPreformatted">
+import javax.resource.spi.Connector;
+import javax.resource.spi.TransactionSupport;
+
+/**
+ * My resource adapter
+ */
+@Connector(
+      vendorName = "My company",
+      eisType = "My EIS",
+      version = "0.1",
+      transactionSupport = TransactionSupport.TransactionSupportLevel.LocalTransaction,
+      reauthenticationSupport = false)
+public class MyResourceAdapter implements ResourceAdapter
+{
+</pre>
+
+
+<p class="wikiPara">
+Other annotations include
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Activation</li>
+<li class="wikiUnorderedListItem"> AdministeredObject</li>
+<li class="wikiUnorderedListItem"> AuthenticationMechanism</li>
+<li class="wikiUnorderedListItem"> ConfigProperty</li>
+<li class="wikiUnorderedListItem"> ConnectionDefinition</li>
+<li class="wikiUnorderedListItem"> ConnectionDefinitions</li>
+<li class="wikiUnorderedListItem"> SecurityPermission</li>
+</ul>
+
+<p class="wikiPara">
+Their JavaDoc is included in the release.
+</p>
+
+<p class="wikiPara">
+Please, send your feedback about the annotations to the <a href="http://wiki.jcp.org/boards/index.php?b=jsr-322-public" target="" class="regularLink">expert group</a>. We are currently going over them and implementing the sparse XSD that is needed.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NextDevelopmentCycle"><a href="/Bloggers/JBossJCA100Alpha2IsOut#H-NextDevelopmentCycle">Next development cycle</a></h2>
+
+<p class="wikiPara">
+We are currently looking at the Bean Validation integration, so hopefully we'll see some changes in that area soon.
+</p>
+
+<p class="wikiPara">
+If you are interested in helping out with the project in any way drop by our forum ! 
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You ! 
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/jca" target="" class="regularLink">WebSite</a>] [<a href="http://www.jboss.org/jca/downloads.html" target="" class="regularLink">Download</a>] [<a href="https://jira.jboss.org/jira/browse/JBJCA" target="" class="regularLink">JIRA</a>] [<a href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=136" target="" class="regularLink">Forum</a>]
+</p>
+</div>

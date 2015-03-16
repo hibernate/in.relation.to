@@ -1,0 +1,41 @@
+---
+title: "Hibernate Metamodel Generator 1.1.0.CR1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: []
+slug: HibernateMetamodelGenerator110CR1
+lace: http://in.relation.to/17417.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateMetamodelGenerator110CR1">Hibernate Metamodel Generator 1.1.0.CR1</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Time to announce the 1.1.0.CR1 release for the <a href="http://www.hibernate.org/subprojects/jpamodelgen.html" target="" class="regularLink">Hibernate Metamodel Generator</a> (hibernate-metamodelgen). In case you don't remember what this annotation processor does read this <a href="http://in.relation.to/12805.lace" target="" class="regularLink">blog entry</a>. 
+</p>
+
+<p class="wikiPara">
+This release is a maintenance release fixing the <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10110&amp;version=11013" target="" class="regularLink">13</a> (absit omen) issues which were reported since the 1.0.0.Final release. Worth mentioning explicitly are <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN-28" target="" class="regularLink">METAGEN-28</a> and <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN-30" target="" class="regularLink">METAGEN-30</a> which add support for <i class="wikiEmphasis">UserType</i>s and <i class="wikiEmphasis">@Target</i> (both Hibernate specific features). New functionality is also added by <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN-33" target="" class="regularLink">METAGEN-33</a> which adds support for an <i class="wikiEmphasis">addGeneratedAnnotation</i> option. The JPA specification recommends to add the <i class="wikiEmphasis">@Generated</i> annotation to the generated source files. However, so far Hibernate Metamodel Generator did not do that, because the annotation is only available since Java 6 and model classes containing it would not compile under Java 5. With the new option <i class="wikiEmphasis">addGeneratedAnnotation</i> you can tell the processor explicitly to add the <i class="wikiEmphasis">@Generated</i> annotation. You can pass processor specific options to an annotation processor by using the <i class="wikiEmphasis">-Aproperty=value</i> syntax. Make sure to check the <a href="http://docs.jboss.org/hibernate/stable/jpamodelgen/reference/en-US/html_single/#d0e342" target="" class="regularLink">online documentation</a> for more available options.
+</p>
+
+<p class="wikiPara">
+You can download the release from the <a href="https://repository.jboss.org/nexus/content/repositories/public/org/hibernate/hibernate-jpamodelgen/1.1.0.CR1" target="" class="regularLink">JBoss Maven repo</a> or from <a href="http://sourceforge.net/projects/hibernate/files/hibernate-jpamodelgen/1.1.0.CR1/hibernate-jpamodelgen-1.1.0.CR1-dist.tar.gz/download" target="" class="regularLink">SourceForge</a>. 
+</p>
+
+<p class="wikiPara">
+To report any issues use the Hibernate Jira project <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN" target="" class="regularLink">METAGEN</a>.
+</p>
+
+<p class="wikiPara">
+Last but not least, following suite with the other Hibernate projects, the source code for Hibernate Metamodel Generator has as of now moved to <a href="http://github.com" target="" class="regularLink">GitHub</a>. You can find it under - http://github.com/hibernate/hibernate-metamodelgen.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>

@@ -1,0 +1,70 @@
+---
+title: "Hibernate and Swing demo app"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: []
+slug: HibernateAndSwingDemoApp
+lace: http://in.relation.to/1433.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateAndSwingDemoApp">Hibernate and Swing demo app</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+At <a href="http://www.jbossworld.com" target="" class="regularLink">JBoss World</a> last week in Berlin I presented some advanced Hibernate patterns. Well, I planned to talk longer about the Swing and Hibernate demo app I wrote a few days before but it turned out that although 100% of the audience was using Hibernate, only one poor soul had to work with Hibernate in a two-tier desktop application scenario. So I spent more time on the other patterns and only showed the Swing demo for about 5 minutes at the end of the presentation.
+</p>
+
+<p class="wikiPara">
+I thought more people would be interested in this, it comes up frequently on forums and the Wiki. Developers who have to access a database from a Swing application with no middle tier always have the same questions: <q>How do I use the Session?</q> and <q>How do I get an updated object into a different view?</q>
+</p>
+
+<p class="wikiPara">
+The answers to these questions are very much interconnected. I don't claim that what I came up with in the demo app is the best possible strategy, although it works nicely as a proof of concept. Also, I'm a terrible Swing programmer, only did two quite small projects about 4 years ago. I actually used Hibernate even back then but if I look at my code now it wasn't really that good. This is now much better.
+</p>
+
+<p class="wikiPara">
+First, here is a screenshot of the app:
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/11191" width="779" height="338">
+</p>
+
+<p class="wikiPara">
+On the left is a frame with a tree and a modal dialog that pops up if you create or edit one of the items in the tree. On the right hand side is a frame with a panel, in that panel is a label and a table. These views are assigned to controllers, which also handle the model for each view. I prefer the hierarchical MVC pattern for this, so you end up with MVC triads:
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/11190" width="559" height="332">
+</p>
+
+<p class="wikiPara">
+Now, all of this is independent of the persistence context (think Hibernate Session). I wrote a very small HMVC framework that supports arbitrary scoping of the persistence context (it's always bound to the current thread, this is also an orthogonal concern). The scope of the persistence context depends on what I want for a particular MVC subtree. Do I want to work with a single identity scope in that subtree? Do I want one in-memory representation of a particualr database row? If yes, then I use the same persistence context for all controllers in that subtree. Have a look at the controller superclasses in the download package.
+</p>
+
+<p class="wikiPara">
+If I don't want the same identity scope, I can pass detached instances between different persistence contexts and reattach them when necessary. In the demo app, I could have easily implemented the list view of items on the right side with a different persistence context and pass the selected category into the ItemListController.
+</p>
+
+<p class="wikiPara">
+I also need to pass other things between controllers, all kinds of events. So for example, if a user selects a category on the left side, I fire a CategorySelectedEvent. Whatever controller has registered a listener for that event, gets the event. The propagation is done by the controllers, and I can decide if an event is only propagated downwards to subcontrollers, or globally to every controller in the hierarchy tree (an application could have several HMVC trees). I can put a payload into an event as well, for example, to transport a detached object into a different persistence context:
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/11189" width="568" height="333">
+</p>
+
+<p class="wikiPara">
+Transaction handling is also an orthogonal concern. Data access might happen behind the scenes, for example, when a user expands the tree nodes. Or, a button is clicked and an action executes. You can't really wrap transaction demarcation (BEGIN and COMMIT) around on-demand data retrieval, when a Swing data model (a TreeModel here) accesses its bound entity objects. So this is a scenario where auto-commit mode for reading makes sense. The persistence context still provides repeatable read for all entity instances. On the other hand, all data access that is done explicitly when an action executes (button was clicked) is wrapped in a regular transaction block. The demo framework also has the code for this.
+</p>
+
+<p class="wikiPara">
+You can <a href="&lt;%=%20site.base_url%20%&gt;/assets/swingdemo-20061124.zip" target="" class="regularLink">download the demo app here</a> - I will need to find some time to document this better (there is some Javadoc in the source though).
+</p>
+</div>

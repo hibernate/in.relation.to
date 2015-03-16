@@ -1,0 +1,196 @@
+---
+title: "RichFaces 4 Overview. Part III – Panels components."
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+layout: blog-post
+tags: []
+slug: RichFaces4OverviewPartIIIPanelsComponents
+lace: http://in.relation.to/16558.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/RichFaces4OverviewPartIIIPanelsComponents">RichFaces 4 Overview. Part III – Panels components.</a>
+                    </h1>
+</div>
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+     <a href="http://labs.jboss.com/richfaces" target="blank"> 
+         <img src="http://www.jroller.com/a4j/resource/richfaces_logo_200px.gif" alt="">
+     </a>
+</div>
+
+<p class="wikiPara">
+The series continues and in this entry I will give you an overview of the various panel components which are already ported to <b>RichFaces 4</b> codebase (<b><a href="http://in.relation.to/16447.lace" target="" class="regularLink">M1 release</a></b>).
+</p>
+
+<h2 class="wikiHeadline2" id="H-SimplePanelComponent"><a href="/Bloggers/RichFaces4OverviewPartIIIPanelsComponents#H-SimplePanelComponent">Simple Panel component</a></h2>
+
+<p class="wikiPara">
+Actually there is almost nothing to describe as this probably the simplest and most well known layout component in the whole library :). 
+</p>
+
+<p class="wikiPara">
+The following tags...
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:panel header="Panel with default Look-n-feel"&gt;
+    //Content inside 
+&lt;/rich:panel&gt;</pre>
+
+
+<p class="wikiPara">
+...will be rendered as a skinnable rectangular panel with header on top:
+</p>
+
+<img src="http://www.jroller.com/a4j/resource/rf-pnl-1.jpg" alt="">
+
+<p class="wikiPara">
+So, let's not to spend much time on that component and go to the more complex ones.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SwitchablePanels"><a href="/Bloggers/RichFaces4OverviewPartIIIPanelsComponents#H-SwitchablePanels">Switchable Panels</a></h2>
+
+<p class="wikiPara">
+This section should be much more interesting and we'll describe the changes in design of the switchable panels.
+</p>
+
+<p class="wikiPara">
+The first components which was migrated to the 4.0 codebase – <b>Toggle components</b> set. The reason is simple – it's a base one for all the other (<i><b>TabPanel</b> and <b>Accordion</b> are on our way for M2</i>). The Toggle components set consist of:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <b>togglePanel</b> – parent component which contains from set of child panels and provides mechanism of switching between them.</li>
+<li class="wikiUnorderedListItem"> <b>togglePanelItem</b> – child panel component which defines single state representation. In 4.x it's implemented as a child component instead of facet in order to distribute attributes and some component functionality more properly.</li>
+<li class="wikiUnorderedListItem"> <b>toggleControl</b> – the behavior which performs switching of the panel. The main goal of implementation as a behavior – to provide the way to use any controls for states switching (<i>and maybe to show once more that we are using hottest JSF 2 features :)</i>). That's differs from 3.3.x where it was a component and rendered as HTML link element.</li>
+</ul>
+
+<p class="wikiPara">
+Simple sample of Toggle components usage: 
+</p>
+
+<pre class="wikiPreformatted">&lt;style&gt;
+	.rf-tp-i {
+		border: 1px solid #{richSkin.panelBorderColor}
+	}
+&lt;/style&gt;
+&lt;h:form&gt;
+	&lt;h:commandLink value="Toggle Panel Item 1"&gt;
+		&lt;rich:toggleControl forPanel="panel1" targetItem="item1" /&gt;
+	&lt;/h:commandLink&gt;
+	&lt;h:outputText value=" | " /&gt;
+	&lt;h:commandLink value="Toggle Panel Item 2"&gt;
+		&lt;rich:toggleControl forPanel="panel1" targetItem="item2" /&gt;
+	&lt;/h:commandLink&gt;
+	&lt;rich:togglePanel id="panel1" activeItem="item1"&gt;
+		&lt;rich:togglePanelItem name="item1" styleClass="rf-tp-i"&gt;
+			&lt;p&gt;This toggle panel switches in Ajax mode. 
+So only one active
+				item loaded to the client.&lt;/p&gt;
+			&lt;p&gt;For now you are at Panel 1&lt;/p&gt;
+		&lt;/rich:togglePanelItem&gt;
+		&lt;rich:togglePanelItem name="item2" styleClass="rf-tp-i"&gt;
+&lt;p&gt;After the second link click - panel changed active item to the second one according to name specified in the
+				togglePanelBehavior&lt;/p&gt;
+			&lt;p&gt;For now you are at Panel 2&lt;/p&gt;
+		&lt;/rich:togglePanelItem&gt;
+	&lt;/rich:togglePanel&gt;
+&lt;/h:form&gt;</pre>
+
+
+<p class="wikiPara">
+And on opening page you will see:
+</p>
+
+<img src="http://www.jroller.com/a4j/resource/rf-pnl-2.jpg" alt="">
+
+<blockquote class="wikiBlockquote">
+<b>Note:</b> It's also possible to switch between states sequentially without states definition at behavior. In that case the order of the child items will be considered. Could be useful for example for wizard panels creation.
+</blockquote>
+
+
+<p class="wikiPara">
+The main ideas of the component has not changed much from 3.3.x – the component  provides no predefined layout, and provides only switching between abstract states functionality using different modes. So any kind of switchable panel could be implemented  using this component. E.g. example above created simplest tabs. And we could move switching controls to other place and align them as we need easily.
+</p>
+
+<p class="wikiPara">
+The main change to be considered if you have already used any of the components in 3.3.3 – all the functionality by switching of the states moved to the parent panels components. The controls like <b>toggleControl</b> and future <b>tab</b> or <b>accordionItem</b> control just calls the state change panel methods. Using that way we resolved the following problems:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> All the <b>attributes of the request</b> in non-client mode – <b>configured once</b> at panel level.</li>
+<li class="wikiUnorderedListItem"> Switching event managed at panel level using <b>ItemChangeListener</b> instead of having bunch of actions and listeners definitions at every control.</li>
+<li class="wikiUnorderedListItem"> <b>Client API</b> available at panel level. So no more need in JavaScript clicks on controls in order to perform switch. </li>
+</ul>
+
+<p class="wikiPara">
+Learn more about the components at <a href="http://community.jboss.org/wiki/RichFaces4xswitchablepanels" target="" class="regularLink">requirements wiki page</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-PopupPanel"><a href="/Bloggers/RichFaces4OverviewPartIIIPanelsComponents#H-PopupPanel">Popup Panel</a></h2>
+
+<p class="wikiPara">
+First I need to mention before describing this component - we considered tons of requests on non-modal panel and finally single <b>rich:popupPanel</b> component is there. It has two modes modal and non-modal and renders popup with any content inside.
+</p>
+
+<p class="wikiPara">
+The usage is simple for those who already played with it in 3.3.x as it's almost not changed:
+</p>
+
+<pre class="wikiPreformatted">&lt;h:commandButton value="Call the popup"&gt;
+	&lt;rich:componentControl target="popup" operation="show" /&gt;
+&lt;/h:commandButton&gt;
+
+&lt;rich:popupPanel id="popup" modal="true"
+	resizeable="true" onmaskclick="#{rich:component('popup')}.hide()"&gt;
+	&lt;f:facet name="header"&gt;
+		&lt;h:outputText value="Simple popup panel" /&gt;
+	&lt;/f:facet&gt;
+	&lt;f:facet name="controls"&gt;
+		&lt;h:outputLink value="#"
+			onclick="#{rich:component('popup')}.hide(); return false;"&gt;
+				X
+		&lt;/h:outputLink&gt;
+	&lt;/f:facet&gt;
+	&lt;p&gt;Additionally there you could check how to handle the clicks
+	outside the panel.&lt;/p&gt;
+	&lt;p&gt;In this sample the click outside - closes the panel as well as
+	clicking hide control in the header&lt;/p&gt;
+&lt;/rich:popupPanel&gt;</pre>
+
+
+<p class="wikiPara">
+And in the result we will get next popup representation:
+</p>
+
+<img src="http://www.jroller.com/a4j/resource/rf-pnl-3.jpg" alt="">
+<p class="wikiPara">
+ 
+In order to use the panel in non modal state you should just use new <b>modal</b> boolean attribute with <b>false</b> value.
+</p>
+
+<p class="wikiPara">
+It could appear that the component was not changed much from usage point of view – but much work was done in order to optimize markup to make it more lightweight. So we are awaiting for the feedback on that!
+</p>
+
+<p class="wikiPara">
+Learn more about the popup component at <a href="http://community.jboss.org/wiki/RichFaces4xpanels" target="" class="regularLink">requirements wiki page</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatsNext"><a href="/Bloggers/RichFaces4OverviewPartIIIPanelsComponents#H-WhatsNext">What's next:</a></h2>
+<p class="wikiPara">
+I guess that the <b>Data Iteration Components</b> overview and articles related to usage of those components will be probably most popular from all those reviews. So what the reason that them still not posted if components were available in A2? It's simple – we already had some good feedback on them and now just making some redesign and changes according to that feedback to make components easier to use and more intelligent. So when the picture on the changes and affect of those changes to usage will become clean – it will be there immediately!
+</p>
+
+<p class="wikiPara">
+And as I announced in my previous post I'm still reading <a href="http://www.packtpub.com/jsf-2-0-cookbook/book?utm_source=in.relation.to&amp;utm_medium=link&amp;utm_content=blog&amp;utm_campaign=mdb_003953" target="" class="regularLink">JSF 2.0 Cookbook</a> from <b>Packt Publishing</b> and also working on the review article continuously.
+</p>
+
+<hr>
+
+<p class="wikiPara">
+Any feedback always welcome at our <a href="http://community.jboss.org/community/richfaces/dev" target="" class="regularLink">RichFaces Design Space</a>.
+And we will do our best to help you with any usage problems at <a href="http://community.jboss.org/community/richfaces" target="" class="regularLink">RichFaces User Space</a></p>
+</div>

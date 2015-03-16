@@ -1,0 +1,139 @@
+---
+title: "JSF 2.0. Test Drive PDL. Part 4. PassThru attributes"
+author: "Sergey Smirnov"
+blogger_name: "Sergey"
+layout: blog-post
+tags: [JavaServer Faces,RichFaces]
+slug: JSF20TestDrivePDLPart4PassThruAttributes
+lace: http://in.relation.to/10504.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JSF20TestDrivePDLPart4PassThruAttributes">JSF 2.0. Test Drive PDL. Part 4. PassThru attributes</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Every JSF component has some specific attribute set unique for it. At the same time, almost all UI components have attributes that are common for all of them. For example, <tt>onclick, ondblclick, onblur, onmouseover, onmouseout, onmousedown</tt> and so on. They are named PassThru because they are rendered one-to-one to the final html layout.
+</p>
+
+<p class="wikiPara">
+RichFaces CDK uses a special meta-attribute <tt>x:passThruWithExclusions</tt>. Like:
+</p>
+
+
+<pre class="wikiPreformatted">&lt;div x:passThruWithExclusions="id,value,styleClass,class" ....&gt;</pre>
+
+
+
+<p class="wikiPara">
+This attribute directs to insert all PassThru attributes as attributes to this particular div except ones that are explicitly mentioned. Just one attribute, short and not so hard. Let see how JSF 2.0 PDL might help.
+</p>
+
+<p class="wikiPara">
+In the first article about PDL, we define only four style kind attributes for the sake of simplicity.
+</p>
+
+
+<pre class="wikiPreformatted">&lt;composite:interface&gt;
+    &lt;composite:attribute name="style" required="false"/&gt;
+    &lt;composite:attribute name="styleClass" required="false"/&gt;
+    &lt;composite:attribute name="headerClass" required="false"/&gt;
+    &lt;composite:attribute name="bodyClass" required="false"/&gt;
+&lt;/composite:interface&gt;</pre>
+
+
+
+<p class="wikiPara">
+Now, we are going to complete the missing part. According to the  rich panel <a href="http://www.jboss.org/file-access/default/members/jbossrichfaces/freezone/docs/tlddoc/rich/panel.html" target="" class="regularLink">TLD documentation</a>, it has 10 PathThru onxxxxxx attributes. To test how they work let's add the following to the test page:
+</p>
+
+
+<pre class="wikiPreformatted">  &lt;rich4:panel onmouseover="this.style.backgroundColor='#F9F9FF'"
+      onmouseout="this.style.backgroundColor='#FFF'"&gt;
+   &lt;f:facet name="header"&gt;
+    &lt;h:outputText value="This is a header"/&gt;
+   &lt;/f:facet&gt;
+   &lt;h:outputText value="panel with header"/&gt;
+  &lt;/rich4:panel&gt;</pre>
+
+
+
+<p class="wikiPara">
+BTW, the <tt>composite:interface</tt> above contains explicit declaration for four style attributes. What happen if we remove them like that:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;composite:interface&gt;
+&lt;/composite:interface&gt;</pre>
+
+
+
+<p class="wikiPara">
+Actually, nothing is changed. The component and its styling work without any changes. This is because of the Facelets feature when Facelets implicitly pass any attributes defined by the end developer, instead of classic  JSP where missing an attribute name in the TLD file is a big deal. Let's consider this Facelets feature as an advantage, at least for the size of the component code.
+</p>
+
+<p class="wikiPara">
+One drop of poison infects the whole tun of wine - if you have a typo in the attribute name, figuring it out is your personal problem. No any warning. However, declaring the attribute explicitly in the <tt>composite:interface</tt>, even the  <tt>required="true"</tt> does not help. Still the same silence.
+</p>
+
+<p class="wikiPara">
+Does the <tt>composite:interface</tt> make sense at all. Yes!!! Do not forget about the most fabulous keyword of the JSF market - the Tools. The JSF tool, if it is smart enough, prompts you with the list of possible attribute sorting them by priority, helps with signature of the method and so one.  According to the <a href="http://www.jsftutorials.net/pdldocs/facelets/composite/attribute.html" target="" class="regularLink">pdldoc for composite:attribute</a>, it has a lot of useful (for the tools) attributes.
+</p>
+
+<p class="wikiPara">
+Let's return to the topic. Does the ability to implicitly declare attributes work for our <tt>onmouseover, onmouseout</tt>? ...Partly. We do not need to declare them implicitly in the  <tt>composite:interface</tt> section (ok, ok. we still need to be kind to the future tools). However, PDL has no idea where to insert them in the <tt>composite:interface</tt> section. Thus, the test example does not work yet.
+</p>
+
+<p class="wikiPara">
+Mojarra implementation of PDL has nothing to shortcut the size of required code. Copy/Paste is a way to go. We will add the following as attributes of the top div:
+</p>
+
+
+<pre class="wikiPreformatted">onclick="r#{compositeComponent.attrs.onclick}"
+ondblclick="r#{compositeComponent.attrs.ondblclick}"
+onkeydown="r#{compositeComponent.attrs.onkeydown}"
+onkeypress="r#{compositeComponent.attrs.onkeypress}"
+onkeyup="r#{compositeComponent.attrs.onkeyup}"
+onmousedown="r#{compositeComponent.attrs.onmousedown}"
+onmousemove="r#{compositeComponent.attrs.onmousemove}"
+onmouseout="r#{compositeComponent.attrs.onmouseout}"
+onmouseover="r#{compositeComponent.attrs.onmouseover}"
+onmouseup="r#{compositeComponent.attrs.onmouseup}"
+</pre>
+
+
+<p class="wikiPara">
+Now, we can see how it works:
+<a href="http://livedemo.exadel.com/richfaces4-panel-4/home.jsf" target="" class="regularLink">http://livedemo.exadel.com/richfaces4-panel-4/home.jsf</a>
+</p>
+
+<p class="wikiPara">
+Looks like we are all set. However, let's look what is actually rendered:
+</p>
+
+
+<pre class="wikiPreformatted"> &lt;div class="rich-panel " style="" onclick="" ondblclick="" onkeydown="" 
+        onkeypress="" onkeyup="" onmousedown="" onmousemove="" 
+        onmouseout="this.style.backgroundColor='#FFF'" 
+        onmouseover="this.style.backgroundColor='#F9F9FF'" onmouseup=""&gt;
+   &lt;div class="rich-panel-header "&gt;This is a header
+   &lt;/div&gt;
+ 
+  &lt;div class="rich-panel-body "&gt;panel with header
+  &lt;/div&gt; 
+
+ &lt;/div&gt;</pre>
+
+
+
+<p class="wikiPara">
+We have a bunch of empty attributes out. Even the browser can have a deal with that, it is not acceptable result the end application developers will be happy with. The attribute should not appear in the result code if it is empty. So far, I did not find a solution how to avoid it in Mojarra 2.0.0 PR. The <a href="https://javaserverfaces.dev.java.net/issues/show_bug.cgi?id=940" target="" class="regularLink">issue</a> is posted.
+</p>
+
+
+
+</div>

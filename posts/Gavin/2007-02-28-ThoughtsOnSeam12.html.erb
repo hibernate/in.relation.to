@@ -1,0 +1,111 @@
+---
+title: "Thoughts on Seam 1.2"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Seam]
+slug: ThoughtsOnSeam12
+lace: http://in.relation.to/1974.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/ThoughtsOnSeam12">Thoughts on Seam 1.2</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+This release was not meant to be such a big one. We had originally
+intended to call it 1.1.7, but when we sat down and looked at the
+size of the changelog since the 1.1.6 release, we realized that there
+were simply too many changes for a point release. So it got a very
+last minute rebranding ;-)
+</p>
+
+<p class="wikiPara">
+Warning: this is not the promised 1.2 release with WS and ESB
+integration! That will go out as Seam 1.3 in a couple of months 
+from now.
+</p>
+
+<p class="wikiPara">
+Seam development has gone into hyperdrive: there's now three
+people (myself, Norman, Shane) working fulltime on the project, 
+with Pete Muir joining soon, and many contributions from users
+and from JBoss guys like Michael Yuan, Max Andersen and James 
+Williams.
+</p>
+
+<p class="wikiPara">
+Speaking of user contributions, the single biggest new feature in 
+this release was developed by Michael Youngstrom: the long-awaited
+Spring integration. Michael did an awesome job of making the two
+component models work together, as you can see here:
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/1.2.0.GA/reference/en/html/spring.html" target="" class="regularLink">http://docs.jboss.com/seam/1.2.0.GA/reference/en/html/spring.html</a>
+</p>
+
+<p class="wikiPara">
+Right from the start, some people have wanted to interpret Seam as 
+JBoss' answer to Spring. I've always strongly resisted that
+characterization, since the competition we have really set our sights 
+on is .Net, and to a lesser extent Ruby on Rails. Seam's goal is to 
+be an entire development environment encompassing both framework and 
+tooling, where everything Just Works, Out Of The Box. The payoff for 
+somewhat less choice in individual technologies is less time wasted 
+evaluating and arguing about products and more time developing real 
+user-visible functionality in a much more consistent and deeply 
+integrated programming model.
+</p>
+
+<p class="wikiPara">
+At least, that's the theory.
+</p>
+
+<p class="wikiPara">
+In practice, most of our users are migrating from some legacy 
+architecture based upon Spring, Hibernate and Struts/JSF/whatever.
+For example, some folks in Israel are in the process of migrating
+three different customer projects from Spring and Hibernate
+onto Seam and EJB 3.0. That's a pretty big
+undertaking if it means rewriting your entire business layer and
+presentation layer at once. Anything we can do to make it easier 
+for these folks to reuse their existing Spring components in Seam
+with minimal work is well worth doing.
+</p>
+
+<p class="wikiPara">
+Meanwhile, there are a number of folks out there who refuse to
+contemplate the idea of using any technology with the letters <q>E</q>, <q>J</q> and <q>B</q> in it. Nor will they even evaluate any framework which doesn't let them obsessively micromanage their components
+with thousands of lines of Spring XML. Despite the fact that 
+I think these people have totally missed the point of the whole <q>POJO</q> concept (which was originally about simplicity and reducing LOC), I would still like them to be able to use Seam and gradually 
+adapt to the Seam Way, at whatever pace is comfortable to them.
+</p>
+
+<p class="wikiPara">
+Michael's Spring addon for Seam lets you treat a Spring bean as a 
+Seam component, just like the Seam core lets you treat a JavaBean
+or EJB as a Seam component. This means you can easily call legacy
+Spring components from Seam - you can even use Seam annotations
+like @In, @Begin or @Scope in a Spring bean. You can use Seam's
+contexts as Spring custom scopes. You can inject Spring into Seam
+and Seam into Spring. You can even use a Seam-managed persistence
+context from your Spring DAOs.
+</p>
+
+<p class="wikiPara">
+So are Spring and Seam a match made in heaven? Well, not exactly.
+Unlike EJB3, or even JavaBeans, which were both designed as stateful 
+component models, Spring beans were simply never meant to be used
+in a contextual, stateful architecture. At least in a clustered
+environment, it's probably wiser to stick with using your
+Spring beans as stateless services that are called by stateful Seam 
+components, rather than going crazy with conversation-scoped Spring
+beans. But if you really want to go crazy, please let me know how 
+it turns out! I actually think these new features are pretty cool ;-)
+</p>
+</div>

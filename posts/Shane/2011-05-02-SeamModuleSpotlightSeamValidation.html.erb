@@ -1,0 +1,195 @@
+---
+title: "Seam Module Spotlight - Seam Validation"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+layout: blog-post
+tags: [Bean Validation,Contexts and Dependency Injection,Hibernate,Seam,Seam News]
+slug: SeamModuleSpotlightSeamValidation
+lace: http://in.relation.to/19736.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SeamModuleSpotlightSeamValidation">Seam Module Spotlight - Seam Validation</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<i class="wikiEmphasis">I'm pleased to be able to present this week's module spotlight which was written by Gunnar Morling, the module lead for Seam Validation. - Shane.</i>
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">by Gunnar Morling</i>
+</p>
+
+<p class="wikiPara">
+Welcome back to the Seam Module Spotlight series. In this installment we're going to discuss a relatively new Seam module, <a href="http://seamframework.org/Seam3/ValidationModule" target="" class="regularLink">Seam Validation</a>.
+</p>
+
+<p class="wikiPara">
+This module provides an integration between <a href="http://www.hibernate.org/subprojects/validator.html" target="" class="regularLink">Hibernate Validator</a> which is the reference implementation of the Bean Validation standard (<a href="http://jcp.org/en/jsr/detail?id=303" target="" class="regularLink">JSR 303</a>) and CDI. The module's functionality falls into two areas:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Enhanced dependency injection services for validators, validator factories and constraint validators</li>
+<li class="wikiUnorderedListItem"> Automatic validation of method parameters and return values based on Hibernate Validator's method validation API</li>
+</ul>
+
+<p class="wikiPara">
+Let's take a closer look at these features in the following sections.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DependencyInjectionServices"><a href="/Bloggers/SeamModuleSpotlightSeamValidation#H-DependencyInjectionServices">Dependency injection services</a></h2>
+
+<p class="wikiPara">
+The Bean Validation API is an integral part of the Java EE platform. So when running on a Java EE 6 compatible application server such as <a href="http://www.jboss.org/jbossas/" target="" class="regularLink">JBoss AS 6</a> you can easily retrieve <tt>Validator</tt> and <tt>ValidatorFactory</tt> instances via dependency injection.
+</p>
+
+<p class="wikiPara">
+Unfortunately this is not working out of the box when running in non-EE environments such as plain servlet containers. But don't worry, Seam Validation comes to the rescue. By adding the module as dependency to your project, validators and validator factories can be obtained using <tt>@Inject</tt>:
+</p>
+
+<pre class="wikiPreformatted">public class Foo {
+
+   @Inject
+   private Validator validator;
+
+   public void doSomething() {
+
+      Bar bar = new Bar();
+		
+      Set&lt;ConstraintViolation&lt;Bar&gt;&gt; constraintViolations = validator.validate(bar);
+      //examine the violations ...
+   }
+}</pre>
+
+
+
+<p class="wikiPara">
+But Seam Validation goes one step further and enables dependency injection also within constraint validator implementations. For instance we might have a custom constraint <tt>@ValidLicensePlate</tt> which is used to ensure that a car has a license plate which is properly registered, still valid etc.:
+</p>
+
+
+
+<pre class="wikiPreformatted">public class Car {
+
+   @ValidLicensePlate
+   private String licensePlate;
+	
+   //constructor, getter, setter etc.
+}</pre>
+
+
+
+<p class="wikiPara">
+In order to perform the required checks the constraint's validator invokes some sort of registration service (note: accessing external services can potentially be an expensive operation, so it may be a good idea to put the constraint into a separate <a href="http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html/validator-usingvalidator.html#validator-usingvalidator-validationgroups" target="" class="regularLink">validation group</a>, but that's out of scope for this article). The Seam Validation module allows to inject this service into the validator as into any other CDI bean:
+</p>
+
+
+
+<pre class="wikiPreformatted">public class ValidLicensePlateValidator implements ConstraintValidator&lt;ValidLicensePlate, String&gt; {
+
+   @Inject
+   private RegistrationService registrationService;
+
+   @Override
+   public void initialize(ValidLicensePlate constraintAnnotation) {
+   }
+
+   @Override
+   public boolean isValid(String value, ConstraintValidatorContext context) {
+
+   if (value == null) {
+      return true;
+   }
+
+   //delegate to registration service
+   return registrationService.isValid(value);
+   }
+}</pre>
+
+
+
+<p class="wikiPara">
+There is just one more step required before the <tt>@ValidLicensePlate</tt> constraint can be used: We have to register Seam Validation's constraint validator factory with the Bean Validation provider. This happens by putting a file named <tt>validation.xml</tt> with the following content into the <tt>META-INF</tt> folder of the application:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;validation-config 
+  xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration validation-configuration-1.0.xsd"&gt;
+
+   &lt;constraint-validator-factory&gt;
+      org.jboss.seam.validation.InjectingConstraintValidatorFactory
+   &lt;/constraint-validator-factory&gt;
+&lt;/validation-config&gt;</pre>
+
+
+<h2 class="wikiHeadline2" id="H-MethodValidation"><a href="/Bloggers/SeamModuleSpotlightSeamValidation#H-MethodValidation">Method validation</a></h2>
+
+<p class="wikiPara">
+The other main feature of Seam Validation besides dependency injection is the automatic validation of method parameters and return values based on the <a href="http://docs.jboss.org/hibernate/validator/4.2/api/index.html?org/hibernate/validator/method/MethodValidator.html" target="" class="regularLink">API for method validation</a> introduced with Hibernate Validator 4.2 (note: at the time of writing Hibernate Validator 4.2 is released as Beta version, but no major changes are expected until the final release).
+</p>
+
+<p class="wikiPara">
+This API provides an easy-to-use facility for the <q>Programming by Contract</q> approach to program design based on the concepts defined by the Bean Validation API. That means that any Bean Validation constraint can be used to describe
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the preconditions that must be met before a method may be invoked (by annotating method parameters with constraints) and</li>
+<li class="wikiUnorderedListItem"> the postconditions that are guaranteed after a method invocation returns (by annotating methods).</li>
+</ul>
+
+<p class="wikiPara">
+Things should become clearer with an example:
+</p>
+
+<pre class="wikiPreformatted">@AutoValidating
+public class RentalStation {
+
+   @Valid
+   public Car rentCar(@NotNull CustomerPK customerPK, @NotNull @Future Date startDate, @Min(1) int durationInDays) {
+
+      //highly complex car rental business logic ...
+   }
+}</pre>
+
+
+<p class="wikiPara">
+Here the following pre- and postconditions are applied onto the <tt>rentCar()</tt> method:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The customer's primary key may not be null</li>
+<li class="wikiUnorderedListItem"> The rental start date must not be null and must be in the future</li>
+<li class="wikiUnorderedListItem"> The rental duration must be at least one day</li>
+<li class="wikiUnorderedListItem"> The returned object must be valid with respect to all constraints of the <tt>Car</tt> class</li>
+</ul>
+
+<p class="wikiPara">
+By annotating the class <tt>RentalStation</tt> with <tt>@AutoValidating</tt>, all these constraints are automatically validated by a method interceptor whenever the <tt>rentCar()</tt> method is invoked. If any of the constraints can't be validated successfully, a <a href="http://docs.jboss.org/hibernate/validator/4.2/api/index.html?org/hibernate/validator/method/MethodConstraintViolation.html" target="" class="regularLink">runtime exception</a> describing the occurred constraint violation(s) is thrown.
+</p>
+
+<p class="wikiPara">
+This approach has several advantages over traditional parameter and return value checking:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The checks don't have to be performed by hand. This results in less boiler-plate code to write (and to read).</li>
+<li class="wikiUnorderedListItem"> A method's pre- and postconditions are part of its API and generated documentation. It's not necessary to add comments such as <q>returns never null</q>, as this information will automatically be put into the generated JavaDoc. This results in less redundancies and hence in less potential inconsistencies between implementation and documentation.</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-FutureSteps"><a href="/Bloggers/SeamModuleSpotlightSeamValidation#H-FutureSteps">Future steps</a></h2>
+
+<p class="wikiPara">
+This concludes our short tour through the Seam Validation module. If you feel like trying out the module yourself, the <a href="http://seamframework.org/Seam3/ValidationModule" target="" class="regularLink">module home page</a> is the right starting point. You might also be interested in the module's <a href="http://docs.jboss.org/seam/3/validation/snapshot/reference/en-US/html_single/" target="" class="regularLink">reference guide</a>, and in case you found a bug or want to create a feature request the module's <a href="https://issues.jboss.org/browse/SEAMVALIDATE" target="" class="regularLink">JIRA instance</a> is the place to go.
+</p>
+
+<p class="wikiPara">
+Possible future developments of Seam Validation include a closer integration with other Seam 3 modules, the possibility to choose the validation groups to be used for method validation and the evaluation of standard bean constraints upon method validation.</p>
+</div>

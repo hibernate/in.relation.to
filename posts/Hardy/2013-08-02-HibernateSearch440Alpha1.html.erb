@@ -1,0 +1,81 @@
+---
+title: "Hibernate Search 4.4.0.Alpha1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Hibernate Search]
+slug: HibernateSearch440Alpha1
+lace: http://in.relation.to/24330.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch440Alpha1">Hibernate Search 4.4.0.Alpha1</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+It has been quite some time since I have done my last Hibernate Search release announcement, so I am especially happy to get the 4.4 release train rolling. Hibernate Search 4.4.0.Alpha1 is now out and ready for download, either from the <a href="http://repository.jboss.org/nexus" target="" class="regularLink">JBoss Maven Repository</a> under the GAV <tt>org.hibernate:hibernate-search:4.4.0.Alpha1</tt> or via <a href="http://sourceforge.net/projects/hibernate/files/hibernate-search/4.4.0.Alpha1" target="" class="regularLink">SourceForge</a>. The release contains fixes for 16 issues which you can closer inspect in the <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&amp;version=13850" target="" class="regularLink">Jira release notes</a>. 
+</p>
+
+<p class="wikiPara">
+Next to the usual bug fixes and internal changes I want to highlight the latest new feature of Hibernate Search, the Metadata API (<a href="https://hibernate.atlassian.net/browse/HSEARCH-436" target="" class="regularLink">HSEARCH-436</a>). Looking at <tt>SearchFactory</tt> you will find two new methods:
+</p>
+
+<pre class="wikiPreformatted brush:java">public interface SearchFactory {
+
+    // ...
+
+    /**
+     * Returns the set of currently indexed types.
+     *
+     * @return the set of currently indexed types. If no types are indexed the empty set is returned.
+     */
+     Set&lt;Class&lt;?&gt;&gt; getIndexedTypes();
+
+     /**
+      * Returns a descriptor for the specified entity type describing its indexed state.
+      *
+      * @param entityType the entity for which to retrieve the descriptor
+      *
+      * @return a non {@code null} {@code IndexedEntityDescriptor}. This method can also be called for non indexed types.
+      *         To determine whether the entity is actually indexed {@link org.hibernate.search.metadata.IndexedTypeDescriptor#isIndexed()} can be used.
+      *
+      * @throws IllegalArgumentException in case {@code entityType} is {@code null}
+      */
+     IndexedTypeDescriptor getIndexedTypeDescriptor(Class&lt;?&gt; entityType);
+}</pre>
+
+
+<p class="wikiPara">
+The former, <tt>getIndexedTypes()</tt>, allows you to determine which indexed types the <tt>SearchFactory</tt> knows about. The latter, <tt>getIndexedTypeDescriptor(Class&lt;?&gt;)</tt>, is the entry point into a descriptor based meta model API. It allows you to determine the configuration aspects of a given type. Amongst other things the type descriptor contains information about the static and dynamic class boost, whether the index is sharded and of course which properties of the type are indexed and which Lucene fields they produce. The property and field information is contained - surprise, surprise - in <tt>Property</tt>- and <tt>FieldDescriptor</tt>s. Access to these descriptors is via getters in <tt>IndexedTypeDescriptor</tt>.
+</p>
+
+<p class="wikiPara">
+Last but not least, there are a couple of things worth noticing around <tt>FieldDescriptor</tt>. First, there are really two field related descriptors, namely <tt>FieldSettingsDescriptor</tt> and <tt>FieldDescriptor</tt> (extending <tt>FieldSettingsDescriptor</tt>). The split might not seem obvious at first glance, but it allows to separate the actual Lucene <tt>Field</tt> information from additional Search specific field configuration options (for example whether <tt>null</tt> values should be indexed or not).
+</p>
+
+<p class="wikiPara">
+Secondly, there are multiple subtypes of <tt>FieldSettingsDescriptor</tt>, for example <tt>NumericFieldSettingsDescriptor</tt>. This allows to keep information specific for a given field type contained in a single class. In the case of <tt>NumericFieldSettingsDescriptor</tt> it is the <i class="wikiEmphasis">precisionStep</i>. To access type sub-type specific information a type check followed by an unwrap is needed. Something like:
+</p>
+
+<pre class="wikiPreformatted brush:java">// ...
+IndexedTypeDescriptor typeDescriptor = searchFactory.getIndexedTypeDescriptor( Foo.class );
+FieldDescriptor fieldDescriptor = typeDescriptor.getIndexedField( "snafu" );
+if( FieldSettingsDescriptor.Type.NUMERIC.equals( fieldDescriptor.getType() ) ) {	
+    NumericFieldSettingsDescriptor numericFieldSettingsDescriptor = fieldDescriptor.as(NumericFieldSettingsDescriptor.class);
+    int precisionStep = numericFieldSettingsDescriptor.precisionStep();
+    // ...
+}
+// ...</pre>
+
+
+<p class="wikiPara">
+Feedback related to this API is much welcome. It helps us fine tuning the API prior to final Search 4.4 release. Just contact us via the <a href="http://www.hibernate.org/community/mailinglists" target="" class="regularLink">mailing list</a> or on <a href="http://www.hibernate.org/community/irc" target="" class="regularLink">IRC</a>.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>

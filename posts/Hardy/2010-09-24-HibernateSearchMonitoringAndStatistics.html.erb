@@ -1,0 +1,145 @@
+---
+title: "Hibernate Search monitoring and statistics"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Hibernate,Hibernate Search]
+slug: HibernateSearchMonitoringAndStatistics
+lace: http://in.relation.to/17167.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearchMonitoringAndStatistics">Hibernate Search monitoring and statistics</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Emmanuel mentioned in his previous <a href="http://in.relation.to/16570.lace" target="" class="regularLink">Search post</a> the new Statistics interface which is new in Hibernate search 3.3 (latest version 3.3.0.Beta1). I thought it is time to write a little bit more about it. The API is actually self-explanatory:
+</p>
+
+<pre class="wikiPreformatted">package org.hibernate.search.stat;
+...
+public interface Statistics {
+    /**
+     * Reset all statistics.
+     */
+    void clear();
+
+    /**
+     * Get global number of executed search queries
+     *
+     * @return search query execution count
+     */
+    long getSearchQueryExecutionCount();
+
+    /**
+     * Get the total search time in nanoseconds.
+     */
+    long getSearchQueryTotalTime();
+
+    /**
+     * Get the time in nanoseconds of the slowest search.
+     */
+    long getSearchQueryExecutionMaxTime();
+
+    /**
+     * Get the average search time in nanoseconds.
+     */
+    long getSearchQueryExecutionAvgTime();
+
+    /**
+     * Get the query string for the slowest query.
+     */
+    String getSearchQueryExecutionMaxTimeQueryString();
+
+    /**
+     * Get the total object loading in nanoseconds.
+     */
+    long getObjectLoadingTotalTime();
+
+    /**
+     * Get the time in nanoseconds for the slowest object load.
+     */
+    long getObjectLoadingExecutionMaxTime();
+
+    /**
+     * Get the average object loading time in nanoseconds.
+     */
+    long getObjectLoadingExecutionAvgTime();
+
+    /**
+     * Gets the total number of objects loaded
+     */
+    long getObjectsLoadedCount();
+
+    /**
+     * Are statistics logged
+     */
+    public boolean isStatisticsEnabled();
+
+    /**
+     * Enable statistics logs (this is a dynamic parameter)
+     */
+    public void setStatisticsEnabled(boolean b);
+
+    /**
+     * Returns the Hibernate Search version.
+     *
+     * @return the Hibernate Search version
+     */
+    String getSearchVersion();
+
+    /**
+     * Returns a list of all indexed classes.
+     *
+     * @return list of all indexed classes
+     */
+    Set&lt;String&gt; getIndexedClassNames();
+
+    /**
+     * Returns the number of documents for the given entity.
+     *
+     * @param entity the fqc of the entity
+     *
+     * @return number of documents for the specified entity name
+     *
+     * @throws IllegalArgumentException in case the entity name is not valid
+     */
+    int getNumberOfIndexedEntities(String entity);
+
+    /**
+     * Returns a map of all indexed entities and their document count in the index.
+     *
+     * @return a map of all indexed entities and their document count. The map key is the fqc of the entity and
+     *         the map value is the document count.
+     */
+    Map&lt;String, Integer&gt; indexedEntitiesCount();
+}</pre>
+
+
+<p class="wikiPara">
+Access to the statistics is via <i class="wikiEmphasis">SearchFactory.getStatistics()</i>. The information about which classes are indexed and how many entities are in the index will always be available. However, the query and object loading timings will only be collected if the property  hibernate.search.generate_statistics is set in your configuration. I am thinking about introducing an additional interface in order to make this separation more obvious. WDYT?
+</p>
+
+<p class="wikiPara">
+The new statistic and monitoring functionality does not end here. You can also enable access to the statistics via JMX. Setting the property <i class="wikiEmphasis">hibernate.search.jmx_enabled</i> will automatically register the <i class="wikiEmphasis">StatisticsInfoMBean</i> with the MBeanServer. On top of this MBean there are two more MBeans - <i class="wikiEmphasis">IndexControlMBean</i> and <i class="wikiEmphasis">IndexingProgressMonitorMBean</i> - which will or will not be available depending on your configuration and the state of the application.
+</p>
+
+<p class="wikiPara">
+The <i class="wikiEmphasis">IndexControlMBean</i> allows you to build, optimize and purge the index for a given entity. Indexing occurs via the mass indexing API. A requirement for this bean to be registered in JMX is, that the Hibernate SessionFactory is bound to JNDI via the <i class="wikiEmphasis">hibernate.session_factory_name</i> property. Refer to the <a href="http://docs.jboss.org/hibernate/stable/core/reference/en/html_single/" target="" class="regularLink">Hibernate Core manual</a> for more information on how to configure JNDI. The <i class="wikiEmphasis">IndexControlMBean</i> API are for now just experimental.
+</p>
+
+<p class="wikiPara">
+Last but not least, the <i class="wikiEmphasis">IndexingProgressMonitorMBean</i>. This MBean is an implementation of the <i class="wikiEmphasis">MassIndexerProgressMonitor</i> interface. If <i class="wikiEmphasis">hibernate.search.jmx_enabled</i> is set and the mass indexer API is used the indexing progress can be followed via this MBean. The bean will only be bound to JMX while indexing is in progress. Once indexing is completed the MBean is not longer available. Again, this API is for now experimental.
+</p>
+
+<p class="wikiPara">
+Do you think this new monitoring and statistic API it is valuable? Are you missing any functionality?  Let us know and use the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Search forum</a> or <a href="http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH" target="" class="regularLink">Jira</a> to suggest new features or to report a bug.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>

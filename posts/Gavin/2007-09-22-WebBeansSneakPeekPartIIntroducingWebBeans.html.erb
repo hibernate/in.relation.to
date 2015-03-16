@@ -1,0 +1,480 @@
+---
+title: "Web Beans Sneak Peek Part I: Introducing Web Beans"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Web Beans,Web Beans Sneak Peek]
+slug: WebBeansSneakPeekPartIIntroducingWebBeans
+lace: http://in.relation.to/2420.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans">Web Beans Sneak Peek Part I: Introducing Web Beans</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+We're now really close to releasing a Community Review Draft for 
+<a href="http://jcp.org/en/jsr/detail?id=299" target="" class="regularLink">Web Beans</a>. The purpose
+of the draft is to gather feedback on the component model,
+dependency management model and extensible context model that we've 
+defined, and hopefully get people excited about Web Beans. We 
+also need to get our work in front of the other EE6-related expert 
+groups, so that they can start thinking about how they can possibly
+re-use and integrate with some of the mechanisms we have defined.
+However, the specification is by nature written in highly technical
+language, so this blog entry is the first in a serious of articles
+giving a friendly, introductory guide to Web Beans. When the
+Community Review Draft is released, please take the time to download
+and review it. But please read this series /first/.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ALittleHistory"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-ALittleHistory">A little history</a></h2>
+
+<p class="wikiPara">
+First, some background. Web Beans was initiated by 
+<a href="http://jboss.org" target="" class="regularLink">JBoss</a> to help fill a gap in Java EE 5. The
+EE 5 platform has strong support for access to transactional
+resources via mature technologies including EJB3, JTA, JCA and
+JPA. Of course, the platform also features various widely-used 
+web presentation technologies such as Java Servlets, JSP and JSF. 
+However, the 
+/web tier/ and /transactional tier/ have evolved independently and
+have missed the opportunity to develop a shared component model for
+web applications which provide access to transactional enterprise 
+resources. Today, Web Beans is being driven by representatives of
+JBoss, Sun, Oracle and Google, along with several individual
+members. The component model is deeply influenced by
+<a href="http://code.google.com/p/google-guice/" target="" class="regularLink">Google Guice</a>
+and <a href="http://jboss.com/products/seam" target="" class="regularLink">Seam</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AUnifiedComponentModelForJavaEE"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-AUnifiedComponentModelForJavaEE">A unified component model for Java EE</a></h2>
+
+<p class="wikiPara">
+Web Beans is a component model that is compatible with technologies
+in both tiers. Web Beans integrates with both JSF and
+EJB3, allowing an EJB3 session bean to act as a JSF managed bean, 
+thus unifying the two component models. Additionally, Web Beans
+provides a /conversation model/ and /persistence context management/, 
+thereby solving state management problems and optimistic transaction 
+management problems that affect JSF and JPA. In sum, Web Beans makes 
+it /much/ easier to build Java EE web applications which access the 
+database via JPA.
+</p>
+
+<p class="wikiPara">
+While Web Beans provides a sweet spot for the integration of
+JSF and EJB3, the component model is much more generally useful.
+In particular, it supports use without either JSF or EJB3. An early
+question that arose was to what extent Web Beans would be limited
+to the EE and EJB3 environment. The unanimous decision of the group
+was that:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> A Web Bean does not /have/ to be an EJB</li>
+<li class="wikiOrderedListItem"> Web Beans should be executable outside the EE environment</li>
+</ol>
+
+<p class="wikiPara">
+The first decision merely recognizes the fact that not every 
+component needs the services that EJB provides (transaction 
+demarcation, authorization, etc). However, Web Beans will not
+duplicate this functionality, so when these services are needed,
+the Web Bean should be written as a session bean.
+</p>
+
+<p class="wikiPara">
+The second decision allows components to be integration/unit testable 
+outside the application server environment, and allows reuse of code
+in, for example, a batch process.
+</p>
+
+<p class="wikiPara">
+Some members, notably <a href="http://crazybob.org" target="" class="regularLink">Bob Lee</a>, argue that the 
+work we've done is just as useful outside of the EE platform and that 
+the component model in particular should be considered for use in 
+Java SE. However, as spec lead, and in view of the language of our JSR 
+proposal, I've made the decision to clearly specify the target environment 
+as Java EE, and limit our discussions to what is needed by EE developers.
+</p>
+
+<p class="wikiPara">
+If, in future, there was pressure from the community and the JCP to 
+open up some parts of Web Beans (for example, the sophisticated
+Guice-style dependency injection engine), we could at that time 
+follow the precedent established by JPA in the EJB3 expert group and 
+define behavior outside of the EE platform. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-WebBeanComponents"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-WebBeanComponents">Web Bean components</a></h2>
+
+<p class="wikiPara">
+So what, /exactly/, is a Web Bean?
+</p>
+
+<p class="wikiPara">
+A Web Bean is an application component containing business logic. 
+A Web Bean may be called directly from Java code, or it may be 
+invoked via Unified EL. A Web Bean may access transactional
+resources. Dependencies between Web Beans are managed automatically
+by the Web Beans container. Most Web Beans are /stateful/ and 
+/contextual/. The lifecycle of a Web Bean is always managed
+by the container.
+</p>
+
+<p class="wikiPara">
+Let's back up a second. What does it mean to be <q>contextual</q>?
+Since Web Beans may be stateful, it matters /which/ bean
+instance I have. Unlike a stateless component model (for example,
+stateless session beans) or a singleton component model (such as 
+servlets), different clients of a component see the component in 
+different states. The client-visible state depends upon which 
+instance of the component the client has a reference to. 
+</p>
+
+<p class="wikiPara">
+However, like a stateless or singleton model, and like JSF, but
+/unlike/ stateful session beans, the client does not control the
+lifecycle of the instance by explicitly creating and destroying
+it. Instead, a /context/ defines:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the lifecycle of an instance</li>
+<li class="wikiUnorderedListItem"> the scope of visibility of this instance to clients</li>
+</ul>
+
+<p class="wikiPara">
+So clients (for example, other Web Beans) executing in the same 
+/scope/ will see the same instance. But clients in a different 
+scope will see a different instance.
+</p>
+
+<p class="wikiPara">
+One great advantage of the contextual model is that it allows stateful
+components to be treated like services! The client need not concern 
+itself with managing the lifecycle of the component it is using, 
+/nor does it even need to know what that lifecyle is./ Components 
+interact by passing messages, and the component implementations 
+define the lifecycle of their own state. The components are loosely
+coupled because:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> they interact via well-defined public APIs</li>
+<li class="wikiUnorderedListItem"> their lifecycles are completely decoupled</li>
+</ul>
+
+<p class="wikiPara">
+We can replace one component with a different component that 
+implements the same API and has a different lifecycle (a different
+scope) without affecting the other component implementation.
+In fact, Web Beans defines a sophisticated facility for overriding
+component implementations at deployment time, as we will see in
+a future installment.
+</p>
+
+<p class="wikiPara">
+Enough hand-waving. More formally, according to the spec:
+</p>
+
+<blockquote class="wikiBlockquote">
+A Web Bean component comprises:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A component type</li>
+<li class="wikiUnorderedListItem"> Either a bean implementation class or a resolver method</li>
+<li class="wikiUnorderedListItem"> A set of API types</li>
+<li class="wikiUnorderedListItem"> A (possibly empty) set of binding annotation types</li>
+<li class="wikiUnorderedListItem"> A scope</li>
+<li class="wikiUnorderedListItem"> A component name</li>
+</ul>
+
+
+</blockquote>
+
+<p class="wikiPara">
+Let's see what some of these terms mean, to the component developer.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ComponentTypes"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-ComponentTypes">Component types</a></h3>
+
+<p class="wikiPara">
+All we need to know about /component types/ for now is that a Web 
+Beans developer may define some kind of stereotype as an annotation, 
+for example <tt>@Mock</tt>, <tt>@Staging</tt> or <tt>@AustralianTaxLaw</tt> that allows
+whole sets of components to be conditionally installed in particular
+deployments of the system. We'll talk more about this unique and 
+powerful feature in a later installment.
+</p>
+
+<p class="wikiPara">
+A very simple Web Bean might just use the built-in component type
+<tt>@Component</tt>:
+</p>
+
+<pre class="wikiPreformatted">@Component
+public class Credentials { ... }</pre>
+
+
+<p class="wikiPara">
+The prescence of a component type annotation identifies this class as 
+a Web Bean to the Web Beans container.
+</p>
+
+<h3 class="wikiHeadline3" id="H-APITypesBindingAnnotationAndDependencyInjection"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-APITypesBindingAnnotationAndDependencyInjection">API types, binding annotation and dependency injection</a></h3>
+
+<p class="wikiPara">
+Web Beans usually acquire references to other Web Beans via dependency 
+injection. Any injected attribute specifies a <q>contract</q> that must be
+satisfied by the component to be injected. The contract is:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> An API</li>
+<li class="wikiUnorderedListItem"> A (possibly empty) set of binding annotations</li>
+</ul>
+
+<p class="wikiPara">
+An API is a user-defined class or interface. (If the component is an
+EJB session bean, the API type is the <tt>@Local</tt> interface.) A /binding 
+annotation/ is a user-defined annotation that is itself annotated 
+<tt>@BindingType</tt>.
+</p>
+
+<p class="wikiPara">
+The container searches for a component which satisfies this contract
+(implements the API, and supports the binding annotations), and injects
+that component.
+</p>
+
+<p class="wikiPara">
+For example, if this was the injection point:
+</p>
+
+<pre class="wikiPreformatted">@In @CreditCard PaymentProcessor paymentProcessor;</pre>
+
+
+<p class="wikiPara">
+The following component could be injected:
+</p>
+
+<pre class="wikiPreformatted">@CreditCard @Component
+public class CreditCardPaymentProcessor 
+    implements PaymentProcessor { ... }</pre>
+
+
+<p class="wikiPara">
+Web Beans defines a sophisticated but intuitive /resolution algorithm/
+that helps the container decide what to do if there is more than one
+component that satisfies a particular contract. We'll get into the
+details in a later installment.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ComponentScope"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-ComponentScope">Component scope</a></h3>
+
+<p class="wikiPara">
+The /scope/ defines the lifecycle and visibility of instances of the
+component. The Web Beans context model is extensible, accommodating
+arbitrary scopes. However, certain important scopes are built-in to
+the specification, and provided by the Web Beans container. For
+example, any web application has access to a /session/ scope:
+</p>
+
+<pre class="wikiPreformatted">@SessionScoped @Component
+public class ShoppingCart { ... }</pre>
+
+
+<p class="wikiPara">
+We'll talk more about scopes in a later installment.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ComponentNamesAndUnifiedEL"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-ComponentNamesAndUnifiedEL">Component names and Unified EL</a></h3>
+
+<p class="wikiPara">
+All Web Beans may be used by /name/ in Unified EL expressions. It is 
+easy to customize the name of a Web Bean:
+</p>
+
+<pre class="wikiPreformatted">@SessionScoped @Component @Named("cart")
+public class ShoppingCart { ... }</pre>
+
+
+<p class="wikiPara">
+Then we can easily use the component in a JSF page:
+</p>
+
+<pre class="wikiPreformatted">&lt;h:dataTable value="#{cart.lineItems}" var="item"&gt;
+    ....
+&lt;/h:dataTable&gt;</pre>
+
+
+<h3 class="wikiHeadline3" id="H-ResolverMethodsAndTtwebbeansxmltt"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-ResolverMethodsAndTtwebbeansxmltt">Resolver methods and <tt>web-beans.xml</tt></a></h3>
+
+<p class="wikiPara">
+Most Web Beans are defined by writing an implementation class and
+annotating it. However, there are two extra ways to define a Web Bean:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> via an XML deployment descriptor named <tt>web-beans.xml</tt>
+</li>
+<li class="wikiOrderedListItem"> by writing a resolver method</li>
+</ol>
+
+<p class="wikiPara">
+We'll cover <tt>web-beans.xml</tt> in a future installment.
+</p>
+
+<p class="wikiPara">
+A /resolver method/ is a method that is called by the container to
+obtain an instance of the component when no instance exists in the
+current context. For example:
+</p>
+
+<pre class="wikiPreformatted">@SessionScoped @Component
+public class Login {
+
+    User user;
+    ...
+    
+    public void login() {
+        user = ...;
+    }
+    
+    @Resolves @LoggedIn User getCurrentUser() {
+        return user;
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+A resolver method is a first-class Web Beans component. Once again, we'll 
+talk more about resolver method in a future installment.
+</p>
+
+<h2 class="wikiHeadline2" id="H-LoggingIn"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-LoggingIn">Logging in</a></h2>
+
+<p class="wikiPara">
+Let's illustrate these ideas by fleshing out the previous example. We're
+going to implement user login/logout. First, we'll define a component
+to hold the username and password entered during login:
+</p>
+
+<pre class="wikiPreformatted">@Component
+public class Credentials {
+	
+    private String username;
+    private String password;
+    
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
+    
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+    
+}</pre>
+
+
+<p class="wikiPara">
+This component is bound to the login prompt in the following JSF form:
+</p>
+
+<pre class="wikiPreformatted">&lt;f:form&gt;
+    &lt;h:panelGrid columns="2" rendered="#{!login.isLoggedIn}"&gt;
+        &lt;h:outputLabel for="username"&gt;Username:&lt;/h:outputLabel&gt;
+        &lt;h:inputText id="username" value="#{credentials.username}"/&gt;
+        &lt;h:outputLabel for="password"&gt;Password:&lt;/h:outputLabel&gt;
+        &lt;h:inputText id="password" value="#{credentials.password}"/&gt;
+    &lt;/h:panelGrid&gt;
+    &lt;h:commandButton value="Login" action="#{login.login}" rendered="#{!login.isLoggedIn}"/&gt;
+    &lt;h:commandButton value="Logout" acion="#{login.logout}" rendered="#{login.isLoggedIn}"/&gt;
+&lt;/f:form&gt;</pre>
+
+
+<p class="wikiPara">
+The actual work is done by a session scoped component that maintains 
+information about the currently logged-in user and exposes the <tt>User</tt>
+entity to other components:
+</p>
+
+<pre class="wikiPreformatted">@SessionScoped @Component
+public class Login {
+
+    @In Credentials credentials;
+    @In @UserDatabase EntityManager userDatabase;
+
+    private User user;
+    
+    public void login() {
+    	
+        List&lt;User&gt; results = userDatabase.createQuery(
+           "select u from User u where u.username=:username and u.password=:password")
+           .setParameter("username", credentials.getUserName())
+           .setParameter("password", credentials.getPassword())
+           .getResultList();
+        
+        if ( !results.isEmpty() ) {
+           user = results.get(0);
+        }
+        
+    }
+    
+    public void logout() {
+        user = null;
+    }
+    
+    public boolean isLoggedIn() {
+       return user!=null;
+    }
+    
+    @Resolves @LoggedIn User getCurrentUser() {
+        return user;
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+Of course, <tt>@LoggedIn</tt> is a binding annotation:
+</p>
+
+<pre class="wikiPreformatted">@Retention(RUNTIME)
+@Target({TYPE, METHOD, FIELD})
+@BindingType
+public @interface LoggedIn {}</pre>
+
+
+<p class="wikiPara">
+Now, any other component can easily inject the current user:
+</p>
+
+<pre class="wikiPreformatted">@Component
+public class DocumentEditor {
+
+    @In @Current Document document;
+    @In @LoggedIn User currentUser;
+    @In @DocumentDatabase EntityManager docDatabase;
+    
+    public void save() {
+        document.setCreatedBy(currentUser);
+        docDatabase.persist(document);
+    }
+    
+}</pre>
+
+
+<h2 class="wikiHeadline2" id="H-StayWithMeFolks"><a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans#H-StayWithMeFolks">Stay with me, folks!</a></h2>
+
+<p class="wikiPara">
+Hopefully, this gives a flavor of the Web Beans component model. There's 
+lots more to talk about, I hope you'll find the time to follow along with
+the rest of the series.
+</p>
+</div>

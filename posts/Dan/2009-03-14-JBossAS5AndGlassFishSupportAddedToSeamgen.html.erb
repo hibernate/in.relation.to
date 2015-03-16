@@ -1,0 +1,239 @@
+---
+title: "JBoss AS 5 and GlassFish support added to seam-gen"
+author: "Dan Allen"
+blogger_name: "Dan"
+layout: blog-post
+tags: [Interoperability,Seam,Seam News]
+slug: JBossAS5AndGlassFishSupportAddedToSeamgen
+lace: http://in.relation.to/10827.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen">JBoss AS 5 and GlassFish support added to seam-gen</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I finally got around to weaving my modifications for adding GlassFish support to seam-gen (documented <a href="http://code.google.com/p/seaminaction/wiki/DeployingToGlassFish" target="" class="regularLink">here</a> and <a href="http://www.mojavelinux.com/blog/archives/2008/10/deploying_a_seamgen_project_to_glassfish/" target="" class="regularLink">here</a>) into the Seam project (<a href="http://jira.jboss.com/jira/browse/JBSEAM-1619" target="" class="regularLink">JBSEAM-1619</a>). While working on integration the changes, I managed to close the few remaining gaps and also add support for <strong>JBoss AS 5</strong>!
+</p>
+
+<p class="wikiPara">
+Let me tell you, it was quite a task to fine tune the configuration and build to support all twelve deployment variations; EAR and WAR archives for GlassFish V2/V3, JBoss AS 4.2.x and JBoss AS 5.0.x in both exploded and packaged format. (Double that number if you consider that I added support to both RichFaces and ICEfaces projects). But surprisingly enough, all of them now work out of the box (with the exception of a few small configuration changes you have to make to deploy an EAR project to GlassFish).
+</p>
+
+<h2 class="wikiHeadline2" id="H-ThePersistenceParadox"><a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen#H-ThePersistenceParadox">The persistence paradox</a></h2>
+
+<p class="wikiPara">
+The biggest challenge was the persistence unit configuration. This stems from the fact that packaging requirements for persistence units differs between EARs and WARs. To complicate matters, there are variations between how application servers interpret and enforce these requirements. I want to spend some time explaining the situation and how I was able to strike a balance, because it's important for understanding how the project build now works.
+</p>
+
+<p class="wikiPara">
+Let's start by rewinding to the way things were setup. There's an expectation in the JPA specification that the application server will bootstrap the persistence units defined in META-INF/persistence.xml in a Java EE environment. Of course, it would be pretty limiting if that were the only way to use JPA. So an API is provided allowing an application to load a persistence unit manually in a Java SE environment (or when the container doesn't support this expectation). Understandably, it took some time for this expectation to be met as vendors worked to bring their application server into compliance with Java EE 5 (the first specification to include JPA).
+</p>
+
+<p class="wikiPara">
+For containers that don't support loading persistence units, whether for a specific archive type (EAR or WAR) or in general, Seam can step in and take over this task. That's the purpose of the following component definition, defined in the Seam component descriptor (i.e., components.xml):
+</p>
+
+<pre class="wikiPreformatted">&lt;persistence:entity-manager-factory name="entityManagerFactory" persistence-unit-name="example"/&gt;</pre>
+
+
+<p class="wikiPara">
+The value of <tt>persistence-unit-name</tt> attribute matches the name of one of the persistence units defined in META-INF/persistence.xml.
+</p>
+
+<p class="wikiPara">
+Versions of JBoss AS prior to JBoss AS 5 do not support loading persistence units in a WAR, so it's necessary to delegate this task to Seam. The same is true for any version of Tomcat. GlassFish is truer to the spec. It will load a persistence unit, but only if it is declared in a persistence unit ref in WEB-INF/web.xml as follows:
+</p>
+
+<pre class="wikiPreformatted">&lt;persistence-unit-ref&gt;
+    &lt;persistence-unit-ref-name&gt;example/pu&lt;/persistence-unit-ref-name&gt;
+    &lt;persistence-unit-name&gt;example&lt;/persistence-unit-name&gt;
+&lt;/persistence-unit-ref&gt;</pre>
+
+
+<p class="wikiPara">
+The persistence unit ref has another purpose. After the persistence unit is loaded, the EntityManagerFactory instance will be bound to JNDI using the value of the <tt>persistence-unit-ref-name</tt> in the <tt>java:comp/env</tt> namespace (in this example the full JNDI name would be <tt>java:comp/env/example/pu</tt>). Prior to version 5, JBoss AS did not support this JNDI binding. To provide a temporary workaround, Hibernate can offer to bind the EntityManagerFactory to JNDI itself under the proprietary JBoss AS namespace <tt>java:/</tt>. This feature is activated if the following property is present in META-INF/persistence.xml:
+</p>
+
+<pre class="wikiPreformatted">&lt;property name="jboss.entity.manager.factory.jndi.name" value="java:/exampleEntityManagerFactory"/&gt;</pre>
+
+
+<p class="wikiPara">
+JBoss AS 5 supports the compliant approach to binding the EntityManagerFactory to JNDI, but has another caveat. It automatically loads all persistence units defined in META-INF/persistence.xml regardless of whether they are declared in a persistence unit ref. This fact has confused a lot of people and is the root cause of most broken Seam deployments on JBoss AS 5 right now. Suffice to say, it's best to only define persistence units you intend to load and stand aside and let the container load them.
+</p>
+
+<p class="wikiPara">
+So far the discussion has applied to WAR deployments. Things get even trickier with EARs. Technically, persistence units (the descriptor and classes) are supposed to be packaged in their own JAR and then packaged in the WAR under the WEB-INF/lib directory or packaged directly in the EAR. However, the persistence units can also be packaged in the EJB JAR. Either way, you really have to know what you are doing to get all the references setup correctly so that the persistence unit is loaded correctly and can be bound to JNDI where the WAR can access it. When the application server works the way it's supposed to, the following persistence unit configuration will suffice:
+</p>
+
+<pre class="wikiPreformatted">&lt;persistence-unit-ref&gt;
+    &lt;persistence-unit-ref-name&gt;example/pu&lt;/persistence-unit-ref-name&gt;
+    &lt;persistence-unit-name&gt;../example.jar#example&lt;/persistence-unit-name&gt;
+&lt;/persistence-unit-ref&gt;</pre>
+
+
+<p class="wikiPara">
+Notice how the persistence unit name now includes the relative location of the JAR file within the EAR which contains the persistence unit descriptor and classes. For some reason, GlassFish does not understand this configuration and I've had incorporate a temporary workaround (see resources/WEB-INF/web.xml of a seam-gen EAR project for instructions).
+</p>
+
+<p class="wikiPara">
+To summarize the various permutations, I have put together a matrix of how persistence units are handled and how they are loaded in seam-gen projects per archive type and environment:
+</p>
+
+<table>
+	<tr>
+		<th rowspan="2"></th>
+		<th colspan="3" align="center">WAR</th>
+		<th colspan="3" align="center">EAR</th>
+	</tr>
+	<tr>
+		<th>JBoss AS 4.2</th>
+		<th>JBoss AS 5.0</th>
+		<th>GlassFish</th>
+		<th>JBoss AS 4.2</th>
+		<th>JBoss AS 5.0</th>
+		<th>GlassFish</th>
+	</tr>
+	<tr>
+		<th>Bootstrapped by</th>
+		<td>Seam</td>
+		<td>container</td>
+		<td>container</td>
+		<td>container</td>
+		<td>container</td>
+		<td>container</td>
+	</tr>
+	<tr>
+		<th>Depends on persistence unit ref</th>
+		<td>no</td>
+		<td>no</td>
+		<td>yes</td>
+		<td>no</td>
+		<td>no</td>
+		<td>yes</td>
+	</tr>
+	<tr>
+		<th>JNDI binding mechanism</th>
+		<td>n/a</td>
+		<td>both</td>
+		<td>standard</td>
+		<td>proprietary</td>
+		<td>both</td>
+		<td>standard</td>
+	</tr>
+	<tr>
+		<th>Autodetects entities</th>
+		<td>yes</td>
+		<td>yes</td>
+		<td>yes</td>
+		<td>yes</td>
+		<td>yes</td>
+		<td>no</td>
+	</tr>
+</table>
+
+<p class="wikiPara">
+As you can imaging, dealing with all of these variations requires substantial support from the build. Fortunately, I was able to leverage a feature of Seam that accommodates these needs. You can use Ant-style tokens in the Seam component descriptor and Seam will replace them using the replacement values defined in the components.properties file at the root of the classpath. But even the replacement values have to be dynamic to support the various environments. So I also use Ant-style tokens in that file, which are replaced by the Ant build. So there is a two-phase substitution that occurs. Here's the contents of the components-dev.properties file:
+</p>
+
+<pre class="wikiPreformatted">jndiPattern=@ejbJndiPattern@
+debug=true
+seamBootstrapsPu=@seamBootstrapsPu@
+seamEmfRef=@seamEmfRef@
+puJndiName=@puJndiName@</pre>
+
+
+<p class="wikiPara">
+Here's the resulting components.properties prepared from this template by a build targeting JBoss AS 5 in an EAR project named example:
+</p>
+
+<pre class="wikiPreformatted">jndiPattern=example/#{ejbName}/local
+debug=true
+seamBootstrapsPu=false
+seamEmfRef=#{null}
+puJndiName=java:comp/env/example/pu</pre>
+
+
+<p class="wikiPara">
+Here's the components.properties prepared for a build targeting JBoss AS 4 in a WAR project named example:
+</p>
+
+<pre class="wikiPreformatted">jndiPattern=example/#{ejbName}/local
+debug=true
+seamBootstrapsPu=true
+seamEmfRef=#{entityManagerFactory}
+puJndiName=#{null}</pre>
+
+
+<p class="wikiPara">
+These tokens are applied to the following two component definitions in the Seam component descriptor:
+</p>
+
+<pre class="wikiPreformatted">&lt;persistence:managed-persistence-context name="entityManager" auto-create="true"
+                       entity-manager-factory="@seamEmfRef@"
+                   persistence-unit-jndi-name="@puJndiName@"/&gt;
+
+&lt;persistence:entity-manager-factory name="entityManagerFactory"
+                   persistence-unit-name="@projectName@"
+                               installed="@seamBootstrapsPu@"/&gt;</pre>
+
+
+<p class="wikiPara">
+Whew! That covers the JPA configuration. For more details on persistence unit configurations in both Java EE and Seam, check out chapter 9 of <a href="http://mojavelinux.com/seaminaction" target="" class="regularLink">Seam in Action</a>. I now want to briefly mention the new targets to support deployment to JBoss AS 5 and GlassFish.
+</p>
+
+<h2 class="wikiHeadline2" id="H-JBossAS5AndGlassFishTargets"><a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen#H-JBossAS5AndGlassFishTargets">JBoss AS 5 and GlassFish targets</a></h2>
+
+<p class="wikiPara">
+As before, the seam-gen project build supports JBoss AS by default. But I'm now able to support both JBoss 4 and JBoss 5 using the same targets by inspecting the JBoss AS 5 installation directory (resolved from jboss.home) to determine which version of JBoss AS is being targeted. I simply check for the presence of a JAR file.
+</p>
+
+<p class="wikiPara">
+GlassFish does have it's own set of targets. All of the targets that pertain to GlassFish reside in the file glassfish-build.xml at the root of the project. This file is imported into the main Ant build. All of the GlassFish targets are prefixed with <tt>gf-</tt> and closely mirror the targets for JBoss AS. There are also targets for controlling the GlassFish server. Here's a quick summary of the new targets, which are documented in the glassfish-readme.txt file:
+</p>
+
+<pre class="wikiPreformatted">gf-start - Starts GlassFish
+gf-debug - Starts GlassFish in debug mode
+gf-stop - Stops GlassFish
+gf-reboot - Restarts GlassFish
+gf-deploy-datasource - Deploys the datasource and connection pool to GlassFish
+gf-explode - Deploys the exploded archive to GlassFish (restarts application if already deployed)
+gf-hotdeploy - Hot deploys Java classes, Seam components, and web resources
+gf-deploy - Deploys the packaged archive to GlassFish
+gf-undeploy - Undeploys the exploded or packaged archive from GlassFish
+gf-stage - Prepares an exploded archive targeting GlassFish
+gf-archive - Prepares a packaged archive targeting GlassFish
+gf-prepare - Prepares GlassFish for a seam-gen project deployment (calls gf-deploy-hibernate)
+gf-deploy-hibernate - Deploys Hibernate as a JPA provider to GlassFish</pre>
+
+
+<p class="wikiPara">
+You don't have to do anything to enable the support for GlassFish. It's provided right out of the box alongside support for JBoss AS. One of the gaps I was finally able to close as I worked on the GlassFish support was the deployment of an explode EAR. GlassFish kept choking on the jboss-seam.jar, which contains EJBs and is thus considered an EJB module. As it turns out, GlassFish does not support a hybrid of packaged and exploded archives. Thus, when you are deploying an exploded EAR, you need to also explode the jboss-seam.jar file, which the build takes care of for you.
+</p>
+
+<p class="wikiPara">
+The only trade off I had to make is that Hibernate is expected to be the JPA provider in GlassFish (note the target which deploys Hibernate). It's not that difficult to make the switch to another JPA provider, but suffice to say, Seam works best with Hibernate.
+</p>
+
+<h2 class="wikiHeadline2" id="H-GrowingIvy"><a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen#H-GrowingIvy">Growing Ivy</a></h2>
+
+<p class="wikiPara">
+Seam projects are know for being pretty old school when it comes to library management. All of the JAR files are just dumped into the lib directory and picked out from there as needed. This makes it very difficult to share a seam-gen project because it's so large. I explained how to use Ivy to manage the dependencies for a seam-gen project in <a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy" target="" class="regularLink">this entry</a>. seam-gen now offers that configuration as an extension. To enable it, you simply run the following seam-gen target:
+</p>
+
+<pre class="wikiPreformatted">seam add-ivy</pre>
+
+
+<p class="wikiPara">
+Right now, only RichFaces projects are supported, but supporting ICEfaces projects is just a matter of making a couple of changes to the dependencies.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WrapUp"><a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen#H-WrapUp">Wrap up</a></h2>
+
+<p class="wikiPara">
+So there you go, seam-gen is no longer stuck in a JBoss world. And for the early adopters, JBoss AS 5--the pride and joy of JBoss--is now supported. Adding Ivy to the project helps make it more lightweight, provides an easy way to download source JARs, and helps document which versions of the JARs are being used. Just check out Seam from SVN, build and enjoy!</p>
+</div>

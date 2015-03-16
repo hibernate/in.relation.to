@@ -1,0 +1,92 @@
+---
+title: "Is the Ceylon type system sound?"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon]
+slug: IsTheCeylonTypeSystemSound
+lace: http://in.relation.to/19628.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/IsTheCeylonTypeSystemSound">Is the Ceylon type system sound?</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+So I've been reading some folks demanding that work on Ceylon start with a formal proof of the soundness of the type system. And calling me all sorts of names because I don't have one yet. I'm a bit bemused by this, since it's the <i class="wikiEmphasis">first time in history</i> that this has been demanded of a language designed for use in practical computing :-)
+</p>
+
+<p class="wikiPara">
+Nevertheless, I think the objection is interesting and merits some kind of response. So here's my take.
+</p>
+
+<p class="wikiPara">
+First of all, Ceylon has a <i class="wikiEmphasis">very simple</i>, super-conventional core type system. At core, the system is just:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> parametric polymorphism with variance annotations, plus</li>
+<li class="wikiUnorderedListItem"> mixin inheritance. </li>
+</ul>
+
+<p class="wikiPara">
+Now, we <i class="wikiEmphasis">already know</i> this basic type system to be sound. Other folks have already demonstrated that. In fact, if I understand correctly, the Scala guys have demonstrated the soundness of a significantly more complex type system with kinds in addition to mixin inheritance and generics. 
+</p>
+
+<p class="wikiPara">
+There's just maybe five additional things that are defined primitively in the language spec: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> union types,</li>
+<li class="wikiUnorderedListItem"> reified generics,</li>
+<li class="wikiUnorderedListItem"> attributes,</li>
+<li class="wikiUnorderedListItem"> nested classes, and</li>
+<li class="wikiUnorderedListItem"> higher-order functions.</li>
+</ul>
+
+<p class="wikiPara">
+Almost everything else you see in Ceylon is just sugar over the top of this basic scheme of parametric polymorphism + variance annotations + mixin inheritance. By that I mean you can re-express the other constructs in the language in terms of these more primitive notions. And that is, more or less, how the spec defines them (occasionally that might require some reading-between-the-lines).
+</p>
+
+<p class="wikiPara">
+That's one reason why Ceylon takes the approach of specifying things like operators in terms of equivalent Ceylon code. We don't have any special <q>holes</q> or primitive <q>special cases</q> in the type system. There's no primitive numeric types, arrays, raw types, built-in type promotions, or a primitive null. We've even eliminated overloading, which does seem to make soundness proofs more difficult.
+</p>
+
+<p class="wikiPara">
+And in fact, even most of the things in the list above could potentially be defined in terms of more primitive notions if necessary:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> union types of interfaces can be interpreted as <q>implicit</q> interfaces (but union types of classes are a problem)</li>
+<li class="wikiUnorderedListItem"> reified generics really just means an additional <q>implicit</q> parameter to generic constructors and methods (in fact, that's even how you need to implement it on the JVM)</li>
+<li class="wikiUnorderedListItem"> attributes can be seen as syntactic sugar over a field + a method (in fact, that's even how you need to implement it on the JVM)</li>
+<li class="wikiUnorderedListItem"> nested classes can be seen as syntactic sugar over a toplevel class (in fact, that's even how you need to implement it on the JVM)</li>
+<li class="wikiUnorderedListItem"> higher-order function support can be seen as syntactic sugar over specially generated classes (in fact, that's even how you need to implement it on the JVM)</li>
+</ul>
+
+<p class="wikiPara">
+Get the picture? Even though these things are defined in primitive terms in the spec, we already know that they can be re-expressed in terms of other primitive constructs because we <i class="wikiEmphasis">already need to be able to do that</i> in order to compile the language to Java bytecode.
+</p>
+
+<p class="wikiPara">
+Indeed, I believe it would be quite easy to show that almost any Ceylon program could be mechanically translated to a known-sound language with parametric polymorphism + variance annotations + mixin inheritance. That spec would suffice <i class="wikiEmphasis">in and of itself</i> as a proof of the soundness of Ceylon's type system!
+</p>
+
+<p class="wikiPara">
+There is one major doubt I have. I'm not sure if the type systems that have been previously studied have included union types. It would be an interesting exercise for a CS student to take some of the existing soundness proofs out there and try adding union types. Not sure if someone has already done that.
+</p>
+
+<p class="wikiPara">
+Anyway, the point I'm trying to make is that you shoudn't need a full formal proof from first principles of the soundness of your type system in order to be pretty confident that it is sound. If the core type system is already known to be sound, due to the work of others, and if you know that some other construct can be re-expressed in terms of the simpler, core constructs, you have have an informal proof of the soundness of that construct. Not quite good enough for an academic paper, perhaps, but good enough to start work on the compiler.
+</p>
+
+<p class="wikiPara">
+What do you think? Am I missing something here?
+</p>
+
+</div>

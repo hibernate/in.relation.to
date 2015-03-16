@@ -1,0 +1,44 @@
+---
+title: "Hibernate Search 4.0.0.CR2"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: []
+slug: HibernateSearch400CR2
+lace: http://in.relation.to/22337.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch400CR2">Hibernate Search 4.0.0.CR2</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Moving to steadily towards a Hibernate Search 4 we just released Hibernate Search 4.0.0.CR2. 
+In total we managedto address 32 issues. If you are interested in the details have a look at the
+<a href="https://hibernate.onjira.com/secure/ReleaseNote.jspa?projectId=10061&amp;version=11650" target="" class="regularLink">Jira release notes</a>. 
+</p>
+
+<p class="wikiPara">
+On top of internal API polishing and the obligatory bug fixes we focused on bringing the documentation up to date.
+Have a look at the <a href="http://www.hibernate.org/subprojects/search/docs" target="" class="regularLink">latest version</a>. In particular we tried
+to highlight the role of the new <i class="wikiEmphasis">IndexManager</i> interface. Each Lucene index is now managed by an <i class="wikiEmphasis">IndexManager</i> instance
+and, except of the use cases of index sharding or sharing, there is a one to one relation between an indexed
+entity and an index manager. Luckily these architectural changes have no effect the basic configuration
+and use of Hibernate Search :-)
+</p>
+
+<p class="wikiPara">
+Make sure to also read the <a href="http://community.jboss.org/wiki/HibernateSearchMigrationGuide" target="" class="regularLink">Hibernate Search Migration Guide</a> when trying to upgrade to Hibernate Search 4.
+</p>
+
+<p class="wikiPara">
+The release is available via the <a href="http://repository.jboss.org/nexus" target="" class="regularLink">JBoss Maven Repository</a> under the GAV <tt>org.hibernate:hibernate-search:4.0.0.CR2</tt> or via <a href="http://sourceforge.net/projects/hibernate/files/hibernate-search/4.0.0.CR2" target="" class="regularLink">SourceForge</a>. 
+</p>
+
+<p class="wikiPara">
+--Hardy</p>
+</div>

@@ -1,0 +1,44 @@
+---
+title: "JDK 1.5 breaks my ObjectFactory"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: JDK15BreaksMyObjectFactory
+lace: http://in.relation.to/1612.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JDK15BreaksMyObjectFactory">JDK 1.5 breaks my ObjectFactory</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+This is /just great/ ... 
+</p>
+
+<p class="wikiPara">
+JDK 1.5 changes the method signature of javax.naming.spi.ObjectFactory.getObjectInstance() from this:
+</p>
+
+<pre class="wikiPreformatted">
+public Object getObjectInstance(Object reference, Name name, Context ctx, Hashtable env)
+</pre>
+
+
+<p class="wikiPara">
+to this:
+</p>
+
+<pre class="wikiPreformatted">
+public Object getObjectInstance(Object reference, Name name, Context ctx, Hashtable&lt;String, ?&gt; env)
+</pre>
+
+
+<p class="wikiPara">
+AFAICT, this means that is now impossible to write an ObjectFactory that compiles in both JDK 1.4 and 1.5. Ugh.
+</p>
+</div>

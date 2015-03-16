@@ -1,0 +1,140 @@
+---
+title: "Modules in JDK 8 and Project Jigsaw Requirements Review, Part 1"
+author: "David Lloyd"
+blogger_name: "David"
+layout: blog-post
+tags: [Modules]
+slug: ModulesInJDK8AndProjectJigsawRequirementsReviewPart1
+lace: http://in.relation.to/20431.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1">Modules in JDK 8 and Project Jigsaw Requirements Review, Part 1</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Today Oracle's Mark Reinhold published the requirements for comment a <a href="http://openjdk.java.net/projects/jigsaw/doc/draft-java-module-system-requirements-12" target="" class="regularLink">public draft</a> of the Java Module system being proposed for inclusion into the Java SE 8 platform.  The requirements as given are fairly high-level yet comprehensive, and many of these requirements align well with the goals and specifications of our own JBoss Modules system, which is not only a strong validation of our own design but also what I think is a good sign for the future of the Java platform.
+</p>
+
+<p class="wikiPara">
+The requirements as posted however contain some things that are specifically noteworthy and some things which in my view should definitely be changed, based on my own experience with implementing the JBoss Modules environment as well as applying that environment to JBoss AS 7 and 6 (which we did on an experimental basis a while back), as well as feedback from my colleagues responsible for JBoss OSGi, which is presently implemented atop JBoss Modules.  Being very sizable and very different projects, these efforts have taught us a lot about the practical nature of modularity in Java.
+</p>
+
+<p class="wikiPara">
+Since this is a big document, I'm going to comment on it a bit at a time and see where we end up.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheRequirements"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-TheRequirements">The Requirements</a></h1>
+
+<p class="wikiPara">
+The document, which may be found <a href="http://openjdk.java.net/projects/jigsaw/doc/draft-java-module-system-requirements-12" target="" class="regularLink">here</a>, is broken up into a number of sections, which I will attempt address approximately in order.
+</p>
+
+<h2 class="wikiHeadline2" id="H-FundamentalsVersions"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsVersions">Fundamentals: Versions</a></h2>
+
+<p class="wikiPara">
+The fundamentals paragraph items all indicate a strong sense that the Jigsaw project is on the right general track.  However I found a couple sections noteworthy:
+</p>
+
+<blockquote class="wikiBlockquote">
+Resolution in all phases — Build-time, install-time, and run-time module resolution and linking must all be supported. UNIX has all three models and they are all still in use 40 years later.
+</blockquote>
+
+<p class="wikiPara">
+coupled with the following paragraph:
+</p>
+
+<blockquote class="wikiBlockquote">
+Fidelity across all phases — The set of modules seen by a library or application must be computed by the same algorithm at build time, install time, and run time.
+</blockquote>
+
+<p class="wikiPara">
+and this one:
+</p>
+
+<blockquote class="wikiBlockquote">
+Versioning — The module system must support common version-string schemes [...]. It must be possible to specify a range of allowable versions when declaring a module dependence.
+</blockquote>
+
+<p class="wikiPara">
+These seemingly reasonable statements hide a particularly tricky little goblin; namely, build reproducibility.  At build-time, an artifact (to use the Maven term) is identified in part by its version.  And that identity has a specific meaning.  If I check out version 1.2.3 of jboss-cobwobble from source control and build it, I should get an artifact which is equivalent to one which anyone else who checks out and builds the same version of the same project gets.
+</p>
+
+<p class="wikiPara">
+However, that means that such builds cannot use version ranges.  By definition this creates a way for two parties building the same project to get different output, thus blurring the meaning of what a version is.  In the first paragraph, Mark emphasises the similarities to the shared library model and recommends that similar practices be followed to that paradigm, however there is a key difference in that when one builds against a shared library the linkage is much less invasive.  A change to a compiled library used by a project does not generally affect the compilation results of that project, whereas in Java this is much easier to do, since class files are a much richer format than a shared object symbol table.
+</p>
+
+<p class="wikiPara">
+Therefore it is very important to allow (better yet, require) builds to use specific dependency versions when building, and allow version ranges only at install and run time, where version ranges are a much better fit.
+</p>
+
+<p class="wikiPara">
+Another very important consideration is that after an artifact is produced, the versions of its dependencies that it is known to be compatible with evolves over time as new versions of various things are released.  Thus dependency version ranges with a closed upper end cannot be a fixed part of the module's internal metadata, or there is a risk over time that the module will have to be repackaged to accomodate new version compatibilities.  My personal recommendation in fact is that modules only ever support a lower bound to version ranges for package/run-time constraining.
+</p>
+
+<h2 class="wikiHeadline2" id="H-FundamentalsTargetConstraintsOnModules"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsTargetConstraintsOnModules">Fundamentals: Target constraints on modules</a></h2>
+
+<p class="wikiPara">
+I admit I do not understand the purpose of this paragraph, which reads as follows:
+</p>
+
+<blockquote class="wikiBlockquote">
+Target constraints on modules — On a particular target platform it must be possible to declare that only modules with specific properties can be installed, e.g., particular authors, publishers, or licenses. The resolution algorithm must ignore any module that does not satisfy the target platform’s module constraints.
+</blockquote>
+
+<p class="wikiPara">
+If the purpose of this is security, which I can very much get behind, then I think the only sensible approach is to constrain module loading to signed modules.  Otherwise, if the goal is simply to create a mechanism by which administrators can annoy each other, then I guess this fits the bill; the restriction can be bypassed by changing the metadata, which means that it provides neither security nor convenience.
+</p>
+
+<p class="wikiPara">
+Overall I think this mechanism also risks fragmentation of the module ecosystem that would (hopefully) arise around this enhancement.  I think Perl for example benefits greatly from a single repository of modules which is yet open to contributors with relatively little restriction; yet operating system distributors (know any of those?) have established best practices for the distribution of these modules.  And of course today's Java developers often use the Maven central repository and expect it to contain <q>everything</q> in reasonable locations.  However by creating these filtering mechanisms, the problem of many publishers is being solved at the wrong place, and it allows for some potentially very surprising behavior (I can see the FAQ now: <q>I installed a module but Java says it's not found... what gives?</q>).
+</p>
+
+<h2 class="wikiHeadline2" id="H-FundamentalsNativeCode"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsNativeCode">Fundamentals: Native code</a></h2>
+
+<p class="wikiPara">
+This section basically says that modules need to support native code somehow, though it seems to imply that the native library has to live inside the module itself, which I think is probably unneccessary (though of course it would have to exist within the module <i class="wikiEmphasis">packaging</i>, else there would be no way to actually install it).  In JBoss Modules, we simply require that native libraries exist in filesystem-backed resource loaders (as opposed to jar-backed resource loaders which one would normally use for classes).  In addition the filesystem resource loader uses the name of the OS and hardware platform to allow for packaging modules which contain native bits for more than one platform (actually not unlike how Perl's DynaLoader does it, if I recall correctly).
+</p>
+
+<h2 class="wikiHeadline2" id="H-FundamentalsPackageSubsetsAndSharedClassLoaders"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsPackageSubsetsAndSharedClassLoaders">Fundamentals: Package subsets and Shared class loaders</a></h2>
+
+<p class="wikiPara">
+These sections I have a serious problem with:
+</p>
+
+<blockquote class="wikiBlockquote">
+Package subsets — In support of platform modularization, it must be possible for the types defined in a Java package to be provided by more than one module yet still be loaded by the same class loader at run time. This is required so that CDC-sized subsets of large legacy packages such as java.util can be defined.
+</blockquote>
+
+<blockquote class="wikiBlockquote">
+Shared class loaders — In support of platform modularization, it must be possible to declare that the types defined in a specific set of modules must be loaded by the same class loader.
+</blockquote>
+
+<p class="wikiPara">
+I am very much against this notion.  One module, one class loader, period, end of story.  If you are splitting a single class loader among many modules, you haven't created modules, you've created one module with a class path of several JARs, of which some stuff may be missing and others not, and a hell of a lot of useless complexity, all for the privilege of saying <q>sure, we modularized this</q>.  There is no isolation of any sort between them beyond your standard access controls provided by the Java language.  Without a strong definition of a module as an encapsulating vehicle for a class loader, the whole idea is weakened - visibility is only sensibly enforced in terms of whole class loaders (yes, while it is probably possible to use a different unit of division like class, it will <u>definitely</u> have a negative performance impact).
+</p>
+
+<p class="wikiPara">
+Rather than thus weakening the definition of a module, I recommend that modules be allowed to be packaged in portions, which may be separately shipped and installed - perhaps a module/submodule concept could be introduced, where the contract of a submodule is clearly defined as sharing the parent module's class loader.  In other words, the label should be clearly marked, so to speak.  There is no reasonable expectation that a package may be split between modules, and doing so is definitely a violation of the Principle of Least WTF.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SecurityWhereArtThou"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-SecurityWhereArtThou">Security: Where art thou?</a></h2>
+
+<p class="wikiPara">
+Though there are various paragraphs which allude to it, there is no specific section addressing security, which I think is a somewhat serious oversight.  I would personally like to see some enhancements to the standard security provider mechanism to accomodate modules and module signers more conveniently than the mechanisms at our disposal today, and I commented earlier about module signing, to say nothing about modular security provider discovery (okay, this kind of thing is currently listed as a non-requirement to be fair - but it will always be in the back of my mind, and you can bet that it will show up in JBoss AS 7.x at some point if I have anything to say about it).
+</p>
+
+<h2 class="wikiHeadline2" id="H-SummaryPart1"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-SummaryPart1">Summary, Part 1</a></h2>
+
+<p class="wikiPara">
+That's about it for the first chapter.  Overall the Fundamentals leave me with a sense that things are somewhat more under control in Jigsaw-land... in particular, it's good news that the brakes are apparently being gently applied to implementation in order to come up with real requirements, which are essential to ensuring that a project is firmly on the correct planetary surface.  Just ask any of my colleagues, they'll tell you how I like a good requirements document!
+</p>
+
+<p class="wikiPara">
+Next time I'll try to cover a little more ground, as the subsequent chapters are mostly rather shorter than Fundamentals is.
+</p>
+</div>

@@ -1,0 +1,131 @@
+= How to build hibernate.org
+:awestruct-layout: title-nocol
+:toc:
+:toc-placement: preamble
+
+A bit of Git, a bit of Ruby and you will get your local hibernate.org served.
+
+== Prerequisites
+
+* Get http://git-scm.com[Git]
+* Get https://www.ruby-lang.org/en/[Ruby] > 1.9
+* If on Mac OS:
+** Get https://developer.apple.com/xcode/[XCode] (needed for compilation of native gems)
+* If on Linux:
+** Get _libxslt-dev_ - eg via `sudo apt-get install libxslt-dev` (may be called _libxslt1-dev_
+for some distros)
+
+== Installation
+
+=== Ensure Rake is installed
+
+Make sure https://github.com/jimweirich/rake[Rake] is available. It is often installed per default.
+
+[source]
+----
+> rake --version
+----
+
+If you get "_command not found_":
+
+[source]
+----
+> gem install rake
+----
+
+=== Ensure Bundler is installed
+
+Make sure http://bundler.io/[Bundler] is available. It manages your Ruby gems locally to the project
+and prevents version conflicts between different Ruby projects. To quote from the website:
+
+____
+Bundler provides a consistent environment for Ruby projects by tracking and installing the exact
+gems and versions that are needed.
+____
+
+[source]
+----
+> bundle -v
+----
+
+If you get "_command not found_":
+
+[source]
+----
+> gem install bundler
+----
+
+=== Get the source
+
+[source]
+----
+> git clone git@github.com:hibernate/hibernate.org.git
+> cd hibernate.org
+----
+
+=== Setup awestruct
+
+[source]
+----
+> rake setup
+> rake check
+----
+
+=== Serve the site
+
+[source]
+----
+rake preview
+----
+
+Point your browser to http://localhost:4242
+
+== Tips & Tricks
+
+=== Which other tasks exist in the Rake build file?
+
+[source]
+----
+> rake --tasks
+----
+
+This will list the available tasks with a short description
+
+=== I am getting errors when trying to execute *awestruct* directly
+
+You need to use `bundle exec <command>` to make sure you get all required Gems. Check the *Rakefile*
+to see how the different awestruct calls are wrapped.
+
+=== If your changes are not visible...
+
+Panic! Then completely regenerate the site via:
+
+[source]
+----
+> rake clean preview
+----
+
+=== If serving the site is slow...
+
+On Linux, serving the file may be atrociously slow (something to do with WEBRick).
+
+Use the following alternative:
+
+* Go in your `hibernate.org` directory.
+* Run  `rake gen`
+* In parallel, go to the `hibernate.org/_site` directory
+* Run `python -m SimpleHTTPServer 4242`
+
+You should be back to millisecond serving :)
+
+== License
+
+The content of this repository is released under the link:http://www.apache.org/licenses/LICENSE-2.0.txt[ASL 2.0].
+
+By submitting a "pull request" or otherwise contributing to this repository, you
+agree to license your contribution under the respective licenses mentioned above.
+
+== Acknowledgements
+
+This website uses https://github.com/jbossorg/bootstrap-community[JBoss Community Bootstrap].
+

@@ -1,0 +1,39 @@
+---
+title: "My 2c on annotation overriding."
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: My2cOnAnnotationOverriding
+lace: http://in.relation.to/1667.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/My2cOnAnnotationOverriding">My 2c on annotation overriding.</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<a href="http://beust.com/weblog/archives/000157.html" target="" class="regularLink">Cedric </a> and <a href="http://jboss.org/jbossBlog/blog/bburke/?permalink=XML+overrides+for+EJB3.html" target="" class="regularLink">Bill </a> have proposed solutions. My preference is basically similar to Bill's, but here's how I would write it:
+</p>
+
+
+<pre class="wikiPreformatted">
+&lt;class name="org.hibernate.Item"&gt;
+    @Entity
+    @Table(name="AUCTION_ITEM")
+    &lt;method sig="getBar()"&gt;@Transient&lt;/method&gt;
+    &lt;method sig="doSomething(int, String)"&gt;
+        @Tx(REQUIRES_NEW)
+    &lt;/method&gt;
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+I like this, because the same approach can be used outside of the context of J2EE. I /really/ wish something like this would have been included in JSR-175.
+</p>
+</div>

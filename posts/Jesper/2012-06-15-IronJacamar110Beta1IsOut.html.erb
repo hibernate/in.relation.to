@@ -1,0 +1,131 @@
+---
+title: "IronJacamar 1.1.0.Beta1 is out"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+layout: blog-post
+tags: []
+slug: IronJacamar110Beta1IsOut
+lace: http://in.relation.to/23255.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/IronJacamar110Beta1IsOut">IronJacamar 1.1.0.Beta1 is out</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I'm very happy to announce the first beta of the IronJacamar 1.1 series ! This is a major milestone for us, since this release adds support for the optional features of the Java EE Connector Architecture 1.6 specification.
+</p>
+
+<p class="wikiPara">
+Full release notes are <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12310691&amp;version=12319505" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-LazyConnectionManager"><a href="/Bloggers/IronJacamar110Beta1IsOut#H-LazyConnectionManager">Lazy connection manager</a></h2>
+
+<p class="wikiPara">
+This release finishes our work on our lazy connection manager implementation. We covered the <q>association</q> part in an earlier <a href="http://in.relation.to/Bloggers/IronJacamar110Alpha6IsOut" target="" class="regularLink">blog</a> which leaves the <q>enlistment</q> part.
+</p>
+
+<p class="wikiPara">
+Lazy enlistment allows the resource adapter to control when the ManagedConnection is enlisted in the transaction associated with the invocation. This has the benefit of not having the enlistment overhead if the connection never needs to be enlisted.
+</p>
+
+<p class="wikiPara">
+So for resource adapters that supports <q>read-only</q> scenarios you will see a nice performance improvement.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DistributedWorkManager"><a href="/Bloggers/IronJacamar110Beta1IsOut#H-DistributedWorkManager">Distributed work manager</a></h2>
+
+<p class="wikiPara">
+This release features our initial distributed work manager, which allows <q>javax.resource.spi.work.DistributableWork</q> instances to be reschedule for execution in another work manager instance to which it was submitted.
+</p>
+
+<p class="wikiPara">
+The distributed work manager is basically a standard work manager with three additional components
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Policy</li>
+<li class="wikiUnorderedListItem"> Selector</li>
+<li class="wikiUnorderedListItem"> Transport</li>
+</ul>
+
+<p class="wikiPara">
+The <q>Policy</q> decides when a <q>DistributableWork</q> instance should be executed in another work manager. We currently support
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Never -- never distribute to another work manager</li>
+<li class="wikiUnorderedListItem"> Always -- always distribute to another work manager</li>
+</ul>
+
+<p class="wikiPara">
+More policies are on their way.
+</p>
+
+<p class="wikiPara">
+The <q>Selector</q> decides which work manager that should receive the <q>DistributableWork</q> instance. We currently support
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> FirstAvailable -- pick the first work manager in the list that is available</li>
+<li class="wikiUnorderedListItem"> PingTime -- pick the work manager which has the lowest ping time</li>
+</ul>
+
+<p class="wikiPara">
+Future releases will include more selectors.
+</p>
+
+<p class="wikiPara">
+The <q>Transport</q> handles the actual transport of the <q>DistributableWork</q> instance. We have included support for the following transports
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> InVM -- communication between work managers in the same JVM</li>
+<li class="wikiUnorderedListItem"> Socket -- communication between work managers using standard Java sockets</li>
+</ul>
+
+<p class="wikiPara">
+in this release. We will include support for additional transports in future releases.
+</p>
+
+<p class="wikiPara">
+We have added a <q>org.jboss.jca.core.api.workmanager.DistributableContext</q> class which will allow you to define overrides to control the execution.
+</p>
+
+<p class="wikiPara">
+If you thought to yourself <q>Did IronJacamar just get support for clustering ?</q> - the answer would be yes !
+</p>
+
+<h2 class="wikiHeadline2" id="H-EclipsePlugin"><a href="/Bloggers/IronJacamar110Beta1IsOut#H-EclipsePlugin">Eclipse plugin</a></h2>
+
+<p class="wikiPara">
+We now have a plugin for the Eclipse development environment, which provides an Eclipse integration for our code generator such that you don't have to use the command line to generate the project skeleton for your resource adapter.
+</p>
+
+<p class="wikiPara">
+We will of course integrate our other tools, such as the validator, into the plugin in future releases.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheRoadAhead"><a href="/Bloggers/IronJacamar110Beta1IsOut#H-TheRoadAhead">The Road Ahead</a></h2>
+
+<p class="wikiPara">
+This is the first beta release of IronJacamar 1.1 which means we are getting closer a stable release, but there is still a lot of work that needs to be done. But that is what Beta's are for :) And don't forget your own ideas for the project, keep the feedback coming !
+</p>
+
+<p class="wikiPara">
+Looking forward to meeting you all at <a href="http://www.jboss.org/events/JUDCon/2012/boston" target="" class="regularLink">JUDCon</a> !
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/ironjacamar/" target="" class="regularLink">WebSite</a>] [<a href="http://www.jboss.org/ironjacamar/downloads.html" target="" class="regularLink">Download</a>] [<a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/" target="" class="regularLink">Documentation</a>] [<a href="https://issues.jboss.org/browse/JBJCA" target="" class="regularLink">JIRA</a>] [<a href="https://community.jboss.org/en/ironjacamar/?view=discussions" target="" class="regularLink">Forum</a>] 
+</p>
+</div>

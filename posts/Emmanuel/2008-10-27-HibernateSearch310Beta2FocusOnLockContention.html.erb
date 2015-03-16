@@ -1,0 +1,51 @@
+---
+title: "Hibernate Search 3.1.0.Beta2: focus on lock contention"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: []
+slug: HibernateSearch310Beta2FocusOnLockContention
+lace: http://in.relation.to/9685.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch310Beta2FocusOnLockContention">Hibernate Search 3.1.0.Beta2: focus on lock contention</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Hibernate Search 3.1 beta2 is out with a significant focus on performance improvements, scalability and API clean up.
+</p>
+
+<p class="wikiPara">
+Here is the main area of work:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Upgrade to <a href="http://lucene.apache.org/java/2_4_0/changes/Changes.html#2.4.0.build" target="" class="regularLink">Lucene 2.4</a> which opened up a lot of optimization possibilities on the Hibernate Search side.</li>
+<li class="wikiUnorderedListItem"> Inserts and deletes are now done in a single index opening rather than two.</li>
+<li class="wikiUnorderedListItem"> The window of locking has been reduced a lot during writes, especially on transactions involving several entities.</li>
+<li class="wikiUnorderedListItem"> Filter caching configuration has been simplified.</li>
+<li class="wikiUnorderedListItem"> Expose scoped analyzer for a given class: queries can now use the same analyzer used at indexing time transparently.</li>
+<li class="wikiUnorderedListItem"> Properly genericize the API (no more raw type used)</li>
+<li class="wikiUnorderedListItem"> Fix a few bugs around the Solr analyzer integration and moved to Solr 1.3.</li>
+<li class="wikiUnorderedListItem"> Fix various bugs including the long standing <a href="http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH-142" target="" class="regularLink">HSEARCH-142</a>.</li>
+</ul>
+
+<p class="wikiPara">
+We have incorporated a lot of enhancement based on our work on the book <a href="http://www.manning.com/affiliate/idevaffiliate.php?id=952_117_1_24" target="" class="regularLink">Hibernate Search in Action</a> and some genius performance ideas from <a href="http://codingobsession.blogspot.com" target="" class="regularLink">Sanne</a>.
+This version is still a beta because we still have a few optimization and enhancements in our pocket but CR1 should come out mid november-ish.
+</p>
+
+<p class="wikiPara">
+The complete list of changes can be found in <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10061&amp;styleName=Html&amp;version=10830" target="" class="regularLink">jira</a> and you can download Hibernate Search <a href="http://hibernate.org/6.html" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+Let us know what you think.
+</p>
+
+</div>

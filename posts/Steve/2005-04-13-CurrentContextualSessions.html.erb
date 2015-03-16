@@ -1,0 +1,145 @@
+---
+title: "Current (Contextual) Sessions"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: []
+slug: CurrentContextualSessions
+lace: http://in.relation.to/2037.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/CurrentContextualSessions">Current (Contextual) Sessions</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+New to Hibernate 3.0.1 is the SessionFactory.getCurrentSession() method.
+It allows application developers to delegate tracking of current sessions to Hibernate itself.
+This is fairly trivial functionality, but stuff just about any user of Hibernate had to implement themselves,
+or rely on third party stuff to do for them.  Let's take a look at how this is implemented in Hibernate and
+how it might be useful.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ContextScope"><a href="/Bloggers/CurrentContextualSessions#H-ContextScope">Context Scope</a></h2>
+
+<p class="wikiPara">
+I said that SessionFactory.getCurrentSession() tracks the current session on behalf of the application developer.
+What exactly does that mean?  What is the <q>scope</q> in which a session is considered <q>current</q>?  The transaction!
+More specifically, a JTA transaction.
+</p>
+
+<p class="wikiPara">
+Another dimension to scoping the current session is to which factory it belongs.  Because Hibernate implements
+this internal to the SessionFactory, the current sessions are inherently tracked by that given factory.  Internally,
+the SessionFactory maintains a Map of sessions keyed by JTA transaction.  There is little overhead in this since the
+Map is built lazily, and only utilized during getCurrentSession() calls: if you don't use this feature, the map is
+never even built.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ExampleUsage"><a href="/Bloggers/CurrentContextualSessions#H-ExampleUsage">Example Usage</a></h2>
+
+<p class="wikiPara">
+Imagine a simple scenario coordinating efforts between three DAOs:
+</p>
+
+<pre class="wikiPreformatted">
+public Bid myExposedCmtEjbServiceMethod(Long itemId, Double amount) {
+    ItemDAO itemDAO = new ItemDAO( getSessionFactory() );
+    BidDAO bidDAO = new BidDAO( getSessionFactory() );
+    UserDAO userDAO = new UserDAO( getSessionFactory() );
+
+    Item item = itemDAO.load( itemId );
+    User bidder = userDAO.load( getCurrentUsername() );
+    return bidDAO.create( item, amount, user );
+}</pre>
+
+
+<p class="wikiPara">
+How should each of the DAOs utilize the same session to perform their work?  The typical pattern is
+to use ThreadLocals or similiar contextual storage (perhaps a JBoss TransactionLocal) to maintain
+the current session within that context.  Furthermore, how do we know when this current session should
+be cleaned up?
+</p>
+
+<p class="wikiPara">
+The usual pattern to implement these functionalities is that a <q>top-level</q> service/method
+is defined as the service controller which is responsible for opening a session at the start,  <q>binding</q> it to the contextual storage (so other collaborators can find it), and cleaning up 
+the session at the end of the service processing.  A slight twist on this is to use method 
+interception to apply those behaviours (or aspects) on top of the <q>service controller</q> method.  
+Either way, this can be a lot of work to setup requiring that we either:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> modify all the service controller points to perform the open-bind-cleanup functionality</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> wrapping all our services (sometimes spuriously) in proxies so that we can intercept the method execution and apply those behavioural aspects</li>
+</ul>
+
+
+<p class="wikiPara">
+So instead, lets look at using the SessionFactory.getCurrentSession() approach:
+</p>
+
+<pre class="wikiPreformatted">
+public class ItemDAO {
+    private SessionFactory sf;
+
+    public ItemDAO(SessionFactory sf) { this.sf = sf; }
+
+    public Item load(Long itemId) {
+        return ( Item ) sf.getCurrentSession().load( Item.class, itemId );
+    }
+
+    ...
+}
+</pre>
+
+
+<p class="wikiPara">
+Here, each of the DAO collaborators simply use the getCurrentSession() method; the things collaborating
+with the DAOs do not need to perform anything <q>extra</q> and we do not need to generate proxies
+and method interceptors just to apply the notion of contextual sessions.
+</p>
+
+<p class="wikiPara">
+So now, by using getCurrentSession() we can easily scope the notion of a current session to the JTA
+transaction and reuse the same session throughout that JTA transaction.  But how do we clean up the
+session?  And how do we manage flushing of the session state with the database?
+</p>
+
+<h2 class="wikiHeadline2" id="H-AutoFlushAndClose"><a href="/Bloggers/CurrentContextualSessions#H-AutoFlushAndClose">Auto flush and close</a></h2>
+
+<p class="wikiPara">
+Two new configuration options introduced in Hibernate3 are extremely powerful, especially when 
+combined with the SessionFactory.getCurrentSession().  Both of these are available in the JTA 
+environments, as well as scenarios where application is utilizing the Hibernate 
+transaction-abstraction API.
+</p>
+
+<p class="wikiPara">
+The first is <tt>flush_before_completion</tt>, which forces a flush of the session just prior to 
+transaction completion (think Synchronization.beforeCompletion()...).  With this setting enabled,
+we do not have to worry about flushing the session after we are done in order to synchronize
+in-memory state with the database; Hibernate does it for us (just prior the transaction commit).
+</p>
+
+<p class="wikiPara">
+The second is <tt>auto_close_session</tt>, which forces the session to be closed after transaction
+completion.  In JTA environments, this setting has an additional effect; it forces Hibernate
+to release JDBC connections much more aggresively.  Basically, Hibernate will obtain a connection, 
+use it, and then immediately release it back to the datasource.  This allows better integration into 
+JTA environments which implement some form of connection <q>containment</q> check (i.e. the JBoss CachedConnectionManager).
+</p>
+
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/CurrentContextualSessions#H-Conclusion">Conclusion</a></h2>
+
+<p class="wikiPara">
+All of these together allow application developers to free themselves from managing <q>session lifecycle</q> and have Hibernate do it for them.
+</p>
+</div>

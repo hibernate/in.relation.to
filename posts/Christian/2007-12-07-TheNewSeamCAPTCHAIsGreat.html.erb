@@ -1,0 +1,180 @@
+---
+title: "The new Seam CAPTCHA is great"
+author: "Christian Bauer"
+blogger_name: "Christian"
+layout: blog-post
+tags: [Seam,Seam Wiki]
+slug: TheNewSeamCAPTCHAIsGreat
+lace: http://in.relation.to/3185.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/TheNewSeamCAPTCHAIsGreat">The new Seam CAPTCHA is great</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Seam offers some basic infrastructure for CAPTCHA creation and validation, so all you have to do if you want to add CAPTCHA validation to a form is add a single form field and show the picture with  <tt>&lt;h:graphicImage/&gt;</tt>. The only built-in implementation we shipped with Seam 1.x and 2.0 was based on JCaptcha, but you could easily extend it and do your own question/answer thing. This is actually what I did and you can see my simplified math question CAPTCHA if you try to post a comment to this entry.
+</p>
+
+<p class="wikiPara">
+I'm not the only Seam user who had problems with JCaptcha (search the Seam forum if you want to know more, basically: it's over-engineered, needs seconds to startup, sometimes needs seconds to render an image, the default image generators are hard to read but CAPTCHAs are still easy to break, etc). So Gavin wrote a new Captcha implementation we could ship with Seam 2.0.1. This is in Seam CVS now and not released, so ignore this blog entry if you are not a Seam CVS user and come back to it when we release 2.0.1.
+</p>
+
+<p class="wikiPara">
+The usage scenario is still the same, add an input field and a picture to your form:
+</p>
+
+<pre class="wikiPreformatted">&lt;s:validateAll&gt;
+    &lt;h:inputText size="6" maxlength="6" required="true" id="verifyCaptcha" value="#{captcha.response}"/&gt;
+    &lt;h:graphicImage value="/seam/resource/captcha"/&gt;
+&lt;/s:validateAll&gt;
+</pre>
+
+
+<p class="wikiPara">
+By default Gavins implementation only renders a simple math question as an image with no obfuscation at all. So I extended the built-in classes. This is how my generated CAPTCHA questions look like:
+</p>
+
+<p class="wikiPara">
+<img src="/service/File/3184" width="120" height="94">
+</p>
+
+<p class="wikiPara">
+The trick is to tell the user to ignore any <q>circles</q> - and to never use any characters that look like circles (zero, o, O). I don't think people will have issues deciphering these characters, I've been trying myself a few dozen times during testing and failed only once or twice. I think that this CAPTCHA is quite difficult to break automatically though, the grey shades used for obfuscation and real text are the same and circles really destroy the original shape of the characters. And if it's broken, we can simply add more aggressive circles in small incremental steps or increase the rotation range of the characters.
+</p>
+
+<p class="wikiPara">
+Another thing that makes CAPTCHAs less painful is to store the data in the HTTP session, so that if a user entered a captcha once on your site, you don't require it to be entered a second time. But that's all built-in with the new Seam Captcha stuff.
+</p>
+
+<p class="wikiPara">
+Here is my custom code for the image generation:
+</p>
+
+<pre class="wikiPreformatted">
+package org.jboss.seam.wiki.core.captcha;
+
+import org.jboss.seam.ScopeType;
+import org.jboss.seam.annotations.Create;
+import org.jboss.seam.annotations.Install;
+import org.jboss.seam.annotations.Name;
+import org.jboss.seam.annotations.Scope;
+import org.jboss.seam.captcha.Captcha;
+import org.jboss.seam.captcha.CaptchaResponse;
+
+import java.awt.*;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+
+@Name("org.jboss.seam.captcha.captcha")
+@Scope(ScopeType.SESSION)
+@Install(precedence = Install.APPLICATION)
+public class WikiCaptcha extends Captcha {
+
+    Color backgroundColor = new Color(0xf5,0xf5, 0xf5);
+    Font textFont = new Font("Arial", Font.PLAIN, 25);
+    int charsToPrint = 6;
+    int width = 120;
+    int height = 25;
+    int circlesToDraw = 4;
+    float horizMargin = 20.0f;
+    double rotationRange = 0.2;
+    String elegibleChars = "ABDEFGHJKLMRSTUVWXYabdefhjkmnrstuvwxy23456789";
+    char[] chars = elegibleChars.toCharArray();
+
+    @Override
+    @Create
+    public void init() {
+        super.init();
+
+        StringBuffer finalString = new StringBuffer();
+        for (int i = 0; i &lt; charsToPrint; i++) {
+            double randomValue = Math.random();
+            int randomIndex = (int) Math.round(randomValue * (chars.length - 1));
+            char characterToShow = chars[randomIndex];
+            finalString.append(characterToShow);
+        }
+
+        setChallenge(finalString.toString());
+        setCorrectResponse(finalString.toString());
+    }
+
+    @Override
+    public BufferedImage renderChallenge() {
+
+        // Background
+        BufferedImage bufferedImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics2D g = (Graphics2D) bufferedImage.getGraphics();
+        g.setColor(backgroundColor);
+        g.fillRect(0, 0, width, height);
+
+        // Some obfuscation circles
+        for (int i = 0; i &lt; circlesToDraw; i++) {
+            int circleColor = 80 + (int)(Math.random() * 70);
+            float circleLinewidth = 0.3f + (float)(Math.random());
+            g.setColor(new Color(circleColor, circleColor, circleColor));
+            g.setStroke(new BasicStroke(circleLinewidth));
+            int circleRadius = (int) (Math.random() * height / 2.0);
+            int circleX = (int) (Math.random() * width - circleRadius);
+            int circleY = (int) (Math.random() * height - circleRadius);
+            g.drawOval(circleX, circleY, circleRadius * 2, circleRadius * 2);
+        }
+
+        // Text
+        g.setFont(textFont);
+        FontMetrics fontMetrics = g.getFontMetrics();
+        int maxAdvance = fontMetrics.getMaxAdvance();
+        int fontHeight = fontMetrics.getHeight();
+        float spaceForLetters = -horizMargin * 2 + width;
+        float spacePerChar = spaceForLetters / (charsToPrint - 1.0f);
+
+        char[] allChars = getChallenge().toCharArray();
+        for (int i = 0; i &lt; allChars.length; i++ ) {
+            char charToPrint = allChars[i];
+            int charWidth = fontMetrics.charWidth(charToPrint);
+            int charDim = Math.max(maxAdvance, fontHeight);
+            int halfCharDim = (charDim / 2);
+            BufferedImage charImage = new BufferedImage(charDim, charDim, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D charGraphics = charImage.createGraphics();
+            charGraphics.translate(halfCharDim, halfCharDim);
+            double angle = (Math.random() - 0.5) * rotationRange;
+            charGraphics.transform(AffineTransform.getRotateInstance(angle));
+            charGraphics.translate(-halfCharDim, -halfCharDim);
+            int charColor = 60 + (int)(Math.random() * 90);
+            charGraphics.setColor(new Color(charColor, charColor, charColor));
+            charGraphics.setFont(textFont);
+            int charX = (int) (0.5 * charDim - 0.5 * charWidth);
+            charGraphics.drawString("" + charToPrint, charX, ((charDim - fontMetrics.getAscent())/2 + fontMetrics.getAscent()));
+            float x = horizMargin + spacePerChar * (i) - charDim / 2.0f;
+            int y = ((height - charDim) / 2);
+            g.drawImage(charImage, (int) x, y, charDim, charDim, null, null);
+
+            charGraphics.dispose();
+        }
+        g.dispose();
+
+        return bufferedImage;
+    }
+
+    @CaptchaResponse(message = "#{messages['lacewiki.label.VerificationError']}")
+    public String getResponse() {
+        return super.getResponse();
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+(If some of the code looks familiar, you have maybe seen it <a href="http://www.jroller.com/mlconnor/entry/simple_captcha_jsp" target="" class="regularLink">here</a> before.)
+</p>
+
+<p class="wikiPara">
+I still need to finish a few other things before I can upgrade the software running this site to the new Captcha though. So if you want to try it out, get Seam CVS and put this class into your codebase, no other configuration necessary.
+</p>
+
+
+</div>

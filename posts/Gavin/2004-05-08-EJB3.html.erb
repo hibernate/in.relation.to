@@ -1,0 +1,86 @@
+---
+title: "EJB3"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: []
+slug: EJB3
+lace: http://in.relation.to/1552.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/EJB3">EJB3</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Yesterday, Linda DeMichiel announced the changes coming in EJB 3.0. There was a lot to digest in her presentation, and I think it will take a while for people to figure out the full implications of the new spec. So far, most attention has focused upon the redesign of entity beans, but that is most certainly not all that is new! The expert group has embraced annotations aggressively, finally eliminating deployment descriptor XML hell. Taking a leaf from Avalon, Pico, Spring, Hivemind, etc, EJB will use dependency injection as an alternative to JNDI lookups. Session beans will be POJOs, with a business interface, home objects have been eliminated. Along with various other changes, this means that EJB 3.0 will be a much more appropriate solution for web-based applications with servlets and business logic colocated in the same process (which is by far the most sane deployment topology for most - but not all - applications), without losing the ability to handle more complex distributed physical architectures.
+</p>
+
+<p class="wikiPara">
+What is amazing is the broad consensus in the EJB Expert Group - all the way from traditional J2EE vendors like BEA, to we open source kiddies - about what was most needed in EJB3. There has been a lot of listening to users going on, which took me by surprise. Linda's leadership is also to be credited.
+</p>
+
+<p class="wikiPara">
+But anyway, this is the Hibernate blog, so I'm going to discuss persistence....
+</p>
+
+<p class="wikiPara">
+EJB 3.0 adopted a POJO-based entity bean programming model, very much similar to what we use in Hibernate. Entity beans may be serializable. They will not need to extend or implement any interfaces from javax.ejb. They will be concrete classes, with JavaBeans-style property accessors. Associations will be of type Set or Collection and always bidirectional, but <q>un-managed</q>. (Referential integrity of bidirectional associations is trivial to implement in your object model, and then applies even when the persistent objects are detached.) This model facilitates test-driven development, allows re-use of the domain model outside the context of the EJB container (especially, DTOs will be a thing of the past for many applications) and emphasizes the business problem, not the container.
+</p>
+
+<p class="wikiPara">
+Hibernate Query Language was originally based upon EJBQL, ANSI SQL and ODMG OQL, and now the circle is complete, with features of HQL (originally stolen from SQL and OQL) making their way back into EJBQL. These features include explicit joins (including outer joins), projection, aggregation, subselects. No more Fast Lane Reader type antipatterns!
+</p>
+
+<p class="wikiPara">
+In addition, EJBQL will grow support for bulk update and bulk delete (a feature that we do not currently have). Many users have requested this.
+</p>
+
+<p class="wikiPara">
+For the occasional cases where the newly enhanced EJBQL is not enough, you will be able to write queries in native SQL, and have the container return managed entities.
+</p>
+
+<p class="wikiPara">
+EJB 3.0 will replace entity bean homes with a singleton EntityManager object. Entities may be instantiated using new, and then made persistent by calling create(). They may be made transient by calling remove(). The EntityManager is a factory for Query objects, which may execute named queries defined in metadata, or dynamic queries defined via embedded strings or string manipulation. The EntityManager is very similar to a Hibernate Session, JDO PersistenceManager, TopLink UnitOfWork or ODMG Database - so this is a very well-established pattern! Association-level cascade styles will provide for cascade save and delete.
+</p>
+
+<p class="wikiPara">
+There will be a full ORM metadata specification, defined in terms of annotations. Inheritance will finally be supported, and perhaps some <q>nice</q> things like derived properties.
+</p>
+
+<p class="wikiPara">
+Because everyone will ask....
+</p>
+
+<p class="wikiPara">
+What was wrong with JDO? Well, the EJB expert group - before I joined - came to the conclusion that JDO was just not a very appropriate model for ORM, which echoes the conclusion reached by the Hibernate team, and many other people. There are some problems right at the heart of the JDO spec that are simply not easy to fix.
+</p>
+
+<p class="wikiPara">
+I'm sure I will cop enormous amounts of flak for coming out and talking about these problems in public, but I feel we need to justify this decision to the community, since it affects the community, and since the EG should be answerable to the community. We also need to put to rest the impression that this was just a case of <q>Not Invented Here</q>.
+</p>
+
+<p class="wikiPara">
+First, JDOQL is an abomination. (There I said it.) There are four standard ways of expressing object-oriented queries: query language, query by criteria, query by example and native SQL. JDOQL is none of these. I have no idea how the JDO EG arrived at the design they chose, but it sort of looks as if they couldn't decide between query language and query by criteria, so went down some strange middle road that exhibits the advantages of neither approach. My suggestion to adopt something like HQL was a nonstarter. The addition of support for projection and aggregation in JDO2 makes JDOQL even uglier and more complex than before. This is /not/ the solution we need!
+</p>
+
+<p class="wikiPara">
+Second, field interception - which is a great way to implement stuff like Bill Burke's ACID POJOs or the fine-grained cache replication in JBossCache - turns out, perhaps surprisingly, to be a completely inappropriate way to implement POJO persistence. The biggest problem rears its head when we combine lazy association fetching with detached objects. In a proxy-based solution, we throw an exception from unfetched associations if they are accessed outside the context of the container. JDO represents an unfetched association using null. This, at best, means you get a meaningless NPE instead of a LazyInitializationException. At worst, your code might misinterpret the semantics of the null and assume that there is no associated object. This is simply unnacceptable, and there does not appear to be any way to fix JDO to remedy this problem, without basically rearchitecting JDO. (Unlike Hibernate and TopLink, JDO was not designed to support detachment and reattachment.)
+</p>
+
+<p class="wikiPara">
+Proxy-base solutions have some other wonderful advantages, such as the ability to create an association to an object without actually fetching it from the database, and the ability to discover the primary key of an associated object without fetching it. These are both very useful features.
+</p>
+
+<p class="wikiPara">
+Finally, the JDO spec is just absurdly over-complex, defining three - now four - types of identity, where one would do, umpteen lifecycle states and transitions, when there should be just three states (persistent, transient, detached) and is bloated with useless features such as <q>transient transactional</q> instances. Again, this stuff is just not easy to change - the whole spec would need to be rewritten.
+</p>
+
+<p class="wikiPara">
+So, rather than rewriting JDO, EJB 3.0 entities will be based closely upon the (much more widely adopted) dedicated ORM solutions such as Hibernate and TopLink.
+</p>
+</div>

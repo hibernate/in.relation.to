@@ -1,0 +1,51 @@
+---
+title: "Hibernate ORM JIRA Policies and Clean-Up Tactics"
+author: "Brett Meyer"
+blogger_name: "Brett"
+layout: blog-post
+tags: []
+slug: HibernateORMJIRAPoliciesAndCleanUpTactics
+lace: http://in.relation.to/25104.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateORMJIRAPoliciesAndCleanUpTactics">Hibernate ORM JIRA Policies and Clean-Up Tactics</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+What do you get from a 10+ year old open source framework, thousands of users within a wide range of roles, and complexity?  A JIRA instance with over 3,000 unresolved tickets ;).  Is that number indicative of low software quality?  Definitely not.  But therein lies the problem.  A vast majority of the tickets are no longer issues, no longer relevant, or duplicates.  Due to the quantity, it became nearly impossible to weed through them all.
+</p>
+
+<p class="wikiPara">
+So, recently, I've given some effort towards attempting to clean things up.  This has been a combination of manual reviews of tickets, scripts identifying possible duplicates [1], and various forms of JIRA queries that attempt to show <q>stale</q> issues.  So far, I've reduced the number of un-assigned, un-resolved tickets by almost 1k.  To date, only a few of those have turned up being issues that were still legitimate in ORM 4+.
+</p>
+
+<p class="wikiPara">
+In addition, I've enacted a few policies that have helped (and will continue to help) tremendously, both for contributors and the community as a whole.  Most notably, any new BUG ticket that does not have a provided test case is immediately moved into an <q>Awaiting Test Case</q> state.  If nothing is received within around 3 months, we've begun to automatically reject them.  Although most contributors generally appreciate reproducers that are either standalone or extend one of ORM's pre-existing unit tests (preferably), at least providing enough detail (entities, mappings, code snippets, etc.) is the bare minimum.
+</p>
+
+<p class="wikiPara">
+Along the same lines, we've been discussing a possible tactic on the mailing list [2].  We'd like to push all ORM 3 tickets to the <q>Awaiting Test Case</q> state and request a reproducer on ORM 4 or 5.  This would affect only BUGs with: 1.) affectsVersions set to ORM 3 only (not ORM 4/5) 2.) unassigned and 3.) not updated in the last 90 days.  Those would then fall under our policy of automatically rejecting if the ticket does not receive a test case within 3 months or so.  Please see the mailing list for the discussion, as well as the query that would be used.  If there are any opinions against giving that a shot, please say so.
+</p>
+
+<p class="wikiPara">
+It's also worth re-iterating that JIRA should not be used instead of the user forums [3] or Q&amp;A sites like StackOverflow.  Please create tickets only for concise issues w/ reproducing test cases (or, of course, new features and possible improvements).
+</p>
+
+<p class="wikiPara">
+If you're interested in more info about the steps I took during the actual cleanup, a somewhat detailed write-up is here: <a href="http://www.3riverdev.com/blog/man-vs-jira-the-3000-issue-tracker-fight" target="" class="regularLink">http://www.3riverdev.com/blog/man-vs-jira-the-3000-issue-tracker-fight</a>
+</p>
+
+<p class="wikiPara">
+If you have any questions or ideas, please contact me!  brmeyer on Freenode IRC is your best bet, as well as comments on this post.  Thanks!
+</p>
+
+<p class="wikiPara">
+[1] <a href="https://github.com/3RiverDevelopment/bug-tracker-duplicate-utils" target="" class="regularLink">https://github.com/3RiverDevelopment/bug-tracker-duplicate-utils</a><br>
+[2] <a href="http://lists.jboss.org/pipermail/hibernate-dev/2014-March/011238.html" target="" class="regularLink">http://lists.jboss.org/pipermail/hibernate-dev/2014-March/011238.html</a><br>
+[3] <a href="https://forum.hibernate.org/viewforum.php?f=1" target="" class="regularLink">https://forum.hibernate.org/viewforum.php?f=1</a></p>
+</div>

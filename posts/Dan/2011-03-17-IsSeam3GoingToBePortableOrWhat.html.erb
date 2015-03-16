@@ -1,0 +1,322 @@
+---
+title: "Is Seam 3 going to be portable or what?"
+author: "Dan Allen"
+blogger_name: "Dan"
+layout: blog-post
+tags: [Seam,Seam News,Weld]
+slug: IsSeam3GoingToBePortableOrWhat
+lace: http://in.relation.to/18810.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/IsSeam3GoingToBePortableOrWhat">Is Seam 3 going to be portable or what?</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+The short answer is: <strong>Yes</strong>.
+</p>
+
+<p class="wikiPara">
+In this entry, I'll clarify our portability goal, then address the problems many you have encountered using Seam 3 on GlassFish (and JBoss AS). Hopefully I'll manage to your frustrations with confidence :)
+</p>
+
+<h2 class="wikiHeadline2" id="H-PortabilityIsAGoal"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-PortabilityIsAGoal">Portability is a goal</a></h2>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Seam 3 is not just for JBoss AS.</i> One of our main goals for Seam 3 is to deliver on the portability contract that CDI espouses, while at the same time providing strong integration with the container (CDI, Java EE, etc). It's a portable extension library built on top of CDI. Therefore, you should expect to be able to use it with any compliant CDI runtime.
+</p>
+
+<p class="wikiPara">
+We remain committed to this goal because it gives you, the developer, choice. That's something we strongly believe in. There are other benefits as well. It allows Seam to reach a wider community of developers and it challenges us to make Seam more robust.
+</p>
+
+<p class="wikiPara">
+Obviously, some modules will intentionally offer non-portable behavior. Those features are there for when your requirements call for them and will be appropriately called out in the documentation. In general, though, we want you to feel free to use Seam in whatever CDI environment that works best for you.
+</p>
+
+<p class="wikiPara">
+With that goal, there's no doubt we've set a high bar for this project. It won't always come easy, especially in the beginning. There have been some bumps along the way. We've also made some mistakes. Both are to be expected for an emerging technology. We are tracking down and squashing the bugs. And any limitations we've hit are already being addressed in <a href="http://in.relation.to/Bloggers/CDI11" target="" class="regularLink">CDI 1.1</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatsTheIssue"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-WhatsTheIssue">What's the issue?</a></h2>
+
+<p class="wikiPara">
+Several of the modules in the Seam 3.0.0 candidate releases have been causing deployment errors in GlassFish 3.1 (and even JBoss AS). We are working on the problems, some of which originate in the CDI implementation or application server. We don't want to throw around blame, we want to resolve the issues.
+</p>
+
+<p class="wikiPara">
+CDI is one of the most well-defined specifications in the Java EE platform and has an extensive test suite, leaving virtually no room for implementations to step out of line. Yet, inconsistencies still slip through. As we work on Seam 3, and push the limits of what we can do with CDI, we bring these inconsistencies to the surface.
+</p>
+
+<p class="wikiPara">
+Fortunately, you just heard from Pete that we've already <a href="http://in.relation.to/Bloggers/CDI11" target="" class="regularLink">submitted the JSR proposal for CDI 1.1</a>, which will focus on a small number of much requested features, along with bug fixes and clarifications. In the short term, the fastest, most productive way to get these problems resolved is to help each other understand the correct behavior and make sure all the implementations support it properly. The mess only appears when we start pointing fingers.
+</p>
+
+<p class="wikiPara">
+Regardless of where the problems occur, we help get them resolved as quickly as possible, primarily by writing <a href="https://github.com/seam/solder/tree/master/impl/src/test/java/org/jboss/seam/solder/test/compat" target="" class="regularLink">compatibility tests</a> (found in the Solder module) using <a href="http://arquillian.org" target="" class="regularLink">Arquillian</a> that communicate the expected behavior. We then use these tests as the basis for assumptions that support or supplement rules defined in the CDI specification. We also continue beef up our test suite and leverage Arquillian to run it against additional containers.
+</p>
+
+<p class="wikiPara">
+As time goes by, portability will not just be a goal, but something you can count on.
+</p>
+
+<h2 class="wikiHeadline2" id="H-PavingTheWayToPortability"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-PavingTheWayToPortability">Paving the way to portability</a></h2>
+
+<p class="wikiPara">
+Part of making Seam 3 portable involves making sure that the application servers are playing by the same rules. They haven't been in all cases. (Recently we've been struggling with some issues in GlassFish 3.1). These problems, which I describe below, have meant deployment errors in Seam 3. We haven't been ignoring the issues. We've be actively working to pave out those rough spots, which is good for both Seam 3 and Java EE in general.
+</p>
+
+<p class="wikiPara">
+I'll try to clearly explain the issues you likely encountered getting Seam to run on either GlassFish or JBoss AS and what we've done (or are still in the process of doing) to solve them before the final release. I'm sharing this information with you to keep you in the loop. At this point, we've worked through or around most of them.
+</p>
+
+<p class="wikiPara">
+There are plans for a Weld 1.1.1 release, which specifically fixes these problems at the source. Brian Leathem has provided <a href="http://blog.bleathem.ca/2011/02/updating-weld-in-glassfish-31.html" target="" class="regularLink">instructions for updating Weld in GlassFish 3.1</a> when it comes time.
+</p>
+
+<h3 class="wikiHeadline3" id="H-AlphabravoLibraryVisibility"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-AlphabravoLibraryVisibility">Alpha-bravo library visibility</a></h3>
+
+<p class="wikiPara">
+Affects: GlassFish 3.1 (fixed in <a href="https://repository.jboss.org/nexus/content/repositories/snapshots/org/jboss/weld/weld-osgi-bundle/1.1.0-SNAPSHOT/" target="" class="regularLink">Weld 1.1.1-SNAPSHOT</a>)<br>
+Issue report: <a href="http://java.net/jira/browse/GLASSFISH-15735" target="" class="regularLink">GLASSFISH-15735</a><br>
+Test case: <a href="https://github.com/seam/solder/blob/master/impl/src/test/java/org/jboss/seam/solder/test/compat/visibility/JarToJarReverseAlphaVisibilityTest.java" target="" class="regularLink">JarToJarReverseAlphaVisibilityTest</a>
+</p>
+
+<p class="wikiPara">
+Explanation:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> in certain cases, types (classes) in one bean archive (jar) aren't visible to beans and extensions in another jar in a web module</li>
+<li class="wikiUnorderedListItem"> visibility is dependent on the alphabetic order of the archive names</li>
+<li class="wikiUnorderedListItem"> an archive named <q>alpha.jar</q> can see types in an archive named <q>beta.jar</q>, but not the other way around</li>
+<li class="wikiUnorderedListItem"> extensions in an archive named <q>alpha.jar</q> can observe <tt>AnnotatedType</tt>s from an archived named <q>bravo.jar</q>, but not the other way around</li>
+</ul>
+
+<p class="wikiPara">
+Consequence:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> typed loggers and message bundles weren't being processed by Solder for any library (e.g., seam-servlet.jar) with a name that comes before <q>seam-solder.jar</q> in alphabetical order</li>
+<li class="wikiUnorderedListItem"> the built-in Messages bean from <q>seam-international.jar</q> cannot be injected into bean in <q>seam-faces.jar</q>, because <q>seam-faces.jar</q> comes first in alphabetical order</li>
+</ul>
+
+<p class="wikiPara">
+Resolution:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> went through modules and found a way to work around this issue on a case-by-case basis</li>
+<li class="wikiUnorderedListItem"> worse case scenario, you can combine all the Seam bits into a single JAR</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-LibrarytoapplicationVisibililty"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-LibrarytoapplicationVisibililty">Library-to-application visibililty</a></h3>
+
+<p class="wikiPara">
+Affects: GlassFish 3.1 (unresolved)<br>
+Issue report: <a href="http://java.net/jira/browse/GLASSFISH-15721" target="" class="regularLink">GLASSFISH-15721</a><br>
+Test case: <a href="https://github.com/seam/solder/blob/master/impl/src/test/java/org/jboss/seam/solder/test/compat/visibility/VisibilityOfBeanInWebModuleFromBeanManagerInBeanLibraryTest.java" target="" class="regularLink">VisibilityOfBeanInWebModuleFromBeanManagerInBeanLibraryTest</a>
+</p>
+
+<p class="wikiPara">
+Explanation:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> beans in WEB-INF/classes are not visibile to a BeanManager in a bean archive (jar) in the same web module</li>
+</ul>
+
+<p class="wikiPara">
+Consequence:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> several Solder features aren't available on GlassFish (EL evaluator, default beans, generic beans, unwraps, service handler)</li>
+</ul>
+
+<p class="wikiPara">
+Resolution:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> we've ensured Solder doesn't cause deployment issues</li>
+<li class="wikiUnorderedListItem"> we need this issue to be resolved to unlock all Solder features</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-MissingTypedLoggerAndMessageBundleImplementationClasses"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-MissingTypedLoggerAndMessageBundleImplementationClasses">Missing typed logger and message bundle implementation classes</a></h3>
+
+<p class="wikiPara">
+Affects: Seam <tt>&lt;=</tt> 3.0.0.CR2 (fixed in Seam 3.0.0.CR3)<br>
+Issue report: <a href="https://issues.jboss.org/browse/SEAMSERVLET-30" target="" class="regularLink">SEAMSERVLET-30</a>, <a href="https://issues.jboss.org/browse/SOLDER-62" target="" class="regularLink">SOLDER-62</a>
+</p>
+
+<p class="wikiPara">
+Explanation:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> currently two modules (Seam Solder and Servlet) use the typed logger and message bundle feature provided by Solder</li>
+<li class="wikiUnorderedListItem"> the implementation class must be generated, either by a proxy or by an annotation processor</li>
+<li class="wikiUnorderedListItem"> generation of proxies requires a system property to be set (jboss.i18n.generate-proxies)</li>
+<li class="wikiUnorderedListItem"> the annotation processor wasn't finished prior to Seam 3.0.0.CR2</li>
+</ul>
+
+<p class="wikiPara">
+Consequence:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> you were getting unsatisfied dependency errors with ServletLog and/or AnnotatedMessages at deployment</li>
+</ul>
+
+<p class="wikiPara">
+Resolution:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the annotation processor is available and we are now generating the concrete implementation classes (thanks to James and Ken)</li>
+<li class="wikiUnorderedListItem"> we've added documentation to Seam Solder to educate you how to use this feature, and the options you have</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-DanglingWebFragmentReference"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-DanglingWebFragmentReference">Dangling web fragment reference</a></h3>
+
+<p class="wikiPara">
+Affects: Seam <tt>&lt;=</tt> 3.0.0.CR2 on GlassFish and Tomcat (fixed in Seam 3.0.0.CR3)<br>
+Issue report: <a href="https://issues.jboss.org/browse/SEAMSERVLET-29" target="" class="regularLink">SEAMSERVLET-29</a>, <a href="http://java.net/jira/browse/GLASSFISH-16201" target="" class="regularLink">GLASSFISH-16201</a>
+</p>
+
+<p class="wikiPara">
+Explanation:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Seam Servlet had a web-fragment.xml with an ordering clause that referenced a web fragment named WeldServlet</li>
+<li class="wikiUnorderedListItem"> the motivation was to ensure the the Weld bootstraps before Seam Servlet listeners are invoked</li>
+</ul>
+
+<p class="wikiPara">
+Consequence:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> there were deployment problem on GlassFish and Tomcat 7</li>
+</ul>
+
+<p class="wikiPara">
+Resolution:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> it turns out we don't need the reference anyway since Weld Servlet does not yet use a web fragment (premature optimization)</li>
+<li class="wikiUnorderedListItem"> the reference has been removed for now</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-IntermittentInterceptors"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-IntermittentInterceptors">Intermittent interceptors</a></h3>
+
+<p class="wikiPara">
+Affects: GlassFish 3.1 (unresolved)
+</p>
+
+<p class="wikiPara">
+Explanation:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> interceptors listed in beans.xml don't always get enabled (seemly random per deployment)</li>
+</ul>
+
+<p class="wikiPara">
+Consequence:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> in the Seam booking example, the conversation for booking does not activate if the interceptor for @Begin/@End does not activate</li>
+</ul>
+
+<p class="wikiPara">
+Resolution:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> at the moment, the only resolution is to redeploy the application</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-OverzealousClassScanner"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-OverzealousClassScanner">Overzealous class scanner</a></h3>
+
+<p class="wikiPara">
+Affects: GlassFish 3.0.1 (fixed in GlassFish 3.1)
+</p>
+
+<p class="wikiPara">
+Explanation:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the class scanner fails whenever it finds a class with a field that references a class not on the classpath; happens before class is even considered as a bean</li>
+</ul>
+
+<p class="wikiPara">
+Consequence:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> can't have optional beans that are enabled based on what's available</li>
+<li class="wikiUnorderedListItem"> Seam Faces breaks because it has optional dependency on Seam Persistence</li>
+<li class="wikiUnorderedListItem"> Seam Solder breaks because it has optional dependency on logging providers</li>
+<li class="wikiUnorderedListItem"> Seam Persistence breaks has optional dependency on Hibernate</li>
+</ul>
+
+<p class="wikiPara">
+Resolution:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> you need to add a whole slew of needless dependencies to satisfy these class not found exceptions</li>
+<li class="wikiUnorderedListItem"> we strongly recommend upgrading to GlassFish 3.1</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-Upwards"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-Upwards">Upwards</a></h2>
+
+<p class="wikiPara">
+You'll be glad to know that after much deliberation, we've decided to do a CR3 and postpone the final release for one more week. Please use this opportunity to verify that the issues you've encountered are resolved so that we can deliver a quality result in Seam 3.0.0.Final.
+</p>
+
+<p class="wikiPara">
+It's been a long road to get to this point, and we really appreciate the efforts made by the whole team. I'd like to especially thank <a href="http://community.jboss.org/people/jamezp" target="" class="regularLink">James Perkins</a> and <a href="http://community.jboss.org/people/kenfinni" target="" class="regularLink">Ken Finnigan</a> for there work getting the annotation process for typed loggers and message bundles designed and working.  I also want to thank <a href="http://community.jboss.org/people/LightGuard" target="" class="regularLink">Jason Porter</a> for implementing the the <a href="https://issues.jboss.org/browse/ARQ-323" target="" class="regularLink">Arquillian GlassFish 3.1 container adapter</a> that enabled us to run the compatibility tests on GlassFish 3.1.
+</p>
+
+<p class="wikiPara">
+This is really a community project in every sense, and we're so proud to have been a part of this great group of passionate developers.
+</p>
+
+<p class="wikiPara">
+Seam 3.0.0.Final isn't the end, it's just a stepping stone. Participation in Seam 3 is growing rapidly. Existing modules are already looking ahead to 3.1 and new modules are already scheduled. We are also getting the migration guide underway. I encourage you to join us to help make Seam 3 an awesome extension stack for enterprise Java developers.
+</p>
+
+<h3 class="wikiHeadline3" id="H-UPDATE"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-UPDATE">UPDATE</a></h3>
+
+<p class="wikiPara">
+I just built the latest Weld and replaced the OSGI bundle in GlassFish 3.1 and there are only two failing tests in the Solder test suite:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/seam/solder/blob/master/impl/src/test/java/org/jboss/seam/solder/test/compat/visibility/VisibilityOfBeanInWebModuleFromBeanManagerInBeanLibraryTest.java" target="" class="regularLink">VisibilityOfBeanRegisteredByExtensionFromNonBeanLibraryTest</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://github.com/seam/solder/blob/master/impl/src/test/java/org/jboss/seam/solder/test/bean/generic/alternative/GenericBeanAlternativeTest.java" target="" class="regularLink">GenericBeanAlternativeTest</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+That means nearly all Solder features are available. Almost there.
+</p>
+
+<h3 class="wikiHeadline3" id="H-UPDATE2"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-UPDATE2">UPDATE 2</a></h3>
+
+<p class="wikiPara">
+<a href="https://repository.jboss.org/nexus/content/repositories/snapshots/org/jboss/weld/weld-osgi-bundle/1.1.0-SNAPSHOT/" target="" class="regularLink">Snapshots of the Weld OSGi bundle</a> are now available in the JBoss Snapshot repository.</p>
+</div>

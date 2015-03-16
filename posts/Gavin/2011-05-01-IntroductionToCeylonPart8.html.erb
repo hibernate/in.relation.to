@@ -1,0 +1,431 @@
+---
+title: "Introduction to Ceylon Part 8"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon,Introduction to Ceylon]
+slug: IntroductionToCeylonPart8
+lace: http://in.relation.to/19720.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/IntroductionToCeylonPart8">Introduction to Ceylon Part 8</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<i class="wikiEmphasis">This is the eighth installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">This article was updated on 31/5/2011 to add information about partial application of methods.</i>
+</p>
+
+<h1 class="wikiHeadline1" id="H-FirstClassAndHigherOrderFunctions"><a href="/Bloggers/IntroductionToCeylonPart8#H-FirstClassAndHigherOrderFunctions">First class and higher order functions</a></h1>
+
+<p class="wikiPara">
+Ceylon isn't a functional language: it has <tt>variable</tt> attributes and so methods can have side effects. But Ceylon does let you use functions as values, which in some people's eyes makes the language a kind of hybrid. I'm not so sure about that. There's actually nothing at all new about having functions-as-values in an object oriented language — for example, Smalltalk, one of the first and still one of the cleanest object oriented languages, was built around this idea. (To my eyes, true <q>functional</q> programming is more about what you <i class="wikiEmphasis">can't</i> do — mutate values — than what you <i class="wikiEmphasis">can</i> do.) Anyway, Ceylon, like Smalltalk and a number of other object oriented languages, lets you treat a function as an object and pass it around the system.
+</p>
+
+<p class="wikiPara">
+In this installment, we're going to discuss Ceylon's support for <i class="wikiEmphasis">first class and higher order functions</i>. <q>First class</q> function support means the ability to treat a function as a value. A <q>higher order</q> function is a function that accepts other functions as arguments, or returns another function. It's clear that these two ideas go hand-in-hand, so I'll just talk about <i class="wikiEmphasis">higher order function support</i> from now on.
+</p>
+
+<p class="wikiPara">
+A quick disclaimer: none of the things in this installment have actually been implemented in the compiler yet.
+</p>
+
+<h1 class="wikiHeadline1" id="H-RepresentingTheTypeOfAFunction"><a href="/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAFunction">Representing the type of a function</a></h1>
+
+<p class="wikiPara">
+Ceylon is a (very) statically typed language. So if we're going to treat a function as a value, the very first question that arises is: what is the type of the function? We need a way to encode the return type and parameter types of a function into the type system. Remember that Ceylon doesn't have <q>primitive</q> types. A strong design principle is that every type should be representable within the type system as a class or interface declaration.
+</p>
+
+<p class="wikiPara">
+I suppose Ceylon could have gone down the road of some functional languages, and represented all functions with multiple parameters in <q>curried</q> form. So 
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Natural sum(Natural x, Natural y) { ... }</pre>
+<p class="wikiPara">
+ 
+</p>
+
+<p class="wikiPara">
+would just be an abbreviation of 
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Natural sum(Natural x)(Natural y) { ... }</pre>
+
+
+<p class="wikiPara">
+i.e. a function with one parameter that returns another function with one parameter. Then we could have represented the type of the function like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Function&lt;Natural,Function&lt;Natural,Natural&gt;&gt;</pre>
+
+
+<p class="wikiPara">
+But we've decided not to go down this path. 
+</p>
+
+<p class="wikiPara">
+Some other languages have chosen to have a separate type for each function <q>arity</q>. So there's <tt>F0&lt;R&gt;</tt>, <tt>F1&lt;R,P1&gt;</tt>, <tt>F2&lt;R,P1,P2&gt;</tt>, <tt>F3&lt;R,P1,P2,P3&gt;</tt>, etc. But this solution feels kinda .... <i class="wikiEmphasis">lame</i>. Worse, it doesn't allow us to abstract over all function types, building up abstractions like <tt>Method</tt> and <tt>Class</tt>, etc. We're going to need to be able to do that kind of thing when we get to discussing the typesafe metamodel.
+</p>
+
+<p class="wikiPara">
+In Ceylon, a single type <tt>Callable</tt> abstracts all functions. It's declaration is the following:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Callable&lt;out Result, Argument...&gt; {}</pre>
+
+
+<p class="wikiPara">
+The syntax <tt>P...</tt> is called a <i class="wikiEmphasis">sequenced type parameter</i>. By analogy with a <i class="wikiEmphasis">sequenced parameter</i>, which accepts zero or more values as arguments, a sequenced type parameter accepts zero or more <i class="wikiEmphasis">types</i> as arguments. The type parameter <tt>Result</tt> represents the return type of the function. The sequenced type parameter <tt>Argument...</tt> represents the parameter types of the function.
+</p>
+
+<p class="wikiPara">
+So the type of <tt>sum</tt> in Ceylon is:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Callable&lt;Natural, Natural, Natural&gt;</pre>
+
+
+<p class="wikiPara">
+What about <tt>void</tt> functions? Well, remember that <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-WritingASimpleProgram" target="" class="regularLink">way back in Part 1</a> we said that the return type of a <tt>void</tt> function is <tt>Void</tt>. So the type of a function like <tt>print()</tt> is:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Callable&lt;Void,String&gt;</pre>
+
+
+<h1 class="wikiHeadline1" id="H-RepresentingTheTypeOfAMethod"><a href="/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAMethod">Representing the type of a method</a></h1>
+
+<p class="wikiPara">
+Here we've been discussing first class functions. But in Ceylon all named declarations are <q>first class</q>. That is to say, they all have a reified metamodel representable within the type system. For example, we could represent the type of a method like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Method&lt;out Result, in Instance, Argument...&gt;
+    satisfies Callable&lt;Callable&lt;Result,Argument...&gt;, Instance&gt; {}</pre>
+
+<p class="wikiPara">
+    
+Where <tt>Instance</tt> is the type that declares the method. So the type of the method <tt>iterator()</tt> of <tt>Iterable&lt;String&gt;</tt> would be:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Method&lt;Iterator&lt;String&gt;, Iterable&lt;String&gt;&gt;</pre>
+
+
+<p class="wikiPara">
+And the type of the method <tt>compare()</tt> of <tt>Comparable&lt;Natural&gt;</tt> would be:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Method&lt;Comparison,Comparable&lt;Natural&gt;,Natural&gt;</pre>
+
+
+<p class="wikiPara">
+Notice that we've declared a method to be a function that accepts a receiver object and returns a function. As a consequence of this, an alternative method invocation protocol is the following:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Iterable&lt;String&gt;.iterator(strings)();</pre>
+
+<pre class="wikiPreformatted brush:ceylon">Comparable&lt;Natural&gt;.compare(0)(num);</pre>
+
+
+<p class="wikiPara">
+Don't worry if you can't make sense of that right now. And actually I'm skipping over some details here, that's <i class="wikiEmphasis">not</i> quite exactly how <tt>Method</tt> is defined. But we'll come back to this in a future installment. Let's get back to today's topic.
+</p>
+
+<h1 class="wikiHeadline1" id="H-DefiningHigherOrderFunctions"><a href="/Bloggers/IntroductionToCeylonPart8#H-DefiningHigherOrderFunctions">Defining higher order functions</a></h1>
+
+<p class="wikiPara">
+We now have enough machinery to be able to write higher order functions. For example, we could create a <tt>repeat()</tt> function that repeatedly executes a function.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void repeat(Natural times, Callable&lt;Void,Natural&gt; perform) {
+    for (Natural i in 1..times) {
+        perform(i);
+    }
+}</pre>
+
+
+<p class="wikiPara">
+And call it like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void print(Natural n) { writeLine(n); }
+repeat(10, print);</pre>
+
+
+<p class="wikiPara">
+Which would print the numbers <tt>1</tt> to <tt>10</tt> to the console.
+</p>
+
+<p class="wikiPara">
+There's one problem with this. In Ceylon, as we'll see later, we often call functions using named arguments, but the <tt>Callable</tt> type does not encode the names of the function parameters. So Ceylon has an alternative, more elegant, syntax for declaring a parameter of type <tt>Callable</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void repeat(Natural times, void perform(Natural n)) {
+    for (Natural i in 1..times) {
+        perform(i);
+    }
+}</pre>
+
+
+<p class="wikiPara">
+I find this version also slightly more readable and more regular. This is the preferred syntax for defining higher-order functions. 
+</p>
+
+<h1 class="wikiHeadline1" id="H-FunctionReferences"><a href="/Bloggers/IntroductionToCeylonPart8#H-FunctionReferences">Function references</a></h1>
+
+<p class="wikiPara">
+When a name of a function appears without any arguments, like <tt>print</tt> does above, it's called a <i class="wikiEmphasis">function reference</i>. A function reference is the thing that really has the type <tt>Callable</tt>. In this case, <tt>print</tt> has the type <tt>Callable&lt;Void,Natural&gt;</tt>.
+</p>
+
+<p class="wikiPara">
+Now, remember how we said that <tt>Void</tt> is both the return type of a <tt>void</tt> method, and <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-WritingASimpleProgram" target="" class="regularLink">also the logical root of the type hierarchy</a>? Well that's useful here, since it means that we can assign a function with a non-<tt>Void</tt> return type to any parameter which expects a <tt>void</tt> method:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Boolean attemptPrint(Natural n) { 
+    try {
+        writeLine(n);
+        return true;
+    }
+    catch (Exception e) {
+        return false;
+    }
+}
+repeat(10, attemptPrint);</pre>
+
+
+<p class="wikiPara">
+Another way we can produce a function reference is by <i class="wikiEmphasis">partially applying</i> a method to a receiver expression. For example, we could write the following:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class Hello(String name) {
+    shared void say(Natural n) {
+        writeLine("Hello, " name ", for the " n "th time!");
+    }
+}
+
+repeat(10, Hello("Gavin").say);</pre>
+
+
+<p class="wikiPara">
+Here the expression <tt>Hello("Gavin").say</tt> has the same type as <tt>print</tt> above. It is a <tt>Callable&lt;Void,Natural&gt;</tt>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-MoreAboutHigherorderFunctions"><a href="/Bloggers/IntroductionToCeylonPart8#H-MoreAboutHigherorderFunctions">More about higher-order functions</a></h1>
+
+<p class="wikiPara">
+Let's see a more practical example, which mixes both ways of representing a function type. Suppose we have some kind of user interface component which can be observed by other objects in the system. We could use something like Java's <tt>Observer</tt>/<tt>Observable</tt> pattern:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Observer { 
+    shared formal void observe(Event event);
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared abstract class Component() {
+    
+    OpenList&lt;Observer&gt; observers = OpenList&lt;Observer&gt;();
+    
+    shared void addObserver(Observer o) { 
+        observers.append(o); 
+    }
+    
+    shared void fire(Event event) { 
+        for (Observer o in observers) { 
+            o.observe(event);
+        } 
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+But now all event observers have to implement the interface <tt>Observer</tt>, which has just one method. Why don't we cut out the interface, and let event observers just register a function object as their event listener? In the following code, we define the <tt>addObserver()</tt> method to accept a function as a parameter.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared abstract class Component() {
+    
+    OpenList&lt;Callable&lt;Void,Event&gt;&gt; observers = OpenList&lt;Callable&lt;Void,Event&gt;&gt;();
+    
+    shared void addObserver(void observe(Event event)) { 
+        observers.append(observe); 
+    }
+    
+    shared void fire(Event event) { 
+        for (void observe(Event event) in observers) { 
+            observe(event);
+        } 
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+Here we see the difference between the two ways of specifying a function type:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>void observe(Event event)</tt> is more readable in parameter lists, where <tt>observe</tt> is the name of the parameter, but</li>
+<li class="wikiUnorderedListItem"> <tt>Callable&lt;Void,Event&gt;</tt> is useful as a generic type argument.</li>
+</ul>
+
+<p class="wikiPara">
+Now, any event observer can just pass a reference to one of its own methods to <tt>addObserver()</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Listener(Component component) {
+
+    void onEvent(Event e) { 
+        //respond to the event 
+        ...
+    } 
+    
+    component.addObserver(onEvent); 
+    
+    ...
+
+}</pre>
+
+
+<p class="wikiPara">
+When the name of a method appears in an expression without a list of arguments after it, it is a reference to the method, not an invocation of the method. Here, the expression <tt>onEvent</tt> is an expression of type <tt>Callable&lt;Void,Event&gt;</tt> that refers to the method <tt>onEvent()</tt>.
+</p>
+
+<p class="wikiPara">
+If <tt>onEvent()</tt> were <tt>shared</tt>, we could even wire together the <tt>Component</tt> and <tt>Listener</tt> from some other code, to eliminate the dependency of <tt>Listener</tt> on <tt>Component</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Listener() {
+
+    shared void onEvent(Event e) { 
+        //respond to the event 
+        ...
+    } 
+    
+    ...
+
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">void listen(Component component, Listener listener) {
+    component.addObserver(listener.onEvent);
+}</pre>
+
+
+<p class="wikiPara">
+Here, the syntax <tt>listener.onEvent</tt> is a kind of <i class="wikiEmphasis">partial application</i> of the method <tt>onEvent()</tt>. It doesn't cause the <tt>onEvent()</tt> method to be executed (because we haven't supplied all the parameters yet). Rather, it results in a function that packages together the method reference <tt>onEvent</tt> and the method receiver <tt>listener</tt>.
+</p>
+
+<p class="wikiPara">
+It's also possible to declare a method that returns a function. A method that returns a function has multiple parameter lists. Let's consider adding the ability to remove observers from a <tt>Component</tt>. We could use a <tt>Subscription</tt> interface:
+</p>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Subscription {
+    shared void cancel();
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared abstract class Component() {
+    
+    ...
+    
+    shared Subscription addObserver(void observe(Event event)) { 
+        observers.append(observe); 
+        object subscription satisfies Subscription {
+            shared actual void cancel() {
+                observers.remove(observe);
+            }
+        }
+        return subscription;
+    }
+    
+    ...
+
+}</pre>
+
+
+<p class="wikiPara">
+But a simpler solution might be to just eliminate the interface and return the <tt>cancel()</tt> method directly:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared abstract class Component() {
+    
+    ...
+    
+    shared void addObserver(void observe(Event event))() { 
+        observers.append(observe); 
+        void cancel() {
+            observers.remove(observe);
+        }
+        return cancel;
+    }
+    
+    ...
+
+}</pre>
+
+
+<p class="wikiPara">
+Note the second parameter list of <tt>addObserver()</tt>.
+</p>
+
+<p class="wikiPara">
+Here, we define a method <tt>cancel()</tt> inside the body of the <tt>addObserver()</tt> method, and return a reference to the inner method from the outer method. The inner method <tt>cancel()</tt> can't be called directly from outside the body of the <tt>addObserver()</tt> method, since it is a block local declaration. But the reference to <tt>cancel()</tt> returned by <tt>addObserver()</tt> can be called by any code that obtains the reference.
+</p>
+
+<p class="wikiPara">
+Oh, in case you're wondering, the type of the method <tt>addObserver()</tt> is <tt>Callable&lt;Callable&lt;Void&gt;,Component,Callable&lt;Void,Event&gt;&gt;</tt>.
+</p>
+
+<p class="wikiPara">
+Notice that <tt>cancel()</tt> is able to use the parameter <tt>observe</tt> of <tt>addObserver()</tt>. We say that the inner method receives a closure of the non-variable locals and parameters of the outer method — just like a method of a class receives a closure of the class initialization parameters and locals of the class initializer. In general, any inner class, method, or attribute declaration always receives the closure of the members of the class, method, or attribute declaration in which it is enclosed. This is an example of how regular the language is.
+</p>
+
+<p class="wikiPara">
+We could invoke our method like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">addObserver(onEvent)();</pre>
+
+
+<p class="wikiPara">
+But if we were planning to use the method in this way, there would be no good reason for giving it two parameter lists. It's much more likely that we're planning to store or pass the reference to the inner method somewhere before invoking it.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void cancel() = addObserver(onEvent);
+...
+cancel();</pre>
+
+
+<p class="wikiPara">
+The first line demonstrates how a method can be defined using a <tt>=</tt> specification statement, just like a simple attribute definition. The second line of code simply invokes the returned reference to <tt>cancel()</tt>.
+</p>
+
+<p class="wikiPara">
+We've already seen how an attribute can be defined using a block of code. Now we see that a method can be defined using a specifier. So, if you like, you can start thinking of a method as an attribute of type <tt>Callable</tt> — an attribute with parameters. Or if you prefer, you can think of an attribute as member with zero parameter lists, and of a method as a member with one or more parameter lists. Either kind of member can be defined by reference, using <tt>=</tt>, or directly, by specifying a block of code to be executed.
+</p>
+
+<p class="wikiPara">
+Cool, huh? That's more <i class="wikiEmphasis">regularity</i>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart8#H-TheresMore">There's more...</a></h1>
+
+<p class="wikiPara">
+As you've probably noticed, all the functions we've defined so far have been declared with a name, using a traditional C-like syntax. We still need to see what Ceylon has instead of anonymous functions (sometimes called <q>lambda</q> expressions) for making it easy to take advantage of functions like <tt>repeat()</tt> which define specialized control structures. But I've hit my word limit already. Instead, you can <a href="/Bloggers/AnonymousFunctionsOrSmalltalkstyleArguments" target="" class="regularLink">find a discussion here</a>.
+</p>
+
+<p class="wikiPara">
+If you're interested to know more about programming with higher-order functions, you can read more about <a href="/Bloggers/UncurryingMethodReferencesAndMore" target="" class="regularLink">currying, uncurrying, and function composition</a>.
+</p>
+
+<p class="wikiPara">
+In <a href="/Bloggers/IntroductionToCeylonPart9" target="" class="regularLink">Part 9</a>, we're finally going to talk about Ceylon's syntax for named argument lists and for defining user interfaces and structured data. 
+</p>
+</div>

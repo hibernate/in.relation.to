@@ -1,0 +1,58 @@
+---
+title: "Hibernate Search 3.1.0 Beta1: .., better, faster, ..."
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+layout: blog-post
+tags: []
+slug: HibernateSearch310Beta1BetterFaster
+lace: http://in.relation.to/9173.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch310Beta1BetterFaster">Hibernate Search 3.1.0 Beta1: .., better, faster, ...</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+It has been a long time since an Hibernate Search release but we have not been lazy. We are pleased to announce 3.1.0 Beta1 with tons of new features and enhancements.
+This release uses Lucene 2.3.x and works with Hibernate Core 3.3, Hibernate Annotations 3.4 and Hibernate EntityManager 3.4.
+Here is a list of some of the major new features and enhancements:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> more flexible analyzer support (see below)</li>
+<li class="wikiUnorderedListItem"> the Hibernate Search engine is no longer tied to Hibernate Core (see below)</li>
+<li class="wikiUnorderedListItem"> performance enhancements on projections (Hibernate Search is now as fast as pure Lucene)</li>
+<li class="wikiUnorderedListItem"> performance enhancements in the object loading algorithm (when multiple object types are requested)</li>
+<li class="wikiUnorderedListItem"> better memory management on large index copies</li>
+<li class="wikiUnorderedListItem"> better mass indexing approach by explicitly flushing changes to indexes via a programmatic API (deprecating the old batch_size approach) </li>
+<li class="wikiUnorderedListItem"> better resource sharing through the shared-segments reader provider strategy</li>
+<li class="wikiUnorderedListItem"> better and more transparent filter caching solution</li>
+<li class="wikiUnorderedListItem"> access to more Lucene features including term position, similarity and query explanations</li>
+<li class="wikiUnorderedListItem"> simplification of configuration (events)</li>
+<li class="wikiUnorderedListItem"> more built in bridges</li>
+</ul>
+
+<p class="wikiPara">
+Hibernate Search let's you define analyzers declaratively and decouple tokenizer and token filters usage thanks to the Solr analyzer framework. It is now very easy to index a field for phonetic, synonym, snowball (stemming) and many more. <i class="wikiEmphasis">A small dependency bug has leaked in this beta1 version. You will need to replace apache-solr-analzers.jar by a full solr distribution jar you can download at <a href="http://lucene.apache.org/solr/" target="" class="regularLink">apache.org</a> if you ant to use <tt>@AnalyzerDef</tt> on some filters</i>.
+</p>
+
+<p class="wikiPara">
+The core engine is now abstracted form Hibernate Core thanks to the job done by Navin, our Google Summer of Code student. Hibernate Search is now the JBoss Cache full-text search engine (more on that in a later post) and is now open to support alternative data stores (including other ORMs).
+</p>
+
+<p class="wikiPara">
+We will likely post new entries to zoom on some of these features.
+</p>
+
+<p class="wikiPara">
+<a href="http://www.manning.com/affiliate/idevaffiliate.php?id=952_117_1_24" target="" class="regularLink">Hibernate Search in Action</a> already reflects most of the new features and will describe all of them in the near future.
+</p>
+
+<p class="wikiPara">
+Many thanks to all contributors and particularly Hardy and Sanne who did a tremendous job. Go try it out <a href="http://www.hibernate.org/6.html" target="" class="regularLink">here</a> and let us know what you think on the <a href="http://forum.hibernate.org" target="" class="regularLink">forum</a>.
+</p>
+</div>

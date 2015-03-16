@@ -1,0 +1,106 @@
+---
+title: "Hibernate Search 3.4 Alpha 1: Faceting, query engine refactoring, more performance tricks"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+layout: blog-post
+tags: [Hibernate,Hibernate Search]
+slug: HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks
+lace: http://in.relation.to/18621.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks">Hibernate Search 3.4 Alpha 1: Faceting, query engine refactoring, more performance tricks</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+We did a big refactoring of the query engine, hence the alpha tag. If you could focus your tests in this area and see if there are any issues, we would be forever grateful.
+</p>
+
+<p class="wikiPara">
+This release comes with the usual mix of bug fixes, optimizations and new features.
+</p>
+
+<h1 class="wikiHeadline1" id="H-QueryEngineRefactoring"><a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks#H-QueryEngineRefactoring">Query engine refactoring</a></h1>
+
+<p class="wikiPara">
+This was a biggie and the objective is that it does not affect you :) We have a medium term goal to make Hibernate Search not depend on Hibernate Core. Extracting the query engine core into well defined SPIs (Service Provider Interfaces) is a milestone for this. The first beneficiary is the Infinispan query module which will become much more resilient to Hibernate Search version changes.
+</p>
+
+<p class="wikiPara">
+As said earlier, test your applications queries. They should still run without any API change. Let us know otherwise.
+</p>
+
+<h1 class="wikiHeadline1" id="H-UpdateIndexOnlyWhenAnIndexedPropertyChanges"><a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks#H-UpdateIndexOnlyWhenAnIndexedPropertyChanges">Update index only when an indexed property changes</a></h1>
+
+<p class="wikiPara">
+With previous version, when an <tt>@Indexed</tt> entity changes in Hibernate Core, it is reindexed by Hibernate Search even if none of the indexed properties have effectively changed (after all not all properties are indexed). Hibernate Search 3.4 is smarter in this area and tries not to reindex entities whose indexed properties are unchanged. In some situations like dynamic boosting or class-level bridges, Hibernate Search cannot be certain and always reindex to be safer. 
+</p>
+
+<p class="wikiPara">
+This optimization should speed things up quite significantly for some applications. Check the documentation for more information.
+</p>
+
+<h1 class="wikiHeadline1" id="H-LookForEntitiesInTheSecondLevelCache"><a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks#H-LookForEntitiesInTheSecondLevelCache">Look for entities in the second level cache</a></h1>
+
+<p class="wikiPara">
+In some environments, most if not all of the searched entities are in the second level cache. This is especially true when you use a distributed second level cache like Infinispan. You can ask Hibernate Search to look in the second level cache before trying to fetch data from the database.
+</p>
+
+<pre class="wikiPreformatted">FullTextQuery query = session.createFullTextQuery(luceneQuery, User.class);
+query.initializeObjectWith(
+    ObjectLookupMethod.SECOND_LEVEL_CACHE,
+    DatabaseRetrievalMethod.QUERY
+);
+List results = query.getResultList();</pre>
+
+
+<p class="wikiPara">
+Of course your entities must be cacheable :) If your entities are most likely in the persistence context (the Hibernate session), you can use <tt>ObjectLookupMethod.PERSISTENCE_CONTEXT</tt> instead.
+</p>
+
+<h1 class="wikiHeadline1" id="H-MassIndexerImprovements"><a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks#H-MassIndexerImprovements">MassIndexer improvements</a></h1>
+
+<p class="wikiPara">
+The mass indexer module has had a few improvementse:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> multithreading of the text analysis phase</li>
+<li class="wikiUnorderedListItem"> improve monitoring the mass indexer state and progress by letting you plug a custom implementation (see MassIndexerProgressMonitor)</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-Faceting"><a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks#H-Faceting">Faceting</a></h1>
+
+<p class="wikiPara">
+Very requested and useful feature, you can now play with the first alpha preview of the new Faceting engine API.
+</p>
+
+<h1 class="wikiHeadline1" id="H-FieldCaching"><a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks#H-FieldCaching">Field Caching</a></h1>
+
+<p class="wikiPara">
+It's now possible to use Lucene's FieldCache to provide an extra boost to query performance: see <a href="http://docs.jboss.org/hibernate/search/3.4/reference/en-US/html/search-query.html#query-fieldcaches" target="" class="regularLink">the reference documentation</a>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-OtherPerformanceImprovements"><a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks#H-OtherPerformanceImprovements">Other performance improvements</a></h1>
+
+<p class="wikiPara">
+We have found a couple of tricks to improve overall performances. We more aggressively cache some metadata to lower the reflection overhead and we push some additional buttons in Lucene for you to reduce query time.
+</p>
+
+<h1 class="wikiHeadline1" id="H-GiveUsFeedback"><a href="/Bloggers/HibernateSearch34Alpha1FacetingQueryEngineRefactoringMorePerformanceTricks#H-GiveUsFeedback">Give us feedback</a></h1>
+
+<p class="wikiPara">
+Please give us feedback, we have an aggressive release schedule ahead as we are planning the GA version for end of this month.
+</p>
+
+<p class="wikiPara">
+Check out the new release on JBoss.org's Maven <a href="http://repository.jboss.org/nexus/content/groups/public-jboss/" target="" class="regularLink">repository</a> or <a href="http://www.hibernate.org/subprojects/search/download" target="" class="regularLink">download the distribution</a>. You can also <a href="http://docs.jboss.org/hibernate/search/3.4/reference/en-US/" target="" class="regularLink">read the documentation</a>.
+</p>
+
+<p class="wikiPara">
+If you find an issue, <a href="http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH" target="" class="regularLink">shoot</a>.</p>
+</div>

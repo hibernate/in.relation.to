@@ -1,0 +1,85 @@
+---
+title: "Don't wait, upgrade - Hibernate Validator 5.1.0.Final is out!"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Hibernate Validator,hv51]
+slug: DontWaitUpgradeHibernateValidator510FinalIsOut
+lace: http://in.relation.to/24979.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/DontWaitUpgradeHibernateValidator510FinalIsOut">Don't wait, upgrade - Hibernate Validator 5.1.0.Final is out!</a>
+                    </h1>
+</div>
+<img src="&lt;%=%20site.base_url%20%&gt;/images/24981" align="left" style="margin-right:20px;margin-bottom:20px">
+
+<p class="wikiPara">
+May I present, fresh from the roaster, steaming hot and full of flavor - Hibernate Validator 5.1.0.Final. 
+Validator 5.0 to 5.1 was a slow roast, outspread over several releases, but as you know, 
+slow roasting enhances the flavor ;-)
+</p>
+
+<p class="wikiPara">
+The <a href="http://in.relation.to/tag/hv51" target="" class="regularLink">individual release blog entries</a> highlighted the various changes for each release. 
+Here is just a short summary with pointers to refresh your memory.
+</p>
+
+<p class="wikiPara">
+The main goal of Hibernate Validator 5.1 was to improve performance and memory footprint after releasing the
+initial reference implementation for Bean Validation 1.1. We achieved both
+and squashed several bugs along the way. If you want to know more have a look at 
+<a href="https://hibernate.atlassian.net/browse/HV-589" target="" class="regularLink">HV-589</a>, <a href="https://hibernate.atlassian.net/browse/HV-637" target="" class="regularLink">HV-637</a>, 
+<a href="https://hibernate.atlassian.net/browse/HV-838" target="" class="regularLink">HV-838</a> and <a href="https://hibernate.atlassian.net/browse/HV-842" target="" class="regularLink">HV-842</a>.
+In particular the CDI integration (<i class="wikiEmphasis">hibernate-validator-cdi</i>) got an overhaul. As per specification, it should be
+possible to use multiple Bean Validation providers within CDI, selecting between them using qualifiers.
+In particular something like this should be possible: </p>
+<pre class="wikiPreformatted brush:java">...
+@HibernateValidator
+@Inject
+Validator validator;
+
+@Inject
+Validator defaultValidator;
+...
+</pre>
+
+where the default <tt>Validator</tt> instance is not Hibernate Validator, but an explicitly via <tt>validation.xml</tt> configured provider:<pre class="wikiPreformatted brush:xml">&lt;validation-config xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
+                   xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration validation-configuration-1.1.xsd"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+    &lt;default-provider&gt;com.acme.ValidationProvider&lt;/default-provider&gt;
+&lt;/validation-config&gt;
+</pre>
+
+Due to a bug this was not working, but now it is :-) See 
+<a href="https://hibernate.atlassian.net/browse/HV-858" target="" class="regularLink">HV-858</a> and <a href="https://hibernate.atlassian.net/browse/HV-865" target="" class="regularLink">HV-865</a> for
+more information.
+
+
+<p class="wikiPara">
+We also added a couple of new features. The most important one is the introduction of
+the <tt>ValidatedValueUnwrapper</tt> SPI. Refer to the <a href="http://in.relation.to/24788.lace" target="" class="regularLink">Beta1 blog entry</a> for more details.
+There are also a few new constraints. You can now make use of <tt>@Mod10Check</tt>, <tt>@Mod11Check</tt> (which are effectively
+replacing the now deprecated <tt>@ModCheck</tt> constraint) and <tt>@EAN</tt> 
+(see <a href="http://in.relation.to/24874.lace" target="" class="regularLink">CR1 blog entry</a>).
+A feature related to the <tt>ParameterNameProvider</tt> introduced by Bean Validation 1.1 is the ability
+to use <a href="http://paranamer.codehaus.org" target="" class="regularLink">ParaNamer</a> as parameter name provider 
+(see <a href="https://hibernate.atlassian.net/browse/HV-802" target="" class="regularLink">HV-802</a>).
+</p>
+
+<p class="wikiPara">
+Maven artifacts are as usual on the JBoss Maven repository under the GAV <a href="https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate~hibernate-validator~5.1.0.Final~~" target="" class="regularLink">org.hibernate:hibernate-validator:5.1.0.Final</a> and <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/5.1.0.Final/" target="" class="regularLink">distribution bundles</a> are available on SourceForge.
+</p>
+
+<p class="wikiPara">
+Feedback and questions are welcome via the Hibernate Validator <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a>
+or on stackoverflow using the <a href="http://stackoverflow.com/questions/tagged/hibernate-validator" target="" class="regularLink">hibernate-validator</a> tag. If you want to know where we are heading next, check out the <a href="http://hibernate.org/validator/roadmap" target="" class="regularLink">Hibernate Validator Roadmap</a>.
+</p>
+
+
+<b>Don't wait, upgrade!</b>
+</div>

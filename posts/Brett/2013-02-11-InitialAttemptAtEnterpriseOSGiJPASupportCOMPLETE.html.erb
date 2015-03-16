@@ -1,0 +1,65 @@
+---
+title: "Initial Attempt at Enterprise OSGi JPA Support -- COMPLETE"
+author: "Brett Meyer"
+blogger_name: "Brett"
+layout: blog-post
+tags: []
+slug: InitialAttemptAtEnterpriseOSGiJPASupportCOMPLETE
+lace: http://in.relation.to/23942.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/InitialAttemptAtEnterpriseOSGiJPASupportCOMPLETE">Initial Attempt at Enterprise OSGi JPA Support -- COMPLETE</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I was finally able to get a simple example working on Apache Karaf using container-managed Enterprise OSGi JPA.
+</p>
+
+<p class="wikiPara">
+Pull request:<br>
+<a href="https://github.com/hibernate/hibernate-orm/pull/465/files" target="" class="regularLink">https://github.com/hibernate/hibernate-orm/pull/465/files</a>
+</p>
+
+<p class="wikiPara">
+I would really appreciate it if some of you could grab the following fork and try it out in your own environments – feedback is definitely needed:<br>
+<a href="https://github.com/brmeyer/hibernate-orm/tree/4.2-osgi" target="" class="regularLink">https://github.com/brmeyer/hibernate-orm/tree/4.2-osgi</a>
+</p>
+
+<p class="wikiPara">
+A simple test client bundle is available as a reference. Something like this will eventually wind up in the doc examples. Instructions are in the README (rough draft).<br>
+<a href="https://github.com/brmeyer/HibernateOSGi" target="" class="regularLink">https://github.com/brmeyer/HibernateOSGi</a>
+</p>
+
+<p class="wikiPara">
+There's a few caveats to ORM at this point:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> I have not yet tested a bundle creating and maintaining it's own EntityManagerFactory or SessionFactory. Only container-managed has been used so far.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Only basic support for persistence units is available. We have not handled the use of OSGi services to register Integrators, etc.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> IMPORTANT: We can currently handle only annotated classes explicitly listed in your persistence unit. There's a few roadblocks preventing us from scanning for mapping files, classes, etc.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The provided feature.xml files are fairly order-specific.  Comments within them (and the proposal wiki) outline the issue.</li>
+</ul>
+
+<p class="wikiPara">
+The proposal wiki is updated with more info and questions:<br>
+<a href="https://github.com/hibernate/hibernate-orm/wiki/Proposal:-OSGi" target="" class="regularLink">https://github.com/hibernate/hibernate-orm/wiki/Proposal:-OSGi</a>
+</p>
+
+<p class="wikiPara">
+We're not comfortable releasing this until the community is able to help confirm the fork.  Any help is sincerely appreciated!</p>
+</div>

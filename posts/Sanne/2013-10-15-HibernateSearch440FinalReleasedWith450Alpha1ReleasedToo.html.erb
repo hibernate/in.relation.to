@@ -1,0 +1,134 @@
+---
+title: "Hibernate Search: 4.4.0.Final released, with 4.5.0.Alpha1 released too"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+layout: blog-post
+tags: [Hibernate,Hibernate Search,News,WildFly]
+slug: HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo
+lace: http://in.relation.to/24450.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo">Hibernate Search: 4.4.0.Final released, with 4.5.0.Alpha1 released too</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+We just tagged and uploaded all artifacts for both:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Hibernate Search 4.4.0.Final</i> - to be used with Hibernate ORM 4.2.x (JPA 2) and application servers using this version of ORM (JBoss EAP 6.1, JBoss AS 7.1)</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Hibernate Search 4.5.0.Alpha1</i> - now compatible with Hibernate ORM 4.3 early betas (JPA 2.1) and application servers using it (WildFly 8.0.0.Beta1)</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-HibernateSearch440Final"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-HibernateSearch440Final">Hibernate Search 4.4.0.Final</a></h2>
+<p class="wikiPara">
+Looking at the <a href="https://community.jboss.org/wiki/HibernateSearchMigrationGuide" target="" class="regularLink">Migration Guide</a> this is going to be an easy upgrade for all 4.3 users: once again the API is very stable.
+We would therefore advise all users to upgrade and take advantage of all the improvements at minimal pain, also to be able to address the couple of small deprecations in an iterative approach.
+</p>
+
+<pre class="wikiPreformatted brush: xml">&lt;dependency&gt;
+ &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+ &lt;artifactId&gt;hibernate-search-orm&lt;/artifactId&gt;
+ &lt;version&gt;4.4.0.Final&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+
+<p class="wikiPara">
+Or download the distribution from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-search/4.4.0.Final/" target="" class="regularLink">Sourceforge</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheMajorNewFeatures"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-TheMajorNewFeatures">The major new features</a></h2>
+<p class="wikiPara">
+The 4.4 development cycle focused on three main features:
+</p>
+
+<h3 class="wikiHeadline3" id="H-DynamicIndexSharding"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-DynamicIndexSharding">Dynamic index sharding</a></h3>
+<p class="wikiPara">
+Very powerful, allows you to improve scalability and/or roll your own custom multi-tenancy policies on how to split data across indexes. Read the <a href="http://in.relation.to/Bloggers/HibernateSearch440Beta1IndexShardingIsNowDynamic" target="" class="regularLink">introductory blog post</a> and the <a href="http://in.relation.to/Bloggers/HibernateSearch440CR1MoreOnTheNewShardingSupport" target="" class="regularLink">more advanced example</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-MetadataAPI"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-MetadataAPI">Metadata API</a></h3>
+<p class="wikiPara">
+You can now read through the Metadata API how each indexed entity is being mapped to the index. This is primarily meant for other framework and tooling integration, but is also useful if you want to generate your own advanced queries without being coupled to your specific model, for example to target <q>all fields</q> you can find out which fields there are. A practical example can be found on <a href="http://in.relation.to/Bloggers/HibernateSearch440Alpha1" target="" class="regularLink">this blog post</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JBossModulesForEasyDeployment"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-JBossModulesForEasyDeployment">JBoss Modules for easy deployment</a></h3>
+<p class="wikiPara">
+We had this as experimental feature in 4.3, it looks like quite solid now. The idea is to add Hibernate Search and its main dependencies like Apache Lucene and the custom Infinispan Directory as isolated modules in your JBoss application server so that you don't have to include any Search related jar in your deployments. It will wire-up classloader correctly to the other depending modules like Infinispan Core, JGroups and Hibernate ORM, and also you can include multiple different versions in the same container: module ids include versions!
+All it takes to access the module is a single line in the Manifest of your deployment, as explained in <a href="http://docs.jboss.org/hibernate/search/4.4/reference/en-US/html_single/#search-configuration-deploy-on-AS7" target="" class="regularLink">the reference documentation</a>.
+</p>
+
+<h4 class="wikiHeadline4" id="H-BugfixesAndMinorImprovements"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-BugfixesAndMinorImprovements">Bugfixes and minor improvements</a></h4>
+<p class="wikiPara">
+There is quite a list of minor issues resolved, to summarize changes since 4.3.0.Final:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> purge operations failing on <tt>@ContainedIn</tt> entities</li>
+<li class="wikiUnorderedListItem"> Embedded ElementCollection (with FieldBridge) wouldn't trigger an index update</li>
+<li class="wikiUnorderedListItem"> Some classloading fixes</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">AppliedOnTypeAwareBridge</i> not being applied on Class Bridges, and didn't have <i class="wikiEmphasis">norms</i> or <i class="wikiEmphasis">analyze</i> methods.</li>
+<li class="wikiUnorderedListItem"> Improve convergence of dependencies, remove some unnecessary dependencies</li>
+<li class="wikiUnorderedListItem"> QueryBuilder more friendly towards super classes of indexed types</li>
+<li class="wikiUnorderedListItem"> Improved graceful recovery from errors during document building</li>
+<li class="wikiUnorderedListItem"> Lots of clarifications in the documentation</li>
+</ul>
+
+<p class="wikiPara">
+Lots of minor upgrades across our dependencies: Hibernate ORM to 4.2.6.Final, Infinispan 5.3.0.Final, Apache Tika 1.4, Apache Avro 1.7.5, JGroups 3.3.5.Final, Narayana 4.17.7.Final, JBoss Logging 3.1.0.GA, .. all latest stable versions.
+Apache Lucene stays stable at version 3.6.2.
+</p>
+
+<h2 class="wikiHeadline2" id="H-HibernateSearch450Alpha1"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-HibernateSearch450Alpha1">Hibernate Search 4.5.0.Alpha1</a></h2>
+<p class="wikiPara">
+This is quite similar to Hibernate Search 4.4.0.Final, but is compatible with the latest Hibernate ORM 4.3.0.Beta5 and Infinispan 6.0.0.CR1, making it suitable for usage on WildFly 8.0.0.Beta1.
+Hibernate 4.4.0.Final is NOT compatible with these, sorry we tried hard but it wasn't technically possible without major changes in the previous (stable) versions of the ORM and Infinispan dependencies, on top of which you'd have had to wait for another WildFly release so we decided to accelerate the 4.5 release cycle instead.
+</p>
+
+<pre class="wikiPreformatted brush: xml">&lt;dependency&gt;
+ &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+ &lt;artifactId&gt;hibernate-search-orm&lt;/artifactId&gt;
+ &lt;version&gt;4.5.0.Alpha1&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+<p class="wikiPara">
+Or download the distribution from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-search/4.5.0.Alpha1/" target="" class="regularLink">Sourceforge</a>.
+</p>
+
+<p class="wikiPara">
+Hibernate Search 4.5.0.Alpha1 also includes JBoss Modules to simplify deployment on the application server, but these are strictly meant for WidlFly only (please forgive the name and documentation confusion for now).
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsNext"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-WhatsNext">What's next?</a></h1>
+<p class="wikiPara">
+Version 4.5 will not receive much attention other than
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> keeping up with required changes for compatibility with latest Hibernate ORM and WildFly</li>
+<li class="wikiUnorderedListItem"> improve (experimental) Infinispan automatic configuration</li>
+<li class="wikiUnorderedListItem"> what you might want to contribute</li>
+</ul>
+
+<p class="wikiPara">
+Our main focus is going to be Apache Lucene 4 compatibility, therefore we'll create a 4.5 branch and from today master is going to be <i class="wikiEmphasis">Hibernate Search 5.0.0-SNAPSHOT</i>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-FeedbackAndLinks"><a href="/Bloggers/HibernateSearch440FinalReleasedWith450Alpha1ReleasedToo#H-FeedbackAndLinks">Feedback and links</a></h2>
+
+<p class="wikiPara">
+To propose changes and join the development team get in touch on the <a href="http://hibernate.org/community/mailinglists" target="" class="regularLink">developer's mailing list</a>. We expect high standards but are willing to help you getting there: any development question is welcome.
+For usage related questions or if you're unsure write on which list is more appropriate write us <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">on the forums</a>.
+</p>
+
+<p class="wikiPara">
+The issue tracker is <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a> and all code is on <a href="https://github.com/hibernate/hibernate-search" target="" class="regularLink">GitHub</a>: pull requests and any feedback welcome.
+</p>
+</div>

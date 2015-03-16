@@ -1,0 +1,538 @@
+---
+title: "A Hitchhikers Guide to Java EE 6 application setup, Part IV"
+author: "Nicklas Karlsson"
+blogger_name: "Nicklas"
+layout: blog-post
+tags: []
+slug: AHitchhikersGuideToJavaEE6ApplicationSetupPartIV
+lace: http://in.relation.to/15912.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIV">A Hitchhikers Guide to Java EE 6 application setup, Part IV</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+My wife has delivered our daughter and JBoss has delivered a snapshot of the AS 6 that can do most of the stuff we
+set out to do, so let's move on!
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheGoodTheBadAndOurDailyWorkarounds"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIV#H-TheGoodTheBadAndOurDailyWorkarounds">The good, the bad and our daily workarounds</a></h1>
+
+<p class="wikiPara">
+So, since we're living on the edge here, head over to <a href="http://hudson.jboss.org/hudson/view/JBoss%20AS/job/JBoss-AS-6.0.x/" target="" class="regularLink">JBoss Hudson</a> and grab the latest successful build (#1750 or later). Install the envers.jar in the server and change the http listener port like we did in the end of part II. Remember to update your JBOSS_HOME environment variable if you use one.
+</p>
+
+<p class="wikiPara">
+There is a slight regression with the auto-registration of the faces servlet so add this to your web.xml
+</p>
+
+<pre class="wikiPreformatted">
+&lt;servlet&gt;
+	&lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+	&lt;servlet-class&gt;javax.faces.webapp.FacesServlet&lt;/servlet-class&gt;
+	&lt;load-on-startup&gt;1&lt;/load-on-startup&gt;
+&lt;/servlet&gt;
+
+&lt;servlet-mapping&gt;
+	&lt;servlet-name&gt;Faces Servlet&lt;/servlet-name&gt;
+	&lt;url-pattern&gt;/faces/*&lt;/url-pattern&gt;
+&lt;/servlet-mapping&gt;
+</pre>
+
+
+<p class="wikiPara">
+The ZipException is gone so clear out your faces-config.xml from the merged ICEfaces stuff and delete the icefaces directory
+from your local repository so you can pick up fresh copies of the original jars.
+</p>
+
+<p class="wikiPara">
+There is also another regression that has something to do with redirects and the ICEfaces PushRenderer (perhaps). If you go
+straight to the /Greetings context root, the PushRenderer is not that pushy, you'll have to use the full /Greetings/faces/greetings.xhtml
+for now.
+</p>
+
+<h1 class="wikiHeadline1" id="H-LookMamaNoEARs"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIV#H-LookMamaNoEARs">Look mama, no EARs</a></h1>
+
+<p class="wikiPara">
+We're going EJB and let's do some refactorings while we're at it. Remove the GreetingBean and create the following classes
+</p>
+
+<pre class="wikiPreformatted">
+package com.acme.greetings;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.Lock;
+import javax.ejb.LockType;
+import javax.ejb.Stateful;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.event.Event;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.icefaces.application.PushRenderer;
+
+@Stateful
+@ApplicationScoped
+@Named
+public class GreetingServer implements Serializable
+{
+   private static final long serialVersionUID = 1L;
+
+   List&lt;Greeting&gt; greetings = new ArrayList&lt;Greeting&gt;();
+   
+   @Inject
+   @Added
+   Event&lt;Greeting&gt; greetingAddedEvent;
+
+   @Inject
+   GreetingArchiver greetingArchiver;
+   
+   @Inject
+   GreetingEcho greetingEcho;
+   
+   @PostConstruct
+   public void init()
+   {
+      greetings = greetingArchiver.loadGreetings();
+   }
+
+   @Lock(LockType.WRITE)
+   public void addGreeting(Greeting greeting)
+   {
+      greetings.add(greeting);
+      PushRenderer.render("greetings");
+      greetingAddedEvent.fire(greeting);
+      Future&lt;Boolean&gt; result = greetingEcho.echo(greeting);
+   }
+
+   @Lock(LockType.READ)
+   public List&lt;Greeting&gt; getGreetings()
+   {
+      return greetings;
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+and
+</p>
+
+<pre class="wikiPreformatted">
+package com.acme.greetings;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.Stateful;
+import javax.enterprise.inject.Model;
+import javax.inject.Inject;
+
+import org.icefaces.application.PushRenderer;
+
+import com.icesoft.faces.context.effects.Appear;
+import com.icesoft.faces.context.effects.Effect;
+
+@Stateful
+@Model
+public class GreetingClient
+{
+   Greeting greeting = new Greeting();
+
+   @Inject
+   GreetingServer greetingServer;
+
+   @PostConstruct
+   public void init()
+   {
+      PushRenderer.addCurrentSession("greetings");
+   }
+   
+   public Effect getAppear()
+   {
+      return new Appear();
+   }
+
+   public Greeting getGreeting()
+   {
+      return greeting;
+   }
+
+   public void setGreeting(Greeting greeting)
+   {
+      this.greeting = greeting;
+   }
+
+   public void addGreeting()
+   {
+      greetingServer.addGreeting(greeting);
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+The GreetingServer keeps the greetings and the client has injected the server and interacts with it (we've thrown in some
+annotations for concurrency control to the greeting list). You might notice we also have a new injection
+</p>
+
+<pre class="wikiPreformatted">
+@Inject
+GreetingEcho greetingEcho;
+</pre>
+
+
+<p class="wikiPara">
+which is called like
+</p>
+
+<pre class="wikiPreformatted">
+Future&lt;Boolean&gt; result = greetingEcho.echo(greeting);
+</pre>
+
+
+<p class="wikiPara">
+This is an asynchronous call to GreetingEcho that looks like
+</p>
+
+<pre class="wikiPreformatted">
+package com.acme.greetings;
+
+import java.util.concurrent.Future;
+
+import javax.ejb.AsyncResult;
+import javax.ejb.Asynchronous;
+import javax.ejb.Stateless;
+
+@Stateless
+public class GreetingEcho
+{
+
+   @Asynchronous
+   public Future&lt;Boolean&gt; echo(Greeting greeting)
+   {
+      System.out.println(String.format("Got a new greeting: %s", greeting.getText()));
+      return new AsyncResult&lt;Boolean&gt;(true);
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+This is kind of funny EE 6 construct since it really exits the @Asynchronous method immedeately, returning a handle to the task.
+Well, good luck trying to cancel that output before it finished. This is kind of JMS-light. And yes, it's obviously used just
+for show-off here.
+</p>
+
+<p class="wikiPara">
+You'll also notice that our DB bean has gotten a new look
+</p>
+
+<pre class="wikiPreformatted">
+package com.acme.greetings;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.ejb.Stateless;
+import javax.enterprise.event.Observes;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.ParameterExpression;
+import javax.persistence.criteria.Root;
+
+@Stateless
+public class GreetingArchiver
+{
+   @Inject
+   @GreetingDB
+   EntityManager db;
+
+   CriteriaQuery&lt;Greeting&gt; loadQuery;
+   ParameterExpression&lt;Date&gt; timestampParam;
+
+   @Inject
+   public void initQuery(@GreetingDB EntityManagerFactory emf)
+   {
+      CriteriaBuilder cb = emf.getCriteriaBuilder();
+      timestampParam = cb.parameter(Date.class);
+      loadQuery = cb.createQuery(Greeting.class);
+      Root&lt;Greeting&gt; greeting = loadQuery.from(Greeting.class);
+      loadQuery.select(greeting);
+      loadQuery.where(cb.greaterThan(greeting.get(Greeting_.created), timestampParam));
+   }
+
+   public void saveGreeting(@Observes @Added Greeting greeting)
+   {
+      db.persist(greeting);
+   }
+
+   public List&lt;Greeting&gt; loadGreetings()
+   {
+      Date tenMinutesAgo = new Date();
+      tenMinutesAgo.setTime(tenMinutesAgo.getTime() - 10 * 60 * 1000);
+      return db.createQuery(loadQuery).setParameter(timestampParam, tenMinutesAgo).getResultList();
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+The persistence has been much simplified thanks to CMT.
+</p>
+
+<p class="wikiPara">
+And finally the view to use them
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ice="http://www.icesoft.com/icefaces/component"
+	xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+	&lt;h:head&gt;
+		&lt;title&gt;
+			Greetings
+		&lt;/title&gt;
+	&lt;/h:head&gt;
+
+	&lt;h:body&gt;
+		&lt;h:form&gt;
+			&lt;ice:inputText id="feedback" value="#{greetingClient.greeting.text}" effect="#{greetingClient.appear}"/&gt;
+			&lt;h:message for="feedback" /&gt;
+			&lt;h:commandButton value="Add" action="#{greetingClient.addGreeting}" /&gt;
+			&lt;h:dataTable value="#{greetingServer.greetings}" var="greeting"&gt;
+				&lt;h:column&gt;
+					&lt;h:outputText value="#{greeting.text}"/&gt;
+				&lt;/h:column&gt;
+			&lt;/h:dataTable&gt;
+		&lt;/h:form&gt;
+	&lt;/h:body&gt;
+&lt;/html&gt;
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-JMSAndJavaMail"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIV#H-JMSAndJavaMail">JMS and JavaMail</a></h1>
+
+<p class="wikiPara">
+Speaking of JMS, let's add a MDB
+</p>
+
+<pre class="wikiPreformatted">
+package com.acme.greetings;
+
+import javax.annotation.Resource;
+import javax.ejb.ActivationConfigProperty;
+import javax.ejb.MessageDriven;
+import javax.jms.Message;
+import javax.jms.MessageListener;
+import javax.jms.TextMessage;
+import javax.mail.MessagingException;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+@MessageDriven(activationConfig = { @ActivationConfigProperty(propertyName = "destination", propertyValue = "topic/GreetingTopic"), @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Topic") })
+public class GreetingMailer implements MessageListener
+{
+   @Resource(mappedName = "java:/Mail")
+   Session mailSession;
+
+   @Override
+   public void onMessage(Message message)
+   {
+      TextMessage textMessage = (TextMessage) message;
+      try
+      {
+         mail(textMessage.getText());
+      }
+      catch (Exception e)
+      {
+         // Forgive me, for I have sinned
+         System.out.println(String.format("No mailing: %s", e.getMessage()));
+      }
+   }
+
+   private void mail(String greeting) throws MessagingException
+   {
+      MimeMessage message = new MimeMessage(mailSession);
+      message.setFrom(new InternetAddress("greetingmaster@nowhere.org"));
+      message.addRecipient(javax.mail.Message.RecipientType.TO, new InternetAddress("you@yourplace.com"));
+      message.setSubject("New greeting has arrived!");
+      message.setText(greeting);
+      Transport.send(message);
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+This is a message driven bean that listens to the topic <q>/topic/GreetingTopic</q> and when a message is recieved, it grabs the default Mail session from 
+the application server and send off a notification, configure it in the mail-service.xml in the deploy directory. You should also add the topic to the
+deploy/hornetq/hornetq-jms.xml like
+</p>
+
+<pre class="wikiPreformatted">
+&lt;topic name="GreetingTopic"&gt;
+   &lt;entry name="/topic/GreetingTopic"/&gt;
+&lt;/topic&gt;
+</pre>
+
+
+<p class="wikiPara">
+There are probably better ways of deploying topics but I'm not writing a JBoss AS tutorial here.
+This MDB isn't going to see any action unless someone actually send it messages. Let's add a 
+</p>
+
+<pre class="wikiPreformatted">
+package com.acme.greetings;
+
+import javax.annotation.Resource;
+import javax.ejb.Stateless;
+import javax.enterprise.event.Observes;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+
+@Stateless
+public class JMSDispatcher
+{
+   @Resource(mappedName = "/ConnectionFactory")
+   ConnectionFactory connectionFactory;
+
+   @Resource(mappedName = "/topic/GreetingTopic")
+   Topic topic;
+
+   public void broadcast(@Observes @Added Greeting greeting) throws JMSException
+   {
+      Session session = null;
+      MessageProducer producer = null;
+      Connection connection = null;
+      try
+      {
+         connection = connectionFactory.createConnection();
+         session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         producer = session.createProducer(topic);
+         TextMessage message = session.createTextMessage(greeting.getText());
+         producer.send(message);
+      }
+      finally
+      {
+         if (producer != null)
+         {
+            producer.close();
+         }
+         if (session != null)
+         {
+            session.close();
+         }
+         if (connection != null)
+         {
+            connection.close();
+         }
+
+      }
+   }
+}
+</pre>
+<p class="wikiPara">
+ 
+</p>
+
+<p class="wikiPara">
+This bean observers the same added greeting as the GreetingArchiver and sends the greeting of to our topic.
+There are probably better ways of writing this but I'm not writing a JMS tutorial (either). Hmm, I forget
+what kind of tutorial I'm actually writing.
+</p>
+
+<h1 class="wikiHeadline1" id="H-SomethingForTheFuture"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIV#H-SomethingForTheFuture">Something for the future</a></h1>
+
+<p class="wikiPara">
+This snapshot doesn't have everyting yet, I'd like to have @Scheduled greetings so we don't get lonely.
+This doesn't actually work yet, but let's add it and keep upgrading our snapshots so perhaps one day we'll get lucky.
+</p>
+
+<pre class="wikiPreformatted">package com.acme.greetings;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import javax.ejb.Schedule;
+import javax.ejb.Singleton;
+import javax.inject.Inject;
+
+@Singleton
+public class ArbiBean
+{
+   static final List&lt;String&gt; comments = new ArrayList&lt;String&gt;()
+   {
+      private static final long serialVersionUID = 1L;
+      {
+         add("Tried the new JRebel? I heard it can read your thoughts?");
+         add("Where can I find the specs?");
+         add("Shouldn't you be using RichFaces 4 instead?");
+         add("How is the Seam 3 performance compared to Seam 2?");
+         add("PIGBOMB!");
+      }
+   };
+
+   @Inject
+   GreetingServer greetingServer;
+
+   @Schedule(second = "*/15")
+   public void comment()
+   {
+      greetingServer.addGreeting(new Greeting(getRandomComment()));
+   }
+
+   private String getRandomComment()
+   {
+      return comments.get(new Random(comments.size()).nextInt());
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+This one should start up and send comments to the server every 15 seconds. But like I said, not yet.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Conclusion"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIV#H-Conclusion">Conclusion</a></h1>
+
+<p class="wikiPara">
+This ends part IV. In part V we'll add JAX-RS and JAX-WS to share our greetings with the world. If you haven't noticed
+it by now, developing against snapshots and alpha-releases require a fair amount of workarounds. But as a developer you
+can choose - do you want to sit around and wait for the final product or do you want to join the round and get first-hand
+knowledge on things to come (filing JIRAs as you encounter issues).
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartI" target="" class="regularLink">Part I</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartII" target="" class="regularLink">Part II</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII" target="" class="regularLink">Part III</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartV" target="" class="regularLink">part V </a>
+</li>
+</ul>
+</div>

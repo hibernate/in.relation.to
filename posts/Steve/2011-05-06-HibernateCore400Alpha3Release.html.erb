@@ -1,0 +1,100 @@
+---
+title: "Hibernate Core 4.0.0.Alpha3 release"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: [Core Release,Development,Hibernate,News]
+slug: HibernateCore400Alpha3Release
+lace: http://in.relation.to/19942.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateCore400Alpha3Release">Hibernate Core 4.0.0.Alpha3 release</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I apologize for the day delay.  Ran into a small issue with one of my Gradle plugins after upgrading Gradle for the Hibernate build.  Now that that is all sorted...
+</p>
+
+<p class="wikiPara">
+We are pleased to announce the release of Hibernate Core 4.0.0.Alpha3.  Consult the <a href="http://opensource.atlassian.com/projects/hibernate/browse/HHH/fixforversion/11163" target="" class="regularLink">change list</a> for all the gory change details.  This is scheduled to be the last Alpha release for Hibernate 4, <a href="http://opensource.atlassian.com/projects/hibernate/browse/HHH/fixforversion/11222" target="" class="regularLink">Beta1</a> being slated for release on June 1st.
+</p>
+
+<p class="wikiPara">
+4.0.0.Alpha3 was really about continuing to work on the new metamodel code and fleshing out the new API for SessionFactory creation which leverages that metamodel code as well as the ServiceRegistty code introduced in the first Alpha (and cleaned up since).  These things will continue to be the focus for Beta1 too as there is still lots of work to be done on the metamodel code and the SessionFactory building is inherently linked with that work.  However, I think the API for SessionFactory building is pretty completely at this point.  So I wanted to take the opportunity to introduce that API, even though it is not <q>wired up</q> at this time.
+</p>
+
+<p class="wikiPara">
+Currently you start off with a ServiceRegistry:
+</p>
+
+<pre class="wikiPreformatted">org.hibernate.service.BasicServiceRegistry serviceRegistry = new org.hibernate.service.ServiceRegistryBuilder()
+        ... // configure the services
+        buildServiceRegistry();
+</pre>
+
+
+<p class="wikiPara">
+Configuration here means either providing services (or service initiators) directly or providing settings that the services will pick up.
+</p>
+
+<p class="wikiPara">
+Next, we collect up the <q>metadata sources</q> which are the various sources you want Hibernate to look for metadata describing your domain model and its mapping to the relational database.  These sources might be hbm.xml files, annotated classes, etc:
+</p>
+
+<pre class="wikiPreformatted">org.hibernate.metamodel.MetadataSources metadataSources = new org.hibernate.metamodel.MetadataSources( serviceRegistry )
+        .addResource( "some.hbm.xml" )
+        .addAnnotatedClass( SomeEntity.class )
+        ...;
+</pre>
+
+
+<p class="wikiPara">
+An interesting thing to note here is that we now have a natural lifecycle to the information that used to just get dumped into org.hibernate.cfg.Configuration.  This previous step only collects the metadata sources, we still need Hibernate to process them:
+</p>
+
+<pre class="wikiPreformatted">org.hibernate.metamodel.Metadata metadata = metadataSources.buildMetadata();</pre>
+
+
+<p class="wikiPara">
+And then finally we build the SessionFactory:
+</p>
+
+<pre class="wikiPreformatted">SessionFactory sessionFactory = metadata.buildSessionFactory();</pre>
+
+
+<p class="wikiPara">
+You can even chain many of these steps:
+</p>
+
+<pre class="wikiPreformatted">BasicServiceRegistry serviceRegistry = new ServiceRegistryBuilder()
+        ... // configure the services
+        buildServiceRegistry();
+
+SessionFactory sessionFactory = new MetadataSources( serviceRegistry )
+        .addResource( "some.hbm.xml" )
+        .addAnnotatedClass( SomeEntity.class )
+        .buildMetadata()
+        .buildSessionFactory();
+</pre>
+
+
+<p class="wikiPara">
+org.hibernate.cfg.Configuration has been deprecated in this release and org.hibernate.cfg.AnnotationConfiguration has been deprecated for some time now.  Both will get removed before 4.0.0 goes Final.  We are still planning exactly what the replacement for org.hibernate.ejb.Ejb3Configuration will look like, but it too has been deprecated in the meantime (the recommended way to build an EntityManagerFactory has always been via javax.persistence.Persistence anyway).
+</p>
+
+<p class="wikiPara">
+We got a lot more aggressive with the package reorganization in this release as well.  For those unfamiliar, the general idea is that this is a sort of pre-osgi-ification step, so more will be coming on that front later.  The basic gist is that we are splitting packages up based on usages.  Stuff deemed part of the API will remain in their same packages, stuff making up the various SPIs will be moved to a 'spi' package, and finally internal (non-public) stuff is moved to an 'internal' package.  This work is not yet done, but is moving along.
+</p>
+
+<p class="wikiPara">
+As always, if you have any comments, the best place is either the hibernate-dev mailing list or the #hibernate-dev IRC channel on freenode.  Now is especially the time if you had ideas about any of the planned changes as we move towards 4.0.0.Final or wanted to help in the effort.  We have development meetings weekly on the #hibernate-dev IRC channel Mondays at 10am Central time.  We also send out <q>minutes</q> to the dev mailing list afterwards.
+</p>
+
+<p class="wikiPara">
+As always, the release is available from both SourceForge in <a href="https://sourceforge.net/projects/hibernate/files/hibernate4/4.0.0.Alpha3/" target="" class="regularLink">bundle form</a> as well as the JBoss Nexus repository under the <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate/" target="" class="regularLink">org.hibernate</a> groupId.</p>
+</div>

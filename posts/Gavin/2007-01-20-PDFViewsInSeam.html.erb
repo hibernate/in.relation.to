@@ -1,0 +1,111 @@
+---
+title: "PDF views in Seam"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Seam]
+slug: PDFViewsInSeam
+lace: http://in.relation.to/1964.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/PDFViewsInSeam">PDF views in Seam</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+In Seam 1.1.1 a PDF view is just like any other page in the application: a facelets
+template containing EL expressions that bind values from the underlying Seam
+components onto the page. So if you already know Seam, producing PDF just involves
+learning the new iText-specific tags.
+</p>
+
+<p class="wikiPara">
+Here's a simple Hello example in Seam PDF:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;p:document [=&gt;xmlns:p=]"=&gt;http://jboss.com/products/seam/pdf"
+            title="Hello"&gt;
+   &lt;p:paragraph&gt;Hello #{user.name}!&lt;/p:paragraph&gt;
+&lt;/p:document&gt;
+</pre>
+
+
+<p class="wikiPara">
+Just throw this document in your docroot directory of a Seam project, and access
+the page like you would any other facelets page. What could be easier?
+</p>
+
+<p class="wikiPara">
+For larger documents, we'll probably want to break our document up into
+chapters:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;p:document [=&gt;xmlns:p=]"=&gt;http://jboss.com/products/seam/pdf"
+            title="Hello"&gt;
+
+   &lt;p:chapter number="1"&gt;
+      &lt;p:title&gt;&lt;p:paragraph&gt;Hello&lt;/p:paragraph&gt;&lt;/p:title&gt;
+      &lt;p:paragraph&gt;Hello #{user.name}!&lt;/p:paragraph&gt;
+   &lt;/p:chapter&gt;
+
+   &lt;p:chapter number="2"&gt;
+      &lt;p:title&gt;&lt;p:paragraph&gt;Goodbye&lt;/p:paragraph&gt;&lt;/p:title&gt;
+      &lt;p:paragraph&gt;Goodbye #{user.name}.&lt;/p:paragraph&gt;
+   &lt;/p:chapter&gt;
+
+&lt;/p:document&gt;
+</pre>
+
+
+<p class="wikiPara">
+Of course, the real usefulness of this feature is for reporting, so I bet you
+want to know how to render dynamic lists and tables. Well, here's a list:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;p:document [=&gt;xmlns:p=]"=&gt;http://jboss.com/products/seam/pdf"
+            [=&gt;xmlns:ui=]"=&gt;http://java.sun.com/jsf/facelets"
+            title="Hello"&gt;
+   &lt;p:list style="numbered"&gt;
+      &lt;[=&gt;ui:repeat] value="#{documents}" var="doc"&gt;
+         &lt;p:listItem&gt;#{doc.name}&lt;/p:listItem&gt;
+      &lt;/[=&gt;ui:repeat]&gt;
+   &lt;/p:list&gt;
+&lt;/p:document&gt;
+</pre>
+
+
+<p class="wikiPara">
+And here's a table:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;p:document [=&gt;xmlns:p=]"=&gt;http://jboss.com/products/seam/pdf"   
+            [=&gt;xmlns:ui=]"=&gt;http://java.sun.com/jsf/facelets"
+            title="Hello"&gt;   
+   &lt;p:table columns="3" headerRows="1"&gt;
+      &lt;p:cell&gt;name&lt;/p:cell&gt;
+      &lt;p:cell&gt;owner&lt;/p:cell&gt;
+      &lt;p:cell&gt;size&lt;/p:cell&gt;
+      &lt;[=&gt;ui:repeat] value="#{documents}" var="doc"&gt;
+         &lt;p:cell&gt;#{doc.name}&lt;/p:cell&gt;
+         &lt;p:cell&gt;#{doc.user.name}&lt;/p:cell&gt;
+         &lt;p:cell&gt;#{doc.size}&lt;/p:cell&gt;
+      &lt;/[=&gt;ui:repeat]&gt;
+   &lt;/p:table&gt;
+&lt;/p:document&gt;
+</pre>
+
+
+<p class="wikiPara">
+Of course, there's much more functionality available: sections, anchors, fonts, etc,
+but that should be enough to give you the flavor of this new stuff. Check out the
+examples in Seam 1.1.1 for more information.
+</p>
+</div>

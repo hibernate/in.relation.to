@@ -1,0 +1,108 @@
+---
+title: "Weld 1.0.1-CR2 is available for final inspection!"
+author: "Dan Allen"
+blogger_name: "Dan"
+layout: blog-post
+tags: [Contexts and Dependency Injection,Seam News,Weld]
+slug: Weld101CR2IsAvailableForFinalInspection
+lace: http://in.relation.to/14291.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/Weld101CR2IsAvailableForFinalInspection">Weld 1.0.1-CR2 is available for final inspection!</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+In preparation for the release of Weld 1.0.1 on February 19th, we've pushed out a full distribution of <a href="http://sourceforge.net/projects/jboss/files/Weld/1.0.1-CR2/weld-1.0.1-CR2.zip/download" target="" class="regularLink">Weld 1.0.1-CR2</a> for final inspection. It's based on the proposed <a href="http://docs.jboss.org/cdi/api/1.0-SP1/" target="" class="regularLink">CDI 1.0-SP1 API</a>. Grab it, test it, play with it, give us feedback, let us know if it gets your stamp of approval. You can find direct download links at the bottom of this post or you can pull the artifacts from the <a href="http://repo1.maven.org/maven2/org/jboss/weld" target="" class="regularLink">Maven Central Repository</a>.
+</p>
+
+<blockquote class="wikiBlockquote">
+For the Weld 1.0.1-CR1 release, we only published the Weld artifacts to the Maven Central Repository. We held off creating a full distribution until 1.0.1-CR2.
+</blockquote>
+
+<h2 class="wikiHeadline2" id="H-MissedJBossAS6M2"><a href="/Bloggers/Weld101CR2IsAvailableForFinalInspection#H-MissedJBossAS6M2">Missed JBoss AS 6 M2</a></h2>
+
+<p class="wikiPara">
+Before we get to the release notes, it's important for you to know that this version of Weld will not be in JBoss AS 6 M2. You'll need to grab a <a href="http://hudson.jboss.org/hudson/view/JBoss%20AS/job/JBoss-AS-6.0.x/" target="" class="regularLink">JBoss AS 6 snapshot</a> if you want the <q>out of the box</q> experience.
+</p>
+
+<p class="wikiPara">
+You also have the option of updating your JBoss AS 6 installation using this command from the root of the Weld distribution:
+</p>
+
+<pre class="wikiPreformatted">JBOSS_HOME=/path/to/jboss-as-6 mvn -f jboss-as/pom.xml</pre>
+
+
+<p class="wikiPara">
+With that out of the way, let's look at what's new and noteworthy in this release.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ReleaseNotes"><a href="/Bloggers/Weld101CR2IsAvailableForFinalInspection#H-ReleaseNotes">Release notes</a></h2>
+
+<p class="wikiPara">
+As you've come to expect out of this project team, this release (CR1 and CR2) includes major improvements in memory usage as well as numerous bug fixes (see the release notes below for details). We'll keep progress coming in these areas, as well as work on performance improvements in the Weld versions on the horizon.
+</p>
+
+<h3 class="wikiHeadline3" id="H-GoogleAppEngine"><a href="/Bloggers/Weld101CR2IsAvailableForFinalInspection#H-GoogleAppEngine">Google App Engine</a></h3>
+
+<p class="wikiPara">
+If you're a fan of <a href="http://code.google.com/appengine/" target="" class="regularLink">Google App Engine</a> (GAE), or just looking to experiment with it (using CDI, of course), we have really exciting news for you! Weld now has basic support for running on Google's scalable infrastructure. And just to prove it to you, we gave the Weld numberguess example its own <a href="http://weld-numberguess.appspot.com" target="" class="regularLink">appspot</a>, where it's currently running. <a href="http://weld-numberguess.appspot.com" target="" class="regularLink">Go check it out</a>!
+</p>
+
+<p class="wikiPara">
+If you want to get your own CDI + JSF 2 application running on Google App Engine, Shane Bryzak has done a fantastic job of showing you how to <a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1" target="" class="regularLink">navigate the minefield</a> to arrive at a successful GAE deployment. He takes you through App Engine signup, installation of the App Engine SDK plugin in Eclipse, the required CDI and JSF configurations and libraries and, finally, deployment in <a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1" target="" class="regularLink">part 1</a> of his GAE tutorial series.
+</p>
+
+<p class="wikiPara">
+Props to the Weld community for working with the Weld project team to identify and patch assumptions in Weld that prevented it from running on GAE. While the basics now work, we still need help finding outstanding conflicts and getting them resolved in a way that does not compromise the compliance with JSR-299 or the integrity of Weld.
+</p>
+
+<h3 class="wikiHeadline3" id="H-WeldSE"><a href="/Bloggers/Weld101CR2IsAvailableForFinalInspection#H-WeldSE">Weld SE</a></h3>
+
+<p class="wikiPara">
+One area of Weld that we are particularly proud of, and which truly sets this implementation apart, is the Java SE support. The pioneering work done by Peter Royle and other community members will prove to be instrumental in shaping the future of the CDI specification as it extends outside of Java EE. Weld 1.0.1-CR2 brings improvements to the Java SE support, including documented support for interceptors and decorators and a refactoring to use the standard <tt>BeforeShutdown</tt> event. The most notable improvement is the simplification of the bootstrap API (i.e., <tt>new Weld()</tt>). I'll let the following code do the talking:
+</p>
+
+<pre class="wikiPreformatted">Weld weld = new Weld().initialize();
+weld.instance().select(Foo.class).get();
+weld.event().select(Bar.class).fire(new Bar());
+weld.shutdown();</pre>
+
+
+<h3 class="wikiHeadline3" id="H-CDITCK"><a href="/Bloggers/Weld101CR2IsAvailableForFinalInspection#H-CDITCK">CDI TCK</a></h3>
+
+<p class="wikiPara">
+The CDI TCK (1.0.1-CR1), which has also undergone a lot of improvements, will be included in this release. We'd like to thank the <a href="http://openwebbeans.apache.org" target="" class="regularLink">OpenWebBeans</a> team for making the TCK more robust by identifying and helping to resolve deficiencies-ranging from broken tests to invalid interpretations of the spec.
+</p>
+
+<p class="wikiPara">
+In fact, we'd like to thank all the Weld community members who continue to find ways to improve the quality of the spec, the TCK and the implementation. Cheers!
+</p>
+
+<h2 class="wikiHeadline2" id="H-NextSteps"><a href="/Bloggers/Weld101CR2IsAvailableForFinalInspection#H-NextSteps">Next steps</a></h2>
+
+<p class="wikiPara">
+As mentioned above, the Weld 1.0.1 release is planned for February 19th.
+</p>
+
+<p class="wikiPara">
+Looking ahead, we plan to get to Weld 1.0.2 in 3 months time, focusing on performance, scalability and bug fixes. Developers eager to start adopting or migrating to Java EE 6 will be particularly excited to hear that we'll finally be shifting part of the team's focus to the <a href="http://seamframework.org/Documentation/Seam3Modules" target="" class="regularLink">development of Seam 3</a>!
+</p>
+
+<h2 class="wikiHeadline2" id="H-AboutWeld"><a href="/Bloggers/Weld101CR2IsAvailableForFinalInspection#H-AboutWeld">About Weld</a></h2>
+
+<p class="wikiPara">
+<a href="http://seamframework.org/Weld" target="" class="regularLink">Weld</a> is used in <a href="http://glassfish.dev.java.net" target="" class="regularLink">GlassFish V3</a> and the <a href="http://hudson.jboss.org/hudson/view/JBoss%20AS/job/JBoss-AS-6.0.x/" target="" class="regularLink">JBoss AS 6</a> series. Weld also has support for Servlet containers such as <a href="http://tomcat.apache.org" target="" class="regularLink">Tomcat</a> and <a href="http://www.mortbay.org/jetty/" target="" class="regularLink">Jetty</a>. While JSF support is built in, you also have the option to use <a href="http://wicket.apache.org" target="" class="regularLink">Wicket</a> as your view layer or even Swing and JavaFX through the Java SE support. If you are an OSGi fan, there's a <a href="http://repo1.maven.org/maven2/org/jboss/weld/weld-osgi-bundle/" target="" class="regularLink">bundle</a> for that too.
+</p>
+
+<p class="wikiPara">
+If you are just getting started, there are a few examples in the <a href="https://sourceforge.net/projects/jboss/files/Weld/1.0.1-CR2/weld-1.0.1-CR2.zip/download" target="" class="regularLink">distribution</a> to guide you (look for instructions in the reference guide, and each example has a <tt>readme.txt</tt>). If you are looking for help, try our <a href="http://www.seamframework.org/Community/WeldUsers" target="" class="regularLink">user forums</a>, or perhaps join us on <a href="irc://freenode.net/#weld">IRC</a>.
+</p>
+
+<p class="wikiPara">
+[ <a href="http://sourceforge.net/projects/jboss/files/Weld/1.0.1-CR2/weld-1.0.1-CR2.zip/download" target="" class="regularLink">Weld Distribution</a> ] | [ Release Notes (<a href="https://jira.jboss.org/jira/secure/ReleaseNote.jspa?projectId=12310891&amp;styleName=Html&amp;version=12314049" target="" class="regularLink">1.0.1-CR1</a>, <a href="https://jira.jboss.org/jira/secure/ReleaseNote.jspa?projectId=12310891&amp;styleName=Html&amp;version=12314472" target="" class="regularLink">1.0.1-CR2</a>) ] | [ <a href="http://docs.jboss.org/weld/reference/1.0.1-CR2/en-US/html" target="" class="regularLink">Reference Guide</a> ] | [ <a href="http://jira.jboss.com/jira/browse/WELD" target="" class="regularLink">Issue Tracker</a> ] | [ <a href="http://docs.jboss.org/cdi/api/1.0-SP1/" target="" class="regularLink">CDI Javadoc</a> ]</p>
+</div>

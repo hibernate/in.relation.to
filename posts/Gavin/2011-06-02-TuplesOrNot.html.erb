@@ -1,0 +1,140 @@
+---
+title: "Tuples, or not?"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon]
+slug: TuplesOrNot
+lace: http://in.relation.to/20661.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/TuplesOrNot">Tuples, or not?</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+A number of people have asked if Ceylon will have tuples. Well, I suppose, why not? It's easy enough to write the following generalized algebraic datatype:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface TupleOrUnit&lt;P...&gt; 
+        of Tuple&lt;P...&gt; | unit {}  //note: depends upon support for GADTs</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared class Tuple&lt;T,P...&gt;(T head, TupleOrUnit&lt;P...&gt; tail) 
+        satisfies TupleOrUnit&lt;T,P...&gt; {
+    shared T head = head;
+    shared TupleOrUnit&lt;P...&gt; tail = tail;
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared object unit 
+        extends Case("unit") 
+        satisfies TupleOrUnit&lt;&gt; {}</pre>
+
+
+<p class="wikiPara">
+Note that the definition of <tt>TupleOrUnit</tt> here depends upon compiler support for generalized algebraic datatypes, since the types that appear in the <tt>of</tt> clause don't cover every possible list of arguments to <tt>P...</tt>. We're trying to get the compiler to reason that the type of <tt>Tuple.tail</tt> is <tt>Tuple</tt> when there is more than one type argument. But even if we <i class="wikiEmphasis">don't</i> have support for GADTs, we can still get tuple support by removing the <tt>of</tt> clause of <tt>TupleOrUnit</tt>, and adding an introduction. It's a slightly ugly workaround, but doesn't affect the client. Anyway, the code winds up looking like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface TupleOrUnit&lt;P...&gt; {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared class Tuple&lt;T,P...&gt;(T head, TupleOrUnit&lt;P...&gt; tail) 
+        satisfies TupleOrUnit&lt;T,P...&gt; {
+    shared T head = head;
+    shared TupleOrUnit&lt;P...&gt; rest = tail;
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared object unit satisfies TupleOrUnit&lt;&gt; {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">shared interface TupleTail 
+        adapts Tuple&lt;T,P...&gt; {
+    shared Tuple&lt;P...&gt; tail { 
+        if (is Tuple&lt;P...&gt; rest) {
+            return rest;
+        }
+        else {
+            //someone else extended TupleOrUnit directly
+            throw Exception("unexpected subtype of TupleOrUnit");
+        }
+    }
+}</pre>
+
+
+<p class="wikiPara">
+Anyway, whichever path we take, you can now create a tuple like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">local labeledPosition = Tuple(x,Tuple(y,Tuple(label,unit)));  //inferred type Tuple&lt;Float,Float,String&gt;</pre>
+
+
+<p class="wikiPara">
+And access its elements like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Float x = labeledPosition.head;
+Float y = labeledPosition.tail.head;
+String name = labeledPosition.tail.tail.head;</pre>
+
+
+<p class="wikiPara">
+Well, that's all a bit verbose, so we probably want to add some convenience functions for working with pairs and triples:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared Tuple&lt;X,Y&gt; pair&lt;X,Y&gt;(X x, Y y) { return Tuple(x,Tuple(y,unit)); }
+shared Tuple&lt;X,Y,Z&gt; triple&lt;X,Y,Z&gt;(X x, Y y, Z z) { return Tuple(x, pair(y,z)); }
+
+shared T first&lt;T,P...&gt;(Tuple&lt;T,P...&gt; tuple) { return tuple.head; }
+shared T second&lt;S,T,P...&gt;(Tuple&lt;S,T,P...&gt; tuple) { return tuple.tail.head; }
+shared T third&lt;R,S,T,P...&gt;(Tuple&lt;R,S,T,P...&gt; tuple) { return tuple.tail.tail.head; }</pre>
+
+
+<p class="wikiPara">
+Which let's us simplify the examples above to:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">local labeledPosition = triple(x,y,label);</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">Float x = first(labeledPosition);
+Float y = second(labeledPosition);
+String name = third(labeledPosition);</pre>
+
+
+<p class="wikiPara">
+Now, all that's pretty reasonable, and perhaps we could provide something like this code as part of the language module, but the truth is that isn't quite what people are asking for. What they want is <i class="wikiEmphasis">sugar</i>. For tuples to be convenient enough to be worthwhile, I think you really need some additional syntactic support for them in the language definition:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A nicer way to instantiate them, using a simplified syntax like this: <pre class="wikiPreformatted brush:ceylon">local labeledPosition = (x,y,label);</pre>
+</li>
+<li class="wikiUnorderedListItem"> Support for destructuring tuples in method parameter lists, <tt>for</tt> loops, and probably even in the LHS of specifier statements: <pre class="wikiPreformatted brush:ceylon">for ((Float x, Float y, String label) in labeledPositions) { ... }</pre>
+ <pre class="wikiPreformatted brush:ceylon">(Float x, Float y, String label) = labeledPosition;</pre>
+</li>
+<li class="wikiUnorderedListItem"> An abbreviated syntax for writing tuple types: <pre class="wikiPreformatted brush:ceylon">(Float,Float,String) labeledPosition;</pre>
+</li>
+</ul>
+
+<p class="wikiPara">
+Well, that's a whole lot of extra syntax for a language feature that I find to be of pretty marginal value in an object-oriented language like Ceylon. I mean, I can see a couple of reasonable usecases for generic pairs and triples, but I really don't think we should be encouraging folks to write code with methods that return 4-tuples.
+</p>
+
+<p class="wikiPara">
+And for the particular case of pairs that represent entries in some kind of associative array, we <i class="wikiEmphasis">do</i> already have special sugar for <tt>Entry</tt>s, with:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The convenient <tt>-&gt;</tt> operator for instantiating them, and</li>
+<li class="wikiUnorderedListItem"> destructuring support in method parameter lists and <tt>for</tt> loops.</li>
+</ul>
+
+<p class="wikiPara">
+So I'm inclined to think that this feature isn't worth the extra complexity. It's just something extra to learn, and something that can be easily misused at that. But I'm reserving the right to change my mind somewhere further down the line!
+</p>
+</div>

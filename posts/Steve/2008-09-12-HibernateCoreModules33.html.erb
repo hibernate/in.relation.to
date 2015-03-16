@@ -1,0 +1,155 @@
+---
+title: "Hibernate Core Modules (3.3)"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: [Hibernate]
+slug: HibernateCoreModules33
+lace: http://in.relation.to/9384.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/HibernateCoreModules33">Hibernate Core Modules (3.3)</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Quite a few folks have asked about the new Hibernate Core modules introduced with the 3.3 release: what each is for, when to use which, etc.  I wanted to take a bit to describe what each of the main modules is for and when/how you would use certain combinations.  (These modules also define maven artifacts; all Hibernate Core artifacts use org.hibernate groupId). 
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheModules"><a href="/Bloggers/HibernateCoreModules33#H-TheModules">The modules</a></h1>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-core/" target="" class="regularLink">hibernate-core</a> - defines the basic functionality of Hibernate.  It is expected that this module will be split up further in future releases.</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-jmx/" target="" class="regularLink">hibernate-jmx</a> - defines the functionality for Hibernate to integrate with JMX servers.  Both the org.hibernate.jmx.HibernateService and org.hibernate.jmx.StatisticsService are defined in this module.</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-ehcache/" target="" class="regularLink">hibernate-ehcache</a> - defines the integration for using <a href="http://ehcache.sourceforge.net" target="" class="regularLink">EhCache</a> as Hibernate's second level cache</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-jbosscache/" target="" class="regularLink">hibernate-jbosscache</a> - defines the integration for using JBossCache as Hibernate's second level cache, based on the 1.x versions of JBossCache.  <i class="wikiEmphasis">This integration should be considered deprecated in favor of the newer 2.x based integration...</i>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-jbosscache2/" target="" class="regularLink">hibernate-jbosscache2</a> - defines the integration for using JBossCache as Hibernate's second level cache, based on the 2.x versions of JBossCache</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-oscache/" target="" class="regularLink">hibernate-oscache</a> - defines the integration for using <a href="http://www.opensymphony.com/oscache/" target="" class="regularLink">OSCache</a> as Hibernate's second level cache</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-swarmcache/" target="" class="regularLink">hibernate-swarmcache</a> - defines the integration for using <a href="http://swarmcache.sourceforge.net/index.html" target="" class="regularLink">SwarmCache</a> as Hibernate's second level cache</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-c3p0/" target="" class="regularLink">hibernate-c3p0</a> - defines the integration for using the <a href="http://www.mchange.com/projects/c3p0/index.html" target="" class="regularLink">c3p0</a> connection pool as Hibernate's ConnectionProvider</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-proxool/" target="" class="regularLink">hibernate-proxool</a> - defines the integration for using the <a href="http://proxool.sourceforge.net/" target="" class="regularLink">proxool</a> connection pool as Hibernate's ConnectionProvider</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-parent/" target="" class="regularLink">hibernate-parent</a> - this acts as the parent pom for all the Hibernate modules.  <i class="wikiEmphasis">Users will generally never use nor need to know about this module.</i>  I wanted to mention it here simply because it might be useful for folks developing extensions to Hibernate.</li>
+<li class="wikiUnorderedListItem"> <a href="http://repository.jboss.org/maven2/org/hibernate/hibernate-testing/" target="" class="regularLink">hibernate-testing</a> - defines the basic <i class="wikiEmphasis">infastructure</i> used by the Hibernate testsuite for building SessionFactories and managing Sessions.  Was broken out as a separate module because I thought users might find it useful as well for testing Hibernate-related code.</li>
+</ul>
+
+<p class="wikiPara">
+There are other modules, but the above ones are the ones developers will usually need to use (the others include things like DocBook sources).
+</p>
+
+<h1 class="wikiHeadline1" id="H-Using"><a href="/Bloggers/HibernateCoreModules33#H-Using">Using</a></h1>
+
+<p class="wikiPara">
+The minimum dependency set-up with Javassist and using log4j as logging library would be:
+</p>
+
+<pre class="wikiPreformatted">&lt;dependencies&gt;
+    &lt;!-- the dependency on the hibernate-core module (see above) --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-core&lt;/artifactId&gt;
+        &lt;version&gt;3.3.1.GA&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- want to use Javassist as Hibernate's bytecode provider, so we depend on it here. --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;javassist&lt;/groupId&gt;
+        &lt;artifactId&gt;javassist&lt;/artifactId&gt;
+        &lt;version&gt;3.4.GA&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Logging set up --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+        &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;
+        &lt;version&gt;1.5.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;log4j&lt;/groupId&gt;
+        &lt;artifactId&gt;log4j&lt;/artifactId&gt;
+        &lt;version&gt;1.2.14&lt;/version&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</pre>
+
+
+<p class="wikiPara">
+To use cglib instead of Javassist, we would have this instead:
+</p>
+
+<pre class="wikiPreformatted">&lt;dependencies&gt;
+    &lt;!-- the dependency on the hibernate-core module (see above) --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-core&lt;/artifactId&gt;
+        &lt;version&gt;3.3.1.GA&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Here we are using cglib instead of Javassist (Hibernate 'repackages' cglib to avoid name clashes) --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-cglib-repack&lt;/artifactId&gt;
+        &lt;version&gt;2.1_3&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Logging set up --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+        &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;
+        &lt;version&gt;1.5.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;log4j&lt;/groupId&gt;
+        &lt;artifactId&gt;log4j&lt;/artifactId&gt;
+        &lt;version&gt;1.2.14&lt;/version&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</pre>
+
+
+<p class="wikiPara">
+Now, lets add support for second level caching with EhCache:
+</p>
+
+<pre class="wikiPreformatted">&lt;dependencies&gt;
+    &lt;!-- the dependency on the hibernate-core module (see above) --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-core&lt;/artifactId&gt;
+        &lt;version&gt;3.3.1.GA&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Here we are using cglib instead of Javassist (Hibernate 'repackages' cglib to avoid name clashes) --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-cglib-repack&lt;/artifactId&gt;
+        &lt;version&gt;2.1_3&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Logging set up --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.slf4j&lt;/groupId&gt;
+        &lt;artifactId&gt;slf4j-log4j12&lt;/artifactId&gt;
+        &lt;version&gt;1.5.2&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;log4j&lt;/groupId&gt;
+        &lt;artifactId&gt;log4j&lt;/artifactId&gt;
+        &lt;version&gt;1.2.14&lt;/version&gt;
+    &lt;/dependency&gt;
+    &lt;!-- Here is the bit enabling EhCache support --&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-ehcache&lt;/artifactId&gt;
+        &lt;version&gt;3.3.1.GA&lt;/version&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+</pre>
+
+
+<p class="wikiPara">
+As we stated above, we said that the hibernate-ehcache module defines the integration with EhCache.  It also defines a dependency on EhCache itself, which maven pulls into our dependencies here <q>transitively</q>.  See the maven documentation for information about how this all works.  The point is simply that we just need to depend on the hibernate-ehcache module and the other deps  need to use EhCache are handled for us.
+</p>
+
+
+
+
+</div>

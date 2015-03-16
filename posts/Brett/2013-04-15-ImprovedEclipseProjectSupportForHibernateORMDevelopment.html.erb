@@ -1,0 +1,35 @@
+---
+title: "Improved Eclipse Project Support for Hibernate ORM Development"
+author: "Brett Meyer"
+blogger_name: "Brett"
+layout: blog-post
+tags: []
+slug: ImprovedEclipseProjectSupportForHibernateORMDevelopment
+lace: http://in.relation.to/24111.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/ImprovedEclipseProjectSupportForHibernateORMDevelopment">Improved Eclipse Project Support for Hibernate ORM Development</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Previously, setting up a Hibernate ORM development environment in Eclipse was a pain.  Many of you have complained about circular dependencies, generated sources not added to the classpath, etc.  We recently cleaned up the 'gradle eclipse' task in HHH-7617 (1).  If you're interested in getting started with Hibernate contributions, here's the easiest way to do it.  Note that this requires 4.2.1-SNAPSHOT, 4.3.0-SNAPSHOT, or later:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> I wouldn't recommend installing the <q>Gradle Integration for Eclipse</q> plugin.  Personally, I've found it to be really buggy and not worth the effort.</li>
+<li class="wikiOrderedListItem"> In your hibernate-orm Git checkout, run the following on the command line: <q>./gradlew clean eclipse --refresh-dependencies</q>.  The <q>eclipse</q> task will create the Eclipse project, including generating sources.  The <q>--refresh-dependencies</q> tells Gradle to re-generate the dependency cache -- it isn't always necessary, but I include it for reference.</li>
+<li class="wikiOrderedListItem"> In Eclipse, go to Window -&gt; Preferences -&gt; Java -&gt; Compiler -&gt; Building.  Set <q>Circular dependencies</q> to <q>Warning</q>, rather than <q>Error</q>.</li>
+</ol>
+
+<p class="wikiPara">
+If there's anything else we can do to better streamline your IDE setup, please let me know!
+</p>
+
+<p class="wikiPara">
+1: <a href="https://hibernate.atlassian.net/browse/HHH-7617" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH-7617</a></p>
+</div>

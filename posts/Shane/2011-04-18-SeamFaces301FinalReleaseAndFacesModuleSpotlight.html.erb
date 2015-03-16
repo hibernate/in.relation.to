@@ -1,0 +1,150 @@
+---
+title: "Seam Faces 3.0.1.Final release and Faces module spotlight"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+layout: blog-post
+tags: []
+slug: SeamFaces301FinalReleaseAndFacesModuleSpotlight
+lace: http://in.relation.to/19405.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight">Seam Faces 3.0.1.Final release and Faces module spotlight</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+I'm pleased to announce the availability of <a href="http://www.seamframework.org/Seam3/FacesModule" target="" class="regularLink">Seam Faces 3.0.1.Final</a>.  Brian Leathem, the Seam Faces module lead has addressed a number of issues with this point release and also made a number of enhancements to the view configuration feature, which I'm sure a lot of people are going to be excited about.  In the (hopefully continuing) tradition of having a weekly module spotlight feature, Brian has also written this week's article which I'm very pleased to present to you now!  
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-SeamModuleSpotlightSeamFaces"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamModuleSpotlightSeamFaces">Seam Module Spotlight: Seam Faces</a></h1>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">by Brian Leathem</i>
+</p>
+
+
+<p class="wikiPara">
+In this second entry for the Seam Module Spotlight series, we will take a close look at the “view configuration” feature of Seam Faces.
+</p>
+
+<p class="wikiPara">
+Seam Faces aims to provide JSF developers with a truly worthy framework for web development by ironing out some of JSF’s pain points, integrating tightly with CDI, and offering out of the box integration with the other Seam Modules and third party libraries.  Part of achieving this goal involves providing a means to centrally configure each of these seemingly disparate concerns, without having to create any JSF Phase listeners, nor maintain a bunch of XML files.
+</p>
+
+<p class="wikiPara">
+Adhering to the CDI core tenet of type safety, Seam Faces offers a type-safe mechanism to configure the behaviour of your JSF views.  So far these configurable behaviors include:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Restricting view access by integrating with <a href="http://seamframework.org/Seam3/SecurityModule" target="" class="regularLink">Seam Security</a>
+</li>
+<li class="wikiOrderedListItem"> Configuring URL rewriting by integrating with <a href="http://ocpsoft.com/prettyfaces/" target="" class="regularLink">PrettyFaces</a> (or any other pluggable URL rewriting framework)</li>
+<li class="wikiOrderedListItem"> Configuring Transactions via <a href="http://seamframework.org/Seam3/PersistenceModule" target="" class="regularLink">Seam Persistence</a>
+</li>
+<li class="wikiOrderedListItem"> And a personal favorite: setting “?faces-redirect=true” when navigating to a view</li>
+</ol>
+
+<p class="wikiPara">
+Note: the above integrations are optional, you must include the relevant jars in the application for their respective configurations to have any effect
+</p>
+
+<p class="wikiPara">
+Lets take a closer look at the View configuration from the Seam Faces example “faces-viewconfig”:
+</p>
+
+<pre class="wikiPreformatted">@ViewConfig
+public interface Pages {
+
+  static enum Pages1 {
+
+      @ViewPattern("/admin.xhtml")
+      @Admin
+      ADMIN,
+
+      @ViewPattern("/item.xhtml")
+      @UrlMapping(pattern="/item/#{id}/")
+      @Owner
+      ITEM,
+
+      @ViewPattern("/*")
+      @FacesRedirect
+      @AccessDeniedView("/list.xhtml")
+      @LoginView("/login.xhtml")
+      ALL;
+
+  }
+}
+</pre>
+
+
+<p class="wikiPara">
+At first glance, the structure of the above configuration might appear odd.  The <tt>@ViewConfig</tt> annotation is on the interface, and the interface is nothing more than a container for a static enum.  This arrangement is unfortunately required by the current CDI specification for the view configuration annotations to be scanned, and will hopefully be corrected in future iterations of the CDI spec.
+</p>
+
+<p class="wikiPara">
+The properties of the enum are annotated with a <tt>@ViewPattern</tt> annotation, specifying to which views the adjacent annotations apply.  ViewPatterns support wildcards, and matches are made to a particular view weighted by the specificity of the match; therefore, if two annotations paired with different <tt>@ViewPattern</tt>s conflict for a given view, the annotation paired with the more specific <tt>@ViewPattern</tt> takes precedence.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeamSecurityViaTheTtViewConfigtt"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamSecurityViaTheTtViewConfigtt">Seam Security via the <tt>@ViewConfig</tt></a></h2>
+
+<p class="wikiPara">
+Now let’s look at the Seam Security annotations <tt>@Admin</tt> and <tt>@Owner</tt>.  These annotations are user-provided, meaning they were built solely for this example, and are qualified with the Seam Security qualifier: <tt>@SecurityBindingType</tt>.  When a view is requested that matches a pattern in the <tt>@ViewConfig</tt> annotated with such an annotation, Seam Faces invokes Seam Security to determine if access should be granted. Authorization is evaluated with the following class:
+</p>
+
+<pre class="wikiPreformatted">public class SecurityRules {
+    public @Secures @Owner boolean ownerChecker(Identity identity, @Current Item item) {
+       if (item == null || identity.getUser() == null) {
+           return false;
+       } else {
+           return item.getOwner().equals(identity.getUser().getId());
+       }
+    }
+
+    public @Secures @Admin boolean adminChecker(Identity identity) {
+       if (identity.getUser() == null) {
+           return false;
+       } else {
+           return "admin".equals(identity.getUser().getId());
+       }
+    }
+}</pre>
+
+
+<p class="wikiPara">
+In this way, views annotated with the <tt>@Owner</tt> annotation are secured by the <tt>@Secures</tt> method annotated with the same <tt>@Owner</tt> annotation.  Coupled with parameter injection, this is truly a declarative syntax for securing view access.
+</p>
+
+<p class="wikiPara">
+Furthermore, the <tt>@Admin</tt> annotation is defined with an additional qualifier: </p>
+<pre class="wikiPreformatted">@RestrictAtPhase(PhaseIdType.RESTORE_VIEW)</pre>
+
+This annotation causes the security restriction to be applied at the “Restore View” phase, rather than the default phases: “Invoke Application” and “Render Response”.  These default phases were chosen in order for application data to be present and allow access restrictions to be contextual.  The default phases also mean that the security restrictions are evaluated twice per lifecycle, as the view often changes at the end of the “Invoke Application” phase.
+
+
+<h2 class="wikiHeadline2" id="H-URLRewritingViaTtViewConfigtt"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-URLRewritingViaTtViewConfigtt">URL rewriting via <tt>@ViewConfig</tt></a></h2>
+<p class="wikiPara">
+The view config also let’s us configure URL rewriting for a view using the <tt>@UrlMapping</tt> annotation.  In the above <tt>@ViewConfig</tt>, urls like <tt>/item.jsf?item\=1</tt> gets mapped into <tt>/item/1/</tt>, courtesy of PrettyFaces and the <tt>@UrlMapping(“/item/\#{id}”)</tt> annotation, where “#{id}” tells the rewriting-engine to treat the last portion of the URL as a value in our application, what would have been the query-parameter named “id”.  By integrating the configuration of rewriting URLs alongside the rest of the view configuration, Seam Faces attempts to make this powerful technology more accessible, and a core part of JSF application development.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SettingFacesredirecttrue"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SettingFacesredirecttrue">Setting faces-redirect=true</a></h2>
+<p class="wikiPara">
+A seemingly simple annotation, <tt>@FacesRedirect</tt> is a surprisingly useful one.  When this annotation is present with a <tt>@ViewPattern</tt>, any navigation to a matching view is intercepted, and the faces-redirect attribute is activated.  In the provided example the <tt>@FacesRedirect</tt> annotation is applied once to the pattern “/*”, which applies the configuration to all views.  One could optionally override this catch all setting on a more specific pattern, or on an individual view, with the annotation <tt>@FacesRedirect(false)</tt>.  This annotation has a special place close to my heart - no more “?faces-redirect=true” peppered throughout any more applications!
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeamPersistenceViaTtViewConfigtt"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamPersistenceViaTtViewConfigtt">Seam Persistence via <tt>@ViewConfig</tt></a></h2>
+<p class="wikiPara">
+Last, but not least, there is the SeamManagedTransaction annotation that can be applied in the <tt>@ViewConfig</tt>.  This allows transactional behaviour to be defined on a per view basis.  Exploring the possibilities here will be the subject matter for a subsequent post.
+</p>
+
+<p class="wikiPara">
+The future for the <tt>@ViewConfig</tt> component of Seam Faces is bright, with many more capabilities to be added.  In addition, the <tt>@ViewConfig</tt> presented here is merely a front-end to an internal store of the view configuration data.  This opens up the possibility of providing alternate means of populating the view config data store, writing extensions to perform custom operations on view config data for your individual application, and more.  One solution being explored is to introduce child tags to the f:metadata tag, which will allow view related concerns to be defined from within the view itself.  Additionally, configuration sources like xml and database persistence could be incorporated to provide developers with more options.
+</p>
+
+<p class="wikiPara">
+Seam Faces provides a centralised, type safe way of configuring the behaviour of your JSF views.  Try the ViewConfig  out and be sure to send in your feedback.  This is still early days for the feature, and all feedback is very much appreciated!</p>
+</div>

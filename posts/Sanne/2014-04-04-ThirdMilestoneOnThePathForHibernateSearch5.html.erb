@@ -1,0 +1,73 @@
+---
+title: "Third milestone on the path for Hibernate Search 5"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+layout: blog-post
+tags: [Hibernate,Hibernate Search]
+slug: ThirdMilestoneOnThePathForHibernateSearch5
+lace: http://in.relation.to/25190.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/ThirdMilestoneOnThePathForHibernateSearch5">Third milestone on the path for Hibernate Search 5</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Version 5.0.0.Alpha3 is now <a href="http://hibernate.org/search/downloads/" target="" class="regularLink">available</a>: now integrating with Apache Lucene 4.7.1, which was released just 24 hours before.
+</p>
+
+<pre class="wikiPreformatted brush: xml">&lt;dependency&gt;
+ &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+ &lt;artifactId&gt;hibernate-search-orm&lt;/artifactId&gt;
+ &lt;version&gt;5.0.0.Alpha3&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-MoreLikeThis"><a href="/Bloggers/ThirdMilestoneOnThePathForHibernateSearch5#H-MoreLikeThis">More Like This</a></h1>
+<p class="wikiPara">
+Introduced and better described on <a href="http://in.relation.to/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries" target="" class="regularLink">our previous post</a> and in the <a href="http://docs.jboss.org/hibernate/search/5.0/reference/en-US/html_single/#search-query-querydsl" target="" class="regularLink">Query DSL chapter</a>, the new feature now also works with compressed fields and @IndexedEmbedded fields.
+</p>
+
+<h1 class="wikiHeadline1" id="H-OSGiAndClassLoaders"><a href="/Bloggers/ThirdMilestoneOnThePathForHibernateSearch5#H-OSGiAndClassLoaders">OSGi and ClassLoaders</a></h1>
+<p class="wikiPara">
+On our path to 5.0 we're aiming to a full internal refactoring of ClassLoaders handling, Service loading strategies, etc.. with the goal to be reliable in complex modular deployments, including OSGi. To reach a full OSGi compatibility some public API packages will need to change in the next version too!
+</p>
+
+<h1 class="wikiHeadline1" id="H-ManySmallerDetails"><a href="/Bloggers/ThirdMilestoneOnThePathForHibernateSearch5#H-ManySmallerDetails">Many smaller details</a></h1>
+<p class="wikiPara">
+There is a list of smaller polishing, like more reliable JGroups and Infinispan tests, a diet program for dependencies, updates to latest Hibernate ORM, JGroups and Infinispan versions.
+</p>
+
+<h1 class="wikiHeadline1" id="H-PerformanceTuning"><a href="/Bloggers/ThirdMilestoneOnThePathForHibernateSearch5#H-PerformanceTuning">Performance tuning</a></h1>
+<p class="wikiPara">
+The primary performance bottleneck I've observed in the new Lucene 4 backend is the need to tune the <tt>max_threads_state</tt> option on Lucene's <tt>IndexWriter</tt>. This option controls the level of parallelism you want to allow  to the IndexWriter. The default is a very reasonable <q>8</q>, but this is now configurable using the typical format as expressed in <a href="http://docs.jboss.org/hibernate/search/5.0/reference/en-US/html_single/#lucene-indexing-performance" target="" class="regularLink">the Lucene Tuning chapter</a>:
+</p>
+
+<pre class="wikiPreformatted">hibernate.search.​[default|&lt;indexname&gt;].​indexwriter.max_thread_states </pre>
+
+
+<h1 class="wikiHeadline1" id="H-WhatsNext"><a href="/Bloggers/ThirdMilestoneOnThePathForHibernateSearch5#H-WhatsNext">What's next?</a></h1>
+<p class="wikiPara">
+We're currently busy with OSGi tests, an easy way to extend the set of FieldBridges supported by the engine, improved handling of dynamic types and overall structure of how you define your indexed model. Also worth nothing that all of this will be integrated in the Infinispan Query engine soon.
+You can find an high level overview on our <a href="http://hibernate.org/search/roadmap/" target="" class="regularLink">Roadmap page</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-UsefulLinks"><a href="/Bloggers/ThirdMilestoneOnThePathForHibernateSearch5#H-UsefulLinks">Useful links</a></h2>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://hibernate.org/search/downloads/" target="" class="regularLink">Downloads</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/hibernate/search/5.0/reference/en-US/html_single/" target="" class="regularLink">Documentation</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://community.jboss.org/wiki/HibernateSearchMigrationGuide#jive_content_id_Hibernate_Search_500Alpha2" target="" class="regularLink">Migration guide</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Forums</a>
+</li>
+</ul>
+</div>

@@ -1,0 +1,98 @@
+---
+title: "Java Webstart enabling Hibern8IDE - no luck!"
+author: "Max Andersen"
+blogger_name: "Max"
+layout: blog-post
+tags: []
+slug: JavaWebstartEnablingHibern8IDENoLuck
+lace: http://in.relation.to/2092.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JavaWebstartEnablingHibern8IDENoLuck">Java Webstart enabling Hibern8IDE - no luck!</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+Recently I have been messing with adding custom class loading to Hibern8IDE,
+so it can load model and database driver classes at dynamically.
+</p>
+
+<p class="wikiPara">
+This allows us to run Hibern8IDE standalone instead of requiring users
+to run it from their actual project (which of course still is possible ;)
+</p>
+
+<p class="wikiPara">
+The 'trick' is as follows:
+</p>
+
+<pre class="wikiPreformatted">
+Thread thread = Thread.currentThread();
+ClassLoader prevCl = thread.getContextClassLoader();
+   try {
+       List urls = ... // a list of paths/zips/jars for the classloader
+       if(urls.size()&gt;0) {
+            URLClassLoader _newLoader = new URLClassLoader((URL[]) urls.toArray(new URL[0]), thread.getContextClassLoader());
+            thread.setContextClassLoader(_newLoader);
+            }                   
+        // convince DriverManager that you can use our specified driver!
+        String driverClass = props.getProperty("hibernate.connection.driver_class");
+        if(driverClass!=null) {
+        try {
+            Class driverClazz = ReflectHelper.classForName(driverClass);
+            DriverManager.registerDriver(new FakeDelegatingDriver((Driver) driverClazz.newInstance()));
+            } catch (... e1) {               
+            }
+        }
+        configuration = new Configuration();
+        configuration = configuration.setProperties(props);
+        configuration = configuration.configure(configfile);
+        
+        Iterator hbms = mappings.iterator();
+        
+        while (hbms.hasNext()) {
+            hbm = (File) hbms.next();
+            configuration = configuration.addFile(hbm.toString());
+         }
+         
+         initialize(); // build sessionfactory etc.
+        } catch (... e) {
+       } finally {
+        thread.setContextClassLoader(prevCl);
+       }
+</pre>
+
+
+<p class="wikiPara">
+The code does two things install Hibern8IDE custom classloader while loading the mappings and jdbc drivers PLUS 
+install a FakeDelegatingDriver to convince the stupid java.sql.DriverManager that it is ok to load jdbc drivers
+from other places than the system classloader.
+</p>
+
+<p class="wikiPara">
+And this works!, but not when trying to Java Webstart enabling Hibern8IDE :(
+</p>
+
+<p class="wikiPara">
+It seems like Java Webstart is very strict about it's permission policy even though a <tt>&lt;all-permission/&gt;</tt> tag
+are in the JNLP file :(
+</p>
+
+<p class="wikiPara">
+The loading of model classes and drivers works smoothly, but as soon as the driver wants to connect to the database a
+security exception is throwing saying the application is not allowed to connect to a port on the database machine :(
+</p>
+
+<p class="wikiPara">
+So, for now Hibern8IDE is available in a standalone version, but unfortunately not via Java Webstart because of it's
+strictness!
+</p>
+
+<p class="wikiPara">
+Any bright ideas are welcome!
+</p>
+</div>

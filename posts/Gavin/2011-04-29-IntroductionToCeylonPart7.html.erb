@@ -1,0 +1,327 @@
+---
+title: "Introduction to Ceylon Part 7"
+author: "Gavin King"
+blogger_name: "Gavin"
+layout: blog-post
+tags: [Ceylon,Introduction to Ceylon]
+slug: IntroductionToCeylonPart7
+lace: http://in.relation.to/19678.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/IntroductionToCeylonPart7">Introduction to Ceylon Part 7</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+<i class="wikiEmphasis">This is the seventh installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
+</p>
+
+<h1 class="wikiHeadline1" id="H-AttributesAndLocals"><a href="/Bloggers/IntroductionToCeylonPart7#H-AttributesAndLocals">Attributes and locals</a></h1>
+
+<p class="wikiPara">
+In Java, a field of a class is quite easily distinguished from a local constant or variable of a method or constructor. Ceylon doesn't really make this distinction very strongly. An attribute is really just a local that happens to be captured by some <tt>shared</tt> declaration.
+</p>
+
+<p class="wikiPara">
+Here, <tt>count</tt> is a local variable of the initializer of <tt>Counter</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class Counter() {
+    variable Natural count := 0;
+}</pre>
+
+
+<p class="wikiPara">
+But in the following two examples, <tt>count</tt> is an attribute:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class Counter() {
+    shared variable Natural count := 0;
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">class Counter() {
+    variable Natural count := 0;
+    shared Natural inc() {
+        return ++count;
+    }
+}</pre>
+
+
+<p class="wikiPara">
+This might seem a bit strange at first, but it's really just how closure works. The same behavior applies to locals inside a method. Methods can't declare <tt>shared</tt> members, but they can return an object that captures a local:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">interface Counter {
+    shared formal Natural inc();
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">Counter createCounter() {
+    variable Natural count := 0;
+    object counter satisfies Counter {
+        shared actual Natural inc() {
+            return ++count;
+        }
+    }
+    return counter;
+}</pre>
+
+
+<p class="wikiPara">
+Even though we'll continue to use the words <q>local</q> and <q>attribute</q>, keep in mind that there's no really strong distinction between the terms. Any named value might be captured by some other declaration in the same containing scope. (I'm still searching for a really good word to collectively describe attributes and locals.)
+</p>
+
+<h1 class="wikiHeadline1" id="H-Variables"><a href="/Bloggers/IntroductionToCeylonPart7#H-Variables">Variables</a></h1>
+
+<p class="wikiPara">
+Ceylon encourages you to use immutable attributes as much as possible. An immutable attribute has its value specified when the object is initialized, and is never reassigned.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class Reference&lt;Value&gt;(Value x) {
+    shared Value value = x;
+}</pre>
+
+
+<p class="wikiPara">
+If we want to be able to assign a value to a simple attribute or local we need to annotate it <tt>variable</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">class Reference&lt;Value&gt;(Value x) {
+    shared variable Value value := x;
+}</pre>
+
+
+<p class="wikiPara">
+Notice the use of <tt>:=</tt> instead of <tt>=</tt> here. This is important! In Ceylon, specification of an immutable value is done using <tt>=</tt>. Assignment to a variable attribute or local is considered a different kind of thing, always performed using the <tt>:=</tt> operator.
+</p>
+
+<p class="wikiPara">
+The <tt>=</tt> specifier is <i class="wikiEmphasis">not</i> an operator, and can never appear inside an expression. It's just a punctuation character. The following code is not only wrong, but even fails to <i class="wikiEmphasis">parse</i>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">if (x=true) {   //compile error
+    ...
+}</pre>
+
+
+<h1 class="wikiHeadline1" id="H-Setters"><a href="/Bloggers/IntroductionToCeylonPart7#H-Setters">Setters</a></h1>
+
+<p class="wikiPara">
+If we want to make an attribute with a getter mutable, we need to define a matching <i class="wikiEmphasis">setter</i>. Usually this is only useful if you have some other internal attribute you're trying to set the value of indirectly.
+</p>
+
+<p class="wikiPara">
+Suppose our class has the following simple attributes, intended for internal consumption only, so un-<tt>shared</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">variable String? firstName := null;
+variable String? lastName := null;</pre>
+
+
+<p class="wikiPara">
+(Remember, Ceylon <i class="wikiEmphasis">never</i> automatically initializes attributes to <tt>null</tt>.)
+</p>
+
+<p class="wikiPara">
+Then we can abstract the simple attribute using a second attribute defined as a getter/setter pair:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared String fullName {
+    return " ".join(coalesce(firstName,lastName));
+}
+
+shared assign fullName {
+    Iterator&lt;String&gt; tokens = fullName.tokens();
+    firstName := tokens.head;
+    lastName := tokens.rest.head;
+}</pre>
+
+
+<p class="wikiPara">
+A setter is identified by the keyword <tt>assign</tt> in place of a type declaration. (The type of the matching getter determines the type of the attribute.)
+</p>
+
+<p class="wikiPara">
+Yes, this is a lot like a Java get/set method pair, though the syntax is significantly streamlined. But since Ceylon attributes are polymorphic, and since you can redefine a simple attribute as a getter or getter/setter pair without affecting clients that call the attribute, you don't need to write getters and setters unless you're doing something special with the value you're getting or setting.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ControlStructures"><a href="/Bloggers/IntroductionToCeylonPart7#H-ControlStructures">Control structures</a></h1>
+
+<p class="wikiPara">
+Ceylon has five built-in control structures. There's nothing much new here for Java or C# developers, so I'll just give a few quick examples without much additional commentary. However, one thing to be aware of is that Ceylon doesn't allow you to omit the braces in a control structure. The following doesn't parse:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">if (x&gt;100) bigNumber();</pre>
+
+
+<p class="wikiPara">
+You are required to write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">if (x&gt;100) { bigNumber(); }</pre>
+
+
+<p class="wikiPara">
+OK, so here's the examples. The <tt>if/else</tt> statement is totally traditional:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">if (x&gt;100)) {
+    bigNumber(x);
+}
+else if (x&gt;1000) {
+    reallyBigNumber(x);
+}
+else {
+    littleNumber();
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>switch/case</tt> statement eliminates C's much-criticized <q>fall through</q> behavior and irregular syntax:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">switch (x&lt;=&gt;100)
+case (smaller) { littleNumber(); }
+case (equal) { oneHundred(); }
+case (larger) { bigNumber(); }</pre>
+
+
+<p class="wikiPara">
+The <tt>for</tt> loop has an optional <tt>fail</tt> block, which is executed when the loop completes normally, rather than via a <tt>return</tt> or <tt>break</tt> statement. There's no C-style <tt>for</tt>.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Boolean minors;
+for (Person p in people) {
+    if (p.age&lt;18) {
+        minors = true;
+        break;
+    }
+}
+fail {
+    minors = false;
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>while</tt> and <tt>do/while</tt> loops are traditional.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">variable local it = names.iterator();
+while (exists String name = it.head) {
+    writeLine(name);
+    it:=it.tail;
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>try/catch/finally</tt> statement works like Java's:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">try {
+    message.send();
+}
+catch (ConnectionException|MessageException e) {
+    tx.setRollbackOnly();
+}</pre>
+
+
+<p class="wikiPara">
+And <tt>try</tt> supports a <q>resource</q> expression similar to Java 7.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">try (Transaction()) {
+    try (Session s = Session()) {
+        s.persist(person);
+    }
+}</pre>
+
+
+<h1 class="wikiHeadline1" id="H-SequencedParameters"><a href="/Bloggers/IntroductionToCeylonPart7#H-SequencedParameters">Sequenced parameters</a></h1>
+
+<p class="wikiPara">
+A <i class="wikiEmphasis">sequenced parameter</i> of a method or class is declared using an ellipsis. There may be only one sequenced parameter for a method or class, and it must be the <i class="wikiEmphasis">last</i> parameter.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void print(String... strings) { ... }</pre>
+
+
+<p class="wikiPara">
+Inside the method body, the parameter <tt>strings</tt> has type <tt>String[]</tt>.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void print(String... strings) {
+    for (String string in strings) {
+        write(string);
+    }
+    writeLine();
+}</pre>
+
+
+<p class="wikiPara">
+A slightly more sophisticated example is the <tt>coalesce()</tt> method we saw above. <tt>coalesce()</tt> accepts <tt>X?[]</tt> and eliminates <tt>null</tt>s, returning <tt>X[]</tt>, for any type <tt>X</tt>. Its signature is:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared Value[] coalesce&lt;Value&gt;(Value?... sequence) { ... }</pre>
+
+
+<p class="wikiPara">
+Sequenced parameters turn out to be especially interesting when used in named argument lists for defining user interfaces or structured data.
+</p>
+
+<h1 class="wikiHeadline1" id="H-PackagesAndImports"><a href="/Bloggers/IntroductionToCeylonPart7#H-PackagesAndImports">Packages and imports</a></h1>
+
+<p class="wikiPara">
+There's no special <tt>package</tt> statement in Ceylon. The compiler determines the package and module to which a toplevel program element belongs by the location of the source file in which it is declared. A class named <tt>Hello</tt> in the package <tt>org.jboss.hello</tt> must be defined in the file <tt>org/jboss/hello/Hello.ceylon</tt>.
+</p>
+
+<p class="wikiPara">
+When a source file in one package refers to a toplevel program element in another package, it must explicitly import that program element. Ceylon, unlike Java, does not support the use of qualified names within the source file. We can't write <tt>org.jboss.hello.Hello</tt> in Ceylon.
+</p>
+
+<p class="wikiPara">
+The syntax of the <tt>import</tt> statement is slightly different to Java. To import a program element, we write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">import org.jboss.hello { Hello }</pre>
+
+
+<p class="wikiPara">
+To import several program elements from the same package, we write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">import org.jboss.hello { Hello, defaultHello, PersonalizedHello }</pre>
+
+
+<p class="wikiPara">
+To import all toplevel program elements of a package, we write:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">import org.jboss.hello { ... }</pre>
+
+
+<p class="wikiPara">
+To resolve a name conflict, we can rename an imported declaration:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">import org.jboss.hello { local Hi = Hello, ... }</pre>
+
+
+<p class="wikiPara">
+We think renaming is a much cleaner solution than the use of qualified names.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart7#H-TheresMore">There's more...</a></h1>
+
+<p class="wikiPara">
+Now that we've mopped up a few <q>missing</q> topics, we're ready to look at first class functions in <a href="/Bloggers/IntroductionToCeylonPart8" target="" class="regularLink">Part 8</a>, and the declarative <q>object-tree-builder</q> syntax for defining user interfaces and structured data in <a href="/Bloggers/IntroductionToCeylonPart9" target="" class="regularLink">Part 9</a>.
+</p>
+
+<p class="wikiPara">
+If you're interested, the Ceylon module system is <a href="/Bloggers/ModulesInCeylon" target="" class="regularLink">described briefly here</a>.
+</p>
+</div>

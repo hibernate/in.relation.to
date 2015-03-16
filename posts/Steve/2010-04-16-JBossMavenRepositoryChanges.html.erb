@@ -1,0 +1,46 @@
+---
+title: "JBoss Maven repository changes"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+layout: blog-post
+tags: []
+slug: JBossMavenRepositoryChanges
+lace: http://in.relation.to/15192.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+<p class="wikiPara">
+
+</p>
+<div id="j_id481">
+                    <h1 class="documentTitle">
+<a href="/Bloggers/JBossMavenRepositoryChanges">JBoss Maven repository changes</a>
+                    </h1>
+</div>
+<p class="wikiPara">
+For those who were maybe not aware...
+</p>
+
+<p class="wikiPara">
+As of April 19, 2010, JBoss will be switching over its Maven repo infrastructure to utilize a repository manager (<a href="http://nexus.sonatype.org/" target="" class="regularLink">Nexus</a>).  Details of the change can be found <a href="http://community.jboss.org/wiki/MavenRepository-FAQ" target="" class="regularLink">here</a>.  Additionally there is a wiki page describing the new set up from the perspectives of both <a href="http://community.jboss.org/wiki/MavenGettingStarted-Users" target="" class="regularLink">users</a> and <a href="http://community.jboss.org/wiki/MavenGettingStarted-Developers" target="" class="regularLink">developers</a>.
+</p>
+
+<p class="wikiPara">
+What does this mean for Hibernate user and developers specifically?
+</p>
+
+<p class="wikiPara">
+For user, not much really.  You can continue to use the same <i class="wikiEmphasis">release repository</i> URL (<a href="http://repository.jboss.com/maven2" target="" class="regularLink">http://repository.jboss.com/maven2</a>) as we have been told it will remain active <q>indefinitely</q>.  For the <i class="wikiEmphasis">snapshot repository</i> the story is a little bit different as the current <i class="wikiEmphasis">snapshot repository</i> URL (<a href="http://snapshots.jboss.org/maven2" target="" class="regularLink">http://snapshots.jboss.org/maven2</a>) will remain valid only for <q>a few weeks</q>.  However, one gotcha you should be aware of is that the older <i class="wikiEmphasis">release repository</i> URL will still contain <q>the (sometimes bad) copies of stuff from central</q>.  Using the newer URLs  alleviates that.
+</p>
+
+<p class="wikiPara">
+For developers, well it means you have a few options:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> You could use the JBoss repository as a <q>proxy</q> for many other repositories.  Usually though this means adding a <q>mirrorOf</q> entry in your settings.xml which in turn means that the JBoss repo (with all its defined proxies) will be used for all of your builds.  <a href="http://community.jboss.org/wiki/MavenRepositoryNexusConfiguration" target="" class="regularLink">http://community.jboss.org/wiki/MavenRepositoryNexusConfiguration</a> lists all the repositories currently proxied.</li>
+<li class="wikiUnorderedListItem"> You could also just use the <i class="wikiEmphasis">user snapshot repository URL</i> and explicitly list any other repositories you want to use.</li>
+<li class="wikiUnorderedListItem"> Yet another option that is just as valid for users is to set up a repository manager of your own locally and use it to proxy all the repositories you use.  I have used this approach myself and it works out pretty well; I used <a href="http://www.jfrog.org/" target="" class="regularLink">Artifactory</a> instead of <a href="http://nexus.sonatype.org/" target="" class="regularLink">Nexus</a> however so I cannot speak to Nexus' capabilities or usage.  If you are interested in this approach, the take a look at the following guides: <a href="http://wiki.jfrog.org/confluence/display/RTF/Configuring+Artifacts+Resolution" target="" class="regularLink">Artifactory Guide</a>, <a href="http://www.sonatype.com/books/nexus-book/reference/maven-sect-single-group.html" target="" class="regularLink">Nexus Guide</a>
+</li>
+</ul>
+
+</div>
