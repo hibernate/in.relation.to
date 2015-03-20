@@ -1,0 +1,131 @@
+---
+title: "Hibernate OGM: Error handling on non-transactional NoSQL stores"
+author: "Gunnar Morling"
+creation_date: "17-03-2015"
+blogger_name: "Gunnar"
+layout: blog-post
+tags: [Hibernate,Hibernate OGM]
+slug: HibernateOGMErrorHandlingOnNontransactionalNoSQLStores
+lace: http://in.relation.to/42590.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+One of the fundamental principles of Hibernate/JPA is that any writes done through the <tt>Session</tt>/<tt>EntityManager</tt> APIs are collected in the <i class="wikiEmphasis">persistence context</i> and are only written to the database upon transaction commit. If needed, you can enforce the flushing of changes by explicitly invoking the <tt>flush()</tt> method. Also Hibernate may trigger a flush automatically, e.g. prior to executing a query. This strategy allows to perform many optimizations, e.g. only persisting the final state of an entity changed several times, make use of batched inserts and others.
+</p>
+
+<p class="wikiPara">
+Hibernate OGM follows this approach and uses transaction boundaries for demarcating units of work and triggering writes to the datastore. Naturally, this works just fine on transactional NoSQL stores such as Infinispan or Neo4j, but it poses some challenges on stores without full transactional semantics.
+</p>
+
+<p class="wikiPara">
+For instance consider a method of a stateless EJB (which automatically runs within a container-managed transaction) which inserts three entities. If an error occurs when inserting the last entity, the other two will already have been written. When using a non-transactional datastore, there is no way to rollback these already applied changes. Depending on the specific use case, this may be acceptable; But in other cases it is desirable to take some action, for example retrying the failed insertion or performing compensating writes for the succeeded insertions, effectively undoing them.
+</p>
+
+<p class="wikiPara">
+This is where our new <a href="http://docs.jboss.org/hibernate/ogm/4.2/reference/en-US/html_single/#ogm-api-error-handler" target="" class="regularLink">error handling API</a> comes in. It allows you to get notified upon failed datastore operations or transaction rollback attempts, providing you with the executed and failed operation(s). This e.g. enables you to:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> log all applied operations</li>
+<li class="wikiUnorderedListItem"> retry a failed operation (e.g. after timeouts)</li>
+<li class="wikiUnorderedListItem"> make an attempt to compensate applied changes (by executing an inverse operation)</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-AnExampleErrorHandler"><a href="/Bloggers/HibernateOGMErrorHandlingOnNontransactionalNoSQLStores#H-AnExampleErrorHandler">An example error handler</a></h3>
+
+<p class="wikiPara">
+Let’s take a look at an example:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">public class ExampleErrorHandler implements ErrorHandler {
+
+    @Override
+    public void onRollback(RollbackContext context) {
+        // write all applied operations to a log file
+        for ( GridDialectOperation appliedOperation : context.getAppliedGridDialectOperations() ) {
+            switch ( appliedOperation.getType() ) {
+                case INSERT_TUPLE:
+                    EntityKeyMetadata entityKeyMetadata = appliedOperation.as( InsertTuple.class ).getEntityKeyMetadata();
+                    Tuple tuple = appliedOperation.as( InsertTuple.class ).getTuple();
+
+                    // write EKM and tuple to log file...
+                    break;
+                case REMOVE_TUPLE:
+                    // ...
+                    break;
+                case ...
+                    // ...
+                    break;
+            }
+        }
+    }
+
+    @Override
+    public ErrorHandlingStrategy onFailedGridDialectOperation(FailedGridDialectOperationContext context) {
+        // Ignore this exception and continue
+        if ( context.getException() instanceof TupleAlreadyExistsException ) {
+            GridDialectOperation failedOperation = context.getFailedOperation();
+            // write to log ...
+
+            return ErrorHandlingStrategy.CONTINUE;
+        }
+        // But abort on all others
+        else {
+            return ErrorHandlingStrategy.ABORT;
+        }
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+The <tt>onRollback()</tt> method - which is called when the transaction (or unit of work) is rolled back (either by the user or by the container) - shows how to iterate over all datastore operations applied prior to the rollback attempt, examine their specific type and e.g. write them to a log file.
+</p>
+
+<p class="wikiPara">
+The <tt>onFailedGridDialectOperation()</tt> method is called for each specific datastore operation failing. It lets you decide whether to continue - ignoring the failure - or abort the operation. If <tt>ABORT</tt> is returned, the causing exception will be re-thrown, eventually causing the current transaction to be rolled back. If <tt>CONTINUE</tt> is returned, that exception will be ignored, causing the current transaction to continue.
+</p>
+
+<p class="wikiPara">
+The decision whether to abort or continue can be based on the specific exception type or on the grid dialect operation which caused the failure. In the example all exceptions of type <tt>TupleAlreadyExistsException</tt> are ignored (meaning we don't care about duplicate records being inserted into the datastore), whereas all other exceptions cause the current unit of work to be aborted. You also could react to datastore-specific exceptions such as MongoDB’s <tt>MongoTimeoutException</tt>, if needed.
+</p>
+
+<p class="wikiPara">
+Having created the <tt>ErrorHandler</tt> implementation, it needs to be registered with Hibernate OGM. You can do so for instance using a persistence unit property in <i class="wikiEmphasis">META-INF/persistence.xml</i>:
+</p>
+
+<pre class="wikiPreformatted brush: xml; gutter: false;">&lt;property name="hibernate.ogm.error_handler" value="com.example.ExampleErrorHandler"/&gt;
+</pre>
+
+<h3 class="wikiHeadline3" id="H-FeedbackNeeded"><a href="/Bloggers/HibernateOGMErrorHandlingOnNontransactionalNoSQLStores#H-FeedbackNeeded">Feedback needed!</a></h3>
+
+<p class="wikiPara">
+In its current form the API lays the ground for manually performing tasks such as retrying, logging and similar. But we envision a more automated approach in future versions, e.g. for automatic retries of failed operations.
+</p>
+
+<p class="wikiPara">
+Of course this API can and will not bring transactional guarantees to datastores which don't support them natively. If you find yourself frequently in a situation where you wish for transactional "all or nothing" semantics, you might consider to move to a datastore which actually provides this functionality. But you also may look into more suitable mapping approaches. For instance embeddables and element collections are a great way for ensuring atomicity of an entity and dependent structures on document stores such as MongoDB or CouchDB, as they will be mapped to a single, hierarchically structured document which can updated with a single datastore call.
+</p>
+
+<p class="wikiPara">
+At this point, the API is considered experimental and will evolve in future releases. For this, your input is very important to us! Let us know what you would like to do with such an API and what functionality should be added. Just tweet to <a href="https://twitter.com/hibernate" target="" class="regularLink">@Hibernate</a> or send a mail to our <a href="https://lists.jboss.org/mailman/listinfo/hibernate-dev" target="" class="regularLink">development list</a>. If you like, you also may add comments to the JIRA issues addressing further development of the API: <a href="https://hibernate.atlassian.net/browse/OGM-775" target="" class="regularLink">OGM-775</a> ("Introduce RETRY error handling strategy"), <a href="https://hibernate.atlassian.net/browse/OGM-776" target="" class="regularLink">OGM-776</a> ("Provide means for executing compensating actions") and <a href="https://hibernate.atlassian.net/browse/OGM-777" target="" class="regularLink">OGM-777</a> ("Expose more context information via error handler contexts").
+</p>
+
+<p class="wikiPara">
+Any feedback is greatly appreciated!</p>
+</div>
+<div id="disqus_thread"></div><script type="text/javascript">
+    var disqus_shortname = 'otnoitalerni';
+    var disqus_identifier = 'HibernateOGMErrorHandlingOnNontransactionalNoSQLStores';
+    var disqus_title = 'Hibernate OGM: Error handling on non-transactional NoSQL stores';
+    var disqus_url = 'http://in.relation.to/42590.lace';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>

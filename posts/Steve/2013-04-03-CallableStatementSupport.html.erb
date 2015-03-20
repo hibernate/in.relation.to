@@ -1,6 +1,7 @@
 ---
 title: "Callable statement support"
 author: "Steve Ebersole"
+creation_date: "03-04-2013"
 blogger_name: "Steve"
 layout: blog-post
 tags: [feature,jpa21,orm43]
@@ -8,14 +9,8 @@ slug: CallableStatementSupport
 lace: http://in.relation.to/24103.lace
 ---
 <div id="documentDisplay" class="documentDisplay">
-<p class="wikiPara">
 
-</p>
-<div id="j_id481">
-                    <h1 class="documentTitle">
-<a href="/Bloggers/CallableStatementSupport">Callable statement support</a>
-                    </h1>
-</div>
+
 <p class="wikiPara">
 The soon-to-be final JPA 2.1 specification adds standardized support for dealing with JDBC CallableStatements (stored procedure and function calls).  Arun Gupta has a decent summary of the initial JPA 2.1 features, including Stored procedure support, at <a href="https://blogs.oracle.com/arungupta/entry/jpa_2_1_early_draft" target="" class="regularLink">https://blogs.oracle.com/arungupta/entry/jpa_2_1_early_draft</a>.  Standardized here means both across providers as well as across database vendors.  Pretty sweet.  As much as I liked the idea of standarized support for handling callable statements, I was not overly thrilled with certain aspects of the proposed JPA StoredProcedureQuery API.  My worries were mainly around how the outputs were accessed, especially when multiple results are expected.  Let's first look at a simple example of a procedure returning a result:
 </p>
@@ -112,3 +107,16 @@ while ( callResult.hasMoreReturns() ) {
 
 
 </div>
+<div id="disqus_thread"></div><script type="text/javascript">
+    var disqus_shortname = 'otnoitalerni';
+    var disqus_identifier = 'CallableStatementSupport';
+    var disqus_title = 'Callable statement support';
+    var disqus_url = 'http://in.relation.to/24103.lace';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>

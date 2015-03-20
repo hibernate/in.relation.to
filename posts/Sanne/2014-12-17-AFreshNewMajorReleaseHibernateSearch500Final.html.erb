@@ -1,0 +1,202 @@
+---
+title: "A fresh new major release: Hibernate Search 5.0.0.Final"
+author: "Sanne Grinovero"
+creation_date: "17-12-2014"
+blogger_name: "Sanne"
+layout: blog-post
+tags: [Hibernate,Hibernate Search,News]
+slug: AFreshNewMajorReleaseHibernateSearch500Final
+lace: http://in.relation.to/41991.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+After 14 months of hard work, please welcome Hibernate Search 5 !
+</p>
+
+<p class="wikiPara">
+Let's have a look at the highlights of why you should be eager to upgrade:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Upgraded to Lucene 4.10</li>
+<li class="wikiUnorderedListItem"> Lots of internal improvements, especially performance</li>
+<li class="wikiUnorderedListItem"> Thanks to Hibernate Search abstraction, most of your code should be upgradable easily despite the massive changes in Lucene APIs</li>
+<li class="wikiUnorderedListItem"> Numeric properties now indexed as <tt>NumericField</tt> by default</li>
+<li class="wikiUnorderedListItem"> Requires JDK 7</li>
+<li class="wikiUnorderedListItem"> Compatible with Hibernate ORM 4.3 and WildFly 8.x</li>
+<li class="wikiUnorderedListItem"> Stable</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-HowToGetIt"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-HowToGetIt">How to get it</a></h2>
+
+<p class="wikiPara">
+Everything you need is available on Hibernate Search's <a href="http://hibernate.org/search/" target="" class="regularLink">web site</a>.
+Download the <a href="https://sourceforge.net/projects/hibernate/files/hibernate-search/5.0.0.Final" target="" class="regularLink">full distribution from here</a>.
+And don't hesitate to reach us in our <a href="https://forums.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forums</a>.
+</p>
+
+<p class="wikiPara">
+If you are new to Hibernate Search, best is to start with our <a href="http://hibernate.org/search/documentation/getting-started/" target="" class="regularLink">getting started guide</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-FeatureList"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-FeatureList">Feature list</a></h2>
+
+<p class="wikiPara">
+Let's dive into the feature list.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Lucene410"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-Lucene410">Lucene 4.10</a></h3>
+
+<p class="wikiPara">
+Hibernate Search 4 has been stuck with the quite outdated 3.6.x version of Apache Lucene, while the Lucene 4 series is introducing lots of improvements. Lucene has now reached version 4.10.3 and is considered stable, reliable and significantly more efficient than previous versions; you can now benefit from all these improvements.
+Some APIs changed, you might need to make some adjustments to your code such as Analyzer class names, but generally if you were using the Hibernate Search API, the most tricky changes of Lucene are encapsulated and won't affect your code directly.
+</p>
+
+<h3 class="wikiHeadline3" id="H-WhyQversion50q"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-WhyQversion50q">Why <q>version 5.0</q></a></h3>
+
+<p class="wikiPara">
+The major number was increased because the Lucene upgrade is a significant change, and because it forced us to break our API compatibility promise which we apply on minor versions.
+Don't assume that this will require Hibernate ORM at version 5 too: it still depends on Hibernate ORM versions 4.3.x (as did Hibernate Search 4.5) and is still compatible with WildFly 8, and we expect it will be compatible with WildFly 9 as well.
+It is possible that Hibernate Search 5 will be compatible with ORM version 5; we'll certainly aim for that, but cannot guarantee it.
+</p>
+
+<p class="wikiPara">
+So if you have an application using Hibernate ORM 4.3.x and Hibernate Search 4.5.x, it should be simple to upgrade as you won't have to upgrade ORM and can focus on changes needed for Search and Lucene only.
+</p>
+
+
+<h3 class="wikiHeadline3" id="H-IndexingPerformance"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-IndexingPerformance">Indexing Performance</a></h3>
+
+<p class="wikiPara">
+The indexing engine has been revisited, providing great performance enhancements and also simplifying configuration: you no longer need to configure a number of backend workers.
+</p>
+
+<p class="wikiPara">
+Both asynchronous indexing and synchronous indexing have been redesigned.
+</p>
+
+<p class="wikiPara">
+For the asynchronous indexing backend you now have a per-index <i class="wikiEmphasis">index_flush_interval</i> property which you can use to limit the time between your updates committed on the database and the related index commit.
+</p>
+
+<p class="wikiPara">
+The synchronous backend is now able to merge write requests from multiple parallel transactions so to provide both the benefits of batched writes on the index while still having synchronous updates.
+This new model allows to have performance similar to what was previously only possible when selecting the NRT backend, but doesn't have the drawbacks such as not being compatible with the Infinispan Directory.
+</p>
+
+<h3 class="wikiHeadline3" id="H-OSGiApacheKarafJBossFUSE"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-OSGiApacheKarafJBossFUSE">OSGi, Apache Karaf, JBoss FUSE</a></h3>
+
+<p class="wikiPara">
+The project code and build has been refactored to produce nice OSGi compatible libraries. We run integration tests with Apache Karaf so our artefacts should be safe to consume via JBoss FUSE. The Lucene jars are still a bit troublesome, but if you have any problem with it please let us know we might be able to find a solution.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JDK78And9Compatibility"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-JDK78And9Compatibility">JDK 7, 8 and 9 compatibility</a></h3>
+
+<p class="wikiPara">
+Hibernate Search 5 now requires a Java 7 runtime, but we also test regularly with Java 8 and previews of Java 9.
+</p>
+
+<h3 class="wikiHeadline3" id="H-AutomaticBridgeDiscoveryForPropertyConversion"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-AutomaticBridgeDiscoveryForPropertyConversion">Automatic bridge discovery for property conversion</a></h3>
+
+<p class="wikiPara">
+For those developers defining custom domain types, it's now possible to automatically bind a given Java type to a FieldBridge. You won't have to copy/paste those @FieldBridge annotations all over your model.
+This feature is explained in <a href="http://docs.jboss.org/hibernate/search/5.0/reference/en-US/html_single/#_bridgeprovider_associate_a_bridge_to_a_given_return_type" target="" class="regularLink">the BridgeProvider section of the documentation</a>. You could use it for example to contribute the missing converters for Java 8 Date/Time types.
+</p>
+
+<h3 class="wikiHeadline3" id="H-MoreLikeThisQueries"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-MoreLikeThisQueries">MoreLikeThis queries</a></h3>
+
+<p class="wikiPara">
+Using the new MoreLikeThis query capabilities you don't have to target specific fields but can provide an instance of an indexed object. This model is also known as <q>query by example</q> and will trigger a similarity query matching all fields (or a subset of your choice).
+A full exaxmple can be seen on <a href="http://in.relation.to/Bloggers/SecondMilestoneTowardsHibernateSearch5IntroducingMoreLikeThisQueries" target="" class="regularLink">this previous blog post</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-DroppedDependencyToApacheSolr"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-DroppedDependencyToApacheSolr">Dropped dependency to Apache Solr</a></h3>
+
+<p class="wikiPara">
+Until this version Hibernate Search depended on Apache Lucene for most of the work, and also on Lucene's sister project Apache Solr to provide a richer set of analyzers. Since the Lucene project incorporated this functionality from Solr, there is no longer any need to depend on Solr artifacts.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ImprovedModularityCleanWildFlyIntegration"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-ImprovedModularityCleanWildFlyIntegration">Improved modularity: clean WildFly integration</a></h3>
+
+<p class="wikiPara">
+With requirements such as OSGi support, other projects like <a href="http://capedwarf.org/" target="" class="regularLink">CapeDwarf</a> and <a href="http://infinispan.org/" target="" class="regularLink">Infinispan</a> integrating Hibernate Search (but excluding dependencies to <a href="http://hibernate.org/orm/" target="" class="regularLink">Hibernate ORM</a>), advanced needs for the <a href="http://hibernate.org/ogm" target="" class="regularLink">Hibernate OGM</a> project our integration API and modularity was extensively stretched and tested, resulting in lots of improvements which you might not directly notice, but will make it much easier to avoid dependency conflicts with any other library you might use, or integrate nicely in your favorite container / framework.
+</p>
+
+<p class="wikiPara">
+One example is the new structure of the modules we provide for easy WildFly integration: highly encapsulated, and significantly less dependencies than previous versions.
+</p>
+
+<p class="wikiPara">
+For example the JGroups backend can use a JGroups version of your choice, and it doesn't need to match the JGroups version of Infinispan even if Hibernate Search is using Infinispan as well (which depends on its own JGroups version); this will not be a problem, and JGroups wouldn't even be exposed to your application so in theory you could be using a third different version of the clustering library in your app directly.
+In practice you would probably want to keep the versions aligned, but if you prefer otherwise it won't be a problem.
+</p>
+
+<h3 class="wikiHeadline3" id="H-NumericFields"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-NumericFields">Numeric Fields</a></h3>
+
+<p class="wikiPara">
+Any numeric property, including Calendar and Date types, are now by default indexed as a NumericField.
+A NumericField is more efficient to perform range queries, so we think this is what you should be using in most cases. Of course it's still possible to explicitly annotate the property to revert to the old behaviour: this is just a change in the defaults.
+</p>
+
+<p class="wikiPara">
+Please keep this change in mind when running queries, as you'll now need to query these as a NumericField. If you use our Query builder DSL this is going to be correct transparently, but if you use the Lucene native APIs to create queries the results won't match and you won't get any kind of warning.
+</p>
+
+<h2 class="wikiHeadline2" id="H-MigrationGuide"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-MigrationGuide">Migration Guide</a></h2>
+
+<p class="wikiPara">
+We normally keep track of any API change in our <a href="https://developer.jboss.org/wiki/HibernateSearchMigrationGuide" target="" class="regularLink">wiki's migration guide</a>; that's the right place to look for API / compatibility changes between any specific version.
+</p>
+
+<p class="wikiPara">
+For a summary of the changes for people jumping from version 4.x to 5.x, we created a new <a href="http://hibernate.org/search/documentation/migrate/5.0/" target="" class="regularLink">dedicated Migration page on the website</a> which you can find from the <a href="http://hibernate.org/search/documentation/" target="" class="regularLink">Documentation</a> page.
+</p>
+
+<h2 class="wikiHeadline2" id="H-IndexMigration"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-IndexMigration">Index Migration</a></h2>
+
+<p class="wikiPara">
+Technically it is possible that this latest version of Lucene could read your existing indexes, but with such a large version increase of Lucene's code, and considering the numeric mapping changes, and the many changes in the Analyzers over time, we highly recommend you replace your old indexes and use the <i class="wikiEmphasis">MassIndexer</i> to trigger a fresh rebuilt.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-WhatsNext"><a href="/Bloggers/AFreshNewMajorReleaseHibernateSearch500Final#H-WhatsNext">What's next?</a></h2>
+
+<p class="wikiPara">
+We have several interesting plans ahead, but our priority is defined by feedback. Please let us know what you'd need, or even if it works great for you it's nice for us to hear about it and what you do with it.
+You can get in touch with us with <a href="http://hibernate.org/community/" target="" class="regularLink">any of these media</a>, especially <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">the forums</a> should be a good starting point.
+</p>
+
+<p class="wikiPara">
+This is what we hope to work in the near future:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> dynamic defined models (not strictly bound to annotated classes)</li>
+<li class="wikiUnorderedListItem"> Alternatives to embedded Lucene backends: Apache Solr or ElasticSearch seem to be good candidates for this</li>
+<li class="wikiUnorderedListItem"> Support for the new Java 8 types</li>
+<li class="wikiUnorderedListItem"> Integration in WildFly 9</li>
+<li class="wikiUnorderedListItem"> Support for Forge</li>
+<li class="wikiUnorderedListItem"> Openshift / Docker / Kubernetes templates and guides</li>
+<li class="wikiUnorderedListItem"> Improve performance (Always!)</li>
+<li class="wikiUnorderedListItem"> Improved clustering functionality (master election?) on Infinispan/JGroups</li>
+<li class="wikiUnorderedListItem"> Take better advantage of the new Lucene 4 capabilities (Faceting, query-time join, etc..) Can you suggest?</li>
+</ul>
+
+<p class="wikiPara">
+This list is long, and I could easily expand. We could really user your help, especially as our small core team is not familiar with many of the other mentioned technologies: even if you don't feel like coding but are in the mood for bleeding edge testing that would be great.</p>
+</div>
+<div id="disqus_thread"></div><script type="text/javascript">
+    var disqus_shortname = 'otnoitalerni';
+    var disqus_identifier = 'AFreshNewMajorReleaseHibernateSearch500Final';
+    var disqus_title = 'A fresh new major release: Hibernate Search 5.0.0.Final';
+    var disqus_url = 'http://in.relation.to/41991.lace';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>

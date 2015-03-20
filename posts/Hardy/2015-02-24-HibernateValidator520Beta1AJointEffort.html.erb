@@ -1,0 +1,138 @@
+---
+title: "Hibernate Validator 5.2.0.Beta1 - a joint effort!"
+author: "Hardy Ferentschik"
+creation_date: "24-02-2015"
+blogger_name: "Hardy"
+layout: blog-post
+tags: [Hibernate Validator]
+slug: HibernateValidator520Beta1AJointEffort
+lace: http://in.relation.to/42554.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+We are happy to announce the release of Hibernate Validator 5.2.0.Beta1. This time a whole bunch
+of Hibernate team members (<a href="http://in.relation.to/Bloggers/Davide" target="" class="regularLink">Davide</a>,
+<a href="http://in.relation.to/Bloggers/Emmanuel" target="" class="regularLink">Emmanuel</a>, <a href="http://in.relation.to/Bloggers/Gunnar" target="" class="regularLink">Gunnar</a>,
+<a href="http://in.relation.to/Bloggers/Sanne" target="" class="regularLink">Sanne</a> and <a href="http://in.relation.to/Bloggers/Hardy" target="" class="regularLink">myself</a>)
+joined forces to make this release happen. Thanks everyone!
+</p>
+
+<p class="wikiPara">
+In total we were able to resolve <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10060&amp;version=18350" target="" class="regularLink">30</a> issues. Here are some highlights.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AbilityToProvideExternalClassLoader"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-AbilityToProvideExternalClassLoader">Ability to provide external ClassLoader</a></h2>
+
+<p class="wikiPara">
+There are several cases in which Hibernate Validator needs to load resources or classes:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">XML descriptors (<tt>META-INF/validation.xml</tt> as well as XML constraint mappings)</li>
+<li class="wikiUnorderedListItem">Classes specified by name in XML descriptors</li>
+<li class="wikiUnorderedListItem">
+<tt>ValidationMessages</tt> resource bundle</li>
+</ul>
+
+<p class="wikiPara">
+By default Hibernate Validator tries to load these resources via the current thread context
+classloader. If that’s not successful, Hibernate Validator’s own class loader will used as a
+fall-back. For cases where this strategy is not appropriate (e.g. modularized environments such as OSGi), you can now provide an external class loader during bootstrapping:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: true;">Validator validator = Validation.byProvider( HibernateValidator.class )
+    .configure()
+    .externalClassLoader( classLoader )
+    .buildValidatorFactory()
+    .getValidator();
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-HibernateValidatorFeaturesxmlForApacheKaraf"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-HibernateValidatorFeaturesxmlForApacheKaraf">Hibernate Validator features.xml for Apache Karaf</a></h2>
+
+<p class="wikiPara">
+As a side effect of the class loader improvements we were able to write some OSGi integration tests
+between <a href="http://karaf.apache.org/" target="" class="regularLink">Apache Karaf</a> and Hibernate Valdiator. The tests themselves are
+not so important, but we decided to release the required Karaf <tt>features.xml</tt> file as part of our regular
+build artifacts.
+You can view the first version of this file <a href="https://repository.jboss.org/nexus/service/local/repositories/releases/content/org/hibernate/hibernate-validator-osgi-karaf-features/5.2.0.Beta1/hibernate-validator-osgi-karaf-features-5.2.0.Beta1-features.xml" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ProgrammaticConstraintMappingViaConstraintMappingContributor"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-ProgrammaticConstraintMappingViaConstraintMappingContributor">Programmatic constraint mapping via ConstraintMappingContributor</a></h2>
+
+<p class="wikiPara">
+In Hibernate Validator you can, as a provider specific feature, <a href="https://docs.jboss.org/hibernate/validator/5.2/reference/en-US/html_single/#section-programmatic-api" target="" class="regularLink">programmatically define constraint mappings</a>. So far this feature was tied to a programmatic bootstrapping of the <tt>ValidatorFactory</tt> itself.
+However, often you are not bootstrapping the factory yourself, but work with the default factory as
+configured via <tt>META-INF/validation.xml</tt>. In these cases you can now add one or more programmatic
+constraint mappings by implementing a <tt>ConstraintMappingContributor</tt>:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: true;">public static class MyConstraintMappingContributor implements ConstraintMappingContributor {
+
+	@Override
+	public void createConstraintMappings(ConstraintMappingBuilder builder) {
+		builder.addConstraintMapping()
+			.type( Marathon.class )
+				.property( "name", METHOD )
+					.constraint( new NotNullDef() )
+				.property( "numberOfHelpers", FIELD )
+					.constraint( new MinDef().value( 1 ) );
+
+		builder.addConstraintMapping()
+			.type( Runner.class )
+				.property( "paidEntryFee", FIELD )
+					.constraint( new AssertTrueDef() );
+	}
+}
+</pre>
+
+
+<p class="wikiPara">
+In order for this <tt>ConstraintMappingContributor</tt> to get picked up by the bootstrap process,
+you then need to specify the fully-qualified class name of the contributor implementation in
+<tt>META-INF/validation.xml</tt>, using the property key <tt>hibernate.validator.constraint_mapping_contributor</tt>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ConstraintDefinitionContributorWithResourceBundles"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-ConstraintDefinitionContributorWithResourceBundles">ConstraintDefinitionContributor with resource bundles</a></h2>
+
+<p class="wikiPara">
+We introduced <tt>ConstraintDefinitionContributor</tt> already in the <a href="http://in.relation.to/34906.lace" target="" class="regularLink">Alpha1</a>
+release, but it so far only allowed
+you to contribute constraints. Default messages via a resource bundle were not covered. This has
+changed, and you can just place a <tt>ContributorValidationMessages.properties</tt> and/or its locale-specific specializations at the root your JAR. Hibernate Validator will aggregate the entries from all the bundles with this name found on the classpath.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhereDoIGetIt"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-WhereDoIGetIt">Where do I get it?</a></h2>
+
+<p class="wikiPara">
+Maven artifacts for this release are in the JBoss Maven repository
+(GAV <a href="https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate~hibernate-validator~5.2.0.Beta1~" target="" class="regularLink">org.hibernate:hibernate-validator:5.2.0.Beta1</a>) and on <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/5.2.0.Beta1" target="" class="regularLink">SourceForge</a>.
+</p>
+
+<p class="wikiPara">
+Feedback and questions are welcome via the Hibernate Validator
+<a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a> or on stackoverflow using the
+hibernate-validator <a href="http://stackoverflow.com/questions/tagged/hibernate-validator" target="" class="regularLink">tag</a>. If that is
+not enough, check out the other ways you can get in <a href="http://hibernate.org/community" target="" class="regularLink">contact</a> with us.
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+
+</div>
+<div id="disqus_thread"></div><script type="text/javascript">
+    var disqus_shortname = 'otnoitalerni';
+    var disqus_identifier = 'HibernateValidator520Beta1AJointEffort';
+    var disqus_title = 'Hibernate Validator 5.2.0.Beta1 - a joint effort!';
+    var disqus_url = 'http://in.relation.to/42554.lace';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>

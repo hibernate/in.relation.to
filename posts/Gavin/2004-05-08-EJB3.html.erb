@@ -1,6 +1,7 @@
 ---
 title: "EJB3"
 author: "Gavin King"
+creation_date: "08-05-2004"
 blogger_name: "Gavin"
 layout: blog-post
 tags: []
@@ -8,14 +9,8 @@ slug: EJB3
 lace: http://in.relation.to/1552.lace
 ---
 <div id="documentDisplay" class="documentDisplay">
-<p class="wikiPara">
 
-</p>
-<div id="j_id481">
-                    <h1 class="documentTitle">
-<a href="/Bloggers/EJB3">EJB3</a>
-                    </h1>
-</div>
+
 <p class="wikiPara">
 Yesterday, Linda DeMichiel announced the changes coming in EJB 3.0. There was a lot to digest in her presentation, and I think it will take a while for people to figure out the full implications of the new spec. So far, most attention has focused upon the redesign of entity beans, but that is most certainly not all that is new! The expert group has embraced annotations aggressively, finally eliminating deployment descriptor XML hell. Taking a leaf from Avalon, Pico, Spring, Hivemind, etc, EJB will use dependency injection as an alternative to JNDI lookups. Session beans will be POJOs, with a business interface, home objects have been eliminated. Along with various other changes, this means that EJB 3.0 will be a much more appropriate solution for web-based applications with servlets and business logic colocated in the same process (which is by far the most sane deployment topology for most - but not all - applications), without losing the ability to handle more complex distributed physical architectures.
 </p>
@@ -84,3 +79,16 @@ Finally, the JDO spec is just absurdly over-complex, defining three - now four -
 So, rather than rewriting JDO, EJB 3.0 entities will be based closely upon the (much more widely adopted) dedicated ORM solutions such as Hibernate and TopLink.
 </p>
 </div>
+<div id="disqus_thread"></div><script type="text/javascript">
+    var disqus_shortname = 'otnoitalerni';
+    var disqus_identifier = 'EJB3';
+    var disqus_title = 'EJB3';
+    var disqus_url = 'http://in.relation.to/1552.lace';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>

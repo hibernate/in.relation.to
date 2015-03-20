@@ -1,6 +1,7 @@
 ---
 title: "4.1 Feature : Loading by NaturalId "
 author: "Steve Ebersole"
+creation_date: "25-01-2012"
 blogger_name: "Steve"
 layout: blog-post
 tags: [Hibernate,News]
@@ -8,14 +9,8 @@ slug: 41FeatureLoadingByNaturalId
 lace: http://in.relation.to/22795.lace
 ---
 <div id="documentDisplay" class="documentDisplay">
-<p class="wikiPara">
 
-</p>
-<div id="j_id481">
-                    <h1 class="documentTitle">
-<a href="/Bloggers/41FeatureLoadingByNaturalId">4.1 Feature : Loading by NaturalId </a>
-                    </h1>
-</div>
+
 <p class="wikiPara">
 One of the new features in 4.1 will be the addition of an actual API for loading entities by natural id.  Yes previous versions had the ability to do natural id loading leveraging criteria queries, but that approach was very limiting.  The new API will allow caching at both the Session and SessionFactory level in addition to providing a consistent API.  The new approach has been made available for identifier based loading as well, again for consistency.
 </p>
@@ -94,3 +89,16 @@ Since the natural id here is simple (just a single attribute) we can make this e
 <pre class="wikiPreformatted">session.bySimpleNaturalId( User.class ).load( "steve" );</pre>
 
 </div>
+<div id="disqus_thread"></div><script type="text/javascript">
+    var disqus_shortname = 'otnoitalerni';
+    var disqus_identifier = '41FeatureLoadingByNaturalId';
+    var disqus_title = '4.1 Feature : Loading by NaturalId ';
+    var disqus_url = 'http://in.relation.to/22795.lace';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>

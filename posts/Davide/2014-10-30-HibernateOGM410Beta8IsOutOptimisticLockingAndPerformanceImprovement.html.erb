@@ -1,0 +1,78 @@
+---
+title: "Hibernate OGM 4.1.0.Beta8 is out: Optimistic locking and performance improvement"
+author: "Davide D'Alto"
+creation_date: "30-10-2014"
+blogger_name: "Davide"
+layout: blog-post
+tags: [Hibernate,Hibernate OGM,news]
+slug: HibernateOGM410Beta8IsOutOptimisticLockingAndPerformanceImprovement
+lace: http://in.relation.to/35683.lace
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+We are getting closer to a final release and this version is mainly about improving general performance and reducing the amount of round trips to the datastore. We also added optimistic locking support for datastores which provide atomic find-and-update operations.
+</p>
+
+<p class="wikiPara">
+We also worked on several bug fixes and improvements under the hood, you can <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&amp;version=18051" target="" class="regularLink">read more about it in the release note</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-OptimisticLockingDetection"><a href="/Bloggers/HibernateOGM410Beta8IsOutOptimisticLockingAndPerformanceImprovement#H-OptimisticLockingDetection">Optimistic locking detection</a></h2>
+
+<p class="wikiPara">
+With Hibernate ORM,  you can add optimistic locking capability to an entity using the @Version annotation:
+</p>
+
+<pre class="wikiPreformatted"></pre>
+<pre class="wikiPreformatted">
+@Entity
+public class Flight implements Serializable {
+...
+    @Version
+    @Column(name="OPTLOCK")
+    public Integer getVersion() { ... }
+} 
+</pre>
+<pre class="wikiPreformatted"></pre>
+
+<p class="wikiPara">
+So far Hibernate OGM’s support for this was limited to CouchDB, which has its own proprietary <a href="http://docs.jboss.org/hibernate/ogm/4.1/reference/en-US/html/ogm-datastore-providers.html#ogm-couchdb-storage-principles" target="" class="regularLink">optimistic locking mechanism</a>. In this release we added support for optimistic locking also for those datastores that provide atomic find-and-update semantics such as MongoDB.
+</p>
+
+<p class="wikiPara">
+As always, you can either download a <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.1.0.Beta8/" target="" class="regularLink">release bundle</a> from SourceForge or get the JARs from the JBoss Nexus
+<a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate/ogm/" target="" class="regularLink">repository server</a> using Maven, Gradle etc. The GAV coordinates are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-core:4.1.0.Beta8</i> for the OGM engine and</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-&lt;datastore&gt;:4.1.0.Beta8</i>, depending on the backend you want to use.</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-WhatsNext"><a href="/Bloggers/HibernateOGM410Beta8IsOutOptimisticLockingAndPerformanceImprovement#H-WhatsNext">What's next?</a></h2>
+
+
+<p class="wikiPara">
+We are currently focused is on improving performance, documentation, polishing the API and fixing last minute bugs.
+</p>
+
+<p class="wikiPara">
+You're very welcome to raise your voice on the <a href="https://lists.jboss.org/mailman/listinfo/hibernate-dev" target="" class="regularLink">mailing list</a>, ask questions in <a href="https://forum.hibernate.org/viewforum.php?f=31" target="" class="regularLink">the forum</a> or report any bugs or feature requests in the <a href="https://hibernate.atlassian.net/browse/OGM" target="" class="regularLink">issue tracker</a>.
+</p>
+
+</div>
+<div id="disqus_thread"></div><script type="text/javascript">
+    var disqus_shortname = 'otnoitalerni';
+    var disqus_identifier = 'HibernateOGM410Beta8IsOutOptimisticLockingAndPerformanceImprovement';
+    var disqus_title = 'Hibernate OGM 4.1.0.Beta8 is out: Optimistic locking and performance improvement';
+    var disqus_url = 'http://in.relation.to/35683.lace';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>

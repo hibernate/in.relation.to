@@ -1,6 +1,7 @@
 ---
 title: "Hibernate3 Filters"
 author: "Steve Ebersole"
+creation_date: "10-08-2004"
 blogger_name: "Steve"
 layout: blog-post
 tags: []
@@ -8,14 +9,8 @@ slug: Hibernate3Filters
 lace: http://in.relation.to/2002.lace
 ---
 <div id="documentDisplay" class="documentDisplay">
-<p class="wikiPara">
 
-</p>
-<div id="j_id481">
-                    <h1 class="documentTitle">
-<a href="/Bloggers/Hibernate3Filters">Hibernate3 Filters</a>
-                    </h1>
-</div>
+
 <p class="wikiPara">
 Hibernate3 adds the ability to pre-define filter criteria and attach those filters at both a class and a collection level.  What's a <q>pre-defined filter criteria</q>?  Well, it's the ability to define a limit clause very similiar to the existing <q>where</q> attribute available on the class and various collection elements.  Except these filter conditions can be parameterized!  The application can then make the decision at runtime whether given filters should be enabled and what their parameter values should be.
 </p>
@@ -197,3 +192,16 @@ These were some pretty simple examples.  But hopefully, they'll give you a glimp
 Also a note: if you plan on using filters with outer joining (either through HQL or load fetching) be careful of the direction of the condition expression.  Its safest to set this up for left outer joining; in general, place the parameter first followed by the column name(s) after the operator.
 </p>
 </div>
+<div id="disqus_thread"></div><script type="text/javascript">
+    var disqus_shortname = 'otnoitalerni';
+    var disqus_identifier = 'Hibernate3Filters';
+    var disqus_title = 'Hibernate3 Filters';
+    var disqus_url = 'http://in.relation.to/2002.lace';
+
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
