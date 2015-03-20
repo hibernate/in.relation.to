@@ -15,13 +15,13 @@ awestruct site can be created.
     > bundle install
 
     # run the crawler
-    > ./crawler.rb -u http://in.relation.to -p ".*\.lace" -o posts.pstore
+    > bundle exec ./crawler.rb -u http://in.relation.to -p ".*\.lace" -o posts.pstore | tee crawl.log
 
     # run the importer
-    > ./importer.rb -s posts.pstore -o ..
+    > bundle exec ./importer.rb -s posts.pstore -o ..
 
     # alternative for experimenting when you don't want to download images (-ni) and assets (-na)
-    > ./importer.rb -s posts.pstore -o .. -ni -na
+    > bundle exec ./importer.rb -s posts.pstore -o .. -ni -na
 
 ## Tips & Tricks
 
@@ -30,7 +30,7 @@ awestruct site can be created.
         git clean -f -d
 
 * To list all available script options use '-h'
-        
+
         > ./crawler.rb -h
         Usage: crawler.rb [-upoh]
         Application options:
@@ -53,10 +53,10 @@ awestruct site can be created.
         Common:
           -h, --help                       Show this message.
 
-## Resources 
+## Resources
 
 * [Bundler](http://gembundler.com/)
 * [Encoding problems](http://talk-archive.awestruct.org/Stumbling-onto-an-encoding-problem-right-from-the-start-td39.html)
 
-        incompatible character encodings: ASCII-8BIT and UTF-8 
+        incompatible character encodings: ASCII-8BIT and UTF-8
 

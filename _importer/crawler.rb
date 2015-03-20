@@ -9,6 +9,7 @@ require_relative 'blog_entry'
 require 'choice'
 require 'anemone'
 require 'pstore'
+require 'pry-byebug'
 
 Choice.options do
   header 'Application options:'
@@ -57,7 +58,12 @@ class Crawler
     saved_posts = 0
     Anemone.crawl(@base_url) do |anemone|
       anemone.on_pages_like(@pattern) do |page|
-        puts "Processing #{page.url.to_s}"
+
+        if(page.code != 200)
+          puts "INFO: #{page.url.to_s} scheduled for re-indexing, since it returned with HTTP error #{page.code}."
+          reindex.push page.url.to_s
+          next
+        end
 
         if(too_many_active_users(page))
           reindex.push page.url.to_s
@@ -67,14 +73,18 @@ class Crawler
         store.transaction do
           store[page.url] = page.doc.to_s
           saved_posts += 1
+          page_title = page.doc.css('title').text.gsub("\n","")
+          puts "Persisted #{page.url.to_s} - #{page_title}"
         end
+
+        #sleep(10)
       end
 
       anemone.after_crawl do
         reindex_failed_posts(reindex, store, saved_posts )
       end
     end
-    puts "#{saved_posts} posts persisted"
+    puts "Total of #{saved_posts} posts persisted"
   end
 
   private
@@ -91,6 +101,7 @@ class Crawler
             store.transaction do
               store[page.url] = page.doc.to_s
               saved_posts += 1
+              puts "Persisted #{page.url.to_s}"
               reindex = reindex.drop(1)
             end
           end
@@ -99,9 +110,11 @@ class Crawler
     end
   end
 
+  # Sometimes the site returns 200 OK, but the content of the page is not the blog entry, but the messge
+  # "Too many active users". In this case the page must be re-indexed.
   def too_many_active_users(page)
-    if(page.doc.css('title').text =~ /Too many active users/)
-      puts "WARN: #{page.url.to_s} needs to be spidered again. The page reported: '#{page.doc.css('title').text}'"
+    if(!page.doc.css.nil? && page.doc.css('title').text =~ /Too many active users/)
+      puts "INFO: #{page.url.to_s} scheduled for re-indexing. The page reported: '#{page.doc.css('title').text}'"
       return true
     else
       return false

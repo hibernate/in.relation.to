@@ -1,5 +1,6 @@
 # encoding: UTF-8
 
+# Clas encapsulating the bits and pieces of a single post
 class BlogEntry
   attr_accessor :title, :content, :author, :blogger_name, :tags, :slug, :date, :lace
 
@@ -12,14 +13,15 @@ class BlogEntry
     tags.each { |tag| tag_string = tag_string + tag + "," }
     tag_string = tag_string.gsub(/,$/, '')
 
-    erb = "---\n" << 
+    erb = "---\n" <<
     "title: \"#{escaped_title}\"\n" <<
-    "author: \"#{@author}\"\n" << 
-    "blogger_name: \"#{@blogger_name}\"\n" << 
-    "layout: blog-post\n" << 
-    "tags: [#{tag_string}]\n" << 
+    "author: \"#{@author}\"\n" <<
+    "creation_date: #{@date.strftime( "%d-%m-%Y" )}\n" <<
+    "blogger_name: \"#{@blogger_name}\"\n" <<
+    "layout: blog-post\n" <<
+    "tags: [#{tag_string}]\n" <<
     "slug: #{slug}\n" <<
-    "lace: #{@lace}\n" << 
+    "lace: #{@lace}\n" <<
     "---\n" <<
     "#{content}\n"
 

@@ -49,6 +49,12 @@ Choice.options do
     desc 'Whether failed imports should be logged with stacktrace'
   end
 
+  option :limit, :required => false do
+    short '-l'
+    long '--limit=<n>'
+    desc 'Limit the imported posts (for debugging purposes)'
+  end
+
   separator 'Common:'
 
   option :help do
@@ -62,10 +68,11 @@ class Importer
 
   BASE_URL = "http://in.relation.to"
 
-  def initialize(import_file, output_dir, skip_image_procesing, skip_asset_procesing, log_errors)
+  def initialize(import_file, output_dir, skip_image_procesing, skip_asset_procesing, log_errors, limit=-1)
     @skip_image_procesing = skip_image_procesing.nil? ? false : true
     @skip_asset_procesing = skip_asset_procesing.nil? ? false : true
     @log_errors = log_errors.nil? ? false : true
+    @limit = limit
 
     @import_file = import_file
     @output_dir = output_dir
@@ -99,6 +106,9 @@ class Importer
           failed_imports += 1
           failures[lace] = e
         end
+        if(@limit != -1 && successful_imports >= @limit )
+          break
+        end
       end
     end
 
@@ -130,18 +140,23 @@ class Importer
       return false
     end
 
-    # process main content
-    blog_entry.content = doc.search('#documentDisplay')
-
     # title and wiki title
     title_link = doc.css('h1.documentTitle > a').first
 
     # some people mananged to write blog posts where the title is only in the breadcrumb - go figure!?
     if(title_link.nil?)
-      title_link = doc.css('div.breadcrumb a[class = "itemText"]') 
+      title_link = doc.css('div.breadcrumb a[class = "itemText"]')
     end
+
+    if(title_link.nil? || title_link.text.nil?)
+      puts "WARN: #{blog_entry.lace} does not seem to have title and/or title link"
+    end
+
     blog_entry.title = title_link.text
     blog_entry.slug = title_link.attr('href').to_s.sub('/Bloggers/', '')
+
+    # remove the h1 title (title will be rendered from the meta information)
+    blog_entry.content = prepare_content_body(doc)
 
     # author and blogger name
     author_link = doc.css('div.documentCreatorHistory > div > a').first
@@ -163,7 +178,7 @@ class Importer
     blog_entry.tags = doc.css('div.documentTags  a').map {|link| link.text.to_s}
 
     if(!@skip_image_procesing)
-      import_images(blog_entry.content)
+      import_images(doc)
     end
 
     if(!@skip_asset_procesing)
@@ -173,7 +188,35 @@ class Importer
     return true
   end
 
-  def import_images(content)
+  # Extracts and cleans up the main content of the blog post
+  def prepare_content_body(doc)
+    #puts doc
+
+    content_node = doc.search('#documentDisplay')
+
+    # remove the empty first wikiPara
+    if(content_node.css('p.wikiPara')[0].text.strip!.empty?)
+      content_node.css('p.wikiPara')[0].unlink
+    end
+
+    # remove h1 title since title will be rendered on the new site via the meta data
+    content_node.css('div#j_id490').unlink
+
+    # extract comments node
+#    TODO - plugin disqus
+#    comments = doc.search('#comments')
+
+#    clean_comments = Nokogiri::XML::Node.new "div", doc
+#    comments.css('table.commentHeader').each do |comment|
+#      clean_comments << comment
+#    end
+
+    content = content_node.to_s
+    return content
+  end
+
+  def import_images(doc)
+    content = doc.search('#documentDisplay')
     content.css('img').map do |image|
       if (image['src'] =~ /http:\/\/in.relation.to\/service\/File/)
         # get the image
@@ -252,5 +295,9 @@ class Importer
   end
 end
 
-importer = Importer.new(Choice.choices.pstore, Choice.choices.outdir, Choice.choices.skip_images, Choice.choices.skip_assets, Choice.choices.errors)
+limit = -1
+if(Choice.choices[:limit])
+  limit = Choice.choices[:limit].to_i
+end
+importer = Importer.new(Choice.choices.pstore, Choice.choices.outdir, Choice.choices.skip_images, Choice.choices.skip_assets, Choice.choices.errors, limit)
 importer.import_posts
