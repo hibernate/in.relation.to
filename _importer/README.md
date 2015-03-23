@@ -4,8 +4,6 @@ The scripts in this directory allow you to import the in.relation.to blog entrie
 They will crawl the site and save all *.lace urls into a Ruby PStore. From there erb files for the
 awestruct site can be created.
 
-
-
 ## How to run the scripts
 
     # install bundler
@@ -24,6 +22,10 @@ awestruct site can be created.
     > bundle exec ./importer.rb -s posts.pstore -o .. -ni -na
 
 ## Tips & Tricks
+
+* To nicely format the generated WXR XML file you can use
+
+        xmllint --format --recover <export-file-name>.xml
 
 * When experimenting with the importer it is often nice to start from a clean state. Just run to reset your checkout:
 

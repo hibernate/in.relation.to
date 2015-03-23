@@ -5,6 +5,7 @@ require "rubygems"
 require "bundler/setup"
 
 require_relative 'blog_entry'
+require_relative 'wxr_exporter'
 
 require 'choice'
 require 'pstore'
@@ -177,6 +178,8 @@ class Importer
     # tags
     blog_entry.tags = doc.css('div.documentTags  a').map {|link| link.text.to_s}
 
+    export_comments(doc)
+
     if(!@skip_image_procesing)
       import_images(doc)
     end
@@ -202,17 +205,13 @@ class Importer
     # remove h1 title since title will be rendered on the new site via the meta data
     content_node.css('div#j_id490').unlink
 
-    # extract comments node
-#    TODO - plugin disqus
-#    comments = doc.search('#comments')
+    return content_node.to_s
+  end
 
-#    clean_comments = Nokogiri::XML::Node.new "div", doc
-#    comments.css('table.commentHeader').each do |comment|
-#      clean_comments << comment
-#    end
-
-    content = content_node.to_s
-    return content
+  def export_comments(doc)
+    doc.css('td.commentColumn').each do |comment|
+      puts comment.css('div.commentText')
+    end
   end
 
   def import_images(doc)
