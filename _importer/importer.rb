@@ -32,6 +32,12 @@ Choice.options do
     desc 'The name of the output directory'
   end
 
+  option :wxr, :required => false do
+    short '-wxr'
+    long '--wxr-export-file=<file>'
+    desc 'The name of WXR XML file. If specified comments are exported, otherwise not'
+  end
+
   option :skip_images, :required => false do
     short '-ni'
     long '--no-images'
@@ -69,14 +75,19 @@ class Importer
 
   BASE_URL = "http://in.relation.to"
 
-  def initialize(import_file, output_dir, skip_image_procesing, skip_asset_procesing, log_errors, limit=-1)
+  def initialize(import_file, output_dir, wxr_file_name, skip_image_procesing, skip_asset_procesing, log_errors, limit=-1)
+    @import_file = import_file
+    @output_dir = output_dir
+
+    @skip_wxr_export = wxr_file_name.nil? ? true : false
+    unless @skip_wxr_export
+      @wxr_exporter = WxrExporter.new "./disqus.xml", @output_dir + '/' + wxr_file_name
+    end
+
     @skip_image_procesing = skip_image_procesing.nil? ? false : true
     @skip_asset_procesing = skip_asset_procesing.nil? ? false : true
     @log_errors = log_errors.nil? ? false : true
     @limit = limit
-
-    @import_file = import_file
-    @output_dir = output_dir
 
     # images and assets/attachments go into subdirectories
     @image_dir = @output_dir + '/images'
@@ -111,6 +122,10 @@ class Importer
           break
         end
       end
+    end
+
+    unless @skip_wxr_export
+      @wxr_exporter.write_wxr
     end
 
     if(@log_errors == true)
@@ -154,6 +169,7 @@ class Importer
     end
 
     blog_entry.title = title_link.text
+    puts "Importing #{blog_entry.lace} - #{blog_entry.title}"
     blog_entry.slug = title_link.attr('href').to_s.sub('/Bloggers/', '')
 
     # remove the h1 title (title will be rendered from the meta information)
@@ -178,13 +194,20 @@ class Importer
     # tags
     blog_entry.tags = doc.css('div.documentTags  a').map {|link| link.text.to_s}
 
-    export_comments(doc)
+    unless @skip_wxr_export
+      @wxr_exporter.create_item(blog_entry.title,
+        blog_entry.lace,
+        blog_entry.content,
+        blog_entry.slug,
+        blog_entry.date)
+      export_comments(doc)
+    end
 
-    if(!@skip_image_procesing)
+    unless @skip_image_procesing
       import_images(doc)
     end
 
-    if(!@skip_asset_procesing)
+    unless @skip_asset_procesing
       import_assets(doc)
     end
 
@@ -208,9 +231,68 @@ class Importer
     return content_node.to_s
   end
 
+  # Process all comments of a given blog. They all within a table and one comment is within a column
+  # of the class 'contentColumn'. The actual content is in a 'commentText' div, whereas the
+  # author information is in two diffs which are children of a 'commentAuthorInfo' td node.
   def export_comments(doc)
     doc.css('td.commentColumn').each do |comment|
-      puts comment.css('div.commentText')
+      begin
+        comment_id = comment.css('a[id^="comment"]')[0]['id'].gsub!(/comment/, '')
+        comment_content = comment.css('div.commentText').inner_html.strip!
+
+        comment_date = parse_comment_date comment.css('td.commentAuthorInfo div')[0]
+        author, email, url = parse_author_info comment.css('td.commentAuthorInfo div')[1]
+
+        #puts "===> author: " << author << "\n     email : " << email << "\n     url   : " << url << "\n     date  : " << comment_date.to_s
+        @wxr_exporter.add_comment(comment_id, author, email, url, comment_date, comment_content)
+      rescue => e
+        puts "-------------------------------------------"
+        puts "WARN: Skipping import of comment: \n"
+        puts comment
+        puts e.backtrace
+        puts "-------------------------------------------"
+      end
+    end
+  end
+
+  def parse_comment_date(comment_date_node)
+    date_as_string = comment_date_node.css('span.commentDate')[0].content
+    # eg '19. Dec 2014, 01:31 CET'
+    DateTime.parse(date_as_string)
+  end
+
+  # The parsing of the comments author is a bit tricky. Partly because the comments form on
+  # in.relation.to is quite liberal what you can enter and partly because the various elements are
+  # not nicely separated in their own components. Instead author name, email and urk needs to be
+  # extraced from a single string
+  #
+  # An example could be '<a href="http://www.acme.com">Acme</a> | <a href="mailto:admin(AT)acme.com">Acme Admin</a>'
+  # hrefs are optional and if there is only a name the '|' is missing
+  def parse_author_info(author_node)
+    author_info = author_node.inner_html.to_s
+
+    # if the author provided a website as well the string is <website> | <email>
+    if author_info =~ /\|/
+      url = ''
+      author_name, email = author_info.split('|', 2)
+      if author_name =~ /href/
+        url, author_name = author_name.match(/^.*href="(.*)">(.*)<\/a>.*$/).captures
+      end
+
+      email = email.match(/^.*href="mailto:(.*)">.*$/).captures[0]
+      email.sub!('(AT)', "@")
+      email.strip!
+      return [author_name, email, url]
+    # there is no email, but a website
+    else
+      url = ''
+      author_name = author_info
+      if author_name =~ /href/
+        url, author_name = author_name.match(/^.*href="(.*)">(.*)<\/a>.*$/).captures
+      end
+      author_name.strip!
+      url.strip!
+      return [author_name, '', url]
     end
   end
 
@@ -298,5 +380,11 @@ limit = -1
 if(Choice.choices[:limit])
   limit = Choice.choices[:limit].to_i
 end
-importer = Importer.new(Choice.choices.pstore, Choice.choices.outdir, Choice.choices.skip_images, Choice.choices.skip_assets, Choice.choices.errors, limit)
+importer = Importer.new(Choice.choices.pstore,
+ Choice.choices.outdir,
+ Choice.choices.wxr,
+ Choice.choices.skip_images,
+ Choice.choices.skip_assets,
+ Choice.choices.errors,
+ limit)
 importer.import_posts

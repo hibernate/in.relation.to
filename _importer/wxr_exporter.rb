@@ -52,7 +52,7 @@ class WxrExporter
 		@current_item = item
 	end
 
-	def add_comment(id, author, email, url, ip, creation_time, content)
+	def add_comment(id, author, email, url, creation_time, content)
 		if @current_item.nil?
 			abort "ERROR: There is no item for adding a comment"
 		end
@@ -63,7 +63,6 @@ class WxrExporter
 		comment.at_xpath("wp:comment_author").content = author
 		comment.at_xpath("wp:comment_author_email").content = email
 		comment.at_xpath("wp:comment_author_url").content = url
-		comment.at_xpath("wp:comment_author_IP").content = ip
 		comment.at_xpath("wp:comment_date_gmt").content = creation_time.strftime("%Y-%m-%d %H:%M:%S")
 		comment.at_xpath("wp:comment_content").children.find{|node|
 			if node.cdata?
@@ -84,11 +83,11 @@ end
 
 # wxr_exporter = WxrExporter.new "./disqus.xml", "comments-wxr.xml"
 # wxr_exporter.create_item("Hello world", "http://hello/world", "blah < >", "1", DateTime.now)
-# wxr_exporter.add_comment("1", "Author 1", "foo@mailinator.com", "http://foobar.com", "127.0.0.1", DateTime.now, "Test comment")
-# wxr_exporter.add_comment("2", "Author 2", "foo@mailinator.com", "http://foobar.com", "127.0.0.1", DateTime.now, "Test comment")
+# wxr_exporter.add_comment("1", "Author 1", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
+# wxr_exporter.add_comment("2", "Author 2", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
 
 # wxr_exporter.create_item("Snafu
 # 	", "http://hello/world", "blah < >", "1", DateTime.now)
-# wxr_exporter.add_comment("3", "Author 3", "foo@mailinator.com", "http://foobar.com", "127.0.0.1", DateTime.now, "Test comment")
+# wxr_exporter.add_comment("3", "Author 3", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
 
 # wxr_exporter.write_wxr
