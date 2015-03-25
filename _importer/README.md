@@ -16,10 +16,10 @@ awestruct site can be created.
     > bundle exec ./crawler.rb -u http://in.relation.to -p ".*\.lace" -o posts.pstore | tee crawl.log
 
     # run the importer
-    > bundle exec ./importer.rb -s posts.pstore -o ..
+    > bundle exec ./importer.rb -s posts.pstore -o ../posts
 
     # alternative for experimenting when you don't want to download images (-ni) and assets (-na)
-    > bundle exec ./importer.rb -s posts.pstore -o .. -ni -na
+    > bundle exec ./importer.rb -s posts.pstore -o ../posts -ni -na
 
 ## Tips & Tricks
 
