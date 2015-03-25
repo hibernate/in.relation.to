@@ -24,22 +24,7 @@ class BlogEntry
     "slug: #{slug}\n" <<
     "lace: #{@lace}\n" <<
     "---\n" <<
-    "#{content}\n" <<
-    "<div id=\"disqus_thread\"></div>" <<
-    "<script type=\"text/javascript\">\n" <<
-    "    var disqus_shortname = 'otnoitalerni';\n" <<
-    "    var disqus_identifier = '#{@slug}';\n" <<
-    "    var disqus_title = '#{@title}';\n" <<
-    "    var disqus_url = '#{@lace}';\n" <<
-    "\n" <<
-    "    (function() {\n" <<
-    "        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;\n" <<
-    "        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';\n" <<
-    "        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);\n" <<
-    "    })();\n" <<
-    "</script>\n" <<
-    "<noscript>Please enable JavaScript to view the <a href=\"https://disqus.com/?ref_noscript\" rel=\"nofollow\">comments powered by Disqus.</a></noscript>"
-
+    "#{content}\n"
   end
 
   def file_name

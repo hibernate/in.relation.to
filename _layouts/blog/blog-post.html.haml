@@ -32,3 +32,20 @@ layout: project
     -# Title
     = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
     ~ content
+    #disqus_thread
+    %script{:src=>javascript, :type=>'text/javascript'}                                       
+      var disqus_shortname = '#{site.disqus_shortname}';                                                          
+      var disqus_identifier = '#{page.slug}';                                          
+      var disqus_title = '#{page.title}';                                        
+      var disqus_url = '#{page.lace}';                                            
+                                                                                                            
+      (function() {                                                                                   
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true; 
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';                                 
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+      })();                                                                                           
+
+    %noscript
+      Please enable JavaScript to view the
+      %a{:href=>'https://disqus.com/?ref_noscriptr', :rel=>'nofollow'}
+        comments powered by Disqus.
