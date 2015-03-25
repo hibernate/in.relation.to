@@ -300,11 +300,12 @@ class Importer
     content = doc.search('#documentDisplay')
     content.css('img').map do |image|
       if (image['src'] =~ /http:\/\/in.relation.to\/service\/File/)
-        # get the image
-        image_data = download_resource(image['src'])
+        # get the image and type
+        image_data, type = download_resource(image['src'])
 
         # just keep the image name (a number in our case)
         image_name = image['src'].split('/').last.gsub(/\?thumbnail=true/, '')
+        image_name << '.' << type
 
         # write the image
         write_resource(image_data, File.join( @image_dir, image_name ))
@@ -331,7 +332,7 @@ class Importer
           m = regexp.match(a.text)
           m.captures.each do |original_file_name|
             # download and save
-            asset = download_resource(url)
+            asset = download_resource(url)[0]
             write_resource(asset, File.join( @asset_dir, original_file_name ))
             attachments["attachment" + attachment_count.to_s] = original_file_name
             attachment_count += 1
@@ -352,17 +353,22 @@ class Importer
 
   def download_resource(resource_url)
     #puts "Downloading #{resource_url}"
-    url = URI.parse( resource_url )
-    resource = Net::HTTP.start(url.host, url.port) {|http|
-      http.get(url.path)
-    }
-    return resource
+    uri = URI.parse( resource_url )
+
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
+
+    response = http.request(request)
+
+    resource = response.body
+    type = response["content-type"].split('/', 2).last
+    return [resource, type]
   end
 
   def write_resource(resource, file_name)
     #puts "Writing #{file_name}"
     File.open( file_name, 'wb' ) do |f|
-      f.write resource.body
+      f.write resource
     end
   end
 
