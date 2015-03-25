@@ -48,7 +48,7 @@ class WxrExporter
 		}
 		item.at_xpath("//dsq:thread_identifier").content = id
 		item.at_xpath("//wp:post_date_gmt").content = creation_time.strftime("%Y-%m-%d %H:%M:%S")
-		@master_item.before item
+		@master_item.after item
 		@current_item = item
 	end
 
