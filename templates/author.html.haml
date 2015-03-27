@@ -44,7 +44,11 @@ layout: project
       -if member
         = member.name
     - if not page.posts.nil?
-      - member = site.people.values.detect{|member| member.name == page.posts[0].author[0].to_s}
+      -# Look for the author in _data/people/
+      - member = site.people.values.detect{|person| person.name == page.posts[0].author[0].to_s}
+      -# If the author does not have a bio, use the name in the first blog post
+      - if member.nil?
+        - member = page.posts[0].author[0].to_s
       - for post in page.posts
         .blogpost
           %h2
