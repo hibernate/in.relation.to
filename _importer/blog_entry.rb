@@ -17,12 +17,15 @@ class BlogEntry
     erb = "---\n" <<
     "title: \"#{escaped_title}\"\n" <<
     "author: \"#{@author}\"\n" <<
-    "creation_date: \"#{@date.strftime( "%d-%m-%Y" )}\"\n" <<
     "blogger_name: \"#{@blogger_name}\"\n" <<
-    "layout: blog-post\n" <<
+    "creation_date: \"#{@date.strftime( "%d-%m-%Y" )}\"\n" <<
     "tags: [#{tag_string}]\n" <<
-    "slug: #{slug}\n" <<
+    "\n" <<
+    "absolute_url: http://in.relation.to/#{@date.strftime('%Y/%m/%d')}/#{@slug}\n" <<
     "lace: #{@lace}\n" <<
+    "slug: #{slug}\n" <<
+    "\n" <<
+    "layout: blog-post\n" <<
     "---\n" <<
     "#{content}\n"
   end
