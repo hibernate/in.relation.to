@@ -54,7 +54,8 @@ Awestruct::Extensions::Pipeline.new do
 
   # blog
   extension Awestruct::Extensions::Posts.new( '', :posts )
-  extension Awestruct::Extensions::SplitFilterer.new( :posts, 'tags',
+  extension Awestruct::Extensions::SplitFilterer.new( :posts,
+                                                     'tags',
                                                      :sanitize=>true,
                                                      :blacklist=>['author', 'authors', 'tags', 'tag',
                                                       'page', 'javascripts', 'images', 'readme', 'templates']
@@ -62,27 +63,25 @@ Awestruct::Extensions::Pipeline.new do
   extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>10, :per_page_init=>10 )
   extension Awestruct::Extensions::Splitter.new( :posts,
                                                  'tags',
-                                                 'templates/tags',
-                                                 '/',
+                                                 'templates/tag',
+                                                 '/tag',
                                                  :per_page=>10, :per_page_init=>10,
                                                  :output_home_file=>'index',
                                                  :sanitize=>true )
   extension Awestruct::Extensions::SplitCloud.new( :posts,
                                                  'tags',
                                                  '/tags/index.html',
-                                                 :layout=>'blog',
                                                  :title=>'Tags')
   extension Awestruct::Extensions::Splitter.new( :posts,
                                                  'author',
                                                  'templates/author',
-                                                 '/',
+                                                 '/author',
                                                  :per_page=>10, :per_page_init=>10,
                                                  :output_home_file=>'index',
                                                  :sanitize=>true )
   extension Awestruct::Extensions::SplitCloud.new( :posts,
                                                  'author',
-                                                 '/author/index.html',
-                                                 :layout=>'blog',
+                                                 '/authors/index.html',
                                                  :title=>'Author')
 
   # register extensions and transformers
