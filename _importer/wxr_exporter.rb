@@ -33,9 +33,9 @@ class WxrExporter
         link.content = url
         item.add_child link
 
-        id = Nokogiri::XML::Node.new "dsq:thread_identifier", @doc
-        id.content = creation_time.strftime('%d-%m-%Y') + '-' + id
-        item.add_child id
+        id_node = Nokogiri::XML::Node.new "dsq:thread_identifier", @doc
+        id_node.content = creation_time.strftime('%d-%m-%Y') + '-' + id
+        item.add_child id_node
 
         date = Nokogiri::XML::Node.new "wp:post_date_gmt", @doc
         date.content = creation_time.strftime("%Y-%m-%d %H:%M:%S")
@@ -84,13 +84,13 @@ class WxrExporter
 	end
 end
 
-wxr_exporter = WxrExporter.new "./disqus.xml", "comments-wxr.xml"
-wxr_exporter.create_item("Hello world", "http://hello/world", "blah < >", "1", DateTime.now)
-wxr_exporter.add_comment("1", "Author 1", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
-wxr_exporter.add_comment("2", "Author 2", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
+# wxr_exporter = WxrExporter.new "./disqus.xml", "comments-wxr.xml"
+# wxr_exporter.create_item("Hello world", "http://hello/world", "blah < >", "1", DateTime.now)
+# wxr_exporter.add_comment("1", "Author 1", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
+# wxr_exporter.add_comment("2", "Author 2", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
 
-wxr_exporter.create_item("Snafu
-	", "http://hello/world", "blah < >", "1", DateTime.now)
-wxr_exporter.add_comment("3", "Author 3", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
+# wxr_exporter.create_item("Snafu
+# 	", "http://hello/world", "blah < >", "1", DateTime.now)
+# wxr_exporter.add_comment("3", "Author 3", "foo@mailinator.com", "http://foobar.com", DateTime.now, "Test comment")
 
-wxr_exporter.write_wxr
+# wxr_exporter.write_wxr

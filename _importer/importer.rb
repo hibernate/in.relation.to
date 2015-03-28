@@ -196,9 +196,9 @@ class Importer
 
     unless @skip_wxr_export
       @wxr_exporter.create_item(blog_entry.title,
-        blog_entry.lace,
+        blog_entry.absolute_url,
         blog_entry.content,
-        blog_entry.slug,
+        blog_entry.date.strftime( "%d-%m-%Y" ) + '-' + blog_entry.slug,
         blog_entry.date)
       export_comments(doc)
     end

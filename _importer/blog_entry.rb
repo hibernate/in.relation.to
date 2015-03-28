@@ -3,7 +3,7 @@
 # Class encapsulating the bits and pieces of a single post
 class BlogEntry
 
-  attr_accessor :title, :content, :author, :blogger_name, :tags, :slug, :date, :lace
+  attr_accessor :title, :content, :author, :blogger_name, :tags, :slug, :date, :lace, :absolute_url
 
   def to_erb
   	# quotes in title must be escaped, also backslash with double backslash
@@ -14,6 +14,8 @@ class BlogEntry
     tags.each { |tag| tag_string = tag_string + tag + "," }
     tag_string = tag_string.gsub(/,$/, '')
 
+    @absolute_url = "http://in.relation.to/#{@date.strftime('%Y/%m/%d')}/#{@slug}"
+
     erb = "---\n" <<
     "title: \"#{escaped_title}\"\n" <<
     "author: \"#{@author}\"\n" <<
@@ -21,7 +23,7 @@ class BlogEntry
     "creation_date: \"#{@date.strftime( "%d-%m-%Y" )}\"\n" <<
     "tags: [#{tag_string}]\n" <<
     "\n" <<
-    "absolute_url: http://in.relation.to/#{@date.strftime('%Y/%m/%d')}/#{@slug}\n" <<
+    "absolute_url: #{@absolute_url}\n" <<
     "lace: #{@lace}\n" <<
     "slug: #{slug}\n" <<
     "\n" <<
