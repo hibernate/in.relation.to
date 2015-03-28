@@ -194,6 +194,8 @@ class Importer
     # tags
     blog_entry.tags = doc.css('div.documentTags  a').map {|link| link.text.to_s}
 
+    blog_entry.absolute_url = "http://in.relation.to/#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}"
+
     unless @skip_wxr_export
       @wxr_exporter.create_item(blog_entry.title,
         blog_entry.absolute_url,

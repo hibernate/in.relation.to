@@ -14,8 +14,6 @@ class BlogEntry
     tags.each { |tag| tag_string = tag_string + tag + "," }
     tag_string = tag_string.gsub(/,$/, '')
 
-    @absolute_url = "http://in.relation.to/#{@date.strftime('%Y/%m/%d')}/#{@slug}"
-
     erb = "---\n" <<
     "title: \"#{escaped_title}\"\n" <<
     "author: \"#{@author}\"\n" <<

@@ -34,7 +34,7 @@ class WxrExporter
         item.add_child link
 
         id_node = Nokogiri::XML::Node.new "dsq:thread_identifier", @doc
-        id_node.content = creation_time.strftime('%d-%m-%Y') + '-' + id
+        id_node.content = id
         item.add_child id_node
 
         date = Nokogiri::XML::Node.new "wp:post_date_gmt", @doc
