@@ -5,11 +5,13 @@ blogger_name: "Sanne"
 creation_date: "04-03-2015"
 tags: [Hibernate,Hibernate Search,News]
 
-absolute_url: http://in.relation.to/2015/03/04/HibernateSearch51
-lace: http://in.relation.to/42570.lace
+relative_url: /2015/03/04/HibernateSearch51
 slug: HibernateSearch51
+lace: http://in.relation.to/42570.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/03/04/HibernateSearch51
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 Now that feedback is coming about our great 5.0 release, it's time to publish quite a maintenance version as we have a long list of improvements already! So today we release <i class="wikiEmphasis">Hibernate Search 5.1.0.Final</i>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-PerformanceImprovements"><a href="/Bloggers/HibernateSearch51#H-PerformanceImprovements">Performance improvements</a></h2>
+<h2 class="wikiHeadline2" id="H-PerformanceImprovements"><a href="/2015/03/04/HibernateSearch51#H-PerformanceImprovements">Performance improvements</a></h2>
 <p class="wikiPara">
 The indexing engine learned yet another smart trick, and is going to generate more efficient delete and update operations in case you have a non-trivial hierarchy of entities being mapped.
 See also <a href="https://hibernate.atlassian.net/browse/HSEARCH-1767" target="" class="regularLink">HSEARCH-1767</a> for more details.
@@ -29,7 +31,7 @@ This might not affect you at all, or it might give you a very significant perfor
 Also affecting performance, the caching code for Filters improved and this might result in a higher cache hit ratio.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ManyUsabilityImprovements"><a href="/Bloggers/HibernateSearch51#H-ManyUsabilityImprovements">Many usability improvements</a></h2>
+<h2 class="wikiHeadline2" id="H-ManyUsabilityImprovements"><a href="/2015/03/04/HibernateSearch51#H-ManyUsabilityImprovements">Many usability improvements</a></h2>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> It is no longer required to provide a key object for parameterized Filters (we'll figure it out automatically). (<a href="https://hibernate.atlassian.net/browse/HSEARCH-295" target="" class="regularLink">HSEARCH-295</a>)</li>
 <li class="wikiUnorderedListItem"> You can now use annotations to declare Filters and Analyzers on packages or super classes! After all, these are global. (<a href="https://hibernate.atlassian.net/browse/HSEARCH-1763" target="" class="regularLink">HSEARCH-1763</a>, <a href="https://hibernate.atlassian.net/browse/HSEARCH-633" target="" class="regularLink">HSEARCH-633</a>)</li>
@@ -37,7 +39,7 @@ Also affecting performance, the caching code for Filters improved and this might
 <li class="wikiUnorderedListItem"> The programmatic configuration API was improved by adding some missing methods</li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-ProjectionBugfixes"><a href="/Bloggers/HibernateSearch51#H-ProjectionBugfixes">Projection: bugfixes</a></h2>
+<h2 class="wikiHeadline2" id="H-ProjectionBugfixes"><a href="/2015/03/04/HibernateSearch51#H-ProjectionBugfixes">Projection: bugfixes</a></h2>
 
 <p class="wikiPara">
 There was a bug in projecting values of embeddable types which could strike occasionally, as it would trigger only on some specific iterations of the metadata, which is unsorted so it could manifest only occasionally. This is fixed now as <a href="https://hibernate.atlassian.net/browse/HSEARCH-1786" target="" class="regularLink">HSEARCH-1786</a>.
@@ -47,7 +49,7 @@ There was a bug in projecting values of embeddable types which could strike occa
 Many thanks to Rustem Sagimbekov, Marc Schipperheyn and Ildar Mussin for reporting it and helping me diagnose the problem.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Multitenancy"><a href="/Bloggers/HibernateSearch51#H-Multitenancy">Multi-tenancy</a></h2>
+<h2 class="wikiHeadline2" id="H-Multitenancy"><a href="/2015/03/04/HibernateSearch51#H-Multitenancy">Multi-tenancy</a></h2>
 
 <p class="wikiPara">
 Some users have recently been trying to use Hibernate Search combined with Hibernate ORM's multi-tenancy features. We have to admit this wasn't tested! We added a warning in the documentation, as some more work is going to be needed to make for a flawless integration experience.
@@ -57,26 +59,26 @@ Some users have recently been trying to use Hibernate Search combined with Hiber
 There was one blocker preventing people to use the MassIndexer <a href="https://hibernate.atlassian.net/browse/HSEARCH-1649" target="" class="regularLink">HSEARCH-1649</a> with multi-tenancy, which is fixed now. So while there are still <a href="http://docs.jboss.org/hibernate/search/5.1/reference/en-US/html_single/#search-architecture-multitenancy" target="" class="regularLink">some limitations documented here</a>, you should be able to move forward. Please let us know if more changes are needed (on top of the known limitations, which are easy to work around for now).
 </p>
 
-<h2 class="wikiHeadline2" id="H-OSGiImprovements"><a href="/Bloggers/HibernateSearch51#H-OSGiImprovements">OSGi improvements</a></h2>
+<h2 class="wikiHeadline2" id="H-OSGiImprovements"><a href="/2015/03/04/HibernateSearch51#H-OSGiImprovements">OSGi improvements</a></h2>
 
 <p class="wikiPara">
 With 5.0 we published our first experimental support for depoying in OSGi, and it's maturing quickly thanks to all your feedback!
 Thanks to Gustavo Nalle and Andy Phillips for the latest suggestions and improvements.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Dropped"><a href="/Bloggers/HibernateSearch51#H-Dropped">Dropped</a></h2>
+<h2 class="wikiHeadline2" id="H-Dropped"><a href="/2015/03/04/HibernateSearch51#H-Dropped">Dropped</a></h2>
 
 <p class="wikiPara">
 The optional serialization module based on plain standard Java serialization was removed. Please use <i class="wikiEmphasis">hibernate-search-serialization-avro</i>, which has always been the better implementation. If you had strong reasons to love the plain java implementation, let us know.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ComponentsUpgrades"><a href="/Bloggers/HibernateSearch51#H-ComponentsUpgrades">Components upgrades</a></h2>
+<h2 class="wikiHeadline2" id="H-ComponentsUpgrades"><a href="/2015/03/04/HibernateSearch51#H-ComponentsUpgrades">Components upgrades</a></h2>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> Apache Lucene released 4.10.4</li>
 <li class="wikiUnorderedListItem"> Infinispan upgraded to 7.1.1</li>
 </ul>
 
-<h1 class="wikiHeadline1" id="H-GetItNow"><a href="/Bloggers/HibernateSearch51#H-GetItNow">Get it now!</a></h1>
+<h1 class="wikiHeadline1" id="H-GetItNow"><a href="/2015/03/04/HibernateSearch51#H-GetItNow">Get it now!</a></h1>
 
 <p class="wikiPara">
 Everything you need is available on Hibernate Search's <a href="http://hibernate.org/search/" target="" class="regularLink">web site</a>.
@@ -84,7 +86,7 @@ Download the <a href="https://sourceforge.net/projects/hibernate/files/hibernate
 And don't hesitate to reach us in our <a href="https://forums.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forums</a>.
 </p>
 
-<h3 class="wikiHeadline3" id="H-Stackoverflow"><a href="/Bloggers/HibernateSearch51#H-Stackoverflow">Stackoverflow</a></h3>
+<h3 class="wikiHeadline3" id="H-Stackoverflow"><a href="/2015/03/04/HibernateSearch51#H-Stackoverflow">Stackoverflow</a></h3>
 
 <p class="wikiPara">
 If you prefer to use <a href="http://stackoverflow.com/questions/tagged/hibernate-search" target="" class="regularLink">stackoverflow.com</a>, please use the tag <i class="wikiEmphasis">hibernate-search</i>.

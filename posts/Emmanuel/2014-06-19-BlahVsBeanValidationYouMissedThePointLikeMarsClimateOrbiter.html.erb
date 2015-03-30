@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "19-06-2014"
 tags: [Bean Validation,Hibernate Validator,News]
 
-absolute_url: http://in.relation.to/2014/06/19/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter
-lace: http://in.relation.to/26738.lace
+relative_url: /2014/06/19/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter
 slug: BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter
+lace: http://in.relation.to/26738.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/06/19/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -43,7 +45,7 @@ and we will talk about conversion today.
 I won't refute things point by point but rather highlight a few fundamental misunderstandings and explain why things are like they are in Bean Validation and why it makes sense.
 </p>
 
-<h2 class="wikiHeadline2" id="H-JavaWasLimiting"><a href="/Bloggers/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-JavaWasLimiting">Java was limiting</a></h2>
+<h2 class="wikiHeadline2" id="H-JavaWasLimiting"><a href="/2014/06/19/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-JavaWasLimiting">Java was limiting</a></h2>
 
 <blockquote class="wikiBlockquote">
 IMHO, @emmanuelbernard a créer son API avec les outils a sa disposition - @skaalf
@@ -63,7 +65,7 @@ For example, in Java, people use mutable objects. <q>Mutable</q> believe it or n
 My understanding is that Play Unified Validation API makes use of Scala's community incline for immutability.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ValidationConversionAndMarshalling"><a href="/Bloggers/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-ValidationConversionAndMarshalling">Validation, conversion and marshalling</a></h2>
+<h2 class="wikiHeadline2" id="H-ValidationConversionAndMarshalling"><a href="/2014/06/19/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-ValidationConversionAndMarshalling">Validation, conversion and marshalling</a></h2>
 
 <p class="wikiPara">
 In the use case Julien takes as an example, a JSON string is unmarshalled, conversion is applied (for dates - darn JSON) and then values are validated.
@@ -88,7 +90,7 @@ What is important is that for a given boundary, they are properly integrated.
 It's not unlike inlining in compilation.
 </p>
 
-<h2 class="wikiHeadline2" id="H-BeanValidationIsInTheBusinessOfIClasswikiEmphasisnotiBeingCalled"><a href="/Bloggers/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-BeanValidationIsInTheBusinessOfIClasswikiEmphasisnotiBeingCalled">Bean Validation is in the business of <i class="wikiEmphasis">not</i> being called</a></h2>
+<h2 class="wikiHeadline2" id="H-BeanValidationIsInTheBusinessOfIClasswikiEmphasisnotiBeingCalled"><a href="/2014/06/19/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-BeanValidationIsInTheBusinessOfIClasswikiEmphasisnotiBeingCalled">Bean Validation is in the business of <i class="wikiEmphasis">not</i> being called</a></h2>
 
 <p class="wikiPara">
 One key point in the design of Bean Validation is that it has been built to be integrated within a cohesive stack more than to be used individually.
@@ -124,7 +126,7 @@ As for JAX-B and XML binding, well let's say that there is an X in it and that i
 More seriously, we have integration plans with mapping between the XSD and the Bean Validation constraints but we haven't got around to do it yet.
 </p>
 
-<h2 class="wikiHeadline2" id="H-BeanValidationIsInTheBusinessOfDeclaringConstraintsIClasswikiEmphasisoncei"><a href="/Bloggers/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-BeanValidationIsInTheBusinessOfDeclaringConstraintsIClasswikiEmphasisoncei">Bean Validation is in the business of declaring constraints <i class="wikiEmphasis">once</i></a></h2>
+<h2 class="wikiHeadline2" id="H-BeanValidationIsInTheBusinessOfDeclaringConstraintsIClasswikiEmphasisoncei"><a href="/2014/06/19/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-BeanValidationIsInTheBusinessOfDeclaringConstraintsIClasswikiEmphasisoncei">Bean Validation is in the business of declaring constraints <i class="wikiEmphasis">once</i></a></h2>
 
 <p class="wikiPara">
 From what <a href="https://github.com/jto/validation-bench/blob/master/src/main/scala/io/github/jto/models.scala#L13" target="" class="regularLink">I see of the Play Unified Validation API</a>, you put the declaration / implementation of the validation next the marshalling logic.
@@ -142,7 +144,7 @@ Some even use our metadata facility to propagate the constraints up to the clien
 And that's future proof, when we add JSON-B support, boom the constraints already declared are used automatically and for free.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2014/06/19/BlahVsBeanValidationYouMissedThePointLikeMarsClimateOrbiter#H-Conclusion">Conclusion</a></h2>
 
 <p class="wikiPara">
 Bean Validation cannot be understood if you take it in isolation.

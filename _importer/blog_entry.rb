@@ -3,7 +3,7 @@
 # Class encapsulating the bits and pieces of a single post
 class BlogEntry
 
-  attr_accessor :title, :content, :author, :blogger_name, :tags, :slug, :date, :lace, :absolute_url
+  attr_accessor :title, :content, :author, :blogger_name, :tags, :slug, :date, :lace, :relative_url,:disqus_thread_id
 
   def to_erb
   	# quotes in title must be escaped, also backslash with double backslash
@@ -21,11 +21,13 @@ class BlogEntry
     "creation_date: \"#{@date.strftime( "%d-%m-%Y" )}\"\n" <<
     "tags: [#{tag_string}]\n" <<
     "\n" <<
-    "absolute_url: #{@absolute_url}\n" <<
+    "relative_url: #{@relative_url}\n" <<
+    "slug: #{@slug}\n" <<
     "lace: #{@lace}\n" <<
-    "slug: #{slug}\n" <<
     "\n" <<
     "layout: blog-post\n" <<
+    "\n" <<
+    "disqus_thread_id: #{@disqus_thread_id}\n" <<
     "---\n" <<
     "#{content}\n"
   end

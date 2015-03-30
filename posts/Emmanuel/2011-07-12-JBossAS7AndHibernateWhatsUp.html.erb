@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "12-07-2011"
 tags: [Hibernate,Hibernate Search,Hibernate Validator,jbossas7]
 
-absolute_url: http://in.relation.to/2011/07/12/JBossAS7AndHibernateWhatsUp
-lace: http://in.relation.to/20991.lace
+relative_url: /2011/07/12/JBossAS7AndHibernateWhatsUp
 slug: JBossAS7AndHibernateWhatsUp
+lace: http://in.relation.to/20991.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/07/12/JBossAS7AndHibernateWhatsUp
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -26,7 +28,7 @@ Before we go that way and if you are in a hurry <a href="http://in.relation.to/B
 Back to the subject: JBoss AS 7 and Hibernate.
 </p>
 
-<h1 class="wikiHeadline1" id="H-HibernateCore"><a href="/Bloggers/JBossAS7AndHibernateWhatsUp#H-HibernateCore">Hibernate Core</a></h1>
+<h1 class="wikiHeadline1" id="H-HibernateCore"><a href="/2011/07/12/JBossAS7AndHibernateWhatsUp#H-HibernateCore">Hibernate Core</a></h1>
 
 <p class="wikiPara">
 First of all, JBoss AS 7 comes with Hibernate Core 4. This essentially means that AS 7 will be using the new foundational grounds for Hibernate Core.
@@ -42,13 +44,13 @@ Hibernate Core 4 comes with many internal changes:
 <li class="wikiUnorderedListItem"> A move to Git and GitHub for version control: hopefully this is speeding up community contribution integration</li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-Multitenancy"><a href="/Bloggers/JBossAS7AndHibernateWhatsUp#H-Multitenancy">Multi-tenancy</a></h2>
+<h2 class="wikiHeadline2" id="H-Multitenancy"><a href="/2011/07/12/JBossAS7AndHibernateWhatsUp#H-Multitenancy">Multi-tenancy</a></h2>
 
 <p class="wikiPara">
 We have also introduced some new features, the most interesting definitely being <a href="/Bloggers/MultitenancyInHibernate" target="" class="regularLink">multi-tenancy</a> (see also <a href="/Bloggers/HibernateAndMultitenancyWebinar" target="" class="regularLink">here</a>).
 </p>
 
-<h2 class="wikiHeadline2" id="H-NewClassloaderService"><a href="/Bloggers/JBossAS7AndHibernateWhatsUp#H-NewClassloaderService">New classloader service</a></h2>
+<h2 class="wikiHeadline2" id="H-NewClassloaderService"><a href="/2011/07/12/JBossAS7AndHibernateWhatsUp#H-NewClassloaderService">New classloader service</a></h2>
 
 <p class="wikiPara">
 <i class="wikiEmphasis">Why?</i>
@@ -67,13 +69,13 @@ In Hibernate 4 we leverage the <tt>ServiceRegistry</tt> to define a pluggable se
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-HibernateCoreInAS7"><a href="/Bloggers/JBossAS7AndHibernateWhatsUp#H-HibernateCoreInAS7">Hibernate Core in AS 7</a></h1>
+<h1 class="wikiHeadline1" id="H-HibernateCoreInAS7"><a href="/2011/07/12/JBossAS7AndHibernateWhatsUp#H-HibernateCoreInAS7">Hibernate Core in AS 7</a></h1>
 
 <p class="wikiPara">
 JBoss AS 7 integrates with Hibernate 4.0.0.Beta1, to provide both the EE container managed JPA features and application managed access as well. The AS7 JPA subsystem integrates with Hibernate via the JPA specification SPI interfaces.  In earlier releases of JBoss AS, JPA integration code was part of the EJB3 container (reflecting the evolution from EJB entity beans).  Moving the JPA integration code into its own subsystem helps simplify the code and makes it easier to make changes.
 </p>
 
-<h2 class="wikiHeadline2" id="H-QuickSecondlevelCacheTip"><a href="/Bloggers/JBossAS7AndHibernateWhatsUp#H-QuickSecondlevelCacheTip">Quick second-level cache tip</a></h2>
+<h2 class="wikiHeadline2" id="H-QuickSecondlevelCacheTip"><a href="/2011/07/12/JBossAS7AndHibernateWhatsUp#H-QuickSecondlevelCacheTip">Quick second-level cache tip</a></h2>
 
 <p class="wikiPara">
 Enabling the (Infinispan) second level cache should be as simple as including the following in your <tt>persistence.xml</tt> file:
@@ -99,7 +101,7 @@ I (aka Scott Marlow) would like to thank the following people for contributing t
 </ul>
 
 
-<h2 class="wikiHeadline2" id="H-WhatIsNext"><a href="/Bloggers/JBossAS7AndHibernateWhatsUp#H-WhatIsNext">What is next</a></h2>
+<h2 class="wikiHeadline2" id="H-WhatIsNext"><a href="/2011/07/12/JBossAS7AndHibernateWhatsUp#H-WhatIsNext">What is next</a></h2>
 
 <p class="wikiPara">
 Improving support for applications that use a different version of Hibernate than is packaged with JBoss AS 7.  The plan is to let users deploy the Hibernate jars as well as a hibernate-jbossas7 integration jar. The integration jar will be tailored to the specific couple of Hibernate / JBoss AS version (or families of).
@@ -114,7 +116,7 @@ We will also include additional tuning options to disable some of the JPA integr
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-HibernateValidatorAndBeanValidation"><a href="/Bloggers/JBossAS7AndHibernateWhatsUp#H-HibernateValidatorAndBeanValidation">Hibernate Validator and Bean Validation</a></h1>
+<h1 class="wikiHeadline1" id="H-HibernateValidatorAndBeanValidation"><a href="/2011/07/12/JBossAS7AndHibernateWhatsUp#H-HibernateValidatorAndBeanValidation">Hibernate Validator and Bean Validation</a></h1>
 
 <p class="wikiPara">
 What's new in AS7 in relation to Bean Validation? The short answer - nothing. It was already awesome ;) The initial version - AS 7.0 - ships with Hibernate Validator 4.1.0.Final. This is the same Validator version as in AS 6 so no change there.
@@ -132,7 +134,7 @@ With this API a <q><a href="http://en.wikipedia.org/wiki/Design_by_contract" tar
 As you can see AS 7.0 is just the beginning. More is to come in the coming releases...
 </p>
 
-<h1 class="wikiHeadline1" id="H-HibernateSearch"><a href="/Bloggers/JBossAS7AndHibernateWhatsUp#H-HibernateSearch">Hibernate Search</a></h1>
+<h1 class="wikiHeadline1" id="H-HibernateSearch"><a href="/2011/07/12/JBossAS7AndHibernateWhatsUp#H-HibernateSearch">Hibernate Search</a></h1>
 
 
 <p class="wikiPara">

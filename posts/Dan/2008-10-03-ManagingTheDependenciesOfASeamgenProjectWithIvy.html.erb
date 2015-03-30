@@ -5,11 +5,13 @@ blogger_name: "Dan"
 creation_date: "03-10-2008"
 tags: [Dependency Management,Seam,Seam News]
 
-absolute_url: http://in.relation.to/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy
-lace: http://in.relation.to/9506.lace
+relative_url: /2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy
 slug: ManagingTheDependenciesOfASeamgenProjectWithIvy
+lace: http://in.relation.to/9506.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ Out of the box, seam-gen copies all the dependencies of Seam (and then some) int
 One way of managing dependencies is to use Maven 2 as the build tool, which several people have requested for seam-gen to support. However, shifting to Maven 2 is quite a large departure from the current build, which is based on Ant. In this article, I will explain how you can introduce Ivy into the Ant build to track which dependencies and versions of those dependencies your project uses and to have them fetched from a remote repository. <a href="http://ant.apache.org/ivy" target="" class="regularLink">Ivy</a> is a sub-project of Ant and provides a collection of Ant tasks focused specifically on providing a dependency manager for Java libraries.
 </p>
 
-<h2 class="wikiHeadline2" id="H-AboutThisSolution"><a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-AboutThisSolution">About this solution</a></h2>
+<h2 class="wikiHeadline2" id="H-AboutThisSolution"><a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-AboutThisSolution">About this solution</a></h2>
 
 <p class="wikiPara">
 What makes the setup I present in this article unique is that it separates fetching the dependencies from the build itself, so once the JARs are in place, the build can work just as it always has. That means the use of Ivy does not affect the efficiency of development that a seam-gen project provides. You also have the ability to create a distribution of the project which includes all the dependent JAR files, a key aspect of ensuring reproducibility. But there is something else that sets this solution apart.
@@ -32,7 +34,7 @@ What makes the setup I present in this article unique is that it separates fetch
 Somewhere along the line folks seemed to have coupled shared repositories with transitive dependencies. You'll discover that it's possible to pull artifacts from the remote repositories without having to use the transitive dependency mechanism common to all Maven 2 projects (and an optional feature in Ivy).
 </p>
 
-<h2 class="wikiHeadline2" id="H-MakingWayForIvy"><a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-MakingWayForIvy">Making way for Ivy</a></h2>
+<h2 class="wikiHeadline2" id="H-MakingWayForIvy"><a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-MakingWayForIvy">Making way for Ivy</a></h2>
 
 <p class="wikiPara">
 The first step to integrating Ivy into the project is to create a separate Ant build file, which we'll name ivy.build.xml, to host the Ivy-related tasks. Isolating these tasks in a separate file makes them more reusable and keeps the main build file clean. The Ivy build file is imported near the top of the main build file using the Ant import task:
@@ -74,7 +76,7 @@ In the Ivy build file, the first tasks you'll create are ones that fetch Ivy its
 Before you can use Ivy, you need to have the Ivy configuration files in place. The first configuration file we will look at is the main settings file, which hosts the definitions for the artifact resolvers.
 </p>
 
-<h1 class="wikiHeadline1" id="H-ChainingTogetherASetOfResolvers"><a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-ChainingTogetherASetOfResolvers">Chaining together a set of resolvers</a></h1>
+<h1 class="wikiHeadline1" id="H-ChainingTogetherASetOfResolvers"><a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-ChainingTogetherASetOfResolvers">Chaining together a set of resolvers</a></h1>
 
 <p class="wikiPara">
 Ivy works by mooching off of the Maven 2 repositories. However, unlike Maven, it can accommodate any hosted structure. So we need to tell Ivy where to look to find artifacts (i.e., dependencies) and what pattern it should use to locate an artifact in the remote repository as well as in the local cache. This configuration is defined in an Ivy settings file, which we will name ivy.settings.xml. We'll define three resolvers: local, central, and jboss, which we'll string together as a resolver chain and make it the default strategy.
@@ -154,7 +156,7 @@ Once Ivy resolves a dependency, it copies the artifact into the local cache dire
 With this configuration in place, Ivy will search the local cache, then the central repository, and finally the JBoss repository to locate an artifact. Now the question becomes, how do you define what Ivy needs to fetch? That's where the Ivy module file comes in.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TellingIvyAboutYourDependencies"><a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-TellingIvyAboutYourDependencies">Telling Ivy about your dependencies</a></h1>
+<h1 class="wikiHeadline1" id="H-TellingIvyAboutYourDependencies"><a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-TellingIvyAboutYourDependencies">Telling Ivy about your dependencies</a></h1>
 
 <p class="wikiPara">
 The ivy module file, typically named ivy.xml (though its location can be changed using the <tt>ivy.dep.file</tt> configuration property), is akin to the dependencies section of a Maven 2 POM file. It's where you define the libraries on which your project depends. Fortunately, the Ivy team <i class="wikiEmphasis">does</i> believe in XML attributes, unlike the Maven 2 radicals, so you have a lot less typing to do to define a dependency. But the most absolutely vital feature of Ivy, and what makes it infinitely more useful than Maven 2, is the fact that you can disable transitive dependencies.
@@ -223,7 +225,7 @@ You can now update your Ivy module file to use these property references. Here's
 All we have to do now is tell Ivy to fetch the dependencies and copy them to the lib directory. For that, we switch back to our Ant build file with the Ivy-related targets.
 </p>
 
-<h1 class="wikiHeadline1" id="H-InflatingTheProject"><a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-InflatingTheProject">Inflating the project</a></h1>
+<h1 class="wikiHeadline1" id="H-InflatingTheProject"><a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-InflatingTheProject">Inflating the project</a></h1>
 
 <p class="wikiPara">
 We'll create a task for <q>inflating</q> the lib file with the artifacts defined in the Ivy module file. This task needs to depend on a task that loads the Ivy Ant tasks and that task has to in turn depend on a task that fetches Ivy. Here are the targets:
@@ -286,7 +288,7 @@ Total time: 3 seconds</pre>
 So far, so good, but currently we are running a bit short functionality that was present before we introduced Ivy. For one, we need the JBoss Embedded JAR files and dependencies in order to be able to run tests. The project build is expecting these artifacts to be in the lib/test directory. Additionally, seam-gen includes the source artifacts for Seam in the lib/src directory, so we will want to pull down those down from the repository as well (and any other sources you want to grab). The question is, where do these artifacts fit in?
 </p>
 
-<h1 class="wikiHeadline1" id="H-FetchingAuxiliaryArtifacts"><a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-FetchingAuxiliaryArtifacts">Fetching auxiliary artifacts</a></h1>
+<h1 class="wikiHeadline1" id="H-FetchingAuxiliaryArtifacts"><a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-FetchingAuxiliaryArtifacts">Fetching auxiliary artifacts</a></h1>
 
 <p class="wikiPara">
 It's time for us to expand our dependency list to itemize the different types of dependencies. We just identified three types:
@@ -383,7 +385,7 @@ ant explode</pre>
 You are now Ivy-enabled and you're lib folder is no longer bursting at the seams.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Summary"><a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-Summary">Summary</a></h1>
+<h1 class="wikiHeadline1" id="H-Summary"><a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#H-Summary">Summary</a></h1>
 
 <p class="wikiPara">
 What we set out to do is reign in the chaos of the lib folder in seam-gen projects and setup a system for managing the dependencies. Having a dependency management solution in place makes it easy to add new libraries and upgrade existing ones. The approach taken in this article was to use Ivy to define the dependencies and retrieve them from a remote repository without having to change the project build in any way (other than to import the Ivy-related build file). I purposely did not attempt to integrate Ivy into the build process because there is really no need to constantly retrieve the artifacts while developing your application. Instead, what you want is a <q>set it and forget it</q> approach. This strategy has the side effect of making your build reproducible and stable.
@@ -398,9 +400,9 @@ And in case you are wondering, yes, I am considering integrating Ivy support int
 </p>
 
 <p class="wikiPara">
-Get the complete <a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#attachment1" target="" class="regularLink">Ivy configuration and build file[1]</a> and start using Ivy to manage your application's dependencies today!
+Get the complete <a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#attachment1" target="" class="regularLink">Ivy configuration and build file[1]</a> and start using Ivy to manage your application's dependencies today!
 </p>
 
 <p class="wikiPara">
-<i class="wikiEmphasis">Update:</i> Grab the <a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy#attachment1" target="" class="regularLink">updated Ivy configuration and build file[1]</a> to get a more concise version of the ivy.settings.xml file.</p>
+<i class="wikiEmphasis">Update:</i> Grab the <a href="/2008/10/03/ManagingTheDependenciesOfASeamgenProjectWithIvy#attachment1" target="" class="regularLink">updated Ivy configuration and build file[1]</a> to get a more concise version of the ivy.settings.xml file.</p>
 </div>

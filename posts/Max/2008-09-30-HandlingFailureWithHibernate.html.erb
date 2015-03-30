@@ -5,11 +5,13 @@ blogger_name: "Max"
 creation_date: "30-09-2008"
 tags: [Hibernate]
 
-absolute_url: http://in.relation.to/2008/09/30/HandlingFailureWithHibernate
-lace: http://in.relation.to/9450.lace
+relative_url: /2008/09/30/HandlingFailureWithHibernate
 slug: HandlingFailureWithHibernate
+lace: http://in.relation.to/9450.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/09/30/HandlingFailureWithHibernate
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 I'm sitting in at <a href="http://www.michaelnygard.com/" target="" class="regularLink">Michael Nygard</a>'s talk at <a href="http://wwww.jaoo.dk" target="" class="regularLink">JAOO</a> about handling failure in production systems. He wrote 'Release It!' a pattern book that describes common anti-patterns and illustrates how they can cause massive downtimes and lost business. During his talk he called out ORM Tools to be bad at handling some of these which urged me to make this blog. 
 </p>
 
-<h1 class="wikiHeadline1" id="H-UnboundedResultSet"><a href="/Bloggers/HandlingFailureWithHibernate#H-UnboundedResultSet">Unbounded result set</a></h1>
+<h1 class="wikiHeadline1" id="H-UnboundedResultSet"><a href="/2008/09/30/HandlingFailureWithHibernate#H-UnboundedResultSet">Unbounded result set</a></h1>
 <p class="wikiPara">
 He mentioned ORM Tools are bad at handling the pattern he calls <q>Unbounded result set</q> which is done by applications assuming that a query will only return a few records but when put into production the query suddenly starts returning million of rows instead of those few that were in the development/test systems.
 </p>
@@ -62,7 +64,7 @@ In my mind that is not really the fault of the ORM Tool, but more that Java's co
 This gives you the exact same pagniation features on mapped collections as normal queries and helps you avoid the <q>Unbound Result Set</q> anti-pattern. 
 </p>
 
-<h1 class="wikiHeadline1" id="H-Timeouts"><a href="/Bloggers/HandlingFailureWithHibernate#H-Timeouts">Timeouts</a></h1>
+<h1 class="wikiHeadline1" id="H-Timeouts"><a href="/2008/09/30/HandlingFailureWithHibernate#H-Timeouts">Timeouts</a></h1>
 
 <p class="wikiPara">
 Another issue Michael urged developers to take care of is to always use timeouts for any remote calls, incl. database queries.

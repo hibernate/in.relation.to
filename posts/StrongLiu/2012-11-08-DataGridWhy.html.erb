@@ -5,11 +5,13 @@ blogger_name: "StrongLiu"
 creation_date: "08-11-2012"
 tags: [Infinispan]
 
-absolute_url: http://in.relation.to/2012/11/08/DataGridWhy
-lace: http://in.relation.to/23654.lace
+relative_url: /2012/11/08/DataGridWhy
 slug: DataGridWhy
+lace: http://in.relation.to/23654.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/11/08/DataGridWhy
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -43,7 +45,7 @@ NOTE: this post is translated from <a href="http://howtojboss.com/2012/11/07/dat
 使用分布式缓存的原因中包括了为什么使用缓存集群, 而使用缓存集群的原因中包括了为什么使用本地缓存.(译注: 这句话感觉上真怪.)
 </p>
 
-<h2 class="wikiHeadline2" id="H-"><a href="/Bloggers/DataGridWhy#H-">性能</a></h2>
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/DataGridWhy#H-">性能</a></h2>
 
 <p class="wikiPara">
 访问本地缓存中的一个对象比直接访问远端数据存储引擎(例如数据库)要快很多.
@@ -67,7 +69,7 @@ NOTE: this post is translated from <a href="http://howtojboss.com/2012/11/07/dat
 更进一步, JBoss Data Grid还有一些自己所特有的性能调优方法, 例如, 它可以被配置成使用异步通讯并且提供了一个异步API.
 </p>
 
-<h2 class="wikiHeadline2" id="H-"><a href="/Bloggers/DataGridWhy#H-">一致性</a></h2>
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/DataGridWhy#H-">一致性</a></h2>
 
 <p class="wikiPara">
 本地缓存只有在应用程序被部署到单一的应用服务器上的时候才有意义, 如果它被部署到了多台应用服务器上的话, 那么本地缓存一点意义都没有, 问题出在过期数据. 集群缓存通过复制和让缓存数据失效来解决这个问题的.
@@ -81,7 +83,7 @@ NOTE: this post is translated from <a href="http://howtojboss.com/2012/11/07/dat
 最后, JBoss Data Grid还支持额外支持某些其它数据网格产品可能不支持的保证数据一致性的特性, 例如它支持事物处理恢复, 和基于版本号的更新或删除.
 </p>
 
-<h2 class="wikiHeadline2" id="H-"><a href="/Bloggers/DataGridWhy#H-">可伸缩性</a></h2>
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/DataGridWhy#H-">可伸缩性</a></h2>
 
 <p class="wikiPara">
 集群缓存和数据网格的区别就在于可伸缩性. 数据网格是可伸缩的. 缓存数据是通过动态的分区被分发的. 结果就是, 增加一个缓存节点即提高了吞吐量也提高了容量.
@@ -91,7 +93,7 @@ NOTE: this post is translated from <a href="http://howtojboss.com/2012/11/07/dat
 JBoss Data Grid通过使用一致性Hash算法, 最小化的降低了增加或者删除一个结点所带来的结点(译注: 推荐阅读<a href="http://www8.org/w8-papers/2a-webserver/caching/paper2.html" target="" class="regularLink">这篇文章</a>, 或者<a href="http://blog.csdn.net/sparkliang/article/details/5279393" target="" class="regularLink">这篇, 是中文的</a>), 当增加或者删除一个结点的时候, 只有一部分数据被重新移动已达到平衡. 所以, 增加或者删除一个结点只会对数据网格中的一部分结点产生影响, 而别的算法就很可能会影响到数据网格中的所有结点了.
 </p>
 
-<h2 class="wikiHeadline2" id="H-"><a href="/Bloggers/DataGridWhy#H-">独立性</a></h2>
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/DataGridWhy#H-">独立性</a></h2>
 
 <p class="wikiPara">
 另外一个集群缓存和数据网格之间的不同点即是否支持独立访问了.
@@ -175,7 +177,7 @@ IT人员需要多管理一个应用服务器, 增加了管理成本.
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-"><a href="/Bloggers/DataGridWhy#H-">基础架构</a></h2>
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/DataGridWhy#H-">基础架构</a></h2>
 
 <p class="wikiPara">
 对比在基础架构中作为顶级系统的独立数据网格和内置于其它系统之中的二级数据网格服务.

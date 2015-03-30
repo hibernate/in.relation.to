@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "13-07-2011"
 tags: [Ceylon]
 
-absolute_url: http://in.relation.to/2011/07/13/SequencesAndSequencedParameters
-lace: http://in.relation.to/21005.lace
+relative_url: /2011/07/13/SequencesAndSequencedParameters
 slug: SequencesAndSequencedParameters
+lace: http://in.relation.to/21005.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/07/13/SequencesAndSequencedParameters
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -58,7 +60,7 @@ This really starts to screw up my beautiful clean type argument inference algori
 So I think we need to make you explicitly specify what you mean when you pass a sequence of values to a sequenced parameter. I have a couple of ideas about how to do this.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Solution1"><a href="/Bloggers/SequencesAndSequencedParameters#H-Solution1">Solution 1</a></h2>
+<h2 class="wikiHeadline2" id="H-Solution1"><a href="/2011/07/13/SequencesAndSequencedParameters#H-Solution1">Solution 1</a></h2>
 
 <p class="wikiPara">
 First solution, kinda indirectly inspired by groovy, would be a special syntax in the positional parameter method invocation protocol.
@@ -77,7 +79,7 @@ String? word = first(words...);    //infers T = String</pre>
 I think this reads fairly naturally. The downside is it's a special-purpose kind of punctuation that needs to be specially explained in the specification.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Solution2"><a href="/Bloggers/SequencesAndSequencedParameters#H-Solution2">Solution 2</a></h2>
+<h2 class="wikiHeadline2" id="H-Solution2"><a href="/2011/07/13/SequencesAndSequencedParameters#H-Solution2">Solution 2</a></h2>
 
 <p class="wikiPara">
 Second solution is to introduce a special type (a subtype of <tt>Sequence</tt>) to represent a package of sequenced arguments. Call it <tt>SequencedArguments</tt>. Then, with a little helper method <tt>spread()</tt> that wraps up a <tt>Sequence</tt> as a <tt>SequencedArguments</tt>, the syntax would look like:
@@ -96,7 +98,7 @@ String? word = first(spread(words));        //infers T = String</pre>
 This is a little more verbose, but reasonable. It also makes the specification easier to write.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Solution3"><a href="/Bloggers/SequencesAndSequencedParameters#H-Solution3">Solution 3</a></h2>
+<h2 class="wikiHeadline2" id="H-Solution3"><a href="/2011/07/13/SequencesAndSequencedParameters#H-Solution3">Solution 3</a></h2>
 
 <p class="wikiPara">
 Solutions 1 and 2 can be combined very elegantly. We can define:
@@ -127,13 +129,13 @@ I think this works out, and is very much in the spirit of the language. On the o
 WDYT? Does <tt>print(words...)</tt> read well to you guys, or does it feel arbitrary?
 </p>
 
-<h2 class="wikiHeadline2" id="H-PS"><a href="/Bloggers/SequencesAndSequencedParameters#H-PS">P.S.</a></h2>
+<h2 class="wikiHeadline2" id="H-PS"><a href="/2011/07/13/SequencesAndSequencedParameters#H-PS">P.S.</a></h2>
 
 <p class="wikiPara">
 Let's not confuse this too much with the idea of applying an operation to a tuple of arguments like what you can do in functional languages and dynamic languages. This is superficially similar, but not quite the same.
 </p>
 
-<h2 class="wikiHeadline2" id="H-UPDATE"><a href="/Bloggers/SequencesAndSequencedParameters#H-UPDATE">UPDATE</a></h2>
+<h2 class="wikiHeadline2" id="H-UPDATE"><a href="/2011/07/13/SequencesAndSequencedParameters#H-UPDATE">UPDATE</a></h2>
 
 <p class="wikiPara">
 A reasonable syntactic variation that perhaps reads somewhat better would use <tt>all</tt> as a keyword:

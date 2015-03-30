@@ -5,11 +5,13 @@ blogger_name: "Jay"
 creation_date: "14-06-2011"
 tags: [Contexts and Dependency Injection,Hibernate,JBoss Tools,JavaServer Faces,RichFaces,Seam News,jbwkeynote2011]
 
-absolute_url: http://in.relation.to/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote
-lace: http://in.relation.to/20818.lace
+relative_url: /2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote
 slug: RichFacesAndTheMobileWebForTheJBossWorld2011Keynote
+lace: http://in.relation.to/20818.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -45,7 +47,7 @@ The entire JBoss World demonstration included many JBoss projects; such as <a hr
 The latest <a href="http://asylum.libsyn.com/podcast-19-j-boss-world-2011-keynote-behind-the-scene" target="" class="regularLink">JBoss Assylum</a> also features many of the developers giving behind the scenes perspective and humor.  Each project will be providing blogs and code for its own part.  You can get the latest at the <a href="http://www.jboss.org/jbw2011keynote" target="" class="regularLink">JBoss World Keynote 2011</a> landing page, and follow along with the <a href="http://twitter.com/#!/search/%23jbwkeynote2011" target="" class="regularLink">#jbwkeynote2011</a> twitter hashtag!
 </p>
 
-<h3 class="wikiHeadline3" id="H-RichFacesTweetStreamApplication"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-RichFacesTweetStreamApplication">RichFaces TweetStream Application</a></h3>
+<h3 class="wikiHeadline3" id="H-RichFacesTweetStreamApplication"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-RichFacesTweetStreamApplication">RichFaces TweetStream Application</a></h3>
 
 <p class="wikiPara">
 <a href="http://www.jroller.com/wesleyhales/" target="" class="regularLink">Wesley Hales</a> and I were looking for an application to show RichFaces 4 on mobile devices for our <a href="https://www.jboss.org/dms/judcon/presentations/Boston2011/JUDConBoston2011_day2track1session3.pdf" target="" class="regularLink">JUDCon</a> presentation: <a href="http://vimeo.com/24775911" target="" class="regularLink">Filling the Gap: Going Mobile With JBoss Technologies Today</a>.  We came up with a simple idea that would be instantly recognizable, allow audience participation, and with just enough UI complexity.  It was around this time that JBoss Keynote was being planned, and TweetStream just fit right in!
@@ -76,7 +78,7 @@ In front of this Wesley and I built a set of RichFaces 4 views that provide adva
 If you just can't wait to check out the demo on your own machine we have a version of it hosted on <a href="https://openshift.redhat.com/app/" target="" class="regularLink">RedHat's OpenShift</a> just follow this link <a href="http://bit.ly/tweetstream2" target="" class="regularLink">http://bit.ly/tweetstream2</a>.  The Filling The Gap presentation was also <a href="http://vimeo.com/24775911" target="" class="regularLink">recorded</a> and contains Wesley and I discussing some of the apps details.
 </p>
 
-<h3 class="wikiHeadline3" id="H-SourceCodeOAuthAndIDEIntegration"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-SourceCodeOAuthAndIDEIntegration">Source Code, OAuth, and IDE Integration</a></h3>
+<h3 class="wikiHeadline3" id="H-SourceCodeOAuthAndIDEIntegration"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-SourceCodeOAuthAndIDEIntegration">Source Code, OAuth, and IDE Integration</a></h3>
 
 <p class="wikiPara">
 Instead of just explaining the various parts all up front lets just jump right into getting the source code, building it, deploying to JBoss AS and integrating it into JBoss Tools.  We'll discuss some of the internals below, or is follow up blogs.
@@ -90,7 +92,7 @@ Instead of just explaining the various parts all up front lets just jump right i
 The <a href="https://github.com/richfaces/tweetstream" target="" class="regularLink">TweetStream source code</a> is part the <a href="https://github.com/richfaces/" target="" class="regularLink">RichFaces organization</a> on github.com.  You can use git to clone the repo with: <tt>git clone git@github.com:richfaces/tweetstream.git</tt>.  We'll talk about the structure after we get it running.
 </p>
 
-<h4 class="wikiHeadline4" id="H-Twitter4jAmpOAuth"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-Twitter4jAmpOAuth">Twitter4j &amp; OAuth</a></h4>
+<h4 class="wikiHeadline4" id="H-Twitter4jAmpOAuth"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-Twitter4jAmpOAuth">Twitter4j &amp; OAuth</a></h4>
 
 <p class="wikiPara">
 While we would love to let you use our twitter account credentials, that would not be so good.  This means that you'll need to go through the steps outlined in the <a href="https://github.com/richfaces/tweetstream/blob/develop/README" target="" class="regularLink">README</a> to get <a href="http://twitter4j.org/en/configuration.html" target="" class="regularLink">twitter4j setup</a>.
@@ -110,7 +112,7 @@ oauth.accessTokenSecret=**************************</pre>
 Once that's done all that is left is deploying the application!
 </p>
 
-<h4 class="wikiHeadline4" id="H-JBossAS6"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-JBossAS6">JBoss AS 6</a></h4>
+<h4 class="wikiHeadline4" id="H-JBossAS6"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-JBossAS6">JBoss AS 6</a></h4>
 
 <p class="wikiPara">
 In the base <tt>/tweetstream</tt> directory run <tt>mvn package</tt> to build the standalone version of the application.  You should now have the file <tt>/tweetstream/target/tweetstream.war</tt>.  Copy this file to the <tt>$JBOSS_HOME/server/default/deploy</tt> directory.
@@ -124,7 +126,7 @@ At this point your can start the server, but I would recommend you start with th
 Once the application starts up you can see it at <a href="http://localhost:8080/tweetstream" target="" class="regularLink">http://localhost:8080/tweetstream</a>.  If you want to try out your smartphone or tablet you may need to modify you firewall to allow port 8080 through.  Then access using your tablet, or phone at <q>http://your.ip:8080/tweetstream</q>.
 </p>
 
-<h4 class="wikiHeadline4" id="H-ImportingIntoJBossTools"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-ImportingIntoJBossTools">Importing into JBoss Tools</a></h4>
+<h4 class="wikiHeadline4" id="H-ImportingIntoJBossTools"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-ImportingIntoJBossTools">Importing into JBoss Tools</a></h4>
 
 <p class="wikiPara">
 Importing this project into JBoss Tools 3.2 is easy because it uses m2eclipse under the covers.  All you need to do is choose <tt>File--&gt;Import--&gt;Existing Maven Project</tt>, and point it to where you cloned the source code.  Eclipse will run through it's normal project import, and in a few minutes have the new project ready to go.
@@ -139,7 +141,7 @@ A couple of things to note:
 <li class="wikiUnorderedListItem"> You may see build issues in the <tt>/jbw</tt> project - I'll explain that in a minute </li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-StructureAndKeyFiles"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-StructureAndKeyFiles">Structure and Key Files</a></h3>
+<h3 class="wikiHeadline3" id="H-StructureAndKeyFiles"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-StructureAndKeyFiles">Structure and Key Files</a></h3>
 
 <p class="wikiPara">
 Now that you have the application running, and hopefully imported into JBoss Tools lets talk about the structure and some of the key areas to look at.  
@@ -168,7 +170,7 @@ The way we were easily able to shift our backend so easily is a testament to not
 As I said we'll be following up this blog with deep-dives into the various details, but for now, here are some things to take a look at:
 </p>
 
-<h4 class="wikiHeadline4" id="H-DeviceDetection"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-DeviceDetection">Device detection</a></h4>
+<h4 class="wikiHeadline4" id="H-DeviceDetection"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-DeviceDetection">Device detection</a></h4>
 <p class="wikiPara">
 We use a great little project called <a href="http://www.mobileesp.com" target="" class="regularLink">mobileESP</a> to help us with device detection.  It is a basic user-agent sniffer that we wrapped in a CDI bean to do our bidding in a class called <a href="https://github.com/richfaces/tweetstream/blob/develop/tweetstream/src/main/java/org/richfaces/examples/tweetstream/ui/useragent/UserAgentProcessor.java" target="" class="regularLink">UserAgentProcess.java</a>.  This could be swapped out for any of the other device detection libraries such as the <a href="http://wurfl.sourceforge.net/" target="" class="regularLink">WURLF API</a>.
 </p>
@@ -177,7 +179,7 @@ We use a great little project called <a href="http://www.mobileesp.com" target="
 We take advantage of JSF 2.0 and facelets templating to provide a single point of access per view to act as a dispatcher for different devices.  This provides a single bookmark and URL no matter what device you are accessing it from.  You can review that in the <a href="https://github.com/richfaces/tweetstream/blob/develop/tweetstream/src/main/webapp/pages/home.xhtml" target="" class="regularLink">home.xhtml</a>
 </p>
 
-<h4 class="wikiHeadline4" id="H-OrientationsDetectionAndUpdates"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-OrientationsDetectionAndUpdates">Orientations detection and updates</a></h4>
+<h4 class="wikiHeadline4" id="H-OrientationsDetectionAndUpdates"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-OrientationsDetectionAndUpdates">Orientations detection and updates</a></h4>
 <p class="wikiPara">
 Using CSS 3 <tt>@media</tt> selectors makes this a breeze.  We use this to great effect in for the tablet view.  Always keeping the top tweeters, and top hashtags in the best location.
 </p>
@@ -188,12 +190,12 @@ Using CSS 3 <tt>@media</tt> selectors makes this a breeze.  We use this to great
 <li class="wikiUnorderedListItem"> <a href="https://github.com/richfaces/tweetstream/blob/develop/tweetstream/src/main/webapp/resources/css/ipad.css" target="" class="regularLink">ipad.css</a> - should be named tablet.css ;-)</li>
 </ul>
 
-<h4 class="wikiHeadline4" id="H-SmartPhoneTransitions"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-SmartPhoneTransitions">SmartPhone transitions</a></h4>
+<h4 class="wikiHeadline4" id="H-SmartPhoneTransitions"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-SmartPhoneTransitions">SmartPhone transitions</a></h4>
 <p class="wikiPara">
 Making the page handle the page transitions on smartphones was also easier than you'd think.  You can review the details in the <a href="https://github.com/richfaces/tweetstream/blob/develop/tweetstream/src/main/webapp/pages/phoneHome.xhtml" target="" class="regularLink">phoneHome.xhtml</a> file.
 </p>
 
-<h4 class="wikiHeadline4" id="H-Misc"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-Misc">Misc</a></h4>
+<h4 class="wikiHeadline4" id="H-Misc"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-Misc">Misc</a></h4>
 
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <a href="https://github.com/richfaces/tweetstream/tree/develop/tweetstream/src/main/webapp/templates" target="" class="regularLink">Page templates</a>
@@ -217,7 +219,7 @@ Making the page handle the page transitions on smartphones was also easier than 
    
 </div>
 
-<h3 class="wikiHeadline3" id="H-ImprovementsThatCanBeMade"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-ImprovementsThatCanBeMade">Improvements That Can Be Made</a></h3>
+<h3 class="wikiHeadline3" id="H-ImprovementsThatCanBeMade"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-ImprovementsThatCanBeMade">Improvements That Can Be Made</a></h3>
 
 <p class="wikiPara">
 TweetStream was developed quickly and with a singular goal in mind.  There are some great opportunities for improvements, future RichFaces components, and more.  I would like to encourage anyone who is interested to take look in more detail.  Here are some possible ideas for improvements
@@ -238,7 +240,7 @@ TweetStream was developed quickly and with a singular goal in mind.  There are s
 There are a lot more possibilities, fork it, play, and lets see what you can come up with!!  We'll be standardizing and integrating some of these things into RichFaces, and other parts of JBoss so stay tuned!!
 </p>
 
-<h3 class="wikiHeadline3" id="H-WhereToGoFromHere"><a href="/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-WhereToGoFromHere">Where to go from here</a></h3>
+<h3 class="wikiHeadline3" id="H-WhereToGoFromHere"><a href="/2011/06/14/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote#H-WhereToGoFromHere">Where to go from here</a></h3>
 
 <p class="wikiPara">
 Wesley and I are going to post additional blogs and dig into some of the features just touched on above.  All of this should give you a good starting point for your own mobile web application using RichFaces 4 and JBoss!  Also, as I mentioned above there are going to be several more blogs related to the JBoss World Keynote demo that will detail Infinispan, Hibernate OGM, the plug computers and more!!

@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "23-09-2007"
 tags: [Web Beans,Web Beans Sneak Peek]
 
-absolute_url: http://in.relation.to/2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods
-lace: http://in.relation.to/2448.lace
+relative_url: /2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods
 slug: WebBeansSneakPeekPartIVScopesContextsAndResolverMethods
+lace: http://in.relation.to/2448.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -28,7 +30,7 @@ So far, we've seen a few examples of /scope type annotations/. The scope of a co
 For example, if we have a session scoped component, <tt>CurrentUser</tt>, all components that are called in the context of the same <tt>HttpSession</tt> will see the same instance of <tt>CurrentUser</tt>. This instance will be automatically created the first time a <tt>CurrentUser</tt> is needed in that session, and automatically destroyed when the session ends.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ScopeTypes"><a href="/Bloggers/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-ScopeTypes">Scope types</a></h2>
+<h2 class="wikiHeadline2" id="H-ScopeTypes"><a href="/2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-ScopeTypes">Scope types</a></h2>
 
 <p class="wikiPara">
 Web Beans features an /extensible context model/. It is possible to define new scopes by creating a new scope type annotation:
@@ -60,7 +62,7 @@ We can even use the scope type to obtain an instance of the <tt>Context</tt> obj
 SecondLevelCache cache = container.getContext(ClusterScoped.class).get(cacheComponent);</pre>
 
 
-<h2 class="wikiHeadline2" id="H-BuiltinScopes"><a href="/Bloggers/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-BuiltinScopes">Built-in scopes</a></h2>
+<h2 class="wikiHeadline2" id="H-BuiltinScopes"><a href="/2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-BuiltinScopes">Built-in scopes</a></h2>
 
 <p class="wikiPara">
 Web Beans defines four built-in scopes:
@@ -90,7 +92,7 @@ For a web application that uses Web Beans:
 If the application tries to use a component with a scope that does not have an active context, a <tt>ContextNotActive</tt> exception is thrown by the Web Beans container at runtime.
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheDependentPsuedoscope"><a href="/Bloggers/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-TheDependentPsuedoscope">The dependent psuedo-scope</a></h2>
+<h2 class="wikiHeadline2" id="H-TheDependentPsuedoscope"><a href="/2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-TheDependentPsuedoscope">The dependent psuedo-scope</a></h2>
 
 <p class="wikiPara">
 In addition, there is the notion of the /dependent psuedo-scope/. We use the term <q>psuedo-scope</q> because there is no <tt>Context</tt> for this special scope.
@@ -114,7 +116,7 @@ a Web Bean component that does not explicitly declare a scope type. We've narrow
 <tt>@RequestScoped</tt> and <tt>@Dependent</tt>, each of which has advantages and disadvantages.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ImplicitDependentComponents"><a href="/Bloggers/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-ImplicitDependentComponents">Implicit dependent components</a></h2>
+<h2 class="wikiHeadline2" id="H-ImplicitDependentComponents"><a href="/2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-ImplicitDependentComponents">Implicit dependent components</a></h2>
 
 <p class="wikiPara">
 The built-in <tt>@New</tt> binding annotation allows /implicit/ definition of a dependent component at an injection point. Suppose we declare the following injected attribute:
@@ -156,7 +158,7 @@ The <tt>calculator</tt> field has a conversation-scoped instance of <tt>Calculat
 This feature is particularly useful with resolver methods.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ResolverMethods"><a href="/Bloggers/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-ResolverMethods">Resolver methods</a></h2>
+<h2 class="wikiHeadline2" id="H-ResolverMethods"><a href="/2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-ResolverMethods">Resolver methods</a></h2>
 
 <p class="wikiPara">
 According to the spec:
@@ -236,7 +238,7 @@ Then the resolver method defaults to dependent scope, and it will be called /eve
 is injected!
 </p>
 
-<h2 class="wikiHeadline2" id="H-InjectionIntoResolverMethods"><a href="/Bloggers/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-InjectionIntoResolverMethods">Injection into resolver methods</a></h2>
+<h2 class="wikiHeadline2" id="H-InjectionIntoResolverMethods"><a href="/2007/09/23/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods#H-InjectionIntoResolverMethods">Injection into resolver methods</a></h2>
 
 <p class="wikiPara">
 There's one problem with this code. If <tt>CreditCardPaymentStrategy</tt> is a Web Bean component, it should

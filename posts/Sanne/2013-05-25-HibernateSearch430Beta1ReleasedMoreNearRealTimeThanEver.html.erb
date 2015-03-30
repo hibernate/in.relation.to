@@ -5,11 +5,13 @@ blogger_name: "Sanne"
 creation_date: "25-05-2013"
 tags: [Hibernate Search,News]
 
-absolute_url: http://in.relation.to/2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver
-lace: http://in.relation.to/24239.lace
+relative_url: /2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver
 slug: HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver
+lace: http://in.relation.to/24239.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 Hibernate Search 4.3.0.Beta1 is now available both in Maven repositories and from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-search/4.3.0.Beta1/" target="" class="regularLink">Sourceforge</a>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhatsNew"><a href="/Bloggers/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-WhatsNew">What's new?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatsNew"><a href="/2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-WhatsNew">What's new?</a></h1>
 
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem">Performance boosts for the NRT backend</li>
@@ -31,7 +33,7 @@ Hibernate Search 4.3.0.Beta1 is now available both in Maven repositories and fro
 More details can be found on this <a href="https://hibernate.atlassian.net/issues/?filter=12860" target="" class="regularLink">JIRA filter</a>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-PerformanceImprovementsForNRTUsers"><a href="/Bloggers/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-PerformanceImprovementsForNRTUsers">Performance improvements for NRT users</a></h1>
+<h1 class="wikiHeadline1" id="H-PerformanceImprovementsForNRTUsers"><a href="/2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-PerformanceImprovementsForNRTUsers">Performance improvements for NRT users</a></h1>
 <p class="wikiPara">
 We got a brand new performance testsuite, so we started to play with it and spotted some interesting optimisation opportunities which had eluded us in previous tests. The <a href="http://docs.jboss.org/hibernate/search/4.3/reference/en-US/html_single/#d0e824" target="" class="regularLink">NRT backend (near-real-time)</a> was affected by some unnecessary locking contention, which could in some scenarios result in significant slowdowns.
 </p>
@@ -40,7 +42,7 @@ We got a brand new performance testsuite, so we started to play with it and spot
 So what kind of fix are we talking about? Let's see the performance results of the new tests on the latest Final release first:
 </p>
 
-<h3 class="wikiHeadline3" id="H-PerformanceReportHibernateSearch420Final"><a href="/Bloggers/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-PerformanceReportHibernateSearch420Final">Performance Report: Hibernate Search 4.2.0.Final</a></h3>
+<h3 class="wikiHeadline3" id="H-PerformanceReportHibernateSearch420Final"><a href="/2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-PerformanceReportHibernateSearch420Final">Performance Report: Hibernate Search 4.2.0.Final</a></h3>
 
 <pre class="wikiPreformatted">SUMMARY
     Name   : FileSystemNearRealTimeTestScenario
@@ -74,7 +76,7 @@ TEST CONFIGURATION
 Let's see now how much this improved.
 </p>
 
-<h3 class="wikiHeadline3" id="H-PerformanceReportHibernateSearch430Beta1"><a href="/Bloggers/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-PerformanceReportHibernateSearch430Beta1">Performance Report: Hibernate Search 4.3.0.Beta1</a></h3>
+<h3 class="wikiHeadline3" id="H-PerformanceReportHibernateSearch430Beta1"><a href="/2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-PerformanceReportHibernateSearch430Beta1">Performance Report: Hibernate Search 4.3.0.Beta1</a></h3>
 
 <pre class="wikiPreformatted">SUMMARY
     Name   : FileSystemNearRealTimeTestScenario
@@ -107,7 +109,7 @@ And here comes the traditional disclaimer: don't expect the exact same performan
 We can't test all applications out there but I think I can state as an educated guess that I don't expect there to be cases in which performance could worsen. Improvements are likely to be measurable for any application using the near-real-time IndexManager, and could be even better than these figures if you have higher contention (more threads), slower storage performance, or significantly larger indexes.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ThanksForThis"><a href="/Bloggers/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-ThanksForThis">Thanks for this</a></h3>
+<h3 class="wikiHeadline3" id="H-ThanksForThis"><a href="/2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-ThanksForThis">Thanks for this</a></h3>
 <p class="wikiPara">
 I would like to express gratitude for these exciting figures to the whole Apache Lucene development team for having created the Near-Real-Time improvements in Lucene, which we're building on to provide this feature, and to Tomas Hradec from the JBoss QA team for creating the performance tests which nailed the problem and allowed us to make the measuring needed for these improvements.
 </p>
@@ -116,7 +118,7 @@ I would like to express gratitude for these exciting figures to the whole Apache
 If anyone wants to contribute tests, even performance ones, we'll be glad to play with them and use them as a base for future improvements.
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheUsualLinks"><a href="/Bloggers/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-TheUsualLinks">The usual links</a></h2>
+<h2 class="wikiHeadline2" id="H-TheUsualLinks"><a href="/2013/05/25/HibernateSearch430Beta1ReleasedMoreNearRealTimeThanEver#H-TheUsualLinks">The usual links</a></h2>
 
 <p class="wikiPara">
 As usual, the issue tracker is <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a> and all code is on <a href="https://github.com/hibernate/hibernate-search" target="" class="regularLink">GitHub</a>: pull requests and any kind of feedback welcome.

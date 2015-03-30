@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "04-03-2011"
 tags: [Bean Validation]
 
-absolute_url: http://in.relation.to/2011/03/04/JSRBeanValidation11WhatToPutIn
-lace: http://in.relation.to/18584.lace
+relative_url: /2011/03/04/JSRBeanValidation11WhatToPutIn
 slug: JSRBeanValidation11WhatToPutIn
+lace: http://in.relation.to/18584.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/03/04/JSRBeanValidation11WhatToPutIn
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ As you may have noticed, it's almost spring cleaning time and everyone pushes it
 First off, I think people have been very pleased with Bean Validation (no major flaw nor big limitation). So the idea is to go for a version 1.1 rather than a 2.0.
 </p>
 
-<h1 class="wikiHeadline1" id="H-IntegrationWithOtherSpecs"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-IntegrationWithOtherSpecs">Integration with other specs</a></h1>
+<h1 class="wikiHeadline1" id="H-IntegrationWithOtherSpecs"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-IntegrationWithOtherSpecs">Integration with other specs</a></h1>
 
 <p class="wikiPara">
 While not part of the Bean Validation JSR, I think it is important to pursue further collaborative work with some other JSR leads on how to integrate Bean Validation into the various lifecycles of the SE/EE platforms. Certainly nobody wants each specification to invent its own validation mechanism and its own annotations. The work we did with JPA 2 and JSF 2 showed that it is possible and beneficial for the platform and developers.
@@ -36,7 +38,7 @@ While not part of the Bean Validation JSR, I think it is important to pursue fur
 <li class="wikiUnorderedListItem"> CDI: integrate method-level validation (see below)</li>
 </ul>
 
-<h1 class="wikiHeadline1" id="H-MethodLevelValidation"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-MethodLevelValidation">Method level validation</a></h1>
+<h1 class="wikiHeadline1" id="H-MethodLevelValidation"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-MethodLevelValidation">Method level validation</a></h1>
 
 <p class="wikiPara">
 The idea is to offer APIs to validate parameters and return values of method calls. These APIs would be used by any injection or AOP framework around method invocations. If a constraint violation is detected, an exception (eg. <tt>ConstraintViolationException</tt>) would be raised.
@@ -62,7 +64,7 @@ Interceptor frameworks could be:
 <li class="wikiUnorderedListItem"> AOP style framework like Javassist or AspectJ</li>
 </ul>
 
-<h1 class="wikiHeadline1" id="H-ValidAndGroupPropagation"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ValidAndGroupPropagation">@Valid and group propagation</a></h1>
+<h1 class="wikiHeadline1" id="H-ValidAndGroupPropagation"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-ValidAndGroupPropagation">@Valid and group propagation</a></h1>
 
 <p class="wikiPara">
 Some people have required the ability to translate a group into another group while cascading the validation. This can help reduce the number of groups and increase reuse.
@@ -84,7 +86,7 @@ public class Country {
 }</pre>
 
 
-<h1 class="wikiHeadline1" id="H-ApplyConstraintsOnElementsOfCollection"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ApplyConstraintsOnElementsOfCollection">Apply constraints on elements of collection</a></h1>
+<h1 class="wikiHeadline1" id="H-ApplyConstraintsOnElementsOfCollection"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-ApplyConstraintsOnElementsOfCollection">Apply constraints on elements of collection</a></h1>
 
 <p class="wikiPara">
 While we can validate constraints on the collection itself and ask to cascade validation to the elements of the collection, we cannot put constraints on the collection element itself. This is annoying for collection of native types in particular. There are several not so elegant solutions to this problem, the real solution is to wait for Annotations on Java types (JSR-308)
@@ -98,13 +100,13 @@ While we can validate constraints on the collection itself and ask to cascade va
 Depending on when JSR-308 finally comes out, we might want to delay this feature.
 </p>
 
-<h1 class="wikiHeadline1" id="H-VariousIssues"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-VariousIssues">Various issues</a></h1>
+<h1 class="wikiHeadline1" id="H-VariousIssues"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-VariousIssues">Various issues</a></h1>
 
 <p class="wikiPara">
 In no particular order, here are a few issues or features we can also try to tackle. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-ConstraintComposition"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ConstraintComposition">Constraint composition</a></h2>
+<h2 class="wikiHeadline2" id="H-ConstraintComposition"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-ConstraintComposition">Constraint composition</a></h2>
 
 <p class="wikiPara">
 Today constraint composition is done with a logical AND (all constraints must be valid). We could also support logical OR composition.
@@ -124,7 +126,7 @@ public @interface ValidSSN {
 }</pre>
 
 
-<h2 class="wikiHeadline2" id="H-JTAAndExceptionPropagation"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-JTAAndExceptionPropagation">JTA and exception propagation</a></h2>
+<h2 class="wikiHeadline2" id="H-JTAAndExceptionPropagation"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-JTAAndExceptionPropagation">JTA and exception propagation</a></h2>
 
 <p class="wikiPara">
 In EE, there are some inconsistencies on how exceptions are raised:
@@ -139,25 +141,25 @@ In EE, there are some inconsistencies on how exceptions are raised:
 Basically when operations (like validation) are triggered within the declarative <tt>commit()</tt>, everything I believe is wrapped into a <tt>RollbackException</tt>. Which means that depending when JPA's <tt>flush()</tt> is called, <tt>ConstraintViolationException</tt> (raised by JPA) comes either untainted or comes wrapped in <tt>RollbackException</tt>. I wonder if we can fix this inconsistency.
 </p>
 
-<h2 class="wikiHeadline2" id="H-BetterRulesForOSGiStyleContainers"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-BetterRulesForOSGiStyleContainers">Better rules for OSGi style containers</a></h2>
+<h2 class="wikiHeadline2" id="H-BetterRulesForOSGiStyleContainers"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-BetterRulesForOSGiStyleContainers">Better rules for OSGi style containers</a></h2>
 
 <p class="wikiPara">
 Some extreme modularity fanboys have complained about some fuzziness in the spec around visibility and classloaders. We should clarify that.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ExclusiveFlagOnBigDecimalBigInteger"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ExclusiveFlagOnBigDecimalBigInteger">Exclusive flag on @BigDecimal / @BigInteger</a></h2>
+<h2 class="wikiHeadline2" id="H-ExclusiveFlagOnBigDecimalBigInteger"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-ExclusiveFlagOnBigDecimalBigInteger">Exclusive flag on @BigDecimal / @BigInteger</a></h2>
 
 <p class="wikiPara">
 Allow to exclude limits.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ConstraintViolationExceptionBuilder"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-ConstraintViolationExceptionBuilder">ConstraintViolationException builder</a></h2>
+<h2 class="wikiHeadline2" id="H-ConstraintViolationExceptionBuilder"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-ConstraintViolationExceptionBuilder">ConstraintViolationException builder</a></h2>
 
 <p class="wikiPara">
 The idea is to provide a simple API to build consistent <tt>ConstraintViolationException</tt>s. Because Bean Validation is usually called by the lifecycle of other specifications or frameworks, it is their responsibility to raise the exception.
 </p>
 
-<h1 class="wikiHeadline1" id="H-YourParticipation"><a href="/Bloggers/JSRBeanValidation11WhatToPutIn#H-YourParticipation">Your participation</a></h1>
+<h1 class="wikiHeadline1" id="H-YourParticipation"><a href="/2011/03/04/JSRBeanValidation11WhatToPutIn#H-YourParticipation">Your participation</a></h1>
 
 <p class="wikiPara">
 That's all I have. I am sure I'm missing many improvements so please speak up. You can do it however it pleases you:

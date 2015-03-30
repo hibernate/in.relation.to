@@ -5,22 +5,24 @@ blogger_name: "Ilya"
 creation_date: "11-05-2011"
 tags: []
 
-absolute_url: http://in.relation.to/2011/05/11/MigrationToRichFaces4RichFacesDataModels
-lace: http://in.relation.to/20029.lace
+relative_url: /2011/05/11/MigrationToRichFaces4RichFacesDataModels
 slug: MigrationToRichFaces4RichFacesDataModels
+lace: http://in.relation.to/20029.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/11/MigrationToRichFaces4RichFacesDataModels
 ---
 <div id="documentDisplay" class="documentDisplay">
 
 
-<h2 class="wikiHeadline2" id="H-Overview"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-Overview">Overview</a></h2>
+<h2 class="wikiHeadline2" id="H-Overview"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-Overview">Overview</a></h2>
 
 <p class="wikiPara">
 I believe that this probably one of the most expected articles to come.  It will touch the RichFaces iteration component in-depth, covering advanced models which we are using under the hood. Actually real enterprise application using huge data sets, applies paging with lazy data loading, uses sorting, filtering, selection and the other features which makes then application really rich and interactive. So in most cases you could not rely on simple lists or maps with data wrapped using default models. And in order to achieve the best RichFaces tables experience with a good performance and scalability you need to understand the base principles of our models.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ModelsSample"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-ModelsSample">Models sample</a></h2>
+<h2 class="wikiHeadline2" id="H-ModelsSample"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-ModelsSample">Models sample</a></h2>
 <p class="wikiPara">
 At first I would like to introduce new sample available on our live demo – <b><a href="http://richfaces-showcase.appspot.com/richfaces/component-sample.jsf?demo=dataTable&amp;sample=arrangeableModel&amp;skin=blueSky" target="" class="regularLink">Arrangeable Model Sample</a></b>. It works using Hibernate Entity Manager and all the paging/sorting/filtering operations really performed at DB level instead of performing in wrapped model.
 </p>
@@ -29,7 +31,7 @@ At first I would like to introduce new sample available on our live demo – <b>
 In that article I will guide you through the base points which you should look in that sample in order to get main ideas and be able to work on your own models.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhyDoWeNeedTheModels"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-WhyDoWeNeedTheModels">Why do we need the models</a></h2>
+<h2 class="wikiHeadline2" id="H-WhyDoWeNeedTheModels"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-WhyDoWeNeedTheModels">Why do we need the models</a></h2>
 
 <p class="wikiPara">
 Let's start from a good question – why RichFaces introduces custom models having JSF <b>javax.faces.model.DataModel</b> contract already. And the reason is pretty simple. In difference with JSF 2 implementation which is supposed just to provide basic stuff RichFaces introduces new rich components and adds new features on top of them. Here is just overview:
@@ -47,7 +49,7 @@ Let's start from a good question – why RichFaces introduces custom models havi
 Of course all that stuff requires good model base. And in order to standardize the API between different components providing unified contract to the RichFaces developers we designed our models.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ExtendedDataModelOverview"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-ExtendedDataModelOverview">ExtendedDataModel Overview</a></h2>
+<h2 class="wikiHeadline2" id="H-ExtendedDataModelOverview"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-ExtendedDataModelOverview">ExtendedDataModel Overview</a></h2>
 
 <p class="wikiPara">
 From the beginning let me introduce our models principles and then later we will see how them are implemented in the showcase demo.
@@ -78,14 +80,14 @@ Well, we seeing new entity introduced there. And it’s <b>rowKey</b>. Let’s s
 Besides you see <b>walk()</b> method introduced there. RichFaces iteration components uses visitor pattern while working with model. So that method should perform model iteration and call the visitor passed as a parameter in order to handle every object in the model.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ExtendedDataModelImplementations"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-ExtendedDataModelImplementations">ExtendedDataModel implementations</a></h2>
+<h2 class="wikiHeadline2" id="H-ExtendedDataModelImplementations"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-ExtendedDataModelImplementations">ExtendedDataModel implementations</a></h2>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <b>SequenceDataModel</b> – default implementation of the <b>ExtendedDataModel</b> for the tables. Used when filtering and sorting not used by the component.</li>
 <li class="wikiUnorderedListItem"> <b>ArrangeableModel</b> – implementation of the <b>ExtendedDataModel</b> which implements <b>Arrangeable</b> interface additionally which are used to add sorting and filtering support. </li>
 <li class="wikiUnorderedListItem"> <b>TreeSequenceKeyModel</b> abstract model and all the models which extends it used by the tree component family. That model is out of scope for that article.</li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-SampleCode"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCode">Sample Code</a></h2>
+<h2 class="wikiHeadline2" id="H-SampleCode"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-SampleCode">Sample Code</a></h2>
 <p class="wikiPara">
 At first I would like to say that will not describe all the code used in the sample. You could easily check it at showcase live or obtain from <a href="http://anonsvn.jboss.org/repos/richfaces/branches/4.0.X/examples/richfaces-showcase/" target="" class="regularLink">SVN repository</a> and explore in your favorite IDE. Besides the fact that it will be boring and will make article really huge I also want to say that the goal of that write-up – to guide you in the right direction while reviewing RichFaces data models usage principles.
 </p>
@@ -103,7 +105,7 @@ And overview of that sample functionality:
 <li class="wikiUnorderedListItem"> Addition of the <b>rich:dataScroller</b> which allows breaking the data loading from db to the pages.</li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-SampleCodeBasePersonEntity"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeBasePersonEntity">Sample Code – Base Person entity</a></h2>
+<h2 class="wikiHeadline2" id="H-SampleCodeBasePersonEntity"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeBasePersonEntity">Sample Code – Base Person entity</a></h2>
 
 <p class="wikiPara">
 That would be self-explanatory I believe. We just using simple and frequently used classes to define Person object.
@@ -123,7 +125,7 @@ public class Person {
 
 
 
-<h2 class="wikiHeadline2" id="H-SampleCodeGenericModel"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeGenericModel">Sample Code – Generic Model</a></h2>
+<h2 class="wikiHeadline2" id="H-SampleCodeGenericModel"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeGenericModel">Sample Code – Generic Model</a></h2>
 
 <p class="wikiPara">
 Now let’s look closer to the model code.
@@ -200,7 +202,7 @@ Besides you may be interested to look into <b>getRowCount()</b> method:
 So there we’re applying sorting and filtering creating the criteria in order to return the <b>rowCount</b> for current component state. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-SampleCodeSpecificModelClass"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeSpecificModelClass">Sample Code – Specific Model Class</a></h2>
+<h2 class="wikiHeadline2" id="H-SampleCodeSpecificModelClass"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-SampleCodeSpecificModelClass">Sample Code – Specific Model Class</a></h2>
 
 <p class="wikiPara">
 The implementation of our generic model placed in <b>PersonBean</b> and defined with the next code:
@@ -243,7 +245,7 @@ public class PersonBean implements Serializable {
 So actually all we are doing there - performing lookup of entity manager and initiating the particular model implementation with the <b>Person</b> class as entity class and that entity manager.
 </p>
 
-<h2 class="wikiHeadline2" id="H-SampleCodePageCode"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-SampleCodePageCode">Sample Code – Page Code</a></h2>
+<h2 class="wikiHeadline2" id="H-SampleCodePageCode"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-SampleCodePageCode">Sample Code – Page Code</a></h2>
 
 <p class="wikiPara">
 We used two pages there. At first <b>arrangeableModel-sample.xhtml</b>:
@@ -308,7 +310,7 @@ And the second is <b>jpaColumn.xhtml</b>:
 That’s actually more interesting for us. Most important what you should note there that we passing just <b>Person</b> properties names as <b>sortBy</b> and <b>filterExpression</b> values. Usually you used EL binding to iteration object property and boolean expression in case you using our default models. But that’s not the case for us. As we implementing our model with in-db sorting and filtering – all we need to know just properties names and we will apply the rules in queries like you could see in the model.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Exercises"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-Exercises">Exercises</a></h2>
+<h2 class="wikiHeadline2" id="H-Exercises"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-Exercises">Exercises</a></h2>
 
 <p class="wikiPara">
 That sample is still not ideal for sure. Most important you could easily see that there is absolutely no caching. Every time when <b>walk()</b> or <b>getRowCount()</b> called it queries the db with the request for data. You should add it on your own because there is actually no unified recipe for all the situations. Somebody could need just to read the data from db once when filtering sorting or page changes and be sure that it never changes more between requests. In some cases you should consider that data could be inserted/deleted/edited concurrently by different users so the List obtained in <b>walk()</b> method could be changed even between different walk calls and so on. So it’s up to you to define the rules for that. The same applied to <b>rowCount</b>. It’s highly important to cache it also as possible because it’s called also multiple time during request (by both table and data scroller)
@@ -318,14 +320,14 @@ That sample is still not ideal for sure. Most important you could easily see tha
 Besides you might want to add <b>Weld/Seam</b> in order to be able to tie beans, entities and services in more graceful way.
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheResult"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-TheResult">The result</a></h2>
+<h2 class="wikiHeadline2" id="H-TheResult"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-TheResult">The result</a></h2>
 <p class="wikiPara">
 Even considering all you could open the demo that blog article would be boring without at least single screenshot of the result we achieved. So here is the table after we performed <b>sorting by surname</b> and filtered by emails to obtain only persons with <b>emails in <q>.com</q> domain</b>:
 </p>
 
 <img src="http://in.relation.to/service/File/20028" alt="">
 
-<h2 class="wikiHeadline2" id="H-MoreInformation"><a href="/Bloggers/MigrationToRichFaces4RichFacesDataModels#H-MoreInformation">More information</a></h2>
+<h2 class="wikiHeadline2" id="H-MoreInformation"><a href="/2011/05/11/MigrationToRichFaces4RichFacesDataModels#H-MoreInformation">More information</a></h2>
 <p class="wikiPara">
 As usually please refer to <a href="http://jboss.org/richfaces/docs" target="" class="regularLink">RichFaces Documentation</a> to get more info from JavaDoc's and references.</p>
 </div>

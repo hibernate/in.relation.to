@@ -5,11 +5,13 @@ blogger_name: "Hardy"
 creation_date: "03-11-2011"
 tags: []
 
-absolute_url: http://in.relation.to/2011/11/03/JUDCon2011LondonOGMIntroductionDemo
-lace: http://in.relation.to/22244.lace
+relative_url: /2011/11/03/JUDCon2011LondonOGMIntroductionDemo
 slug: JUDCon2011LondonOGMIntroductionDemo
+lace: http://in.relation.to/22244.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/11/03/JUDCon2011LondonOGMIntroductionDemo
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ Fresh back from <a href="http://www.jboss.org/events/JUDCon/2011/london" target=
 The demo is based on the AS 7 quickstart application <a href="https://github.com/jbossas/quickstart/tree/master/kitchensink" target="" class="regularLink">kitchensink</a> and shows a registration screen with name, email and phone number. Even though this is a very simple application there are several interesting things going on under the hood, most importantly the use of OGM :-) 
 </p>
 
-<h3 class="wikiHeadline3" id="H-AS7Modules"><a href="/Bloggers/JUDCon2011LondonOGMIntroductionDemo#H-AS7Modules">AS 7 modules</a></h3>
+<h3 class="wikiHeadline3" id="H-AS7Modules"><a href="/2011/11/03/JUDCon2011LondonOGMIntroductionDemo#H-AS7Modules">AS 7 modules</a></h3>
 <p class="wikiPara">
 The demo uses OGM in the version 3.0.0.Alpha2 which requires Hibernate Core 3.6. However, AS 7 ships with Hibernate 4. The solution to this problem is to define a Hibernate 3 module as described by Scott in <q><a href="http://in.relation.to/21601.lace" target="" class="regularLink">Using a different persistence provider with AS 7.0.1 </a></q>. The demo does exactly that. In fact it actually bundles all the steps described in the blog and let you create the required modules via a single maven command. Just check out ogm-kitchensink, make sure your JBOSS_HOME variable is set properly and run:</p>
 <pre class="wikiPreformatted">
@@ -32,7 +34,7 @@ mvn groovy:execute
 This will copy all required module jars and configuration files into the appropriate location of your local AS 7 instance.
 
 
-<h3 class="wikiHeadline3" id="H-RunningTheDemoLocally"><a href="/Bloggers/JUDCon2011LondonOGMIntroductionDemo#H-RunningTheDemoLocally">Running the demo locally</a></h3>
+<h3 class="wikiHeadline3" id="H-RunningTheDemoLocally"><a href="/2011/11/03/JUDCon2011LondonOGMIntroductionDemo#H-RunningTheDemoLocally">Running the demo locally</a></h3>
 <p class="wikiPara">
 Provided you have installed the modules and started JBoss AS, you can run the demo locally as simple as:</p>
 <pre class="wikiPreformatted">
@@ -41,7 +43,7 @@ mvn clean package jboss-as:deploy
 
 
 
-<h3 class="wikiHeadline3" id="H-Arquillian"><a href="/Bloggers/JUDCon2011LondonOGMIntroductionDemo#H-Arquillian">Arquillian</a></h3>
+<h3 class="wikiHeadline3" id="H-Arquillian"><a href="/2011/11/03/JUDCon2011LondonOGMIntroductionDemo#H-Arquillian">Arquillian</a></h3>
 <p class="wikiPara">
 Of course the demo comes with a test. Check out <u><a href="https://github.com/hferentschik/ogm-kitchensink/blob/master/src/test/java/org/jboss/as/quickstarts/kitchensink/test/MemberRegistrationTest.java" target="" class="regularLink">MemberRegistrationTest</a></u> to see how to put together a <a href="http://www.jboss.org/arquillian" target="" class="regularLink">Arquillian</a> test and then run the test either via:</p>
 <pre class="wikiPreformatted">
@@ -55,7 +57,7 @@ $ mvn test -DremoteTests=true
 Check the profile setup in <u><a href="https://github.com/hferentschik/ogm-kitchensink/blob/master/pom.xml" target="" class="regularLink">pom.xml</a></u> to see the difference in the configuration.
 
 
-<h3 class="wikiHeadline3" id="H-OpenShiftExpress"><a href="/Bloggers/JUDCon2011LondonOGMIntroductionDemo#H-OpenShiftExpress">OpenShift Express</a></h3>
+<h3 class="wikiHeadline3" id="H-OpenShiftExpress"><a href="/2011/11/03/JUDCon2011LondonOGMIntroductionDemo#H-OpenShiftExpress">OpenShift Express</a></h3>
 <p class="wikiPara">
 Last but not least, let's push the demo into OpenShift Express. This is as simple as signing up for OpenShift, installing the <i class="wikiEmphasis">rhc</i> command line tools and then running:</p>
 <pre class="wikiPreformatted">

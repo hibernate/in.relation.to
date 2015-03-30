@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "17-06-2011"
 tags: [Hibernate,Hibernate OGM,jbw2011keynote,jbwkeynote2011]
 
-absolute_url: http://in.relation.to/2011/06/17/HibernateOGMBirthAnnouncement
-lace: http://in.relation.to/20842.lace
+relative_url: /2011/06/17/HibernateOGMBirthAnnouncement
 slug: HibernateOGMBirthAnnouncement
+lace: http://in.relation.to/20842.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/06/17/HibernateOGMBirthAnnouncement
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ This is a pretty exciting moment, the first public alpha release of a brand new 
 Note that I say it's the first public alpha because the JBoss World Keynote 2011 was powered by Hibernate OGM Alpha 1. Yes it was 100% live and nothing was faked, No it did not crash :) Sanne explained <a href="http://in.relation.to/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo" target="" class="regularLink">in more detail</a> how we used Hibernate OGM in the demo. This blog entry is about Hibernate OGM itself and how it works.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhyHibernateOGM"><a href="/Bloggers/HibernateOGMBirthAnnouncement#H-WhyHibernateOGM">Why Hibernate OGM</a></h1>
+<h1 class="wikiHeadline1" id="H-WhyHibernateOGM"><a href="/2011/06/17/HibernateOGMBirthAnnouncement#H-WhyHibernateOGM">Why Hibernate OGM</a></h1>
 
 <p class="wikiPara">
 One of the objectives of the <a href="http://infinispan.org" target="" class="regularLink">Infinispan</a> team is to offer a higher level API for object manipulation. One thing leading to another, we have experimented with JPA and Hibernate Core's engine to see if this could fit the bill: looks like it does. The vision has quickly expanded though and Hibernate OGM is now an independent project aiming to offer JPA on top of other NoSQL stores too.
@@ -41,7 +43,7 @@ So when should you use Hibernate OGM? We are not claiming (that would be foolish
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-HowDoesItWork"><a href="/Bloggers/HibernateOGMBirthAnnouncement#H-HowDoesItWork">How does it work</a></h1>
+<h1 class="wikiHeadline1" id="H-HowDoesItWork"><a href="/2011/06/17/HibernateOGMBirthAnnouncement#H-HowDoesItWork">How does it work</a></h1>
 
 <p class="wikiPara">
 Basically, we are reusing the very mature Hibernate Core engine and trick it into storing data into a grid :) We plug into Hibernate Core via two main contracts named <tt>Loader</tt> and <tt>Persister</tt>. As you could expect, these load and persist/update/delete entities and collections. 
@@ -90,7 +92,7 @@ Unless you store relatively simple and short lived data, never go for blind seri
 For more information on how we did things, please have a look at the <a href="http://docs.jboss.org/hibernate/ogm/3.0/reference/en-US/html_single/#ogm-architecture" target="" class="regularLink">architecture section</a> of Hibernate OGM's reference documentation.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhatIsSupportedTodayAndWhatAboutTomorrow"><a href="/Bloggers/HibernateOGMBirthAnnouncement#H-WhatIsSupportedTodayAndWhatAboutTomorrow">What is supported today and what about tomorrow?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatIsSupportedTodayAndWhatAboutTomorrow"><a href="/2011/06/17/HibernateOGMBirthAnnouncement#H-WhatIsSupportedTodayAndWhatAboutTomorrow">What is supported today and what about tomorrow?</a></h1>
 
 <p class="wikiPara">
 Today Hibernate OGM is quite stable for everything CRUD (Create, Read, Update, Delete) and of course extremely stable for all the JPA object lifecycle rules as we simply reuse Hibernate Core's engine. Here is an excerpt on the things supported but for the full detail, please go check the reference documentation that list what is not supported.
@@ -133,7 +135,7 @@ Also, the NoSQL solution initially supported is Infinispan. The reasons behind i
 That being said, we do intend to support other NoSQL engines especially other key/value engines very soon. We have some abstractions in place already so they do need polishing. If you know a NoSQL solution and want to write a dialect for Hibernate OGM, please come talk to us and contribute.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Future"><a href="/Bloggers/HibernateOGMBirthAnnouncement#H-Future">Future</a></h1>
+<h1 class="wikiHeadline1" id="H-Future"><a href="/2011/06/17/HibernateOGMBirthAnnouncement#H-Future">Future</a></h1>
 
 <p class="wikiPara">
 We are at the very beginning of the project and the future is literally being shaped. Here are a few thing we have in plan:
@@ -154,7 +156,7 @@ We are at the very beginning of the project and the future is literally being sh
 This is a community driven effort, if one of these areas interest you or if you have other ideas, <a href="http://docs.jboss.org/hibernate/ogm/3.0/reference/en-US/html_single/#ogm-howtocontribute" target="" class="regularLink">let us know</a>!
 </p>
 
-<h1 class="wikiHeadline1" id="H-HowToDownloadAndComeContribute"><a href="/Bloggers/HibernateOGMBirthAnnouncement#H-HowToDownloadAndComeContribute">How to download and come contribute!</a></h1>
+<h1 class="wikiHeadline1" id="H-HowToDownloadAndComeContribute"><a href="/2011/06/17/HibernateOGMBirthAnnouncement#H-HowToDownloadAndComeContribute">How to download and come contribute!</a></h1>
 
 <p class="wikiPara">
 You can download the jars on JBoss.org's <a href="http://repository.jboss.org/nexus/content/groups/public-jboss/" target="" class="regularLink">Maven repository</a> or of course <a href="http://www.hibernate.org/subprojects/ogm/download" target="" class="regularLink">download the distribution</a> (I'd recommend you download the distribution as it contains a consistent documentation with the release you wish to use). 

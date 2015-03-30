@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "05-05-2011"
 tags: [Ceylon,Introduction to Ceylon]
 
-absolute_url: http://in.relation.to/2011/05/05/IntroductionToCeylonPart10
-lace: http://in.relation.to/19901.lace
+relative_url: /2011/05/05/IntroductionToCeylonPart10
 slug: IntroductionToCeylonPart10
+lace: http://in.relation.to/19901.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/05/IntroductionToCeylonPart10
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 <i class="wikiEmphasis">This is the tenth installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
 </p>
 
-<h1 class="wikiHeadline1" id="H-AnOverviewOfTheLanguageModule"><a href="/Bloggers/IntroductionToCeylonPart10#H-AnOverviewOfTheLanguageModule">An overview of the language module</a></h1>
+<h1 class="wikiHeadline1" id="H-AnOverviewOfTheLanguageModule"><a href="/2011/05/05/IntroductionToCeylonPart10#H-AnOverviewOfTheLanguageModule">An overview of the language module</a></h1>
 <p class="wikiPara">
 The module <tt>ceylon.language</tt> contains classes and interfaces that are referred to in the language specification, other declarations they refer to, and a number of related declarations. Let's meet the main characters.
 </p>
@@ -82,7 +84,7 @@ As we also saw in <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPa
 Since an expression of type <tt>Object</tt> always evaluates to a definite, well-defined value, it's possible to obtain the runtime type of an <tt>Object</tt>, or narrow an expression of type <tt>Object</tt> to a more specific type.
 </p>
 
-<h1 class="wikiHeadline1" id="H-EqualityAndIdentity"><a href="/Bloggers/IntroductionToCeylonPart10#H-EqualityAndIdentity">Equality and identity</a></h1>
+<h1 class="wikiHeadline1" id="H-EqualityAndIdentity"><a href="/2011/05/05/IntroductionToCeylonPart10#H-EqualityAndIdentity">Equality and identity</a></h1>
 
 <p class="wikiPara">
 On the other hand, since <tt>Object</tt> is a supertype of types like <tt>Float</tt> which are passed by value at the level of the Java Virtual Machine, you can't use the <tt>===</tt> operator to test the identity of two values of type <tt>Object</tt>. Instead, there is a subclass of <tt>Object</tt>, named <tt>IdentifiableObject</tt>, which represents a type which is always passed by reference. The <tt>===</tt> operator accepts expressions of type <tt>IdentifiableObject</tt>. It's possible for a user-written class to directly extend <tt>Object</tt>, but most of the classes you write will be subclasses of <tt>IdentifiableObject</tt>. All classes with <tt>variable</tt> attributes must extend <tt>IdentifiableObject</tt>.
@@ -137,7 +139,7 @@ Occasionally that's not what we want. For example, for numeric types, I don't ca
 Thus, Ceylon is able to capture within the type system much of the behavior that Java introduces by fiat special-case rules in the language definition.
 </p>
 
-<h1 class="wikiHeadline1" id="H-OperatorPolymorphism"><a href="/Bloggers/IntroductionToCeylonPart10#H-OperatorPolymorphism">Operator polymorphism</a></h1>
+<h1 class="wikiHeadline1" id="H-OperatorPolymorphism"><a href="/2011/05/05/IntroductionToCeylonPart10#H-OperatorPolymorphism">Operator polymorphism</a></h1>
 
 <p class="wikiPara">
 Ceylon discourages the creation of intriguing executable ASCII art. Therefore, true operator overloading is not supported by the language. Instead, almost every operator (every one except the primitive <tt>.</tt>, <tt>()</tt>, <tt>is</tt>, and <tt>:=</tt> operators) is considered a shortcut way of writing some more complex expression involving other operators and ordinary method calls. For example, the <tt>&lt;</tt> operator is defined in terms of the interface <tt>Comparable&lt;Other&gt;</tt>, which we met in <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-TypesafeEnumerations" target="" class="regularLink">Part 5</a>, and which has a method named <tt>smallerThan()</tt>, which is in turn defined in terms of another method named <tt>compare()</tt>.
@@ -190,7 +192,7 @@ following interfaces are also important in the definition of Ceylon's polymorphi
 Operator polymorphism is a little more flexible than you might imagine. Here's a quick example of this.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheTtSlotsttInterface"><a href="/Bloggers/IntroductionToCeylonPart10#H-TheTtSlotsttInterface">The <tt>Slots</tt> interface</a></h1>
+<h1 class="wikiHeadline1" id="H-TheTtSlotsttInterface"><a href="/2011/05/05/IntroductionToCeylonPart10#H-TheTtSlotsttInterface">The <tt>Slots</tt> interface</a></h1>
 
 <p class="wikiPara">
 The interface <tt>Slots</tt> is an abstraction of the idea of a set of slots which may each hold <tt>true</tt> or <tt>false</tt>. The bitwise operators <tt>&amp;</tt>, <tt>|</tt>, and <tt>~</tt> are defined in terms of this interface. The most obvious subtype of <tt>Slots</tt> would be a <tt>Byte</tt> class, where the slots are the eight binary digits.
@@ -211,7 +213,7 @@ Yes, I realize that these aren't the traditional symbols representing these oper
 We could even define a <tt>Permission</tt> class that implements <tt>Slots</tt>, allowing us to write things like <tt>permissions&amp;(read|execute)</tt>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-NumericTypes"><a href="/Bloggers/IntroductionToCeylonPart10#H-NumericTypes">Numeric types</a></h1>
+<h1 class="wikiHeadline1" id="H-NumericTypes"><a href="/2011/05/05/IntroductionToCeylonPart10#H-NumericTypes">Numeric types</a></h1>
 
 <p class="wikiPara">
 As we've mentioned several times before, Ceylon doesn't have anything like Java's primitive types. The types that represent numeric values are just ordinary classes. Ceylon has fewer built-in numeric types than other C-like languages:
@@ -229,7 +231,7 @@ As we've mentioned several times before, Ceylon doesn't have anything like Java'
 <tt>Natural</tt>, <tt>Integer</tt> and <tt>Float</tt> have 64-bit precision by default. Eventually, you'll be able to specify that a value has 32-bit precision by annotating it <tt>small</tt>. But note that this annotation is really just a hint that the compiler is free to ignore (and it currently does).
 </p>
 
-<h1 class="wikiHeadline1" id="H-NumericLiterals"><a href="/Bloggers/IntroductionToCeylonPart10#H-NumericLiterals">Numeric literals</a></h1>
+<h1 class="wikiHeadline1" id="H-NumericLiterals"><a href="/2011/05/05/IntroductionToCeylonPart10#H-NumericLiterals">Numeric literals</a></h1>
 
 <p class="wikiPara">
 There are only two kinds of numeric literals: literals for <tt>Natural</tt>s, and literals for <tt>Float</tt>s:
@@ -276,7 +278,7 @@ A very large or small numeric literals may be qualified by one of the standard S
 <pre class="wikiPreformatted brush:ceylon">Natural deathsUnderCommunism = 94M; //M (mega) means E6</pre>
 
 
-<h1 class="wikiHeadline1" id="H-NumericWidening"><a href="/Bloggers/IntroductionToCeylonPart10#H-NumericWidening">Numeric widening</a></h1>
+<h1 class="wikiHeadline1" id="H-NumericWidening"><a href="/2011/05/05/IntroductionToCeylonPart10#H-NumericWidening">Numeric widening</a></h1>
 
 <p class="wikiPara">
 I mentioned earlier that Ceylon <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions" target="" class="regularLink">doesn't have implicit type conversions</a>, not even built-in conversions for numeric types. Assignment does not automatically widen (or narrow) numeric values. Instead, we need to call one of the operations (well, attributes, actually) defined by the interface <tt>Number</tt>.
@@ -335,7 +337,7 @@ The <q>built-in</q> widening conversions are the following:
 But these conversions aren't defined by special-case rules in the language specification.
 </p>
 
-<h1 class="wikiHeadline1" id="H-NumericOperatorSemantics"><a href="/Bloggers/IntroductionToCeylonPart10#H-NumericOperatorSemantics">Numeric operator semantics</a></h1>
+<h1 class="wikiHeadline1" id="H-NumericOperatorSemantics"><a href="/2011/05/05/IntroductionToCeylonPart10#H-NumericOperatorSemantics">Numeric operator semantics</a></h1>
 
 <p class="wikiPara">
 Operators in Ceylon are, in principle, just abbreviations for some expression involving a method call. So the numeric types all implement the <tt>Numeric</tt> interface, refining the methods <tt>plus()</tt>, <tt>minus()</tt>, <tt>times()</tt>, <tt>divided()</tt> and <tt>power()</tt>, and the <tt>Invertable</tt> interface, refining <tt>inverse</tt>. The numeric operators are defined in terms of these methods of <tt>Numeric</tt>. The numeric types also implement the interface <tt>Castable</tt>, which enables the widening conversions we just mentioned. 
@@ -406,7 +408,7 @@ Don't worry too much about the performance implications of all this — in pract
 The value of all this — apart from eliminating special cases in the language definition and type checker — is that a library can define its own specialized numeric types, without losing any of the nice language-level syntax support for numeric arithmetic and numeric widening conversions.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart10#H-TheresMore">There's more...</a></h1>
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/05/05/IntroductionToCeylonPart10#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
 If you're interested, you can check out a <a href="/Bloggers/CeylonOperators" target="" class="regularLink">complete list of Ceylon's operators along with a discussion of their precedence</a>.

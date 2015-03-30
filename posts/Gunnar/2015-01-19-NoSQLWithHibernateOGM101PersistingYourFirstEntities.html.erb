@@ -5,11 +5,13 @@ blogger_name: "Gunnar"
 creation_date: "19-01-2015"
 tags: [Hibernate,Hibernate OGM,Hibernate OGM 101]
 
-absolute_url: http://in.relation.to/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities
-lace: http://in.relation.to/42518.lace
+relative_url: /2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities
 slug: NoSQLWithHibernateOGM101PersistingYourFirstEntities
+lace: http://in.relation.to/42518.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -38,7 +40,7 @@ If you’d like us to discuss any other topics, please let us know. Just add a c
 In this first part of the series we are going to set up a Java project with the required dependencies, create some simple entities and write/read them to and from the store. We’ll start with the <a href="http://neo4j.com/" target="" class="regularLink">Neo4j graph database</a> and then we’ll switch to the <a href="http://mongodb.org/" target="" class="regularLink">MongoDB document store</a> with only a small configuration change. 
 </p>
 
-<h3 class="wikiHeadline3" id="H-ProjectSetup"><a href="/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-ProjectSetup">Project set-up</a></h3>
+<h3 class="wikiHeadline3" id="H-ProjectSetup"><a href="/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-ProjectSetup">Project set-up</a></h3>
 
 <p class="wikiPara">
 Let’s first create a new Java project with the required dependencies. We’re going to use Maven as a build tool in the following, but of course Gradle or others would work equally well. 
@@ -94,7 +96,7 @@ The dependencies are:
 <li class="wikiUnorderedListItem"> JBoss' implementation of the Java Transaction API (JTA), which is needed when not running within a Java EE container such as WildFly</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-TheDomainModel"><a href="/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-TheDomainModel">The domain model</a></h3>
+<h3 class="wikiHeadline3" id="H-TheDomainModel"><a href="/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-TheDomainModel">The domain model</a></h3>
 
 <p class="wikiPara">
 Our example domain model is made up of three classes: <tt>Hike</tt>, <tt>HikeSection</tt> and <tt>Person</tt>. 
@@ -110,7 +112,7 @@ There is a composition relationship between <tt>Hike</tt> and <tt>HikeSection</t
 The association between <tt>Hike</tt> and <tt>Person</tt> (acting as hike organizer) is a bi-directional many-to-one/one-to-many relationship: One person can organize zero ore more hikes, whereas one hike has exactly one person acting as its organizer.
 </p>
 
-<h3 class="wikiHeadline3" id="H-MappingTheEntities"><a href="/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-MappingTheEntities">Mapping the entities</a></h3>
+<h3 class="wikiHeadline3" id="H-MappingTheEntities"><a href="/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-MappingTheEntities">Mapping the entities</a></h3>
 
 <p class="wikiPara">
 Now let’s map the domain model by creating the entity classes and annotating them with the required meta-data. Let’s start with the <tt>Person</tt> class:
@@ -199,7 +201,7 @@ Unlike <tt>Person</tt> and <tt>Hike</tt>, it is not mapped via <tt>@Entity</tt> 
 Note that these mappings looked exactly the same, had you been using Hibernate ORM with a relational datastore. And indeed that’s one of the promises of Hibernate OGM: Make the migration between the relational and the NoSQL paradigms as easy as possible!
 </p>
 
-<h3 class="wikiHeadline3" id="H-CreatingThePersistencexml"><a href="/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-CreatingThePersistencexml">Creating the persistence.xml</a></h3>
+<h3 class="wikiHeadline3" id="H-CreatingThePersistencexml"><a href="/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-CreatingThePersistencexml">Creating the persistence.xml</a></h3>
 
 <p class="wikiPara">
 With the entity classes in place, one more thing is missing, JPA's persistence.xml descriptor. Create it under <i class="wikiEmphasis">src/main/resources/META-INF/persistence.xml</i>:
@@ -242,7 +244,7 @@ In addition, some properties specific to Hibernate OGM and the chosen back end a
 Depending on your usage and the back end, other properties might be required, e.g. for setting a host, user name, password etc. You can find all available properties in a class named <tt>&lt;BACK END&gt;Properties</tt>, e.g. <a href="https://docs.jboss.org/hibernate/ogm/4.1/api/index.html?org/hibernate/ogm/datastore/neo4j/Neo4jProperties.html" target="" class="regularLink">Neo4jProperties</a>, <a href="https://docs.jboss.org/hibernate/ogm/4.1/api/index.html?org/hibernate/ogm/datastore/mongodb/MongoDBProperties.html" target="" class="regularLink">MongoDBProperties</a> and so on.
 </p>
 
-<h3 class="wikiHeadline3" id="H-SavingAndLoadingAnEntity"><a href="/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-SavingAndLoadingAnEntity">Saving and loading an entity</a></h3>
+<h3 class="wikiHeadline3" id="H-SavingAndLoadingAnEntity"><a href="/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-SavingAndLoadingAnEntity">Saving and loading an entity</a></h3>
 
 <p class="wikiPara">
 With all these bits in place its time to persist (and load) some entities. Create a simple JUnit test shell for doing so:
@@ -350,7 +352,7 @@ Associations are mapped as relationships between nodes, with the association rol
 Note that Neo4j does not have the notion of embedded objects. Therefore, the <tt>HikeSection</tt> objects are mapped as nodes with the label EMBEDDED, linked with the owning Hike nodes. The order of sections is persisted via a property on the relationship.
 </p>
 
-<h3 class="wikiHeadline3" id="H-SwitchingToMongoDB"><a href="/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-SwitchingToMongoDB">Switching to MongoDB</a></h3>
+<h3 class="wikiHeadline3" id="H-SwitchingToMongoDB"><a href="/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-SwitchingToMongoDB">Switching to MongoDB</a></h3>
 
 <p class="wikiPara">
 One of Hibernate OGM's promises is to allow using the same API - namely, JPA - to work with different NoSQL stores. So let’s see how that holds and make use of MongoDB which, unlike Neo4j, is a document datastore and persists data in a JSON-like representation. To do so, first replace the Neo4j back end with the following one:
@@ -450,7 +452,7 @@ Again, the mapping is very natural and just as you’d expect it when working wi
 Element collections are mapped using MongoDB's capabilities for storing hierarchical structures. Here the sections of a hike are mapped to an array within the document of the owning hike, with an additional field <tt>sectionNo</tt> to maintain the collection order. This allows to load an entity and its embedded elements very efficiently via a single round-trip to the datastore.
 </p>
 
-<h3 class="wikiHeadline3" id="H-Wrapup"><a href="/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-Wrapup">Wrap-up</a></h3>
+<h3 class="wikiHeadline3" id="H-Wrapup"><a href="/2015/01/19/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-Wrapup">Wrap-up</a></h3>
 
 <p class="wikiPara">
 In this first instalment of <i class="wikiEmphasis">NoSQL with Hibernate OGM 101</i> you’ve learned how to set up a project with the required dependencies, map some entities and associations and persist them in Neo4j and MongoDB.

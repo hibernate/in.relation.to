@@ -5,11 +5,13 @@ blogger_name: "Gunnar"
 creation_date: "09-08-2013"
 tags: [Beam Validation,Hibernate Validator,News]
 
-absolute_url: http://in.relation.to/2013/08/09/HibernateValidator510Alpha1Released
-lace: http://in.relation.to/24334.lace
+relative_url: /2013/08/09/HibernateValidator510Alpha1Released
 slug: HibernateValidator510Alpha1Released
+lace: http://in.relation.to/24334.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/08/09/HibernateValidator510Alpha1Released
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ It's my pleasure to announce the first alpha release of Hibernate Validator 5.1.
 As usual, you can obtain this release either as <a href="http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.1.0.Alpha1/" target="" class="regularLink">distribution bundle</a> (ZIP or TAR.GZ) from SourceForge or retrieve it using your preferred dependency management tool under the GAV coordinates <i class="wikiEmphasis">org.hibernate:hibernate-validator:5.1.0.Alpha1</i>. The binaries have been pushed to the JBoss <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate/hibernate-validator/5.1.0.Alpha1/" target="" class="regularLink">Maven repository</a> and should soon be synched to Maven Central as well.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhatsInIt"><a href="/Bloggers/HibernateValidator510Alpha1Released#H-WhatsInIt">What's in it?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatsInIt"><a href="/2013/08/09/HibernateValidator510Alpha1Released#H-WhatsInIt">What's in it?</a></h1>
 
 <p class="wikiPara">
 The features added in this release are centered around the new APIs and functionality provided by Bean Validation 1.1, such as method validation and expression based message interpolation. Let's have a closer look at some of them.
@@ -77,7 +79,7 @@ public void createCalendarEvent(Date start, Date end, String title) { ... }</pre
 Refer to the <a href="http://paranamer.codehaus.org/" target="" class="regularLink">ParaNamer</a> documentation to learn more about the different ways it provides for accessing parameter names.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MessageInterpolation"><a href="/Bloggers/HibernateValidator510Alpha1Released#H-MessageInterpolation">Message interpolation</a></h1>
+<h1 class="wikiHeadline1" id="H-MessageInterpolation"><a href="/2013/08/09/HibernateValidator510Alpha1Released#H-MessageInterpolation">Message interpolation</a></h1>
 
 <p class="wikiPara">
 Another nice new feature is an extension of the <tt>ConstraintValidatorContext</tt> API which allows to add arbitrary objects to constraint violation messages (<a href="https://hibernate.atlassian.net/browse/HV-701" target="" class="regularLink">HV-701</a>). As an example, let's consider this custom validator for the <tt>@Future</tt> constraint:
@@ -115,7 +117,7 @@ Another nice new feature is an extension of the <tt>ConstraintValidatorContext</
 Instead of just using "Must be in the future" as constraint violation message, this validator adds the current time to the message. For that purpose an expression variable with the name "now" is added to the validation context, holding a <tt>Date</tt> object representing the current time. Using the variable name, it can be accessed from within the violation message and formatted as shown in the example.
 </p>
 
-<h1 class="wikiHeadline1" id="H-PerformanceImprovements"><a href="/Bloggers/HibernateValidator510Alpha1Released#H-PerformanceImprovements">Performance improvements</a></h1>
+<h1 class="wikiHeadline1" id="H-PerformanceImprovements"><a href="/2013/08/09/HibernateValidator510Alpha1Released#H-PerformanceImprovements">Performance improvements</a></h1>
 
 <p class="wikiPara">
 Besides adding new functionality, we also worked hard to make sure that Hibernate Validator gives you the performance you deserve. Throughout extensive profiling sessions we identified and addressed several performance bottlenecks, e.g. around message interpolation (<a href="https://hibernate.atlassian.net/browse/HV-637" target="" class="regularLink">HV-637</a>). Performance tuning - with respect to memory consumption as well as execution speed - is an ongoing effort and you can look forward to further improvements in that area in the next releases.

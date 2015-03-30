@@ -5,11 +5,13 @@ blogger_name: "Steve"
 creation_date: "20-07-2005"
 tags: []
 
-absolute_url: http://in.relation.to/2005/07/20/BulkOperations
-lace: http://in.relation.to/2065.lace
+relative_url: /2005/07/20/BulkOperations
 slug: BulkOperations
+lace: http://in.relation.to/2065.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2005/07/20/BulkOperations
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -41,7 +43,7 @@ and the like.  So what's the big deal?  Well, in implementation, we ran across a
 make this support more challenging; which of course made it all the more fun to implement ;)
 </p>
 
-<h2 class="wikiHeadline2" id="H-UpdateStatements"><a href="/Bloggers/BulkOperations#H-UpdateStatements">Update Statements</a></h2>
+<h2 class="wikiHeadline2" id="H-UpdateStatements"><a href="/2005/07/20/BulkOperations#H-UpdateStatements">Update Statements</a></h2>
 
 <p class="wikiPara">
 From the EJB3 persistence specification:
@@ -112,7 +114,7 @@ VERSIONED into the grammar instead.  The syntax is <q>update versioned MyEntity 
 which will cause the version column values to get bumped for any affected entities.
 </p>
 
-<h2 class="wikiHeadline2" id="H-DeleteStatements"><a href="/Bloggers/BulkOperations#H-DeleteStatements">Delete Statements</a></h2>
+<h2 class="wikiHeadline2" id="H-DeleteStatements"><a href="/2005/07/20/BulkOperations#H-DeleteStatements">Delete Statements</a></h2>
 
 <p class="wikiPara">
 From the EJB3 persistence specification:
@@ -161,7 +163,7 @@ One <i class="wikiEmphasis">very</i> interesting thing to point out there.  The 
 cascading of the delete to releated entities (not including, abviously, db-level cascades).
 </p>
 
-<h2 class="wikiHeadline2" id="H-Caching"><a href="/Bloggers/BulkOperations#H-Caching">Caching</a></h2>
+<h2 class="wikiHeadline2" id="H-Caching"><a href="/2005/07/20/BulkOperations#H-Caching">Caching</a></h2>
 
 <p class="wikiPara">
 Automatic and transparent object/relational mapping is concerned with the management of 
@@ -200,7 +202,7 @@ has no idea about the ids of any affected entities, nor (in the case of updates)
 the new state might be.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/BulkOperations#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2005/07/20/BulkOperations#H-Conclusion">Conclusion</a></h2>
 
 <p class="wikiPara">
  <q>Bulk Operations</q> are complimentary to the functionality provided by ORM tools.
@@ -209,7 +211,7 @@ StatelessSession functionlity (available &gt; 3.1beta1) offer a more performant
 alternative to the normal row-based ORM focus.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Thisnthat"><a href="/Bloggers/BulkOperations#H-Thisnthat">This-n-that</a></h2>
+<h2 class="wikiHeadline2" id="H-Thisnthat"><a href="/2005/07/20/BulkOperations#H-Thisnthat">This-n-that</a></h2>
 
 <p class="wikiPara">
 Entities which are contained across multiple tables (not counting associations) cause particular

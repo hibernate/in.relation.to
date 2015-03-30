@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "21-07-2011"
 tags: [Ceylon]
 
-absolute_url: http://in.relation.to/2011/07/21/ModulesInCeylon
-lace: http://in.relation.to/21189.lace
+relative_url: /2011/07/21/ModulesInCeylon
 slug: ModulesInCeylon
+lace: http://in.relation.to/21189.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/07/21/ModulesInCeylon
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -30,7 +32,7 @@ Built-in support for <i class="wikiEmphasis">modularity</i> is a major goal of t
 I'm not going to get into a whole lot of fine detail of this, partly because what I have written down in the language spec today will probably change by the time you actually get to use any of this stuff, but let me give you a taste of the overall architecture proposed.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ModulelevelVisibility"><a href="/Bloggers/ModulesInCeylon#H-ModulelevelVisibility">Module-level visibility</a></h3>
+<h3 class="wikiHeadline3" id="H-ModulelevelVisibility"><a href="/2011/07/21/ModulesInCeylon#H-ModulelevelVisibility">Module-level visibility</a></h3>
 
 <p class="wikiPara">
 A package in Ceylon may be shared or unshared. An unshared package (the default) is visible only to the module which contains the package. We can make the package <tt>shared</tt> by providing a <i class="wikiEmphasis">package descriptor</i>:
@@ -51,7 +53,7 @@ A package in Ceylon may be shared or unshared. An unshared package (the default)
 A shared package defines part of the <q>public</q> API of the module. Other modules can directly access <tt>shared</tt> declarations in a shared package.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ModuleDescriptors"><a href="/Bloggers/ModulesInCeylon#H-ModuleDescriptors">Module descriptors</a></h3>
+<h3 class="wikiHeadline3" id="H-ModuleDescriptors"><a href="/2011/07/21/ModulesInCeylon#H-ModuleDescriptors">Module descriptors</a></h3>
 
 <p class="wikiPara">
 A module must explicitly specify the other modules on which it depends. This is accomplished via a <i class="wikiEmphasis">module descriptor</i>:
@@ -92,7 +94,7 @@ A module may be <i class="wikiEmphasis">runnable</i>. A runnable module must spe
 }</pre>
 
 
-<h3 class="wikiHeadline3" id="H-ModuleArchivesAndModuleRepositories"><a href="/Bloggers/ModulesInCeylon#H-ModuleArchivesAndModuleRepositories">Module archives and module repositories</a></h3>
+<h3 class="wikiHeadline3" id="H-ModuleArchivesAndModuleRepositories"><a href="/2011/07/21/ModulesInCeylon#H-ModuleArchivesAndModuleRepositories">Module archives and module repositories</a></h3>
 
 <p class="wikiPara">
 A module archive packages together compiled <tt>.class</tt> files, package descriptors, and module descriptors into a Java-style <tt>jar</tt> archive with the extension <tt>car</tt>. The Ceylon compiler doesn't usually produce individual <tt>.class</tt> files in a directory. Instead, it directly produces module archives.
@@ -106,7 +108,7 @@ Module archives live in <i class="wikiEmphasis">module repositories</i>. A modul
 (The architecture also includes support for source directories, source archives, and module documentation directories, but I'm not going to cover all that today.)
 </p>
 
-<h3 class="wikiHeadline3" id="H-ModuleRuntime"><a href="/Bloggers/ModulesInCeylon#H-ModuleRuntime">Module runtime</a></h3>
+<h3 class="wikiHeadline3" id="H-ModuleRuntime"><a href="/2011/07/21/ModulesInCeylon#H-ModuleRuntime">Module runtime</a></h3>
 
 <p class="wikiPara">
 Ceylon's module runtime is based on <a href="/Bloggers/ModularizedJavaWithJBossModules" target="" class="regularLink">JBoss Modules</a>, a technology that also exists at the very core of JBoss 7. Given a list of module repositories, the runtime automatically locates a module archive and its versioned dependencies in the repositories, even downloading module archives from remote repositories if necessary.
@@ -116,7 +118,7 @@ Ceylon's module runtime is based on <a href="/Bloggers/ModularizedJavaWithJBossM
 Normally, the Ceylon runtime is invoked by specifying the name of a runnable module at the command line.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ModuleRepositoryEcosystem"><a href="/Bloggers/ModulesInCeylon#H-ModuleRepositoryEcosystem">Module repository ecosystem</a></h3>
+<h3 class="wikiHeadline3" id="H-ModuleRepositoryEcosystem"><a href="/2011/07/21/ModulesInCeylon#H-ModuleRepositoryEcosystem">Module repository ecosystem</a></h3>
 
 <p class="wikiPara">
 One of the nice advantages of this architecture is that it's possible to run a module <q>straight off the internet</q>, just by typing, for example:

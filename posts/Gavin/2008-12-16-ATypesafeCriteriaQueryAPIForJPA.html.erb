@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "16-12-2008"
 tags: [Criteria Queries,Hibernate,JPA,JPA 2]
 
-absolute_url: http://in.relation.to/2008/12/16/ATypesafeCriteriaQueryAPIForJPA
-lace: http://in.relation.to/10197.lace
+relative_url: /2008/12/16/ATypesafeCriteriaQueryAPIForJPA
 slug: ATypesafeCriteriaQueryAPIForJPA
+lace: http://in.relation.to/10197.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/12/16/ATypesafeCriteriaQueryAPIForJPA
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -62,7 +64,7 @@ I've proposed a different approach to the JPA EG. This approach comes in three l
 Let's go layer-by layer.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheMetamodel"><a href="/Bloggers/ATypesafeCriteriaQueryAPIForJPA#H-TheMetamodel">The Metamodel</a></h1>
+<h1 class="wikiHeadline1" id="H-TheMetamodel"><a href="/2008/12/16/ATypesafeCriteriaQueryAPIForJPA#H-TheMetamodel">The Metamodel</a></h1>
 
 <p class="wikiPara">
 The metamodel API is a bit like the Java reflection API, except that it is provided by the JPA persistence provider, is aware of the JPA metadata, and uses generics in a clever way. (Also it uses unchecked exceptions.) 
@@ -117,7 +119,7 @@ The metamodel API is generally useful, even independent of the query API. Curren
 But, of course, the most popular use of the metamodel is to build queries.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Queries"><a href="/Bloggers/ATypesafeCriteriaQueryAPIForJPA#H-Queries">Queries</a></h1>
+<h1 class="wikiHeadline1" id="H-Queries"><a href="/2008/12/16/ATypesafeCriteriaQueryAPIForJPA#H-Queries">Queries</a></h1>
 
 <p class="wikiPara">
 To construct a query, we pass metamodel objects to the <tt>QueryBuilder</tt> API:
@@ -182,7 +184,7 @@ The use of generics means the compiler can detect when we try to create a path e
 Indeed, the API has sufficient typesafeness that it's more or less impossible to build an unexecutable query.
 </p>
 
-<h1 class="wikiHeadline1" id="H-GeneratingATypesafeMetamodel"><a href="/Bloggers/ATypesafeCriteriaQueryAPIForJPA#H-GeneratingATypesafeMetamodel">Generating a typesafe metamodel</a></h1>
+<h1 class="wikiHeadline1" id="H-GeneratingATypesafeMetamodel"><a href="/2008/12/16/ATypesafeCriteriaQueryAPIForJPA#H-GeneratingATypesafeMetamodel">Generating a typesafe metamodel</a></h1>
 
 <p class="wikiPara">
 It's completely possible to build queries with only the metamodel API and the query API. But to really make the most of these APIs, the final piece of the puzzle is a little code generation tool. This tooling doesn't need to be defined by the JPA specification, and different tools don't need to generate exactly the same code. Nevertheless, the generated code will always be portable between all JPA implementations. All the tool does is reflect upon the persistent entities and create a class or classes that statically cache references to the metamodel <tt>Entity</tt> and <tt>Attribute</tt> objects. 

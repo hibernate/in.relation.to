@@ -5,18 +5,20 @@ blogger_name: "Ilya"
 creation_date: "24-02-2011"
 tags: []
 
-absolute_url: http://in.relation.to/2011/02/24/RichFaces4ObjectValidation
-lace: http://in.relation.to/18381.lace
+relative_url: /2011/02/24/RichFaces4ObjectValidation
 slug: RichFaces4ObjectValidation
+lace: http://in.relation.to/18381.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/02/24/RichFaces4ObjectValidation
 ---
 <div id="documentDisplay" class="documentDisplay">
 
 
 <b>Article updated. Mistake with 3.3.x functionality description corrected in <q>Implementation details</q> section</b>
 
-<h2 class="wikiHeadline2" id="H-Introduction"><a href="/Bloggers/RichFaces4ObjectValidation#H-Introduction">Introduction</a></h2>
+<h2 class="wikiHeadline2" id="H-Introduction"><a href="/2011/02/24/RichFaces4ObjectValidation#H-Introduction">Introduction</a></h2>
 <div style="float: right; margin-left: 20px; margin-bottom: 20px;">
      <a href="http://labs.jboss.com/richfaces" target="blank"> 
          <img src="http://design.jboss.org/richfaces/logo/final_logo/richfaces_logo_200px.png">
@@ -34,7 +36,7 @@ This blog is going to review the last (<i>but not least</i>) validation feature 
 Why do you need that? The very first example which came to my mind as it appears  frequently on various forums is dependent fields validation. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-PasswordValidationExample"><a href="/Bloggers/RichFaces4ObjectValidation#H-PasswordValidationExample">Password Validation Example</a></h2>
+<h2 class="wikiHeadline2" id="H-PasswordValidationExample"><a href="/2011/02/24/RichFaces4ObjectValidation#H-PasswordValidationExample">Password Validation Example</a></h2>
 
 <p class="wikiPara">
 Let's check the password validation example:
@@ -87,7 +89,7 @@ So we solved half of the problem:
 We are seeing the error messages if the password fields do not satisfy the validation rules given. Nothing is checking if passwords are the same though, just that they are independently valid.  So what is the easiest way to validate if the fields are equals? We could perform that in action but that is quite late in the JSF lifecycle for validation. We could use some solutions using f:attribute in order to pass dependent field id to the other input and find the component by that id in custom validate method. There are also some other ways which are pretty easy to find across different knowledge-bases'. But most of them are either invoked in an improper phase (<i>like action at INVOKE_APPLICATION</i>) or has possible maintenance problems(<i>f:attribute solution requires us to be patient with id's changes in view as validation depends on them</i>). 
 </p>
 
-<h2 class="wikiHeadline2" id="H-RichFaces4ObjectValidationForCrossfieldValidation"><a href="/Bloggers/RichFaces4ObjectValidation#H-RichFaces4ObjectValidationForCrossfieldValidation">RichFaces 4 Object Validation for cross-field validation</a></h2>
+<h2 class="wikiHeadline2" id="H-RichFaces4ObjectValidationForCrossfieldValidation"><a href="/2011/02/24/RichFaces4ObjectValidation#H-RichFaces4ObjectValidationForCrossfieldValidation">RichFaces 4 Object Validation for cross-field validation</a></h2>
 <p class="wikiPara">
 This is where RichFaces 4 Object Validation feature come in play! Here is what we propose to use:
 </p>
@@ -155,7 +157,7 @@ public class UserBean implements Cloneable{
 
 <img src="http://in.relation.to/service/File/18376" alt="">
 
-<h2 class="wikiHeadline2" id="H-ImplementationDetails"><a href="/Bloggers/RichFaces4ObjectValidation#H-ImplementationDetails">Implementation Details</a></h2>
+<h2 class="wikiHeadline2" id="H-ImplementationDetails"><a href="/2011/02/24/RichFaces4ObjectValidation#H-ImplementationDetails">Implementation Details</a></h2>
 
 <b><u>UPDATED(28.02) section below. Actually 3.3.x used the same way. Was written that it worked at model updates by mistake.</u></b>
 
@@ -167,7 +169,7 @@ Just one question appears. Those who know the JSF life-cycle will ask immediatel
 <b>NOTE:</b> if cloneNotSupportedException thrown from the object – validation will be done at model updates. And that is the only exception to our architecture which really can't be workaround-ed.
 </blockquote>
 
-<h2 class="wikiHeadline2" id="H-TryItOut"><a href="/Bloggers/RichFaces4ObjectValidation#H-TryItOut">Try it out!</a></h2>
+<h2 class="wikiHeadline2" id="H-TryItOut"><a href="/2011/02/24/RichFaces4ObjectValidation#H-TryItOut">Try it out!</a></h2>
 
 <p class="wikiPara">
 Now having JSF 2 Bean Validation support standardized, RichFaces 4 Client Side Validation and Object Validation features we believe you will be able completely concentrate on your business tasks and will not spend time for any additional JSF development in the validation phase. Try our new features in <a href="http://in.relation.to/Bloggers/RichFaces400Milestone6Released" target="" class="regularLink">RichFaces 4.0.0.M6 </a> and let us know about any problems or questions appeared. That will help us greatly to provide those features stable and well documented prior to <b>RichFaces 4 Final</b> release!

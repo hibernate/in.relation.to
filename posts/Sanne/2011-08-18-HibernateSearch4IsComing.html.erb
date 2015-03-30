@@ -5,11 +5,13 @@ blogger_name: "Sanne"
 creation_date: "18-08-2011"
 tags: [Hibernate,Hibernate Search]
 
-absolute_url: http://in.relation.to/2011/08/18/HibernateSearch4IsComing
-lace: http://in.relation.to/21595.lace
+relative_url: /2011/08/18/HibernateSearch4IsComing
 slug: HibernateSearch4IsComing
+lace: http://in.relation.to/21595.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/08/18/HibernateSearch4IsComing
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -37,7 +39,7 @@ scalable <q>cloud-tainted</q> backends.
 This release already includes lots of changes
 </p>
 
-<h1 class="wikiHeadline1" id="H-SplitBetweenAPISPIAndImplementationClasses"><a href="/Bloggers/HibernateSearch4IsComing#H-SplitBetweenAPISPIAndImplementationClasses">Split between API / SPI and implementation classes</a></h1>
+<h1 class="wikiHeadline1" id="H-SplitBetweenAPISPIAndImplementationClasses"><a href="/2011/08/18/HibernateSearch4IsComing#H-SplitBetweenAPISPIAndImplementationClasses">Split between API / SPI and implementation classes</a></h1>
 
 <p class="wikiPara">
 Each class is now categorized into either an API, a SPI or an implementation class.
@@ -55,20 +57,20 @@ were using SPI or internal classes, you will have to adjust. Check our wiki page
 <a href="http://community.jboss.org/wiki/HibernateSearchMigrationGuide" target="" class="regularLink">migration guide</a>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MoveToJBossLoggingAndErrorCodes"><a href="/Bloggers/HibernateSearch4IsComing#H-MoveToJBossLoggingAndErrorCodes">Move to JBoss Logging and error codes</a></h1>
+<h1 class="wikiHeadline1" id="H-MoveToJBossLoggingAndErrorCodes"><a href="/2011/08/18/HibernateSearch4IsComing#H-MoveToJBossLoggingAndErrorCodes">Move to JBoss Logging and error codes</a></h1>
 
 <p class="wikiPara">
 JBoss Logging has some nice features including error internationalization and error codes 
 in messages. You will be able to Google HSEARCH00043 and see why you have such problem.
 </p>
 
-<h2 class="wikiHeadline2" id="H-IntegrationWithHibernateCore4"><a href="/Bloggers/HibernateSearch4IsComing#H-IntegrationWithHibernateCore4">Integration with Hibernate Core 4</a></h2>
+<h2 class="wikiHeadline2" id="H-IntegrationWithHibernateCore4"><a href="/2011/08/18/HibernateSearch4IsComing#H-IntegrationWithHibernateCore4">Integration with Hibernate Core 4</a></h2>
 
 <p class="wikiPara">
 Nuf said.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MoveToThePerIndexBackendArchitecture"><a href="/Bloggers/HibernateSearch4IsComing#H-MoveToThePerIndexBackendArchitecture">Move to the per index backend architecture</a></h1>
+<h1 class="wikiHeadline1" id="H-MoveToThePerIndexBackendArchitecture"><a href="/2011/08/18/HibernateSearch4IsComing#H-MoveToThePerIndexBackendArchitecture">Move to the per index backend architecture</a></h1>
 
 <p class="wikiPara">
 This will give you more flexibility on how you want your entities indexed and us the possibility for additional optimizations down the road. You can use different technologies for each index, for example use a Lucene backend for some indexes
@@ -77,14 +79,14 @@ Also it's now possible to configure the performance parameters of each index sep
 option to the number of Worker threads and queue sized in the backend executor.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MassIndexerIsNoLongerAnExclusiveMode"><a href="/Bloggers/HibernateSearch4IsComing#H-MassIndexerIsNoLongerAnExclusiveMode">MassIndexer is no longer an exclusive mode</a></h1>
+<h1 class="wikiHeadline1" id="H-MassIndexerIsNoLongerAnExclusiveMode"><a href="/2011/08/18/HibernateSearch4IsComing#H-MassIndexerIsNoLongerAnExclusiveMode">MassIndexer is no longer an exclusive mode</a></h1>
 
 <p class="wikiPara">
 The MassIndexer no longer locks out the main backend listening for Hibernate events, so it can be started 
 while other transactions run. Until it finished however some results might be missing from the index.
 </p>
 
-<h1 class="wikiHeadline1" id="H-NewBinaryFormatOfCommunicationBetweenRemoteBackends"><a href="/Bloggers/HibernateSearch4IsComing#H-NewBinaryFormatOfCommunicationBetweenRemoteBackends">New binary format of communication between remote backends</a></h1>
+<h1 class="wikiHeadline1" id="H-NewBinaryFormatOfCommunicationBetweenRemoteBackends"><a href="/2011/08/18/HibernateSearch4IsComing#H-NewBinaryFormatOfCommunicationBetweenRemoteBackends">New binary format of communication between remote backends</a></h1>
 
 <p class="wikiPara">
 Lucene no longer guarantees the <tt>Serializable</tt> contract for <tt>Document</tt>s and <tt>Field</tt>s. This is a problem 
@@ -103,7 +105,7 @@ So now you can use <tt>NumericField</tt> in clustered environment, which was pre
 it has never been <tt>Serializable</tt>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-AggressiveOnPerformance"><a href="/Bloggers/HibernateSearch4IsComing#H-AggressiveOnPerformance">Aggressive on performance</a></h1>
+<h1 class="wikiHeadline1" id="H-AggressiveOnPerformance"><a href="/2011/08/18/HibernateSearch4IsComing#H-AggressiveOnPerformance">Aggressive on performance</a></h1>
 
 <p class="wikiPara">
 The backend is now quite aggressive in write performance, enabling <tt>exclusive_index_use</tt> by default and 
@@ -114,7 +116,7 @@ writes happen in the proper order. This is configured with the <tt>worker.thread
 to one, and applies even to backends configured for synchronous updates.
 </p>
 
-<h1 class="wikiHeadline1" id="H-GetTheRelease"><a href="/Bloggers/HibernateSearch4IsComing#H-GetTheRelease">Get the release</a></h1>
+<h1 class="wikiHeadline1" id="H-GetTheRelease"><a href="/2011/08/18/HibernateSearch4IsComing#H-GetTheRelease">Get the release</a></h1>
 
 <p class="wikiPara">
 That's all for now, <a href="http://hibernate.org/subprojects/search/download" target="" class="regularLink">check out the release</a> and make sure to 

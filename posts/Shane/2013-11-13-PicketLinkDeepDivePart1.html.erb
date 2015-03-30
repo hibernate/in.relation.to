@@ -5,11 +5,13 @@ blogger_name: "Shane"
 creation_date: "13-11-2013"
 tags: [PicketLink]
 
-absolute_url: http://in.relation.to/2013/11/13/PicketLinkDeepDivePart1
-lace: http://in.relation.to/24530.lace
+relative_url: /2013/11/13/PicketLinkDeepDivePart1
 slug: PicketLinkDeepDivePart1
+lace: http://in.relation.to/24530.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/11/13/PicketLinkDeepDivePart1
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -24,7 +26,7 @@ In this series we’ll be taking a magnifying glass to PicketLink, a security fr
 Hopefully by the end of the series we’ll have helped you to gain a greater understanding of PicketLink, and how best to use it to address the security requirements of your own Java EE application.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Resources"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Resources">Resources</a></h1>
+<h1 class="wikiHeadline1" id="H-Resources"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-Resources">Resources</a></h1>
 
 <p class="wikiPara">
 At the time of writing the latest stable version of PicketLink is <strong>2.5.2.Final</strong>.  The latest version of both the <i class="wikiEmphasis">PicketLink Reference Documentation</i> and <i class="wikiEmphasis">API Documentation</i> can always be found at <a href="http://docs.jboss.org/picketlink/2/latest/" target="" class="regularLink">http://docs.jboss.org/picketlink/2/latest/</a>.
@@ -51,7 +53,7 @@ You can find the latest version of the PicketLink source code at GitHub:
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-IdentityModel"><a href="/Bloggers/PicketLinkDeepDivePart1#H-IdentityModel">Identity Model</a></h1>
+<h1 class="wikiHeadline1" id="H-IdentityModel"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-IdentityModel">Identity Model</a></h1>
 
 <p class="wikiPara">
 In this issue we’ll be looking at PicketLink’s Identity Model feature, a fundamental part of the PicketLink IDM (Identity Management) submodule that forms the foundation on which the majority of PicketLink’s other features are built.
@@ -69,7 +71,7 @@ The answer was the Identity Model - a set of interfaces and classes that provide
 The Identity Model defines the identity objects (such as Users and Roles) for your project, and the relationships between those objects.  This is one of the major differences between PicketLink and other security frameworks - PicketLink supports a dynamic Identity Model, which means that there isn’t a hard-coded set of User, Role or Group classes that you are forced to use in your own application (PicketLink actually does provide these classes but you may choose not to use them).  Why is it so important that PicketLink supports such a high level of customization?  There are actually quite a number of reasons, so let’s take the time to explore a few of them in more detail.
 </p>
 
-<h2 class="wikiHeadline2" id="H-RegionSpecificAttributes"><a href="/Bloggers/PicketLinkDeepDivePart1#H-RegionSpecificAttributes">Region Specific Attributes</a></h2>
+<h2 class="wikiHeadline2" id="H-RegionSpecificAttributes"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-RegionSpecificAttributes">Region Specific Attributes</a></h2>
 
 <p class="wikiPara">
 Depending on where your project is being deployed, you may have specific requirements in relation to <tt>User</tt> state based on the region that your application may be servicing.  For example, an application in the United States might require a <tt>User</tt> to have an <i class="wikiEmphasis">SSN</i> property, while an application in Russia might require a property to store a user’s <i class="wikiEmphasis">patronym</i>.  In western culture a person may typically have a title, first name, middle name/s and last name, however this is certainly not the rule in many other cultures. It may be argued that these property values may be simply stored as arbitrary attribute values, like so:
@@ -92,7 +94,7 @@ However storing these property values as ad-hoc attributes means we give up on i
 
 
 
-<h2 class="wikiHeadline2" id="H-CustomSecurityRequirements"><a href="/Bloggers/PicketLinkDeepDivePart1#H-CustomSecurityRequirements">Custom Security Requirements</a></h2>
+<h2 class="wikiHeadline2" id="H-CustomSecurityRequirements"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-CustomSecurityRequirements">Custom Security Requirements</a></h2>
 
 
 <p class="wikiPara">
@@ -120,7 +122,7 @@ Because of the fact that everyone has different ideas of what constitutes a Secu
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-BackendIdentityStoreCompatibility"><a href="/Bloggers/PicketLinkDeepDivePart1#H-BackendIdentityStoreCompatibility">Backend Identity Store Compatibility</a></h2>
+<h2 class="wikiHeadline2" id="H-BackendIdentityStoreCompatibility"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-BackendIdentityStoreCompatibility">Backend Identity Store Compatibility</a></h2>
 
 
 <p class="wikiPara">
@@ -128,7 +130,7 @@ In some environments your application may be required to conform to a pre existi
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-IdentityModelBuildingBlocks"><a href="/Bloggers/PicketLinkDeepDivePart1#H-IdentityModelBuildingBlocks">Identity Model Building Blocks</a></h1>
+<h1 class="wikiHeadline1" id="H-IdentityModelBuildingBlocks"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-IdentityModelBuildingBlocks">Identity Model Building Blocks</a></h1>
 
 
 <p class="wikiPara">
@@ -162,7 +164,7 @@ There are a couple more important ingredients that we must know about besides th
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-WhatDoesAnActualIdentityModelLookLike"><a href="/Bloggers/PicketLinkDeepDivePart1#H-WhatDoesAnActualIdentityModelLookLike">What does an actual Identity Model look like?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatDoesAnActualIdentityModelLookLike"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-WhatDoesAnActualIdentityModelLookLike">What does an actual Identity Model look like?</a></h1>
 
 
 <p class="wikiPara">
@@ -173,7 +175,7 @@ Good question!  To answer this, we’ll take a look at the basic Identity Model 
 
 
 
-<h2 class="wikiHeadline2" id="H-Agent"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Agent">Agent</a></h2>
+<h2 class="wikiHeadline2" id="H-Agent"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-Agent">Agent</a></h2>
 
 
 <p class="wikiPara">
@@ -216,7 +218,7 @@ Finally, we can observe that creating identity properties is as simple as defini
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-User"><a href="/Bloggers/PicketLinkDeepDivePart1#H-User">User</a></h2>
+<h2 class="wikiHeadline2" id="H-User"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-User">User</a></h2>
 
 
 <p class="wikiPara">
@@ -268,7 +270,7 @@ In the above code, you may notice that the <tt>@AttributeProperty</tt> annotatio
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-Group"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Group">Group</a></h2>
+<h2 class="wikiHeadline2" id="H-Group"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-Group">Group</a></h2>
 
 
 <p class="wikiPara">
@@ -335,7 +337,7 @@ You may notice in the above code that the <tt>parentGroup</tt> property has a ty
 
 
 
-<h2 class="wikiHeadline2" id="H-Role"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Role">Role</a></h2>
+<h2 class="wikiHeadline2" id="H-Role"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-Role">Role</a></h2>
 
 
 <p class="wikiPara">
@@ -362,7 +364,7 @@ The <tt>Role</tt> class is quite similar to the <tt>Group</tt> class except that
 
 
 
-<h1 class="wikiHeadline1" id="H-Relationships"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Relationships">Relationships</a></h1>
+<h1 class="wikiHeadline1" id="H-Relationships"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-Relationships">Relationships</a></h1>
 
 
 <p class="wikiPara">
@@ -381,7 +383,7 @@ The basic identity model defines only three relationship types - <tt>Grant</tt>,
 
 
 
-<h2 class="wikiHeadline2" id="H-Grant"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Grant">Grant</a></h2>
+<h2 class="wikiHeadline2" id="H-Grant"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-Grant">Grant</a></h2>
 
 
 <p class="wikiPara">
@@ -468,7 +470,7 @@ Which option you would choose is totally up to you.
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-GroupMembership"><a href="/Bloggers/PicketLinkDeepDivePart1#H-GroupMembership">GroupMembership</a></h2>
+<h2 class="wikiHeadline2" id="H-GroupMembership"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-GroupMembership">GroupMembership</a></h2>
 
 
 <p class="wikiPara">
@@ -506,7 +508,7 @@ Once again, there is absolutely nothing special about this implementation - it s
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-GroupRole"><a href="/Bloggers/PicketLinkDeepDivePart1#H-GroupRole">GroupRole</a></h2>
+<h2 class="wikiHeadline2" id="H-GroupRole"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-GroupRole">GroupRole</a></h2>
 
 
 <p class="wikiPara">
@@ -535,7 +537,7 @@ Like the above examples, the implementation is extremely simple - a single prope
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-Summary"><a href="/Bloggers/PicketLinkDeepDivePart1#H-Summary">Summary</a></h1>
+<h1 class="wikiHeadline1" id="H-Summary"><a href="/2013/11/13/PicketLinkDeepDivePart1#H-Summary">Summary</a></h1>
 
 
 <p class="wikiPara">

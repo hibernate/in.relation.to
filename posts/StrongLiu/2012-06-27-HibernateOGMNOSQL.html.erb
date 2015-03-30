@@ -5,11 +5,13 @@ blogger_name: "StrongLiu"
 creation_date: "27-06-2012"
 tags: [Hibernate OGM]
 
-absolute_url: http://in.relation.to/2012/06/27/HibernateOGMNOSQL
-lace: http://in.relation.to/23293.lace
+relative_url: /2012/06/27/HibernateOGMNOSQL
 slug: HibernateOGMNOSQL
+lace: http://in.relation.to/23293.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/06/27/HibernateOGMNOSQL
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -39,7 +41,7 @@ Sorry, this is an Chinese only post :D
 那么, 如果想要用NO-SQL呢? 
 </p>
 
-<h3 class="wikiHeadline3" id="H-HibernateOGM"><a href="/Bloggers/HibernateOGMNOSQL#H-HibernateOGM">什么是Hibernate OGM</a></h3>
+<h3 class="wikiHeadline3" id="H-HibernateOGM"><a href="/2012/06/27/HibernateOGMNOSQL#H-HibernateOGM">什么是Hibernate OGM</a></h3>
 
 <p class="wikiPara">
 <tt>OGM == Object/(Data) Grid Mapping</tt>
@@ -75,7 +77,7 @@ Hibenrate OGM并不是从头搭建的全新项目, 事实上, 它跟牛顿一样
 当程序和存储(无论RMDBS 还是 NO-SQL)打交道的时候, 核心问题实际上就是两个: 存进去, 取出来.
 </p>
 
-<h4 class="wikiHeadline4" id="H-NOSQLStore"><a href="/Bloggers/HibernateOGMNOSQL#H-NOSQLStore">领域模型如何被持久化进NO-SQL store</a></h4>
+<h4 class="wikiHeadline4" id="H-NOSQLStore"><a href="/2012/06/27/HibernateOGMNOSQL#H-NOSQLStore">领域模型如何被持久化进NO-SQL store</a></h4>
 
 <p class="wikiPara">
 抛开各种NO-SQL的实现方式, 例如K-V, Documents, Graph等, 我们可以把NO-SQL简化成我们容易理解的 <u>HashMap</u> .
@@ -155,7 +157,7 @@ entitymanager.find(User.class, 1);</pre>
 
 
 
-<h3 class="wikiHeadline3" id="H-"><a href="/Bloggers/HibernateOGMNOSQL#H-">查询</a></h3>
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/06/27/HibernateOGMNOSQL#H-">查询</a></h3>
 
 <p class="wikiPara">
 目前, 绝大多数应用对于存储的需求都是读大于写的, 而传统的关系型数据库, 由于其有完善的关系数学模型保证, 所以能够提供完善的查询, 甚至多表级联查询(join), 而另一方面, NO-SQL因为起schema free / K-V的本质, 基本上只能通过key来查找.

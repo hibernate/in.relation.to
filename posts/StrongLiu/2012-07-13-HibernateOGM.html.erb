@@ -5,11 +5,13 @@ blogger_name: "StrongLiu"
 creation_date: "13-07-2012"
 tags: [Hibernate OGM]
 
-absolute_url: http://in.relation.to/2012/07/13/HibernateOGM
-lace: http://in.relation.to/23343.lace
+relative_url: /2012/07/13/HibernateOGM
 slug: HibernateOGM
+lace: http://in.relation.to/23343.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/07/13/HibernateOGM
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -213,7 +215,7 @@ Okay, 本实例中用到的其它技术暂时不做介绍了, 下面终于该进
 现在, 我们已经通过使用Hibernate OGM, 把底层的存储从RMDBS切换成了Infinispan, 但是, 由于RMDBS和NO-SQL 本质的不同, 我们还需要做一些修改.
 </p>
 
-<h3 class="wikiHeadline3" id="H-Uuid"><a href="/Bloggers/HibernateOGM#H-Uuid">使用uuid作为主键</a></h3>
+<h3 class="wikiHeadline3" id="H-Uuid"><a href="/2012/07/13/HibernateOGM#H-Uuid">使用uuid作为主键</a></h3>
 
 <p class="wikiPara">
 在使用Hibernate ORM的时候, 我们通常会使用@GeneratedValue来得到数据库自动生成的id, 并且, 通常我们建议把id设置成long类型的以得到更好的性能.
@@ -254,7 +256,7 @@ Okay, 本实例中用到的其它技术暂时不做介绍了, 下面终于该进
 这个方法提供了一个通过REST接口来查找Member的功能, 但是因为我们已经把id的类型改成了String, 所以我们需要对@Path做一些修改, 让它能够接受字符 -- <tt>@Path("/{id:[0-9,a-z][0-9,a-z,\\-]*}")</tt>
 </p>
 
-<h3 class="wikiHeadline3" id="H-"><a href="/Bloggers/HibernateOGM#H-">查询</a></h3>
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/07/13/HibernateOGM#H-">查询</a></h3>
 
 <p class="wikiPara">
 因为Hibernate OGM还是一个很年轻的项目, 有一些功能还没有完全的实现, 例如, 我们在JPA/Hibernate中经常使用的Criteria 查询, 但是幸好, Hibernate OGM和Hibernate Search有很好的集成, 我们可以使用Hibernate Search来完成这部分工作.
@@ -489,7 +491,7 @@ Okay, 现在万事俱备, 我们可以使用Hibernate Search来替换<tt>org.jbo
 </p>
 
 
-<h3 class="wikiHeadline3" id="H-JBossAS7"><a href="/Bloggers/HibernateOGM#H-JBossAS7">部属到JBoss AS 7</a></h3>
+<h3 class="wikiHeadline3" id="H-JBossAS7"><a href="/2012/07/13/HibernateOGM#H-JBossAS7">部属到JBoss AS 7</a></h3>
 
 <p class="wikiPara">
 方便的是, 我的同事<a href="https://github.com/hferentschik" target="" class="regularLink">Hardy</a>已经准备好了这样一个修改过的<a href="https://github.com/hferentschik" target="" class="regularLink">项目</a>, 你可以直接从前面的链接中下载到本文中所介绍到的项目的源代码.
@@ -573,7 +575,7 @@ Hardy还非常贴心的提供了一个小工具来帮助我们自动的插入数
 <pre class="wikiPreformatted">ruby member-generator.rb -a http://localhost:8080/ogm-kitchensink -c 20</pre>
 
 
-<h3 class="wikiHeadline3" id="H-Openshift"><a href="/Bloggers/HibernateOGM#H-Openshift">部属到 Openshift</a></h3>
+<h3 class="wikiHeadline3" id="H-Openshift"><a href="/2012/07/13/HibernateOGM#H-Openshift">部属到 Openshift</a></h3>
 
 <p class="wikiPara">
 <a href="https://openshift.redhat.com/app/" target="" class="regularLink">openshift</a>是Redhat所提供了一个Paas服务, 它背后的技术已经开源, 可以在<a href="https://github.com/openshift" target="" class="regularLink">这里</a>找到其源代码和众多的实例项目.

@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "28-04-2011"
 tags: [Ceylon,Introduction to Ceylon]
 
-absolute_url: http://in.relation.to/2011/04/28/IntroductionToCeylonPart3
-lace: http://in.relation.to/19576.lace
+relative_url: /2011/04/28/IntroductionToCeylonPart3
 slug: IntroductionToCeylonPart3
+lace: http://in.relation.to/19576.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/04/28/IntroductionToCeylonPart3
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ layout: blog-post
 <i class="wikiEmphasis">This article was updated on 28/5/2011 to reflect changes to the model for introductions and add material on ambiguities in mixin inheritance, and on 3/5/2011 to incorporate feedback on member class refinement. The comment thread reflects information in the first version of article.</i>
 </p>
 
-<h1 class="wikiHeadline1" id="H-InheritanceAndRefinement"><a href="/Bloggers/IntroductionToCeylonPart3#H-InheritanceAndRefinement">Inheritance and refinement</a></h1>
+<h1 class="wikiHeadline1" id="H-InheritanceAndRefinement"><a href="/2011/04/28/IntroductionToCeylonPart3#H-InheritanceAndRefinement">Inheritance and refinement</a></h1>
 
 <p class="wikiPara">
 In object-oriented programming, we often replace conditionals (<tt>if</tt>, and especially <tt>switch</tt>) with subtyping. Indeed, according to some folks, this is what <i class="wikiEmphasis">makes</i> a program object-oriented. Let's try refactoring the <tt>Hello</tt> class from Part 2 into two classes, with two different implementations of <tt>greeting</tt>:
@@ -70,7 +72,7 @@ Ceylon also forces us to declare that an attribute or method refines (overrides)
 Notice that Ceylon goes out of its way to repudiate the idea of <q>duck</q> typing or <i class="wikiEmphasis">structural typing</i>. If it <tt>walks()</tt> like a <tt>Duck</tt>, then it should be a subtype of <tt>Duck</tt> and must <i class="wikiEmphasis">explicitly</i> refine the definition of <tt>walk()</tt> in <tt>Duck</tt>. We don't believe that the name of a method or attribute alone is sufficient to identify its semantics.
 </p>
 
-<h1 class="wikiHeadline1" id="H-AbstractClasses"><a href="/Bloggers/IntroductionToCeylonPart3#H-AbstractClasses">Abstract classes</a></h1>
+<h1 class="wikiHeadline1" id="H-AbstractClasses"><a href="/2011/04/28/IntroductionToCeylonPart3#H-AbstractClasses">Abstract classes</a></h1>
 
 <p class="wikiPara">
 There's one problem with what we've just seen. A personalized greeting is not really a kind of default greeting. This is a case for introducing an abstract superclass:
@@ -128,7 +130,7 @@ class PersonalizedHello(String name)
 Note that there's no way to prevent a other code from extending a class in Ceylon. Since only members explicitly declared as supporting refinement using either <tt>formal</tt> or <tt>default</tt> can be refined, a subtype can never break the implementation of a supertype. Unless the supertype was explicitly designed to be extended, a subtype can add members, but never change the behavior of inherited members.
 </p>
 
-<h1 class="wikiHeadline1" id="H-InterfacesAndQmixinqInheritance"><a href="/Bloggers/IntroductionToCeylonPart3#H-InterfacesAndQmixinqInheritance">Interfaces and <q>mixin</q> inheritance</a></h1>
+<h1 class="wikiHeadline1" id="H-InterfacesAndQmixinqInheritance"><a href="/2011/04/28/IntroductionToCeylonPart3#H-InterfacesAndQmixinqInheritance">Interfaces and <q>mixin</q> inheritance</a></h1>
 
 <p class="wikiPara">
 From time to time we come across a case where a class needs to inherit functionality from more than one supertype. Java's inheritance model doesn't support this, since an interface can never define a member with a concrete implementation. Interfaces in Ceylon are a little more flexible:
@@ -197,7 +199,7 @@ The <tt>satisfies</tt> keyword is used to specify that an interface extends anot
 Ceylon's approach to interfaces eliminates a common pattern in Java where a separate abstract class defines a default implementation of some of the members of an interface. In Ceylon, the default implementations can be specified by the interface itself. Even better, it's possible to add a new member to an interface without breaking existing implementations of the interface.
 </p>
 
-<h1 class="wikiHeadline1" id="H-AmbiguitiesInMixinInheritance"><a href="/Bloggers/IntroductionToCeylonPart3#H-AmbiguitiesInMixinInheritance">Ambiguities in mixin inheritance</a></h1>
+<h1 class="wikiHeadline1" id="H-AmbiguitiesInMixinInheritance"><a href="/2011/04/28/IntroductionToCeylonPart3#H-AmbiguitiesInMixinInheritance">Ambiguities in mixin inheritance</a></h1>
 
 <p class="wikiPara">
 It's illegal for a type to inherit two members with the same name, unless the two members both (directly or indirectly) refine a common member of a common supertype, and the inheriting type itself also refines the member to eliminate any ambiguity. The following results in a compilation error:
@@ -288,7 +290,7 @@ class Customer(String name, String email)
 To fix this code, <tt>name</tt> must be declared <tt>default</tt> in both <tt>User</tt> and <tt>Party</tt> and explicitly refined in <tt>Customer</tt>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Introduction"><a href="/Bloggers/IntroductionToCeylonPart3#H-Introduction">Introduction</a></h1>
+<h1 class="wikiHeadline1" id="H-Introduction"><a href="/2011/04/28/IntroductionToCeylonPart3#H-Introduction">Introduction</a></h1>
 
 <p class="wikiPara">
 Sometimes, especially when we're working with code from modules we don't have control over, we would like to mix an interface into a type that has already been defined in another module. For example, we might like to introduce the Ceylon collections module type <tt>List</tt> into the language module type <tt>Sequence</tt>, so that all <tt>Sequence</tt>s support all operations of <tt>List</tt>. But the language module shouldn't have a dependency to the collections module, so we can't specify that <tt>interface Sequence satisfies List</tt> in the declaration of <tt>Sequence</tt> in the language module.
@@ -375,7 +377,7 @@ At runtime, an operation (method invocation, member class instantiation, or attr
 
 </blockquote>
 
-<h1 class="wikiHeadline1" id="H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions"><a href="/Bloggers/IntroductionToCeylonPart3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions">Introduction compared to extension methods and implicit type conversions</a></h1>
+<h1 class="wikiHeadline1" id="H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions"><a href="/2011/04/28/IntroductionToCeylonPart3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions">Introduction compared to extension methods and implicit type conversions</a></h1>
 
 <p class="wikiPara">
 Introduction is Ceylon's way of extending a type after it's been defined. It's <a href="http://in.relation.to/Bloggers/NewApproachToIntroduction#comment20435" target="" class="regularLink">interesting to compare</a> introduction to the following features of other languages:
@@ -440,7 +442,7 @@ Finally, implicit type conversions work by having the compiler introduce hidden 
 Introductions are a kind of elegant compromise: more powerful than plain extension methods, safer than implicit type conversions. We think the beauty of this model is a major advantage of Ceylon over similar languages.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TypeAliases"><a href="/Bloggers/IntroductionToCeylonPart3#H-TypeAliases">Type aliases</a></h1>
+<h1 class="wikiHeadline1" id="H-TypeAliases"><a href="/2011/04/28/IntroductionToCeylonPart3#H-TypeAliases">Type aliases</a></h1>
 
 <p class="wikiPara">
 It's often useful to provide a shorter or more semantic name to an existing class or interface type, especially if the class or interface is a parameterized type. For this, we use a type alias, for example:
@@ -456,7 +458,7 @@ A class alias must declare its formal parameters:
 <pre class="wikiPreformatted brush:ceylon">shared class People(Person... people) = ArrayList&lt;Person&gt;;</pre>
 
 
-<h1 class="wikiHeadline1" id="H-MemberClassesAndMemberClassRefinement"><a href="/Bloggers/IntroductionToCeylonPart3#H-MemberClassesAndMemberClassRefinement">Member classes and member class refinement</a></h1>
+<h1 class="wikiHeadline1" id="H-MemberClassesAndMemberClassRefinement"><a href="/2011/04/28/IntroductionToCeylonPart3#H-MemberClassesAndMemberClassRefinement">Member classes and member class refinement</a></h1>
 
 <p class="wikiPara">
 You're probably used to the idea of an <q>inner</q> class in Java — a class declaration nested inside another class or method. Since Ceylon is a language with a recursive block structure, the idea of a nested class is more than natural. But in Ceylon, a non-<tt>abstract</tt> nested class is actually considered a member of the containing type. For example, <tt>BufferedReader</tt> defines the member class <tt>Buffer</tt>:
@@ -541,7 +543,7 @@ Notice the difference between an <tt>abstract</tt> class and a <tt>formal</tt> m
 It's an interesting exercise to compare Ceylon's member class refinement with the functionality of Java dependency injection frameworks. Both mechanisms provide a means of abstracting the instantiation operation of a type. You can think of the subclass that refines a member type as filling the same role as a dependency configuration in a dependency injection framework.
 </p>
 
-<h1 class="wikiHeadline1" id="H-AnonymousClasses"><a href="/Bloggers/IntroductionToCeylonPart3#H-AnonymousClasses">Anonymous classes</a></h1>
+<h1 class="wikiHeadline1" id="H-AnonymousClasses"><a href="/2011/04/28/IntroductionToCeylonPart3#H-AnonymousClasses">Anonymous classes</a></h1>
 
 <p class="wikiPara">
 If a class has no parameters, it's often possible to use a shortcut declaration which defines a named instance of the class, without providing any actual name for the class itself. This is usually most useful when we're extending an <tt>abstract</tt> class or implementing an interface.
@@ -627,7 +629,7 @@ An <tt>object</tt> declaration can refine an attribute declared <tt>formal</tt> 
 However, an <tt>object</tt> may not itself be declared <tt>formal</tt> or <tt>default</tt>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart3#H-TheresMore">There's more...</a></h1>
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/04/28/IntroductionToCeylonPart3#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
 Member classes and member class refinement allows Ceylon to support <a href="/Bloggers/SelfTypesAndTypeFamiliesInCeylon" target="" class="regularLink">type families</a>.

@@ -5,11 +5,13 @@ blogger_name: "Sanne"
 creation_date: "02-12-2014"
 tags: [Hibernate,Hibernate Search,News]
 
-absolute_url: http://in.relation.to/2014/12/02/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases
-lace: http://in.relation.to/39579.lace
+relative_url: /2014/12/02/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases
 slug: SomeExceptionalBackportsToMaintenanceHibernateSearchReleases
+lace: http://in.relation.to/39579.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/12/02/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -25,7 +27,7 @@ Today we're releasing two maintenance versions of Hibernate Search:
 </li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-BackportingPerformanceImprovements"><a href="/Bloggers/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases#H-BackportingPerformanceImprovements">Backporting performance improvements</a></h3>
+<h3 class="wikiHeadline3" id="H-BackportingPerformanceImprovements"><a href="/2014/12/02/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases#H-BackportingPerformanceImprovements">Backporting performance improvements</a></h3>
 
 <p class="wikiPara">
 Normally we would not backport new features to maintenance releases, but some of the great performance improvements of the new indexing engine of upcoming Hibernate Search 5 such as {<a href="https://hibernate.atlassian.net/browse/HSEARCH-1693" target="" class="regularLink">HSEARCH-1693</a>, <a href="https://hibernate.atlassian.net/browse/HSEARCH-1699" target="" class="regularLink">HSEARCH-1699</a>, <a href="https://hibernate.atlassian.net/browse/HSEARCH-1725" target="" class="regularLink">HSEARCH-1725</a>} seem to be very desirable. These are not introducing any API or functionality change, so we could backport them at virtually no risk.
@@ -35,14 +37,14 @@ Normally we would not backport new features to maintenance releases, but some of
 This means you can now easily upgrade your Hibernate Search 4.4.x and 4.5.x applications without necessarily needing to migrate to Hibernate Search 5. Remember though: there are a lot more improvements coming in 5! If you want all the nice improvements you'll have to eventually migrate.
 </p>
 
-<h3 class="wikiHeadline3" id="H-WhatWasNotBackported"><a href="/Bloggers/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases#H-WhatWasNotBackported">What was not backported</a></h3>
+<h3 class="wikiHeadline3" id="H-WhatWasNotBackported"><a href="/2014/12/02/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases#H-WhatWasNotBackported">What was not backported</a></h3>
 
 <p class="wikiPara">
 These new backends were created because performance testing of the Infinispan indexing engine highlighted some problems in our backend when using an Infinispan Directory; so while these patches provide an impressive boost on their own, they will be far more effective when paired up with latest Infinispan 7 as some changes where applied to Infinispan too. But we're not upgrading these maintenance branches of Hibernate Search 4 to Infinispan 7 as that would break all of your configurations. To take benefit of the updated Infinispan integration you'll need Hibernate Search 5.
 Another great reason to move to Hibernate Search 5 is of course the update to latest Apache Lucene; so these updates announced today should be a nice an easy performance boost but if you are serious about needing the highest speed please keep testing version 5.
 </p>
 
-<h3 class="wikiHeadline3" id="H-FeedbackNeeded"><a href="/Bloggers/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases#H-FeedbackNeeded">Feedback needed!</a></h3>
+<h3 class="wikiHeadline3" id="H-FeedbackNeeded"><a href="/2014/12/02/SomeExceptionalBackportsToMaintenanceHibernateSearchReleases#H-FeedbackNeeded">Feedback needed!</a></h3>
 
 <p class="wikiPara">
 While these impressive improvements were created after specific diagnostics work on Infinispan, the benefits are not Infinispan specific: you should be able to experience a significant throughput boost with any storage. The exception is if you were using the NRT backend: I don't expect you to see any benefit in that case. Although if you were forced to use NRT because of throughput needs but didn't like the tradeoffs, you might no longer need to use NRT as the new non-NRT backend could be nearly as efficient.</p>

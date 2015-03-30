@@ -5,16 +5,18 @@ blogger_name: "StrongLiu"
 creation_date: "18-08-2012"
 tags: [JavaEE ,Spring]
 
-absolute_url: http://in.relation.to/2012/08/18/MigratingSpringApplicationsToJavaEE6
-lace: http://in.relation.to/23475.lace
+relative_url: /2012/08/18/MigratingSpringApplicationsToJavaEE6
 slug: MigratingSpringApplicationsToJavaEE6
+lace: http://in.relation.to/23475.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/08/18/MigratingSpringApplicationsToJavaEE6
 ---
 <div id="documentDisplay" class="documentDisplay">
 
 
-<h3 class="wikiHeadline3" id="H-Commentary"><a href="/Bloggers/MigratingSpringApplicationsToJavaEE6#H-Commentary">commentary 译注</a></h3>
+<h3 class="wikiHeadline3" id="H-Commentary"><a href="/2012/08/18/MigratingSpringApplicationsToJavaEE6#H-Commentary">commentary 译注</a></h3>
 
 <p class="wikiPara">
 This is a translation of <a href="http://howtojboss.com/2012/04/17/article-series-migrating-spring-applications-to-java-ee-6-part-1/" target="" class="regularLink">this post</a>, so if you're a english speaker, please read the original post.
@@ -37,7 +39,7 @@ This is a translation of <a href="http://howtojboss.com/2012/04/17/article-serie
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-"><a href="/Bloggers/MigratingSpringApplicationsToJavaEE6#H-">简介</a></h1>
+<h1 class="wikiHeadline1" id="H-"><a href="/2012/08/18/MigratingSpringApplicationsToJavaEE6#H-">简介</a></h1>
 
 <p class="wikiPara">
 在过去的几年中, 越来越多的人开始对Java EE感兴趣了, Java EE 5的出现就让大家耳目一新, Java EE 6则重建了开发人员对Java EE技术体系的信心. 现在, Java EE 已经是当下的热点技术, 许多开发人员都在重新对其进行评估, 已审视自己对其的固有印象. 在2003/2004年的时候, J2EE正处于最低潮的时期, 由于它太过于阳春白雪而忽视了如何解决实际问题, 让开发人员对J2EE嗤之以鼻. 正是那个时期, 一本书横空出世, 从本质上改变了之后五年内企业级Java开发的方式. 这本书正是<q>J2EE Design and Development</q>, 不久之后, 又有一本<q>J2EE without EJB</q>出版, 这两本书都出自Rod Johnson(译注:最近Rod Johnson刚刚从SrpingSource离开)之手.
@@ -56,7 +58,7 @@ This is a translation of <a href="http://howtojboss.com/2012/04/17/article-serie
 本文并不着重于讨论究竟哪种技术更好, Spring还是Java EE, 我们想要展示的是如何解决在升级老的Spring项目的过程中所遇到的问题. 并且, 我们也不鼓励完全按照本文所讲的路径进行升级. 现实中, 可能会有各种各样的原因没有办法完全遵循本文所介绍的迁移步骤进行, 例如时间, 金钱和经验等因素. 不过我们保证, 当你遗留的Spring项目遇到问题, 并且你想把它迁移到一个现代的企业软件架构, 还需要保证这个架构在未来五年内能够满足要求的话, 本文将为你演示一个可行的方案.
 </p>
 
-<h3 class="wikiHeadline3" id="H-"><a href="/Bloggers/MigratingSpringApplicationsToJavaEE6#H-">为什么要迁移?</a></h3>
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/08/18/MigratingSpringApplicationsToJavaEE6#H-">为什么要迁移?</a></h3>
 
 <p class="wikiPara">
 在我们讨论如何迁移一个遗留的Spring项目之前, 首先需要问自己的是 <q>为什么要这样搞?</q> 这绝对是个合理的问题, 并且它可以有很多的答案. 首先, Spring是一个创建于主流技术不能满足大家要求的年代的开源项目, 它从诞生以来一直都很成功, 所以, 它从一开始就很吸引风险投资的眼球, 最终, 被专注于虚拟话的VMware所收购. 对于Java世界的人来说, 大家可能都知道可以用它在我们的Mac上跑虚拟机运行Windows. 不过Spring和它的众多子项目, 没有一个成为Java 标准, 不过还是有公司和个人在推动Spring的标准化进程的. 据我们所知, 推动Spring的标准化, 不管是对Spring项目, 还是它身后的SpringSource公司, 都没有任何明显的好处. 当然, 这些都是公司间的政治, 大堆数开发人员对此一点都不感冒, 所以, 还是让我们从技术的角度来看看为什么迁移到Java EE是一个更好的选择. 
@@ -74,7 +76,7 @@ This is a translation of <a href="http://howtojboss.com/2012/04/17/article-serie
 现在还有程序员对这些技术很精通么? 就算有, 那么未来五年还能有么? 从我们自身的经验来说, 这些老的项目每年都需要维护, 需要每年都更换不同的Web / ORM 框架去适应这个框架在当时的最新版本.所有的上面这些, 都需要对项目进行大规模的改动, 部分程序需要从根本上被更新, 有些时候甚至需要从头来过, 既然你这都能够忍, 那为什么不一步到位, 直接把项目转成符合Java EE 标准的?
 </p>
 
-<h3 class="wikiHeadline3" id="H-"><a href="/Bloggers/MigratingSpringApplicationsToJavaEE6#H-">谣言终结者</a></h3>
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/08/18/MigratingSpringApplicationsToJavaEE6#H-">谣言终结者</a></h3>
 
 <p class="wikiPara">
 如果你仍然对Java EE是否能够满足你的需求持怀疑态度, 那么我们建议你继续阅读本文, 希望能够消除你对其的一些误解. 大家都J2EE的一些缺点可能都很了解了, 但是, 一些开发人员就从此完全放弃了Java EE, 也不再关心其的最新进展了, 所以可能对当前Java EE不是很了解.
@@ -207,7 +209,7 @@ Arauillian也不会强迫你转向一个新的测试技术, 相反, 它会无侵
 作为总结, 我们可以负责任的说, 轻量级的Java EE能够提供Spring所提供的所有功能. 
 </p>
 
-<h3 class="wikiHeadline3" id="H-"><a href="/Bloggers/MigratingSpringApplicationsToJavaEE6#H-">迁移方法</a></h3>
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/08/18/MigratingSpringApplicationsToJavaEE6#H-">迁移方法</a></h3>
 
 <p class="wikiPara">
 怎样做才是最好的方法来开始这个迁移呢? 一些人可能会直接扔掉遗留项目然后选择从头开始, 尽管这种方式很吸引人, 并且如果时间和资金没有限制的话这样做非常可行. 不过, 对于大多数现实情况来说, 这显然不可取. 我们需要一种渐进式替换的方法, 并且保证在这个过程当中不会出现什么灾难性的故障. 我们需要有一个迁移方案来带领我们一步步的向前推进, 这个方案不应限制我们自己的创造性, 并且, 它应该允许我们在任何一步的时候停下来. 由此, 我们得出如下的迁移方案:
@@ -225,7 +227,7 @@ Arauillian也不会强迫你转向一个新的测试技术, 相反, 它会无侵
 在本系列的下一篇中, 我们会把重点放在如何迁移上面, 然后通过一个真实的示例项目向你展示迁移过程中的不同阶段. 届时会有实例代码和一个github上的项目提供给你, 这样, 你可以自己动手来尝试整个迁移过程.
 </p>
 
-<h3 class="wikiHeadline3" id="H-"><a href="/Bloggers/MigratingSpringApplicationsToJavaEE6#H-">关于作者</a></h3>
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/08/18/MigratingSpringApplicationsToJavaEE6#H-">关于作者</a></h3>
 
 <p class="wikiPara">
 作者: Bert Ertman, Paul Bakker

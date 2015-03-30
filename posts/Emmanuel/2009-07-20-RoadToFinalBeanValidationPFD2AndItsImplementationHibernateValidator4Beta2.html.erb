@@ -5,17 +5,19 @@ blogger_name: "Emmanuel"
 creation_date: "20-07-2009"
 tags: [Bean Validation,Hibernate Validator]
 
-absolute_url: http://in.relation.to/2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2
-lace: http://in.relation.to/12026.lace
+relative_url: /2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2
 slug: RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2
+lace: http://in.relation.to/12026.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2
 ---
 <div id="documentDisplay" class="documentDisplay">
 
 
 <p class="wikiPara">
-Here is the latest draft before sending Bean Validation (JSR 303) to final stage (<a href="/Bloggers/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#attachment1" target="" class="regularLink">in pdf[1]</a>).
+Here is the latest draft before sending Bean Validation (JSR 303) to final stage (<a href="/2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#attachment1" target="" class="regularLink">in pdf[1]</a>).
 For the few who don't know yet ( ;) ), Bean Validation standardizes constraint declaration, definition, validation and metadata for the Java platform. Said otherwise, add an annotation to a property and hop it's validated.
 </p>
 
@@ -43,7 +45,7 @@ Overall <a href="http://opensource.atlassian.com/projects/hibernate/secure/Relea
 Back to the spec, let's discuss some of the enhancements.
 </p>
 
-<h1 class="wikiHeadline1" id="H-ATypesafePathRepresentation"><a href="/Bloggers/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#H-ATypesafePathRepresentation">A type-safe Path representation</a></h1>
+<h1 class="wikiHeadline1" id="H-ATypesafePathRepresentation"><a href="/2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#H-ATypesafePathRepresentation">A type-safe Path representation</a></h1>
 
 <p class="wikiPara">
 A typesafe way to express navigation paths to the failing property has been added. Before, paths were expressed as strings like <tt>"addresses[0].street1"</tt> and libraries were forced to parse this string <q>by hand</q>. The Path object now exposes all individual nodes via the <tt>Iterable</tt> interface. 
@@ -104,7 +106,7 @@ The <tt>ConstraintValidatorContext</tt> used to customize error messages inside 
 
 
 
-<h1 class="wikiHeadline1" id="H-BootstrapAPIForProviderSpecificUsages"><a href="/Bloggers/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#H-BootstrapAPIForProviderSpecificUsages">Bootstrap API for provider specific usages</a></h1>
+<h1 class="wikiHeadline1" id="H-BootstrapAPIForProviderSpecificUsages"><a href="/2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#H-BootstrapAPIForProviderSpecificUsages">Bootstrap API for provider specific usages</a></h1>
 
 <p class="wikiPara">
 The bootstrap API now takes a Bean Validation provider class rather than the <tt>Configuration</tt> class to select a specific provider:
@@ -115,7 +117,7 @@ Validation.byProvider(HibernateValidatorProvider.class).buildValidatorFactory();
 </pre>
 
 
-<h1 class="wikiHeadline1" id="H-OpeningDoorsForTheFuture"><a href="/Bloggers/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#H-OpeningDoorsForTheFuture">Opening doors for the future</a></h1>
+<h1 class="wikiHeadline1" id="H-OpeningDoorsForTheFuture"><a href="/2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#H-OpeningDoorsForTheFuture">Opening doors for the future</a></h1>
 
 <p class="wikiPara">
 While we unfortunately could not include method and parameter validations in this release, we have open the doors for provider specific extensions and potential standardization for the next revision of Bean Validation.
@@ -160,7 +162,7 @@ class User {
 This information can then be read by the presentation framework to display error messages differently. If you define constraints, don't forget the new mandatory <tt>payload</tt> parameter!
 </p>
 
-<h1 class="wikiHeadline1" id="H-Various"><a href="/Bloggers/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#H-Various">Various</a></h1>
+<h1 class="wikiHeadline1" id="H-Various"><a href="/2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#H-Various">Various</a></h1>
 
 <p class="wikiPara">
 We have also done various enhancements:
@@ -179,5 +181,5 @@ Many thanks to all the feedback received whether it be from within and outside t
 </p>
 
 <p class="wikiPara">
-PS: this draft was supposed to go through the regular JCP process but due to legal dirty work at play, this is not currently possible (I might expand on the subject in a different post depending on how frustrated I end up being). Our legal team is at work but in the mean time, I wanted to give you the premium (<a href="/Bloggers/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#attachment1" target="" class="regularLink">download the spec here[1]</a>).</p>
+PS: this draft was supposed to go through the regular JCP process but due to legal dirty work at play, this is not currently possible (I might expand on the subject in a different post depending on how frustrated I end up being). Our legal team is at work but in the mean time, I wanted to give you the premium (<a href="/2009/07/20/RoadToFinalBeanValidationPFD2AndItsImplementationHibernateValidator4Beta2#attachment1" target="" class="regularLink">download the spec here[1]</a>).</p>
 </div>

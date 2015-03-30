@@ -169,11 +169,9 @@ class Importer
     end
 
     blog_entry.title = title_link.text
-    puts "Importing #{blog_entry.lace} - #{blog_entry.title}"
+    printf "Importing %-32s - %s\n", blog_entry.lace, blog_entry.title
+    #puts "Importing #{blog_entry.lace} - #{blog_entry.title}"
     blog_entry.slug = title_link.attr('href').to_s.sub('/Bloggers/', '')
-
-    # remove the h1 title (title will be rendered from the meta information)
-    blog_entry.content = prepare_content_body(doc)
 
     # author and blogger name
     author_link = doc.css('div.documentCreatorHistory > div > a').first
@@ -194,14 +192,19 @@ class Importer
     # tags
     blog_entry.tags = doc.css('div.documentTags  a').map {|link| link.text.to_s}
 
-    blog_entry.absolute_url = "http://in.relation.to/#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}"
+    # misc
+    blog_entry.relative_url = "/#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}"
+    blog_entry.disqus_thread_id = "http://in.relation.to" + blog_entry.relative_url
+
+    # prepare the main content
+    blog_entry.content = prepare_content_body(doc, blog_entry)
 
     unless @skip_wxr_export
       @wxr_exporter.create_item(blog_entry.title,
-        blog_entry.absolute_url,
-        blog_entry.content,
-        blog_entry.date.strftime( "%d-%m-%Y" ) + '-' + blog_entry.slug,
-        blog_entry.date)
+                                blog_entry.disqus_thread_id,
+                                blog_entry.content,
+                                blog_entry.date.strftime( "%d-%m-%Y" ) + '-' + blog_entry.slug,
+                                blog_entry.date)
       export_comments(doc)
     end
 
@@ -217,9 +220,8 @@ class Importer
   end
 
   # Extracts and cleans up the main content of the blog post
-  def prepare_content_body(doc)
+  def prepare_content_body(doc, blog_entry)
     #puts doc
-
     content_node = doc.search('#documentDisplay')
 
     # remove the empty first wikiPara
@@ -229,6 +231,14 @@ class Importer
 
     # remove h1 title since title will be rendered on the new site via the meta data
     content_node.css('div#j_id490').unlink
+
+    # adjust anchor links (used in blog headings)
+    content_node.css('a').each do |link_node|
+      if link_node['href'] =~ /^\/Bloggers\/.*(#.*)$/
+        updated_href = blog_entry.relative_url + link_node['href'].match(/^\/Bloggers\/.*(#.*)$/).captures[0]
+        link_node['href'] = updated_href
+      end
+    end
 
     return content_node.to_s
   end
@@ -285,7 +295,7 @@ class Importer
       email.sub!('(AT)', "@")
       email.strip!
       return [author_name, email, url]
-    # there is no email, but a website
+      # there is no email, but a website
     else
       url = ''
       author_name = author_info
@@ -389,10 +399,11 @@ if(Choice.choices[:limit])
   limit = Choice.choices[:limit].to_i
 end
 importer = Importer.new(Choice.choices.pstore,
- Choice.choices.outdir,
- Choice.choices.wxr,
- Choice.choices.skip_images,
- Choice.choices.skip_assets,
- Choice.choices.errors,
- limit)
+                        Choice.choices.outdir,
+                        Choice.choices.wxr,
+                        Choice.choices.skip_images,
+                        Choice.choices.skip_assets,
+                        Choice.choices.errors,
+                        limit
+                        )
 importer.import_posts

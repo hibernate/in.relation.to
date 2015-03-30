@@ -5,11 +5,13 @@ blogger_name: "Dan"
 creation_date: "14-03-2009"
 tags: [Interoperability,Seam,Seam News]
 
-absolute_url: http://in.relation.to/2009/03/14/JBossAS5AndGlassFishSupportAddedToSeamgen
-lace: http://in.relation.to/10827.lace
+relative_url: /2009/03/14/JBossAS5AndGlassFishSupportAddedToSeamgen
 slug: JBossAS5AndGlassFishSupportAddedToSeamgen
+lace: http://in.relation.to/10827.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/03/14/JBossAS5AndGlassFishSupportAddedToSeamgen
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ I finally got around to weaving my modifications for adding GlassFish support to
 Let me tell you, it was quite a task to fine tune the configuration and build to support all twelve deployment variations; EAR and WAR archives for GlassFish V2/V3, JBoss AS 4.2.x and JBoss AS 5.0.x in both exploded and packaged format. (Double that number if you consider that I added support to both RichFaces and ICEfaces projects). But surprisingly enough, all of them now work out of the box (with the exception of a few small configuration changes you have to make to deploy an EAR project to GlassFish).
 </p>
 
-<h2 class="wikiHeadline2" id="H-ThePersistenceParadox"><a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen#H-ThePersistenceParadox">The persistence paradox</a></h2>
+<h2 class="wikiHeadline2" id="H-ThePersistenceParadox"><a href="/2009/03/14/JBossAS5AndGlassFishSupportAddedToSeamgen#H-ThePersistenceParadox">The persistence paradox</a></h2>
 
 <p class="wikiPara">
 The biggest challenge was the persistence unit configuration. This stems from the fact that packaging requirements for persistence units differs between EARs and WARs. To complicate matters, there are variations between how application servers interpret and enforce these requirements. I want to spend some time explaining the situation and how I was able to strike a balance, because it's important for understanding how the project build now works.
@@ -184,7 +186,7 @@ These tokens are applied to the following two component definitions in the Seam 
 Whew! That covers the JPA configuration. For more details on persistence unit configurations in both Java EE and Seam, check out chapter 9 of <a href="http://mojavelinux.com/seaminaction" target="" class="regularLink">Seam in Action</a>. I now want to briefly mention the new targets to support deployment to JBoss AS 5 and GlassFish.
 </p>
 
-<h2 class="wikiHeadline2" id="H-JBossAS5AndGlassFishTargets"><a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen#H-JBossAS5AndGlassFishTargets">JBoss AS 5 and GlassFish targets</a></h2>
+<h2 class="wikiHeadline2" id="H-JBossAS5AndGlassFishTargets"><a href="/2009/03/14/JBossAS5AndGlassFishSupportAddedToSeamgen#H-JBossAS5AndGlassFishTargets">JBoss AS 5 and GlassFish targets</a></h2>
 
 <p class="wikiPara">
 As before, the seam-gen project build supports JBoss AS by default. But I'm now able to support both JBoss 4 and JBoss 5 using the same targets by inspecting the JBoss AS 5 installation directory (resolved from jboss.home) to determine which version of JBoss AS is being targeted. I simply check for the presence of a JAR file.
@@ -217,7 +219,7 @@ You don't have to do anything to enable the support for GlassFish. It's provided
 The only trade off I had to make is that Hibernate is expected to be the JPA provider in GlassFish (note the target which deploys Hibernate). It's not that difficult to make the switch to another JPA provider, but suffice to say, Seam works best with Hibernate.
 </p>
 
-<h2 class="wikiHeadline2" id="H-GrowingIvy"><a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen#H-GrowingIvy">Growing Ivy</a></h2>
+<h2 class="wikiHeadline2" id="H-GrowingIvy"><a href="/2009/03/14/JBossAS5AndGlassFishSupportAddedToSeamgen#H-GrowingIvy">Growing Ivy</a></h2>
 
 <p class="wikiPara">
 Seam projects are know for being pretty old school when it comes to library management. All of the JAR files are just dumped into the lib directory and picked out from there as needed. This makes it very difficult to share a seam-gen project because it's so large. I explained how to use Ivy to manage the dependencies for a seam-gen project in <a href="/Bloggers/ManagingTheDependenciesOfASeamgenProjectWithIvy" target="" class="regularLink">this entry</a>. seam-gen now offers that configuration as an extension. To enable it, you simply run the following seam-gen target:
@@ -230,7 +232,7 @@ Seam projects are know for being pretty old school when it comes to library mana
 Right now, only RichFaces projects are supported, but supporting ICEfaces projects is just a matter of making a couple of changes to the dependencies.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WrapUp"><a href="/Bloggers/JBossAS5AndGlassFishSupportAddedToSeamgen#H-WrapUp">Wrap up</a></h2>
+<h2 class="wikiHeadline2" id="H-WrapUp"><a href="/2009/03/14/JBossAS5AndGlassFishSupportAddedToSeamgen#H-WrapUp">Wrap up</a></h2>
 
 <p class="wikiPara">
 So there you go, seam-gen is no longer stuck in a JBoss world. And for the early adopters, JBoss AS 5--the pride and joy of JBoss--is now supported. Adding Ivy to the project helps make it more lightweight, provides an easy way to download source JARs, and helps document which versions of the JARs are being used. Just check out Seam from SVN, build and enjoy!</p>

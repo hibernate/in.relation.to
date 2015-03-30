@@ -5,11 +5,13 @@ blogger_name: "Dan"
 creation_date: "17-03-2011"
 tags: [Seam,Seam News,Weld]
 
-absolute_url: http://in.relation.to/2011/03/17/IsSeam3GoingToBePortableOrWhat
-lace: http://in.relation.to/18810.lace
+relative_url: /2011/03/17/IsSeam3GoingToBePortableOrWhat
 slug: IsSeam3GoingToBePortableOrWhat
+lace: http://in.relation.to/18810.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/03/17/IsSeam3GoingToBePortableOrWhat
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ The short answer is: <strong>Yes</strong>.
 In this entry, I'll clarify our portability goal, then address the problems many you have encountered using Seam 3 on GlassFish (and JBoss AS). Hopefully I'll manage to your frustrations with confidence :)
 </p>
 
-<h2 class="wikiHeadline2" id="H-PortabilityIsAGoal"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-PortabilityIsAGoal">Portability is a goal</a></h2>
+<h2 class="wikiHeadline2" id="H-PortabilityIsAGoal"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-PortabilityIsAGoal">Portability is a goal</a></h2>
 
 <p class="wikiPara">
 <i class="wikiEmphasis">Seam 3 is not just for JBoss AS.</i> One of our main goals for Seam 3 is to deliver on the portability contract that CDI espouses, while at the same time providing strong integration with the container (CDI, Java EE, etc). It's a portable extension library built on top of CDI. Therefore, you should expect to be able to use it with any compliant CDI runtime.
@@ -40,7 +42,7 @@ Obviously, some modules will intentionally offer non-portable behavior. Those fe
 With that goal, there's no doubt we've set a high bar for this project. It won't always come easy, especially in the beginning. There have been some bumps along the way. We've also made some mistakes. Both are to be expected for an emerging technology. We are tracking down and squashing the bugs. And any limitations we've hit are already being addressed in <a href="http://in.relation.to/Bloggers/CDI11" target="" class="regularLink">CDI 1.1</a>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhatsTheIssue"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-WhatsTheIssue">What's the issue?</a></h2>
+<h2 class="wikiHeadline2" id="H-WhatsTheIssue"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-WhatsTheIssue">What's the issue?</a></h2>
 
 <p class="wikiPara">
 Several of the modules in the Seam 3.0.0 candidate releases have been causing deployment errors in GlassFish 3.1 (and even JBoss AS). We are working on the problems, some of which originate in the CDI implementation or application server. We don't want to throw around blame, we want to resolve the issues.
@@ -62,7 +64,7 @@ Regardless of where the problems occur, we help get them resolved as quickly as 
 As time goes by, portability will not just be a goal, but something you can count on.
 </p>
 
-<h2 class="wikiHeadline2" id="H-PavingTheWayToPortability"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-PavingTheWayToPortability">Paving the way to portability</a></h2>
+<h2 class="wikiHeadline2" id="H-PavingTheWayToPortability"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-PavingTheWayToPortability">Paving the way to portability</a></h2>
 
 <p class="wikiPara">
 Part of making Seam 3 portable involves making sure that the application servers are playing by the same rules. They haven't been in all cases. (Recently we've been struggling with some issues in GlassFish 3.1). These problems, which I describe below, have meant deployment errors in Seam 3. We haven't been ignoring the issues. We've be actively working to pave out those rough spots, which is good for both Seam 3 and Java EE in general.
@@ -76,7 +78,7 @@ I'll try to clearly explain the issues you likely encountered getting Seam to ru
 There are plans for a Weld 1.1.1 release, which specifically fixes these problems at the source. Brian Leathem has provided <a href="http://blog.bleathem.ca/2011/02/updating-weld-in-glassfish-31.html" target="" class="regularLink">instructions for updating Weld in GlassFish 3.1</a> when it comes time.
 </p>
 
-<h3 class="wikiHeadline3" id="H-AlphabravoLibraryVisibility"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-AlphabravoLibraryVisibility">Alpha-bravo library visibility</a></h3>
+<h3 class="wikiHeadline3" id="H-AlphabravoLibraryVisibility"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-AlphabravoLibraryVisibility">Alpha-bravo library visibility</a></h3>
 
 <p class="wikiPara">
 Affects: GlassFish 3.1 (fixed in <a href="https://repository.jboss.org/nexus/content/repositories/snapshots/org/jboss/weld/weld-osgi-bundle/1.1.0-SNAPSHOT/" target="" class="regularLink">Weld 1.1.1-SNAPSHOT</a>)<br>
@@ -113,7 +115,7 @@ Resolution:
 <li class="wikiUnorderedListItem"> worse case scenario, you can combine all the Seam bits into a single JAR</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-LibrarytoapplicationVisibililty"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-LibrarytoapplicationVisibililty">Library-to-application visibililty</a></h3>
+<h3 class="wikiHeadline3" id="H-LibrarytoapplicationVisibililty"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-LibrarytoapplicationVisibililty">Library-to-application visibililty</a></h3>
 
 <p class="wikiPara">
 Affects: GlassFish 3.1 (unresolved)<br>
@@ -146,7 +148,7 @@ Resolution:
 <li class="wikiUnorderedListItem"> we need this issue to be resolved to unlock all Solder features</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-MissingTypedLoggerAndMessageBundleImplementationClasses"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-MissingTypedLoggerAndMessageBundleImplementationClasses">Missing typed logger and message bundle implementation classes</a></h3>
+<h3 class="wikiHeadline3" id="H-MissingTypedLoggerAndMessageBundleImplementationClasses"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-MissingTypedLoggerAndMessageBundleImplementationClasses">Missing typed logger and message bundle implementation classes</a></h3>
 
 <p class="wikiPara">
 Affects: Seam <tt>&lt;=</tt> 3.0.0.CR2 (fixed in Seam 3.0.0.CR3)<br>
@@ -181,7 +183,7 @@ Resolution:
 <li class="wikiUnorderedListItem"> we've added documentation to Seam Solder to educate you how to use this feature, and the options you have</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-DanglingWebFragmentReference"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-DanglingWebFragmentReference">Dangling web fragment reference</a></h3>
+<h3 class="wikiHeadline3" id="H-DanglingWebFragmentReference"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-DanglingWebFragmentReference">Dangling web fragment reference</a></h3>
 
 <p class="wikiPara">
 Affects: Seam <tt>&lt;=</tt> 3.0.0.CR2 on GlassFish and Tomcat (fixed in Seam 3.0.0.CR3)<br>
@@ -214,7 +216,7 @@ Resolution:
 <li class="wikiUnorderedListItem"> the reference has been removed for now</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-IntermittentInterceptors"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-IntermittentInterceptors">Intermittent interceptors</a></h3>
+<h3 class="wikiHeadline3" id="H-IntermittentInterceptors"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-IntermittentInterceptors">Intermittent interceptors</a></h3>
 
 <p class="wikiPara">
 Affects: GlassFish 3.1 (unresolved)
@@ -244,7 +246,7 @@ Resolution:
 <li class="wikiUnorderedListItem"> at the moment, the only resolution is to redeploy the application</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-OverzealousClassScanner"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-OverzealousClassScanner">Overzealous class scanner</a></h3>
+<h3 class="wikiHeadline3" id="H-OverzealousClassScanner"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-OverzealousClassScanner">Overzealous class scanner</a></h3>
 
 <p class="wikiPara">
 Affects: GlassFish 3.0.1 (fixed in GlassFish 3.1)
@@ -278,7 +280,7 @@ Resolution:
 <li class="wikiUnorderedListItem"> we strongly recommend upgrading to GlassFish 3.1</li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-Upwards"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-Upwards">Upwards</a></h2>
+<h2 class="wikiHeadline2" id="H-Upwards"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-Upwards">Upwards</a></h2>
 
 <p class="wikiPara">
 You'll be glad to know that after much deliberation, we've decided to do a CR3 and postpone the final release for one more week. Please use this opportunity to verify that the issues you've encountered are resolved so that we can deliver a quality result in Seam 3.0.0.Final.
@@ -296,7 +298,7 @@ This is really a community project in every sense, and we're so proud to have be
 Seam 3.0.0.Final isn't the end, it's just a stepping stone. Participation in Seam 3 is growing rapidly. Existing modules are already looking ahead to 3.1 and new modules are already scheduled. We are also getting the migration guide underway. I encourage you to join us to help make Seam 3 an awesome extension stack for enterprise Java developers.
 </p>
 
-<h3 class="wikiHeadline3" id="H-UPDATE"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-UPDATE">UPDATE</a></h3>
+<h3 class="wikiHeadline3" id="H-UPDATE"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-UPDATE">UPDATE</a></h3>
 
 <p class="wikiPara">
 I just built the latest Weld and replaced the OSGI bundle in GlassFish 3.1 and there are only two failing tests in the Solder test suite:
@@ -313,7 +315,7 @@ I just built the latest Weld and replaced the OSGI bundle in GlassFish 3.1 and t
 That means nearly all Solder features are available. Almost there.
 </p>
 
-<h3 class="wikiHeadline3" id="H-UPDATE2"><a href="/Bloggers/IsSeam3GoingToBePortableOrWhat#H-UPDATE2">UPDATE 2</a></h3>
+<h3 class="wikiHeadline3" id="H-UPDATE2"><a href="/2011/03/17/IsSeam3GoingToBePortableOrWhat#H-UPDATE2">UPDATE 2</a></h3>
 
 <p class="wikiPara">
 <a href="https://repository.jboss.org/nexus/content/repositories/snapshots/org/jboss/weld/weld-osgi-bundle/1.1.0-SNAPSHOT/" target="" class="regularLink">Snapshots of the Weld OSGi bundle</a> are now available in the JBoss Snapshot repository.</p>

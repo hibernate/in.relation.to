@@ -5,16 +5,18 @@ blogger_name: "Emmanuel"
 creation_date: "27-04-2006"
 tags: []
 
-absolute_url: http://in.relation.to/2006/04/27/NeverBeenThatCloseToJavaPersistenceCompliance
-lace: http://in.relation.to/2171.lace
+relative_url: /2006/04/27/NeverBeenThatCloseToJavaPersistenceCompliance
 slug: NeverBeenThatCloseToJavaPersistenceCompliance
+lace: http://in.relation.to/2171.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2006/04/27/NeverBeenThatCloseToJavaPersistenceCompliance
 ---
 <div id="documentDisplay" class="documentDisplay">
 
 
-<h2 class="wikiHeadline2" id="H-EJB3XMLMappingFiles"><a href="/Bloggers/NeverBeenThatCloseToJavaPersistenceCompliance#H-EJB3XMLMappingFiles">EJB3 XML mapping files</a></h2>
+<h2 class="wikiHeadline2" id="H-EJB3XMLMappingFiles"><a href="/2006/04/27/NeverBeenThatCloseToJavaPersistenceCompliance#H-EJB3XMLMappingFiles">EJB3 XML mapping files</a></h2>
 <p class="wikiPara">
 The latest release of <a href="http://entitymanager.hibernate.org" target="" class="regularLink">Hibernate EntityManager </a> (3.1.0 beta8) now support EJB3 XML mapping files (aka deployment descriptors). While annotations are considered a huge step forward for development ease-of-use and productivity, some folks out there stayed concerned about the ability to split metadata from the code. This is now supported in <a href="http://annotations.hibernate.org" target="" class="regularLink">Hibernate Annotations </a> (3.1.0 beta 10) and Hibernate EntityManager in a standard manner.
 You can partially overrides java annotations or you can write all you metadata through XML. The easiest solution is to add META-INF/orm.xml in your ejb-jar or persistence jar. This file is automatically taken into account by the persistence provider. Alternatively you can add a <tt>&lt;mapping-file/&gt;</tt> element to your persistence.xml file. Here is a sample for EJB3 XML file
@@ -50,7 +52,7 @@ You can partially overrides java annotations or you can write all you metadata t
 </pre>
 
 
-<h2 class="wikiHeadline2" id="H-GlassfishIntegration"><a href="/Bloggers/NeverBeenThatCloseToJavaPersistenceCompliance#H-GlassfishIntegration">Glassfish integration</a></h2>
+<h2 class="wikiHeadline2" id="H-GlassfishIntegration"><a href="/2006/04/27/NeverBeenThatCloseToJavaPersistenceCompliance#H-GlassfishIntegration">Glassfish integration</a></h2>
 
 <p class="wikiPara">
 I have been working with the Glassfish team for some times now to make sure Hibernate EntityManager integrates well with Glassfish. Now that the specification has been frozen, the integration is working very smoothly:
@@ -101,7 +103,7 @@ That's it! Glassfish sets the appropriate Transaction Manager Strategy and Hiber
 Hibernate EntityManager is know to run in all up-to-date EJB3 implementations. Of course, it runs smoothly in <a href="http://www.jboss.com/products/ejb3" target="" class="regularLink">JBoss EJB3 </a> and <a href="http://www.jboss.com/products/ejb3" target="" class="regularLink">JBoss Embeddable EJB3 </a>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-MappingOfMaps"><a href="/Bloggers/NeverBeenThatCloseToJavaPersistenceCompliance#H-MappingOfMaps">Mapping of Maps</a></h2>
+<h2 class="wikiHeadline2" id="H-MappingOfMaps"><a href="/2006/04/27/NeverBeenThatCloseToJavaPersistenceCompliance#H-MappingOfMaps">Mapping of Maps</a></h2>
 
 <p class="wikiPara">
 This has been a long time requested feature, it is now available, you can map you associations using <tt>Map&lt;Element, ...&gt;</tt> or <tt>Map&lt;Embeddable, ...&gt;</tt> using an explicit key column(s)

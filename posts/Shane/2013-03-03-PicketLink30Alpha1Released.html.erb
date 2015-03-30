@@ -5,11 +5,13 @@ blogger_name: "Shane"
 creation_date: "03-03-2013"
 tags: [Contexts and Dependency Injection,News,PicketLink,Seam]
 
-absolute_url: http://in.relation.to/2013/03/03/PicketLink30Alpha1Released
-lace: http://in.relation.to/23969.lace
+relative_url: /2013/03/03/PicketLink30Alpha1Released
 slug: PicketLink30Alpha1Released
+lace: http://in.relation.to/23969.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/03/03/PicketLink30Alpha1Released
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -108,7 +110,7 @@ Currently the Maven artifacts are located in the <a href="https://community.jbos
 This initial Alpha release primarily concentrates on authentication, authorization and identity management features.  Let's take a look at a couple of these features in a little more detail, starting with simple programmatic authentication.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ProgrammaticAuthentication"><a href="/Bloggers/PicketLink30Alpha1Released#H-ProgrammaticAuthentication">Programmatic authentication</a></h2>
+<h2 class="wikiHeadline2" id="H-ProgrammaticAuthentication"><a href="/2013/03/03/PicketLink30Alpha1Released#H-ProgrammaticAuthentication">Programmatic authentication</a></h2>
 
 <p class="wikiPara">
 This simple form of authentication should be familiar to many Seam users.  To control the authentication process yourself, simply provide a bean in your application that implements the following <tt>Authenticator</tt> interface:
@@ -186,7 +188,7 @@ To actually perform the authentication, simply have your application set the use
 Once authenticated, the <a href="http://docs.jboss.org/picketlink/3/3.0.0.Alpha1/api/org/picketlink/Identity.html" target="" class="regularLink">Identity bean</a> (which by default is session-scoped) can be injected into your application's beans so that you can access the currently authenticated <tt>User</tt>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-IdentityManagement"><a href="/Bloggers/PicketLink30Alpha1Released#H-IdentityManagement">Identity Management</a></h2>
+<h2 class="wikiHeadline2" id="H-IdentityManagement"><a href="/2013/03/03/PicketLink30Alpha1Released#H-IdentityManagement">Identity Management</a></h2>
 
 <p class="wikiPara">
 PicketLink's Identity Management (IDM) module provides a formal API for managing the Users, Roles and Groups of your application.  Support is provided out of the box for LDAP, Database (via JPA) or File-based identity stores, and an extensible SPI allows for the implementation of additional identity storage backends.  The IDM features provided by PicketLink are far too extensive to cover in a single blog post, so let's take a look at a simple example using the JPA identity store.  To make things easier we provide a default database schema, included in the <tt>picketlink-idm-schema</tt> jar file.  To make use of this schema, simply add the schema jar file to your project and then add a <tt>persistence-unit</tt> entry to your project's <tt>persistence.xml</tt> file, like so:
@@ -457,7 +459,7 @@ Finally, to remove a group role we use the <tt>revokeGroupRole()</tt> method:
 
 
 
-<h2 class="wikiHeadline2" id="H-WhatsNext"><a href="/Bloggers/PicketLink30Alpha1Released#H-WhatsNext">What's Next</a></h2>
+<h2 class="wikiHeadline2" id="H-WhatsNext"><a href="/2013/03/03/PicketLink30Alpha1Released#H-WhatsNext">What's Next</a></h2>
 
 <p class="wikiPara">
 We're aiming to have a beta release ready by mid-March, for which we're planning to have more polished code, more unit tests, better documentation and hopefully an actual example and/or quickstart that you can play around with yourself.  For those adventurous enough to take the alpha release for a spin, we would love to hear some feedback from you about what you found easy, what you found hard and what we can do to make things better.  For future releases of PicketLink we'll be focusing on adding some really cool features, such as support for OAuth, OpenID, SAML, Rule-based permissions with Drools, a RESTFul API and much more.  You can also look forward to some more blog posts that delve further into some of the more complex PicketLink features such as ACL style permissions, identity and relationship queries, plus multi-domain support.  If you'd like to leave us some feedback or have questions, please comment below or on the PicketLink forums, or if you'd like to contribute to the development discussion please join the security-dev mailing list, or alternatively catch us on the #picketlink irc channel on <a href="http://freenode.net/" target="" class="regularLink">FreeNode</a>.  

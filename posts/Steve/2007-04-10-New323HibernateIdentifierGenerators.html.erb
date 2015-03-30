@@ -5,16 +5,18 @@ blogger_name: "Steve"
 creation_date: "10-04-2007"
 tags: []
 
-absolute_url: http://in.relation.to/2007/04/10/New323HibernateIdentifierGenerators
-lace: http://in.relation.to/2082.lace
+relative_url: /2007/04/10/New323HibernateIdentifierGenerators
 slug: New323HibernateIdentifierGenerators
+lace: http://in.relation.to/2082.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/04/10/New323HibernateIdentifierGenerators
 ---
 <div id="documentDisplay" class="documentDisplay">
 
 
-<h2 class="wikiHeadline2" id="H-Introducing"><a href="/Bloggers/New323HibernateIdentifierGenerators#H-Introducing">Introducing...</a></h2>
+<h2 class="wikiHeadline2" id="H-Introducing"><a href="/2007/04/10/New323HibernateIdentifierGenerators#H-Introducing">Introducing...</a></h2>
 
 <p class="wikiPara">
 Starting in 3.2.3, I include 2 new identifier generators targetted at portability.  They take a differect approach to portability than do the older <q>native</q> generator.  Typically speaking using a 
@@ -72,14 +74,14 @@ The role of the optimizer is to limit the number of times we actually need to hi
 </ul>
 
 
-<h2 class="wikiHeadline2" id="H-UnderTheCovers"><a href="/Bloggers/New323HibernateIdentifierGenerators#H-UnderTheCovers">Under the covers</a></h2>
+<h2 class="wikiHeadline2" id="H-UnderTheCovers"><a href="/2007/04/10/New323HibernateIdentifierGenerators#H-UnderTheCovers">Under the covers</a></h2>
 
 <p class="wikiPara">
 So generally speaking, both the hilo and pooled optimizer seeks to optimize performance by minimizing the number of times we need to hit the database.  Great!  So then exactly how are they different?  
 Well, lets take a look at the values stored in the database as a means to illustrate the distinction.  
 </p>
 
-<h3 class="wikiHeadline3" id="H-OptimizerhiloTtincrementsize10tt"><a href="/Bloggers/New323HibernateIdentifierGenerators#H-OptimizerhiloTtincrementsize10tt">optimizer=hilo (<tt>increment_size=10</tt>)</a></h3>
+<h3 class="wikiHeadline3" id="H-OptimizerhiloTtincrementsize10tt"><a href="/2007/04/10/New323HibernateIdentifierGenerators#H-OptimizerhiloTtincrementsize10tt">optimizer=hilo (<tt>increment_size=10</tt>)</a></h3>
 
 <p class="wikiPara">
 After the initial request, we will have:
@@ -105,7 +107,7 @@ The db-value and <i class="wikiEmphasis">hi</i> will remain the same until the 1
 Essentially, <i class="wikiEmphasis">hi</i> defines the <q>clock-over</q> value; once the in-memory value reaches the <i class="wikiEmphasis">hi</i> value, we need to hit the database and define a new bucket of values.  The major drawback to this approach is when using this strategy with legacy applications that also need to insert values; those other applications must also understand and use this hilo algorithm.
 </p>
 
-<h3 class="wikiHeadline3" id="H-OptimizerpooledTtincrementsize10tt"><a href="/Bloggers/New323HibernateIdentifierGenerators#H-OptimizerpooledTtincrementsize10tt">optimizer=pooled (<tt>increment_size=10</tt>)</a></h3>
+<h3 class="wikiHeadline3" id="H-OptimizerpooledTtincrementsize10tt"><a href="/2007/04/10/New323HibernateIdentifierGenerators#H-OptimizerpooledTtincrementsize10tt">optimizer=pooled (<tt>increment_size=10</tt>)</a></h3>
 
 <p class="wikiPara">
 After the initial request, we will have:
@@ -135,7 +137,7 @@ safe because the SEQUENCE itself will handle applying this increment_size.  And 
 SequenceStyleGenerator reverts to using a table in the same situation because of how the clock over happens.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/New323HibernateIdentifierGenerators#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2007/04/10/New323HibernateIdentifierGenerators#H-Conclusion">Conclusion</a></h2>
 
 <p class="wikiPara">
 I would expect that these two new generators actually replace currently existing ones in terms of <q>short-hand names</q>.  Specifically, I would expect

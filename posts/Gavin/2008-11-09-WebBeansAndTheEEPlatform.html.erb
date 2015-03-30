@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "09-11-2008"
 tags: [Web Beans]
 
-absolute_url: http://in.relation.to/2008/11/09/WebBeansAndTheEEPlatform
-lace: http://in.relation.to/9799.lace
+relative_url: /2008/11/09/WebBeansAndTheEEPlatform
 slug: WebBeansAndTheEEPlatform
+lace: http://in.relation.to/9799.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/11/09/WebBeansAndTheEEPlatform
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -26,7 +28,7 @@ Since the release of the Public Draft, our main focus has shifted to the integra
 Let me share my take on these issues, and some directions we might pursue. But first...
 </p>
 
-<h2 class="wikiHeadline2" id="H-SomeHistory"><a href="/Bloggers/WebBeansAndTheEEPlatform#H-SomeHistory">...some history</a></h2>
+<h2 class="wikiHeadline2" id="H-SomeHistory"><a href="/2008/11/09/WebBeansAndTheEEPlatform#H-SomeHistory">...some history</a></h2>
 
 <p class="wikiPara">
 In the days of EJB 1.x and 2.x, a major complaint against EJB was that the programming model was too restrictive. The specification imposed many annoying, distracting and unnecessary requirements upon developers. EJB 3.0 changed all that. Gone were the most of these annoying coding restrictions. In place of verbose XML deployment descriptors, EJB 3.0 was the first Java component model to be based around the use of annotations. In place of JNDI lookups was a simple dependency injection model, which ended up being generalized at the EE 5 platform level. I was a member of the EJB 3.0 expert group, and remain proud of what we accomplished.
@@ -59,7 +61,7 @@ The JSR promised to <q>unif[y] the two component models and enabl[e] a considera
 A new dependency injection model was needed: a model that provided contextual lifecycle management to transactional EE components.
 </p>
 
-<h2 class="wikiHeadline2" id="H-IsWebBeansAComponentModel"><a href="/Bloggers/WebBeansAndTheEEPlatform#H-IsWebBeansAComponentModel">Is Web Beans a component model?</a></h2>
+<h2 class="wikiHeadline2" id="H-IsWebBeansAComponentModel"><a href="/2008/11/09/WebBeansAndTheEEPlatform#H-IsWebBeansAComponentModel">Is Web Beans a component model?</a></h2>
 
 <p class="wikiPara">
 In the Web Beans Early Draft, we characterized Web Beans as a component model. The specification defined two things:
@@ -95,7 +97,7 @@ In particular, we provided injection into Servlets and message-driven beans (obj
 This was certainly the right thing to do, and the Web Beans specification is now more powerful and less intrusive. It still promises a more uniform programming model, but a side effect of these changes was that the model became even more generally useful, and even less specific to JSF and EJB. This isn't the first time I've seen something like that happen: the EJB 3.0 expert group also produced some technology (JPA, EE 5 dependency injection) that ended up being applied more generally than was originally envisaged.
 </p>
 
-<h2 class="wikiHeadline2" id="H-IsWebBeansIClasswikiEmphasisstilliAComponentModel"><a href="/Bloggers/WebBeansAndTheEEPlatform#H-IsWebBeansIClasswikiEmphasisstilliAComponentModel">Is Web Beans <i class="wikiEmphasis">still</i> a component model?</a></h2>
+<h2 class="wikiHeadline2" id="H-IsWebBeansIClasswikiEmphasisstilliAComponentModel"><a href="/2008/11/09/WebBeansAndTheEEPlatform#H-IsWebBeansIClasswikiEmphasisstilliAComponentModel">Is Web Beans <i class="wikiEmphasis">still</i> a component model?</a></h2>
 
 <p class="wikiPara">
 Unfortunately, some people are still not satisfied. A number of members of the platform expert group believe that the notion of a <i class="wikiEmphasis">simple Web Bean</i> still specifies a new component model. So what, exactly, is a simple Web Bean, and why do we need them?
@@ -151,7 +153,7 @@ Of course, we're trying to work through this. One possibility is that we could m
 Personally, I can't imagine releasing Java EE 6 with a dependency injection solution that doesn't support JavaBeans. <i class="wikiEmphasis">All</i> the other solutions in the space support both JavaBeans and EJB. EE 5 missed this boat - I don't want EE 6 to repeat the mistake. And I think that this is a case where users want to make the decision about when to use EJB. They don't want us to force a decision down their throats.
 </p>
 
-<h2 class="wikiHeadline2" id="H-InjectionOfOtherEEResourceTypes"><a href="/Bloggers/WebBeansAndTheEEPlatform#H-InjectionOfOtherEEResourceTypes">Injection of other EE resource types</a></h2>
+<h2 class="wikiHeadline2" id="H-InjectionOfOtherEEResourceTypes"><a href="/2008/11/09/WebBeansAndTheEEPlatform#H-InjectionOfOtherEEResourceTypes">Injection of other EE resource types</a></h2>
 
 <p class="wikiPara">
 A second issue raised by the EE experts is that the Web Beans specification does not currently define support for injection of all the various Java EE resource types. Specifically, Web Beans does not explicitly define injection of JDBC datasources, connections, web service endpoints, remote EJBs or persistence contexts. Of course, you can still use the existing Java EE 5 <tt>@Resource</tt> and <tt>@PersistenceContext</tt> annotations to inject Java EE resources, but then you'll miss out on the advantages of the more flexible and more typesafe model defined by Web Beans.
@@ -161,7 +163,7 @@ A second issue raised by the EE experts is that the Web Beans specification does
 Well, the true situation is that injection of EE resources (or anything else at all) <i class="wikiEmphasis">is</i> already supported by Web Beans, assuming that the Java EE container calls an appropriate Web Beans SPI at initialization time. But neither the EE specification nor the Web Beans specification requires it to do so. So this is an issue that should be easy to fix.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Pluggability"><a href="/Bloggers/WebBeansAndTheEEPlatform#H-Pluggability">Pluggability</a></h2>
+<h2 class="wikiHeadline2" id="H-Pluggability"><a href="/2008/11/09/WebBeansAndTheEEPlatform#H-Pluggability">Pluggability</a></h2>
 
 <p class="wikiPara">
 We put a fair amount of effort into defining the interaction between the EE container and the Web Bean manager, for the purpose of supporting pluggable Web Bean managers. However, nothing that is currently defined imposes any new requirement upon the EE container. Unfortunately, at this point, there remain a number of open issues in the specification that can only be resolved by either:
@@ -184,7 +186,7 @@ Either of these paths is technically feasible, but one of them is a lot more wor
 I'd love to hear from the community whether pluggability is really worth pursuing.
 </p>
 
-<h2 class="wikiHeadline2" id="H-PackagesAndNaming"><a href="/Bloggers/WebBeansAndTheEEPlatform#H-PackagesAndNaming">Packages and naming</a></h2>
+<h2 class="wikiHeadline2" id="H-PackagesAndNaming"><a href="/2008/11/09/WebBeansAndTheEEPlatform#H-PackagesAndNaming">Packages and naming</a></h2>
 
 <p class="wikiPara">
 Quite a number of people hate the name <q>Web Beans</q>, which they see as obscuring the generality of the model we've defined. I view the name as more of a catchy brand than a definition of what Web Beans does. Think of Microsoft and <q>.net</q>. I don't mind changing the name, but nobody has yet suggested a great alternative. For one thing, I hate acronyms, and something descriptive like <i class="wikiEmphasis">Java Dependency Injection</i> wouldn't really capture all that Web Beans does.
@@ -205,13 +207,13 @@ Independently of this objection, quite a number of people think that it would be
 I see repackaging as a great idea.
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheGoodNews"><a href="/Bloggers/WebBeansAndTheEEPlatform#H-TheGoodNews">The good news</a></h2>
+<h2 class="wikiHeadline2" id="H-TheGoodNews"><a href="/2008/11/09/WebBeansAndTheEEPlatform#H-TheGoodNews">The good news</a></h2>
 
 <p class="wikiPara">
 The good news is that there's very little debate about the actual technical details of the (Guice and Seam inspired) dependency injection model in Web Beans. The feedback I'm getting from spec reviewers is uniformly positive. This gives me a lot of confidence that the more <q>political</q> issues are also solvable.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhatDoIClasswikiEmphasisyouiThink"><a href="/Bloggers/WebBeansAndTheEEPlatform#H-WhatDoIClasswikiEmphasisyouiThink">What do <i class="wikiEmphasis">you</i> think?</a></h2>
+<h2 class="wikiHeadline2" id="H-WhatDoIClasswikiEmphasisyouiThink"><a href="/2008/11/09/WebBeansAndTheEEPlatform#H-WhatDoIClasswikiEmphasisyouiThink">What do <i class="wikiEmphasis">you</i> think?</a></h2>
 
 <p class="wikiPara">
 The issues I've discussed in this post are important to all members of the Java EE community and to the future direction of the Java EE platform. I don't believe that we should be making these decisions <q>behind closed doors</q>, without the involvement of users. Please speak up and let us know what <i class="wikiEmphasis">you</i> want us to do. And please take the time to <a href="http://docs.jboss.org/webbeans/reference/1.0/en-US/pdf/guide.pdf" target="" class="regularLink">learn more about Web Beans</a>.

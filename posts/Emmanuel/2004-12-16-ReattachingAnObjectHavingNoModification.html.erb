@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "16-12-2004"
 tags: []
 
-absolute_url: http://in.relation.to/2004/12/16/ReattachingAnObjectHavingNoModification
-lace: http://in.relation.to/2160.lace
+relative_url: /2004/12/16/ReattachingAnObjectHavingNoModification
 slug: ReattachingAnObjectHavingNoModification
+lace: http://in.relation.to/2160.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2004/12/16/ReattachingAnObjectHavingNoModification
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -30,7 +32,7 @@ Thus, Hibernate will not propagate the modifications unless they are made after
 the reattachment to the session.
 </p>
 
-<h2 class="wikiHeadline2" id="H-DontUseItAsAnOptimization"><a href="/Bloggers/ReattachingAnObjectHavingNoModification#H-DontUseItAsAnOptimization">Don't use it as an optimization</a></h2>
+<h2 class="wikiHeadline2" id="H-DontUseItAsAnOptimization"><a href="/2004/12/16/ReattachingAnObjectHavingNoModification#H-DontUseItAsAnOptimization">Don't use it as an optimization</a></h2>
 <p class="wikiPara">
 First of all, try to avoid this feature. Usually, reattaching an object using 
 <tt>session.saveOrUpdate()</tt> or by retrieving it through a <tt>session.get()</tt>/<tt>session.load()</tt> 
@@ -39,7 +41,7 @@ real application not to update the object (esp. when versioning is switched on) 
 to retrieve it from the DB: do some benchmark before any decision.
 </p>
 
-<h2 class="wikiHeadline2" id="H-BewareOfBoundaries"><a href="/Bloggers/ReattachingAnObjectHavingNoModification#H-BewareOfBoundaries">Beware of boundaries</a></h2>
+<h2 class="wikiHeadline2" id="H-BewareOfBoundaries"><a href="/2004/12/16/ReattachingAnObjectHavingNoModification#H-BewareOfBoundaries">Beware of boundaries</a></h2>
 <p class="wikiPara">
 Associated object are not always managed the way you want. Uncascaded properties 
 are not reattached to the session. 
@@ -100,7 +102,7 @@ Notice several things:
 </ul>
 
 
-<h2 class="wikiHeadline2" id="H-KnowWhatYouDo"><a href="/Bloggers/ReattachingAnObjectHavingNoModification#H-KnowWhatYouDo">Know what you do</a></h2>
+<h2 class="wikiHeadline2" id="H-KnowWhatYouDo"><a href="/2004/12/16/ReattachingAnObjectHavingNoModification#H-KnowWhatYouDo">Know what you do</a></h2>
 <p class="wikiPara">
 This feature it quite complex because it may break the ACID semantic (contact and the other
 entities where not loaded in the same transaction) and may lead to

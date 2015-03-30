@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "08-10-2008"
 tags: [Bean Validation]
 
-absolute_url: http://in.relation.to/2008/10/08/ConstraintCompositionProposalInBeanValidationJSR303
-lace: http://in.relation.to/9544.lace
+relative_url: /2008/10/08/ConstraintCompositionProposalInBeanValidationJSR303
 slug: ConstraintCompositionProposalInBeanValidationJSR303
+lace: http://in.relation.to/9544.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/10/08/ConstraintCompositionProposalInBeanValidationJSR303
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -38,7 +40,7 @@ When constraints need to be applied outside the Java world or applied on a diffe
 Composition helps to solve the problem by giving access to the primitive constituencies of a constraint. Let's first see how to define a composed constraint.
 </p>
 
-<h2 class="wikiHeadline2" id="H-DefiningAComposedConstraint"><a href="/Bloggers/ConstraintCompositionProposalInBeanValidationJSR303#H-DefiningAComposedConstraint">Defining a composed constraint</a></h2>
+<h2 class="wikiHeadline2" id="H-DefiningAComposedConstraint"><a href="/2008/10/08/ConstraintCompositionProposalInBeanValidationJSR303#H-DefiningAComposedConstraint">Defining a composed constraint</a></h2>
 
 <p class="wikiPara">
 To define the list of constraints composing a main constraint, simply annotate the main constraint annotation with the composing constraint annotations.
@@ -133,7 +135,7 @@ public @interface FrenchZipCode {
 Let's now see how a tool would use this extra information.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ExploringComposedConstraintsWithTheMetadataAPI"><a href="/Bloggers/ConstraintCompositionProposalInBeanValidationJSR303#H-ExploringComposedConstraintsWithTheMetadataAPI">Exploring composed constraints with the metadata API</a></h2>
+<h2 class="wikiHeadline2" id="H-ExploringComposedConstraintsWithTheMetadataAPI"><a href="/2008/10/08/ConstraintCompositionProposalInBeanValidationJSR303#H-ExploringComposedConstraintsWithTheMetadataAPI">Exploring composed constraints with the metadata API</a></h2>
 
 <p class="wikiPara">
 Using the metadata API, you can explore the list of constraints on a given object or property. Each constraint is described by a <tt>ConstraintDescriptor</tt>. It lists all the composing constraints and provides a <tt>ConstraintDescriptor</tt> object for each. The <tt>ConstraintDescriptor</tt> honors overridden parameters (ie using <tt>@OverridesParameter</tt>): the annotation and the parameter values returned contain the overridden value. 

@@ -5,11 +5,13 @@ blogger_name: "Ilya"
 creation_date: "25-06-2010"
 tags: []
 
-absolute_url: http://in.relation.to/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing
-lace: http://in.relation.to/15978.lace
+relative_url: /2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing
 slug: RichFaces4OverviewPartIAjaxRequestQueuing
+lace: http://in.relation.to/15978.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -20,25 +22,25 @@ layout: blog-post
      </a>
 </div>
 
-<h3 class="wikiHeadline3" id="H-AboutQRichFaces4Overviewq"><a href="/Bloggers/RichFaces4OverviewPartIAjaxRequestQueuing#H-AboutQRichFaces4Overviewq">About <q>RichFaces 4 Overview</q></a></h3>
+<h3 class="wikiHeadline3" id="H-AboutQRichFaces4Overviewq"><a href="/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing#H-AboutQRichFaces4Overviewq">About <q>RichFaces 4 Overview</q></a></h3>
 
 <p class="wikiPara">
 This series of articles is intended to give you a short overview of all the work we've done in extending JSF 2 with advanced features and components.
 </p>
 
-<h3 class="wikiHeadline3" id="H-CoreAjaxComponents"><a href="/Bloggers/RichFaces4OverviewPartIAjaxRequestQueuing#H-CoreAjaxComponents">Core Ajax components</a></h3>
+<h3 class="wikiHeadline3" id="H-CoreAjaxComponents"><a href="/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing#H-CoreAjaxComponents">Core Ajax components</a></h3>
 
 <p class="wikiPara">
 The first part of the RichFaces components migration process contained mostly the <b>a4j</b> library core components, which provide <b>enhanced Ajax functionality</b>. I believe that most of the community knows the base RichFaces Ajax components well and has worked with them for a long time. So basically there is not much to cover in this area. It should be easy to use them in the same manner as it was in RichFaces 3.3.x, but considering the JSF 2 Ajax definitions standards. The first article is intended to provide a short usage overview for them and to describe the RichFaces 4 Ajax requests queuing mechanism, which is designed for easy optimizations of your page/server transactions.
 </p>
 
-<h3 class="wikiHeadline3" id="H-WhyDoWeNeedThem"><a href="/Bloggers/RichFaces4OverviewPartIAjaxRequestQueuing#H-WhyDoWeNeedThem">Why do we need them?</a></h3>
+<h3 class="wikiHeadline3" id="H-WhyDoWeNeedThem"><a href="/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing#H-WhyDoWeNeedThem">Why do we need them?</a></h3>
 
 <p class="wikiPara">
 So let's start from the beginning. Why we need our Ajax components in a JSF 2 world where Ajax is standardized and provided out of the box in implementations? The answer is simple: JSF is an open standard which provides basic functionality leaving much place for customizations and extensions. They have taken many implementation ideas from RichFaces 3.x and other frameworks and added common base functionality into the JSF 2 standard. However, there are still many use-cases with which implementation requires additional work from a JSF 2 developer. RichFaces intends to provide extensions which will cover most of the features that are absent in JSF but required for real-world web applications. 
 </p>
 
-<h3 class="wikiHeadline3" id="H-SimpleAjaxUsage"><a href="/Bloggers/RichFaces4OverviewPartIAjaxRequestQueuing#H-SimpleAjaxUsage">Simple Ajax usage</a></h3>
+<h3 class="wikiHeadline3" id="H-SimpleAjaxUsage"><a href="/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing#H-SimpleAjaxUsage">Simple Ajax usage</a></h3>
 
 <p class="wikiPara">
 Let’s explore the simplest Ajax repeater example in order to start with queuing functionality:
@@ -66,7 +68,7 @@ But hey, I <b>still need to reduce the requests count.</b> In order to do that I
  <b>Good news again:</b> the RichFaces Ajax requests queue solves the problem, and you can just specify the requests combining rules and pre-sending waiting time declaratively with the page tags.
 </p>
 
-<h3 class="wikiHeadline3" id="H-LetsQueueThem"><a href="/Bloggers/RichFaces4OverviewPartIAjaxRequestQueuing#H-LetsQueueThem">Let's queue them</a></h3>
+<h3 class="wikiHeadline3" id="H-LetsQueueThem"><a href="/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing#H-LetsQueueThem">Let's queue them</a></h3>
 
 <p class="wikiPara">
 The next code snippet defines queue for <b>form or view</b> (<i class="wikiEmphasis">depending on where defined</i>):
@@ -84,7 +86,7 @@ The next code snippet defines queue for <b>form or view</b> (<i class="wikiEmpha
 So now if we type without delays (<i class="wikiEmphasis">or with delays smaller that 1.5 seconds</i>) and then check the requests console, we will see that there is only one request with the latest information that was sent. RichFaces Ajax requests are grouped by using the <b>requestGroupingId</b> option, which is equal to the client id of the component that initiated requests(<i class="wikiEmphasis">by default</i>). It’s pretty simple and highly useful for such cases.
 </p>
 
-<h3 class="wikiHeadline3" id="H-AMoreComplexCaseHowDoYouGroupRequestsFromDifferentSources"><a href="/Bloggers/RichFaces4OverviewPartIAjaxRequestQueuing#H-AMoreComplexCaseHowDoYouGroupRequestsFromDifferentSources">A more complex case. How do you group requests from different sources?</a></h3>
+<h3 class="wikiHeadline3" id="H-AMoreComplexCaseHowDoYouGroupRequestsFromDifferentSources"><a href="/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing#H-AMoreComplexCaseHowDoYouGroupRequestsFromDifferentSources">A more complex case. How do you group requests from different sources?</a></h3>
 
 <p class="wikiPara">
 Now let's imagine the registration form which contains a few inputs which are validated via Ajax immediately after any changes. Using queue as shown above, a single request appears per input. But what if I don't want to send them at all while the user is entering information and validate the form only when he stops to check the result? It's still simple to do. We just need to add <b>attachQueue</b> with additional parameter passed to the queue:
@@ -135,7 +137,7 @@ The previous code could be rewritten to become much simpler, as we could use wra
 That's it. Now requests from those inputs are similar from the RichFaces queue's point of view. If the user types fast among different inputs, only a single validation request for form will be raised after 1.5 seconds of inactivity. So now optimizing requests sent to the server becomes as simple as defining them! 
 </p>
 
-<h3 class="wikiHeadline3" id="H-WhatsNextOnOurWay"><a href="/Bloggers/RichFaces4OverviewPartIAjaxRequestQueuing#H-WhatsNextOnOurWay">What's next on our way</a></h3>
+<h3 class="wikiHeadline3" id="H-WhatsNextOnOurWay"><a href="/2010/06/25/RichFaces4OverviewPartIAjaxRequestQueuing#H-WhatsNextOnOurWay">What's next on our way</a></h3>
 
 <p class="wikiPara">
 In next releases we plan to add full support of named queues and possible implementation of the 3.3.x ignoreDupResponces feature(not ready for now as we rely at JSF script during updates and can't skip the update currently). Also we will discuss possible benefits and implementation ways of logical queues - which will not just pass the request to common queue with additional parameters but preprocess them in local logical queue before.   

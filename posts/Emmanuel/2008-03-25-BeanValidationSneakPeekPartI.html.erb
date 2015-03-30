@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "25-03-2008"
 tags: [Bean Validation,Bean Validation Sneak Peek]
 
-absolute_url: http://in.relation.to/2008/03/25/BeanValidationSneakPeekPartI
-lace: http://in.relation.to/8746.lace
+relative_url: /2008/03/25/BeanValidationSneakPeekPartI
 slug: BeanValidationSneakPeekPartI
+lace: http://in.relation.to/8746.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/03/25/BeanValidationSneakPeekPartI
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -34,7 +36,7 @@ We have just released an <a href="http://jcp.org/en/jsr/detail?id=303" target=""
 Please download the <a href="http://jcp.org/en/jsr/detail?id=303" target="" class="regularLink">specification draft</a> and give us feedback.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Goals"><a href="/Bloggers/BeanValidationSneakPeekPartI#H-Goals">Goals</a></h2>
+<h2 class="wikiHeadline2" id="H-Goals"><a href="/2008/03/25/BeanValidationSneakPeekPartI#H-Goals">Goals</a></h2>
 <p class="wikiPara">
 Validating data is a common task that is spread across several (if not all) layers of today's applications. 
 Because each layer defines validation rules its own way, duplication and errors are quite common.
@@ -58,7 +60,7 @@ The Bean Validation specification addresses this problem by providing:
 By providing a standard frame set around object validation, the specification aims at being the main provider for validation declaration and validation execution in the Java ecosystem. The same set of validations will be shared by all the application layers.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ExpressingConstraints"><a href="/Bloggers/BeanValidationSneakPeekPartI#H-ExpressingConstraints">Expressing constraints</a></h2>
+<h2 class="wikiHeadline2" id="H-ExpressingConstraints"><a href="/2008/03/25/BeanValidationSneakPeekPartI#H-ExpressingConstraints">Expressing constraints</a></h2>
 <p class="wikiPara">
 Constraints are primarily expressed through annotations. Adding a constraint on a class, field or getter is as simple as adding a constraint annotation on it. The annotated element value is checked by the constraint.
 </p>
@@ -90,7 +92,7 @@ Validating an object is equivalent to validate all the constraints declared on:
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-MindYourOwnConstraint"><a href="/Bloggers/BeanValidationSneakPeekPartI#H-MindYourOwnConstraint">Mind your own constraint</a></h3>
+<h3 class="wikiHeadline3" id="H-MindYourOwnConstraint"><a href="/2008/03/25/BeanValidationSneakPeekPartI#H-MindYourOwnConstraint">Mind your own constraint</a></h3>
 <p class="wikiPara">
 Constraints are not limited to built-in annotations. Any application can define its own additional set of constraints. A constraint is comprised of:
 </p>
@@ -104,7 +106,7 @@ Constraints are not limited to built-in annotations. Any application can define 
 While the annotation expresses the constraint on the domain model, the validation implementation decides whether a given value passes the constraint or not.
 </p>
 
-<h3 class="wikiHeadline3" id="H-Message"><a href="/Bloggers/BeanValidationSneakPeekPartI#H-Message">message</a></h3>
+<h3 class="wikiHeadline3" id="H-Message"><a href="/2008/03/25/BeanValidationSneakPeekPartI#H-Message">message</a></h3>
 <p class="wikiPara">
 A constraint can define a custom error message returned when failure occurs.
 </p>
@@ -118,7 +120,7 @@ A constraint can define a custom error message returned when failure occurs.
 The specification provides a way to externalize these messages: this will be covered in a later post.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ObjectGraphValidation"><a href="/Bloggers/BeanValidationSneakPeekPartI#H-ObjectGraphValidation">object graph validation</a></h3>
+<h3 class="wikiHeadline3" id="H-ObjectGraphValidation"><a href="/2008/03/25/BeanValidationSneakPeekPartI#H-ObjectGraphValidation">object graph validation</a></h3>
 
 <p class="wikiPara">
 It is handy to validate an object graph as a whole rather than validate every single object manually. <tt>@Valid</tt> allows you to include associated objects to the validation process
@@ -136,7 +138,7 @@ When an <tt>order</tt> object is validated, its <tt>address</tt> is validated as
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-ValidatingConstraints"><a href="/Bloggers/BeanValidationSneakPeekPartI#H-ValidatingConstraints">Validating constraints</a></h2>
+<h2 class="wikiHeadline2" id="H-ValidatingConstraints"><a href="/2008/03/25/BeanValidationSneakPeekPartI#H-ValidatingConstraints">Validating constraints</a></h2>
 
 <p class="wikiPara">
 A <tt>Validator</tt> validates objects (graphs) of a given type. When an object is validated, all declared constraints are validated (from fields, getters, the class itself and associated objects if marked as such).
@@ -170,7 +172,7 @@ It is also possible to validate a subset of the declared constraints rather than
 Groups will be covered in a future post.
 </p>
 
-<h2 class="wikiHeadline2" id="H-SharingConstraintMetadata"><a href="/Bloggers/BeanValidationSneakPeekPartI#H-SharingConstraintMetadata">Sharing constraint metadata</a></h2>
+<h2 class="wikiHeadline2" id="H-SharingConstraintMetadata"><a href="/2008/03/25/BeanValidationSneakPeekPartI#H-SharingConstraintMetadata">Sharing constraint metadata</a></h2>
 <p class="wikiPara">
 The Bean Validation API exposes all the constraint metadata for a given class:
 </p>
@@ -185,7 +187,7 @@ The Bean Validation API exposes all the constraint metadata for a given class:
 Metadata information is useful for tools (such as IDEs) and libraries interacting beyond the frontier of Java (database, javascript libraries and so on).
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheGrandSchemeOfThings"><a href="/Bloggers/BeanValidationSneakPeekPartI#H-TheGrandSchemeOfThings">The grand scheme of things</a></h2>
+<h2 class="wikiHeadline2" id="H-TheGrandSchemeOfThings"><a href="/2008/03/25/BeanValidationSneakPeekPartI#H-TheGrandSchemeOfThings">The grand scheme of things</a></h2>
 <p class="wikiPara">
 The goal of JSR 303 is to be the main runtime checking solution and metadata repository for validation rule. This common language between application developers, libraries and JSRs in need for validation (runtime and metadata) will free Java developers from multiple constraint declarations and incompatible validation implementations.
 </p>

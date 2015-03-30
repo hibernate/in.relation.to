@@ -5,11 +5,13 @@ blogger_name: "Shane"
 creation_date: "21-02-2014"
 tags: [Forge]
 
-absolute_url: http://in.relation.to/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer
-lace: http://in.relation.to/24930.lace
+relative_url: /2014/02/21/AddonDevelopmentWithForge2ABasicPrimer
 slug: AddonDevelopmentWithForge2ABasicPrimer
+lace: http://in.relation.to/24930.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -20,7 +22,7 @@ layout: blog-post
 I had the privilege today of receiving some expert tutelage on Forge Addon development in Eclipse from the Forge Team’s George Gastaldi, and I was so impressed by how easy it was that I’m going to describe the process step by step so that you too can experience the pleasure of writing a Forge addon!  This guide is written from the perspective of a complete Forge noob, so you can rest assured that it has made a very strong attempt to capture all the little important details.  Also, while the addon itself won’t actually do that much, we’ll try to cover all the basics which will hopefully provide the solid foundation you need to be able to implement more complex features.
 </p>
 
-<h1 class="wikiHeadline1" id="H-SettingUpYourEnvironment"><a href="/Bloggers/AddonDevelopmentWithForge2ABasicPrimer#H-SettingUpYourEnvironment">Setting up your environment</a></h1>
+<h1 class="wikiHeadline1" id="H-SettingUpYourEnvironment"><a href="/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer#H-SettingUpYourEnvironment">Setting up your environment</a></h1>
 
 <p class="wikiPara">
 I strongly recommend that you work with the latest trunk of Forge, so fire up your terminal window and start by cloning the following repositories from GitHub:
@@ -68,7 +70,7 @@ If all goes well you’ll get a <tt>BUILD SUCCESS</tt> message at the end:
 Continue by building the other three projects (<tt>furnace-cdi</tt>, <tt>forge-code</tt> and <tt>jbosstools-forge</tt>) in order using the same Maven command.
 </p>
 
-<h1 class="wikiHeadline1" id="H-InstallingForge"><a href="/Bloggers/AddonDevelopmentWithForge2ABasicPrimer#H-InstallingForge">Installing Forge</a></h1>
+<h1 class="wikiHeadline1" id="H-InstallingForge"><a href="/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer#H-InstallingForge">Installing Forge</a></h1>
 
 <p class="wikiPara">
 Once everything has built successfully, it’s time to install Forge.  Open the <tt>forge-core/dist/target</tt> directory where you’ll find some zip files containing the Forge distribution:
@@ -114,7 +116,7 @@ From here you can press the <tt>tab</tt> key to see the available commands:
 We’ve successfully set up the Forge shell!  Let’s quit out for now by typing <tt>exit</tt> then pressing enter and we’ll go through the steps to install the JBoss Tools Forge plugin in Eclipse.
 </p>
 
-<h1 class="wikiHeadline1" id="H-InstallingTheForgeEclipsePlugin"><a href="/Bloggers/AddonDevelopmentWithForge2ABasicPrimer#H-InstallingTheForgeEclipsePlugin">Installing the Forge Eclipse Plugin</a></h1>
+<h1 class="wikiHeadline1" id="H-InstallingTheForgeEclipsePlugin"><a href="/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer#H-InstallingTheForgeEclipsePlugin">Installing the Forge Eclipse Plugin</a></h1>
 
 <p class="wikiPara">
 At the time of writing I’m using the latest release version of Eclipse, Kepler SR1.  If you are using an older version of Eclipse then I recommend that you update to the latest, otherwise results might be unpredictable.  The first step in installing the Eclipse plugin is to start up Eclipse, then go to the <i class="wikiEmphasis">Help -&gt; Install New Software…</i> menu option:
@@ -150,7 +152,7 @@ You’ll be prompted to review the install details, so click the <i class="wikiE
 If you can see the Forge command window after pressing Ctrl + 5, then congratulations on making it this far!  Next we’ll go ahead and create our Forge Addon project.
 </p>
 
-<h1 class="wikiHeadline1" id="H-CreatingAForgeAddonProject"><a href="/Bloggers/AddonDevelopmentWithForge2ABasicPrimer#H-CreatingAForgeAddonProject">Creating a Forge Addon Project</a></h1>
+<h1 class="wikiHeadline1" id="H-CreatingAForgeAddonProject"><a href="/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer#H-CreatingAForgeAddonProject">Creating a Forge Addon Project</a></h1>
 
 <p class="wikiPara">
 Forge does a great job of doing the heavy lifting when it comes to creating a new Addon.  Let’s create the initial project structure for our addon by opening the Forge command window in Eclipse with Ctrl + 5, then scrolling down until we find the <i class="wikiEmphasis">Project/Generation - Project: New</i> option:
@@ -196,7 +198,7 @@ After grinding away for a few seconds you should see the following new projects 
 Our new addon project is created!  Next we’ll start adding some basic functionality.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MakingTheAddonDoSomething"><a href="/Bloggers/AddonDevelopmentWithForge2ABasicPrimer#H-MakingTheAddonDoSomething">Making the Addon do something</a></h1>
+<h1 class="wikiHeadline1" id="H-MakingTheAddonDoSomething"><a href="/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer#H-MakingTheAddonDoSomething">Making the Addon do something</a></h1>
 
 <p class="wikiPara">
 This is where we get into the exciting stuff.  Let’s start off by creating a new class in the <tt>impl</tt> project, under the <tt>com.acme.helloworld.ui</tt> package called <tt>HelloWorldUICommand</tt>.  Once you’ve created this class, edit its code and make it extend <tt>AbstractUICommand</tt>:
@@ -310,7 +312,7 @@ Clicking on the command should give us another popup window that displays our he
 
 <img src="http://in.relation.to/service/File/24923">
 
-<h1 class="wikiHeadline1" id="H-CreatingUserInterfaceElements"><a href="/Bloggers/AddonDevelopmentWithForge2ABasicPrimer#H-CreatingUserInterfaceElements">Creating User Interface Elements</a></h1>
+<h1 class="wikiHeadline1" id="H-CreatingUserInterfaceElements"><a href="/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer#H-CreatingUserInterfaceElements">Creating User Interface Elements</a></h1>
 
 <p class="wikiPara">
 The next step is to create some user interface elements that prompt the user for input.  We’ll start simple by injecting a simple text input control and adding it to the dialog screen for our addon - here’s a complete code listing:
@@ -695,7 +697,7 @@ And also adding the dependency itself to the <tt>&lt;dependencies&gt;</tt> secti
 Congratulations, you’ve made it to the end!  You’ve now created your first useful Forge addon that can add dependencies to an existing project.  Hopefully this guide has helped by providing a high level overview of the Forge Addon architecture and a beginner’s primer on creating a new Forge Addon.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Summary"><a href="/Bloggers/AddonDevelopmentWithForge2ABasicPrimer#H-Summary">Summary</a></h1>
+<h1 class="wikiHeadline1" id="H-Summary"><a href="/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer#H-Summary">Summary</a></h1>
 
 <p class="wikiPara">
 In this guide we went through the steps to build and install both the Forge Shell and Forge Eclipse Plugin, then learned how to create a new Forge Addon project.  We also learned how to build and install our Addon, create custom dialog windows and have our Addon make changes to an existing project.  If you’d like to learn more about Forge, then the following resources are available:

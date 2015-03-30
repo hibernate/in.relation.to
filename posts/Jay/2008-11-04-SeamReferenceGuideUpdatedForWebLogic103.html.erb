@@ -5,11 +5,13 @@ blogger_name: "Jay"
 creation_date: "04-11-2008"
 tags: [Interoperability,Seam]
 
-absolute_url: http://in.relation.to/2008/11/04/SeamReferenceGuideUpdatedForWebLogic103
-lace: http://in.relation.to/9745.lace
+relative_url: /2008/11/04/SeamReferenceGuideUpdatedForWebLogic103
 slug: SeamReferenceGuideUpdatedForWebLogic103
+lace: http://in.relation.to/9745.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/11/04/SeamReferenceGuideUpdatedForWebLogic103
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,12 +24,12 @@ The 2.1.0.SP1 release of Seam contained many features and updates, one of which 
 This update includes the latest information on integration with the new <a href="http://www.oracle.com/technology/software/products/ias/htdocs/wls_main.html" target="" class="regularLink">Weblogic Application server 10.3</a>.  Many Seam/Weblogic users were waiting expectantly for this release of Weblogic.  There were several issues relating to <tt>EJB 3</tt> support with <tt>wls 10.0.MP1</tt>, that were scheduled to be fixed in the <tt>10.3</tt> release.
 </p>
 
-<h3 class="wikiHeadline3" id="H-TheGoodNews"><a href="/Bloggers/SeamReferenceGuideUpdatedForWebLogic103#H-TheGoodNews">The Good News</a></h3>
+<h3 class="wikiHeadline3" id="H-TheGoodNews"><a href="/2008/11/04/SeamReferenceGuideUpdatedForWebLogic103#H-TheGoodNews">The Good News</a></h3>
 <p class="wikiPara">
 The good news is that the original <tt>varargs</tt> issue is fixed in this release and does not require a patch.  For those of you not familiar with this Weblogic 10.0.MP1 ( and other earlier releases ) would fail to compile any EJB's that used variable arguments.  For some reason weblogic's compiler would mistake this as if the method had a <tt>transient</tt> modifier, which being a method would fail to compile. 
 </p>
 
-<h3 class="wikiHeadline3" id="H-TheBadNews"><a href="/Bloggers/SeamReferenceGuideUpdatedForWebLogic103#H-TheBadNews">The Bad News</a></h3>
+<h3 class="wikiHeadline3" id="H-TheBadNews"><a href="/2008/11/04/SeamReferenceGuideUpdatedForWebLogic103#H-TheBadNews">The Bad News</a></h3>
 <p class="wikiPara">
 The bad news is that the fix for the other <tt>EJB3</tt> issue found with <tt>10.0.MP1</tt> does not appear to have made the release.  I can only image that with the BEA's purchase by Oracle a few of these changes were lost.  Several Seam users have seen it, and my own investigation confirmed it.  
 </p>
@@ -44,7 +46,7 @@ This issue causes certain EJB methods to be incorrectly left out of Weblogic's g
 &lt;Error&gt; &lt;Deployer&gt; &lt;BEA-149265&gt; &lt;Failure occurred in the execution of deployment request with ID '1223409267344' for task '0'. Error is: 'weblogic.application.ModuleException: Exception preparing module: EJBModule(jboss-seam.jar)</pre>
 
 
-<h3 class="wikiHeadline3" id="H-TheWorkaround"><a href="/Bloggers/SeamReferenceGuideUpdatedForWebLogic103#H-TheWorkaround">The Workaround</a></h3>
+<h3 class="wikiHeadline3" id="H-TheWorkaround"><a href="/2008/11/04/SeamReferenceGuideUpdatedForWebLogic103#H-TheWorkaround">The Workaround</a></h3>
 <p class="wikiPara">
 Since the <tt>EJB3</tt> issues persist with <tt>10.3</tt> you have a couple of options for using <tt>EJB 3</tt> with Weblogic and Seam.
 </p>

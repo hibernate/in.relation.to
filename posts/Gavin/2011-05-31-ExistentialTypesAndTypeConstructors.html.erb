@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "31-05-2011"
 tags: [Ceylon]
 
-absolute_url: http://in.relation.to/2011/05/31/ExistentialTypesAndTypeConstructors
-lace: http://in.relation.to/20609.lace
+relative_url: /2011/05/31/ExistentialTypesAndTypeConstructors
 slug: ExistentialTypesAndTypeConstructors
+lace: http://in.relation.to/20609.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/31/ExistentialTypesAndTypeConstructors
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 I just ran across a great usecase for existential types (like Java's wildcard types, which Ceylon <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart6" target="" class="regularLink">doesn't and won't support</a>). It's a little involved, and revolves around an advanced feature of Ceylon that other languages don't have: the typesafe metamodel. But let me see if I can get the idea across.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MetamodelReferencesAsIndirection"><a href="/Bloggers/ExistentialTypesAndTypeConstructors#H-MetamodelReferencesAsIndirection">Metamodel references as indirection</a></h1>
+<h1 class="wikiHeadline1" id="H-MetamodelReferencesAsIndirection"><a href="/2011/05/31/ExistentialTypesAndTypeConstructors#H-MetamodelReferencesAsIndirection">Metamodel references as indirection</a></h1>
 
 <p class="wikiPara">
 In Ceylon, a metamodel reference like <tt>Entry&lt;String,File&gt;</tt> has a well defined type which captures the signature of the operation the declaration defines — in this case, instantiation of the <tt>Entry</tt> class. We can write:
@@ -51,7 +53,7 @@ What's going on here is that <tt>stringFileEntryClass()</tt> is an alias for the
 Nice, huh? This is what we're talking about when we say Ceylon is a <i class="wikiEmphasis">higher-order</i> language. We can use a reference to any named declaration as first-class value, with a correctly-defined type.
 </p>
 
-<h1 class="wikiHeadline1" id="H-ReferencesToTypeConstructors"><a href="/Bloggers/ExistentialTypesAndTypeConstructors#H-ReferencesToTypeConstructors">References to type constructors</a></h1>
+<h1 class="wikiHeadline1" id="H-ReferencesToTypeConstructors"><a href="/2011/05/31/ExistentialTypesAndTypeConstructors#H-ReferencesToTypeConstructors">References to type constructors</a></h1>
 
 <p class="wikiPara">
 But what if we want to use <tt>Entry</tt> as a first-class value without nailing down concrete arguments to its type parameters. Well, <tt>Entry</tt> by itself isn't a type, it's a <i class="wikiEmphasis">type constructor</i> — a function that accepts two types as arguments and produces a type — or in more pretentious terminology that I personally prefer to avoid, a <i class="wikiEmphasis">higher kind</i>.
@@ -89,7 +91,7 @@ i.e. We get an extra additional level of indirection here, letting us pass type 
 Unfortunately, in Ceylon we won't be able to write things like this, since we simply can't correctly define the type of the value <tt>Entry</tt> without support for existential types. As ever, language design is all about compromises.
 </p>
 
-<h1 class="wikiHeadline1" id="H-ReferencesToOperators"><a href="/Bloggers/ExistentialTypesAndTypeConstructors#H-ReferencesToOperators">References to operators</a></h1>
+<h1 class="wikiHeadline1" id="H-ReferencesToOperators"><a href="/2011/05/31/ExistentialTypesAndTypeConstructors#H-ReferencesToOperators">References to operators</a></h1>
 
 <p class="wikiPara">
 There's another situation in which this same limitation arises. Ceylon's operators are defined in terms of methods, in many cases parameterized methods, or methods of parameterized types. For example, the <tt>&lt;</tt> operator is defined in terms of the method <tt>smallerThan()</tt> of <tt>Comparable&lt;T&gt;</tt>. Earlier today I was asking myself if Ceylon should support some syntax like <tt>(&lt;)</tt> (borrowed from OCaml) for references to operators. But I realized that this suffers from the problem described above. The type of <tt>(&lt;)</tt> simply can't be expressed without the use of existential types or some kind of left-to-right type inference, because of the type parameter of <tt>Comparable</tt>. So you'll never be able to write:
@@ -112,7 +114,7 @@ UPDATE: Well, actually, there <i class="wikiEmphasis">is</i> a reasonable soluti
 <pre class="wikiPreformatted brush: ceylon">names.sortedBy('&lt;')</pre>
 
 
-<h1 class="wikiHeadline1" id="H-IsThisADeeperProblem"><a href="/Bloggers/ExistentialTypesAndTypeConstructors#H-IsThisADeeperProblem">Is this a deeper problem?</a></h1>
+<h1 class="wikiHeadline1" id="H-IsThisADeeperProblem"><a href="/2011/05/31/ExistentialTypesAndTypeConstructors#H-IsThisADeeperProblem">Is this a deeper problem?</a></h1>
 
 <p class="wikiPara">
 This got me thinking. <i class="wikiEmphasis">Type constructor parametrization</i> (what's often called <q>support for higher kinds</q>) is something we wonder if Ceylon should eventually support. I'm talking about method signatures like the following, where the parameter <tt>M</tt> is not a type parameter that accepts a type, but a <i class="wikiEmphasis">type constructor parameter</i>, that accepts a type constructor:
@@ -144,7 +146,7 @@ Sequence&lt;String&gt; hello = singleton&lt;stringSequenceType&gt;("Hello");  //
 So the compiler does not need to be able to assign a Ceylon type to a type constructor argument in order to perform the necessary type checking. At some level, the compiler would need to be able to determine <q>assignability</q> of a type constructor to a type constructor parameter, but it would be able to go outside the bounds of the usual type system for first-class values in order to be able to make this determination. (This is no different from what Java does with type arguments, of course, since types aren't first-class values in Java.) 
 </p>
 
-<h1 class="wikiHeadline1" id="H-SomeSpeculation"><a href="/Bloggers/ExistentialTypesAndTypeConstructors#H-SomeSpeculation">Some speculation</a></h1>
+<h1 class="wikiHeadline1" id="H-SomeSpeculation"><a href="/2011/05/31/ExistentialTypesAndTypeConstructors#H-SomeSpeculation">Some speculation</a></h1>
 
 <p class="wikiPara">
 Interestingly, Ceylon probably could have gone down a different path. Rather uniquely, the language has:
@@ -168,7 +170,7 @@ At least now we've discovered one reason for not going down that path. It would 
 <li class="wikiUnorderedListItem"> introducing existential types.</li>
 </ul>
 
-<h1 class="wikiHeadline1" id="H-OhAnd"><a href="/Bloggers/ExistentialTypesAndTypeConstructors#H-OhAnd">Oh and...</a></h1>
+<h1 class="wikiHeadline1" id="H-OhAnd"><a href="/2011/05/31/ExistentialTypesAndTypeConstructors#H-OhAnd">Oh and...</a></h1>
 
 <p class="wikiPara">
 .. don't worry if you don't understand this post. Nobody really needs or wants to know what existential types and type constructor parameterization are in order to be able to write a useful program. Which is a little fact that is really important to keep in mind when designing languages. It's better if the conceptual framework of a language stays close enough to the kind of things people want to be thinking about when writing programs in the language.

@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "13-11-2009"
 tags: [Contexts and Dependency Injection,Weld]
 
-absolute_url: http://in.relation.to/2009/11/13/ModularDependencies
-lace: http://in.relation.to/12947.lace
+relative_url: /2009/11/13/ModularDependencies
 slug: ModularDependencies
+lace: http://in.relation.to/12947.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/11/13/ModularDependencies
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 I've written a <a href="/Bloggers/MakingExternalResourcesConfigurableWithoutLotsOfXML" target="" class="regularLink">couple</a> of <a href="/Bloggers/MakingExternalResourcesConfigurableWithoutLotsOfXMLPart2" target="" class="regularLink">posts</a> about using <tt>@Alternative</tt> to achieve deployment-time polymorphism. What I've never really talked about is its role in CDI modularity.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ModularityAndAlternatives"><a href="/Bloggers/ModularDependencies#H-ModularityAndAlternatives">Modularity and alternatives</a></h2>
+<h2 class="wikiHeadline2" id="H-ModularityAndAlternatives"><a href="/2009/11/13/ModularDependencies#H-ModularityAndAlternatives">Modularity and alternatives</a></h2>
 
 <p class="wikiPara">
 From our point of view, support for <q>modularity</q> in dependency management means that injection points of the same type, in different modules, can resolve to different beans. For example, suppose I have an interface <tt>Supplier</tt>, with two implementations. Let's say they are beans like <tt>BookSupplier</tt> and <tt>CameraSupplier</tt>, but they could easily be something more exotic. Now, in one module, <tt>bookshop.war</tt>, of my application, I have a <tt>BookShop</tt>:
@@ -140,13 +142,13 @@ or, more likely, add a generic type parameter to <tt>Supplier</tt>:
 }</pre>
 
 
-<h2 class="wikiHeadline2" id="H-UnifiedEL"><a href="/Bloggers/ModularDependencies#H-UnifiedEL">Unified EL</a></h2>
+<h2 class="wikiHeadline2" id="H-UnifiedEL"><a href="/2009/11/13/ModularDependencies#H-UnifiedEL">Unified EL</a></h2>
 
 <p class="wikiPara">
 The example we've worked with involves Java classes using injection to obtain their dependencies. But what about JSP or JSF pages, which use Unified EL expressions to interact with beans. Well, happily, <i class="wikiEmphasis">exactly</i> the same rules apply during EL name resolution.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ModularityBeyondJavaEE"><a href="/Bloggers/ModularDependencies#H-ModularityBeyondJavaEE">Modularity beyond Java EE</a></h2>
+<h2 class="wikiHeadline2" id="H-ModularityBeyondJavaEE"><a href="/2009/11/13/ModularDependencies#H-ModularityBeyondJavaEE">Modularity beyond Java EE</a></h2>
 
 <p class="wikiPara">
 I've given examples from the Java EE environment. In this environment, a <q>module</q> is a Java EE module like a war, EJB jar or rar, or a library jar. But what about other module architectures like OSGi or a future Java language-level module system?

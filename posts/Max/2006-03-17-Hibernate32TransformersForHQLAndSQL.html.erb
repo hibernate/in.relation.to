@@ -5,11 +5,13 @@ blogger_name: "Max"
 creation_date: "17-03-2006"
 tags: []
 
-absolute_url: http://in.relation.to/2006/03/17/Hibernate32TransformersForHQLAndSQL
-lace: http://in.relation.to/2133.lace
+relative_url: /2006/03/17/Hibernate32TransformersForHQLAndSQL
 slug: Hibernate32TransformersForHQLAndSQL
+lace: http://in.relation.to/2133.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2006/03/17/Hibernate32TransformersForHQLAndSQL
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ transform any Criteria result element.  E.g. you can make any Criteria
 result be returned as a java.util.Map or as a non-entity Bean.
 </p>
 
-<h2 class="wikiHeadline2" id="H-CriteriaTransformers"><a href="/Bloggers/Hibernate32TransformersForHQLAndSQL#H-CriteriaTransformers">Criteria Transformers</a></h2>
+<h2 class="wikiHeadline2" id="H-CriteriaTransformers"><a href="/2006/03/17/Hibernate32TransformersForHQLAndSQL#H-CriteriaTransformers">Criteria Transformers</a></h2>
 
 <p class="wikiPara">
 Imagine you have a StudentDTO class:
@@ -67,7 +69,7 @@ It is just one example of the built in transformers and users can
 provide their own transformers if they so please.
 </p>
 
-<h2 class="wikiHeadline2" id="H-JealousProgramming"><a href="/Bloggers/Hibernate32TransformersForHQLAndSQL#H-JealousProgramming">Jealous programming</a></h2>
+<h2 class="wikiHeadline2" id="H-JealousProgramming"><a href="/2006/03/17/Hibernate32TransformersForHQLAndSQL#H-JealousProgramming">Jealous programming</a></h2>
 
 <p class="wikiPara">
 Since I am more a HQL/SQL guy I have been jealous on Criteria for
@@ -80,7 +82,7 @@ Today I put an end to this jealousy and introduced ResultTransformer
 for HQL and SQL in Hibernate 3.2.
 </p>
 
-<h2 class="wikiHeadline2" id="H-HQLTransformers"><a href="/Bloggers/Hibernate32TransformersForHQLAndSQL#H-HQLTransformers">HQL Transformers</a></h2>
+<h2 class="wikiHeadline2" id="H-HQLTransformers"><a href="/2006/03/17/Hibernate32TransformersForHQLAndSQL#H-HQLTransformers">HQL Transformers</a></h2>
 
 <p class="wikiPara">
 In HQL we already had a <q>kind</q> of result transformers via the (<q>select
@@ -107,7 +109,7 @@ List resultWithAliasedBean = s.createQuery(
 StudentDTO dto = (StudentDTO) resultWithAliasedBean.get(0);</pre>
 
 
-<h2 class="wikiHeadline2" id="H-SQLTransformers"><a href="/Bloggers/Hibernate32TransformersForHQLAndSQL#H-SQLTransformers">SQL Transformers</a></h2>
+<h2 class="wikiHeadline2" id="H-SQLTransformers"><a href="/2006/03/17/Hibernate32TransformersForHQLAndSQL#H-SQLTransformers">SQL Transformers</a></h2>
 
 <p class="wikiPara">
 With native sql returning non-entity beans or Map's is often more useful instead of basic <tt>Object[]</tt>. With
@@ -135,7 +137,7 @@ This could also be solved with a custom transformer that search the property nam
 instead of using exact match - maybe we should provide a fuzzyAliasToBean() method ;)
 </p>
 
-<h2 class="wikiHeadline2" id="H-TtMapttVsTtObjecttt"><a href="/Bloggers/Hibernate32TransformersForHQLAndSQL#H-TtMapttVsTtObjecttt"><tt>Map</tt> vs. <tt>Object[]</tt></a></h2>
+<h2 class="wikiHeadline2" id="H-TtMapttVsTtObjecttt"><a href="/2006/03/17/Hibernate32TransformersForHQLAndSQL#H-TtMapttVsTtObjecttt"><tt>Map</tt> vs. <tt>Object[]</tt></a></h2>
 
 <p class="wikiPara">
 Since you can also use a transformer that return a Map from alias to
@@ -159,7 +161,7 @@ String name = (Map)(iter.next()).get("studentName");</pre>
 Again, this works equally well for Criteria, HQL and native SQL.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ReachingNirvanaOfNativeSql"><a href="/Bloggers/Hibernate32TransformersForHQLAndSQL#H-ReachingNirvanaOfNativeSql">Reaching Nirvana of native sql</a></h2>
+<h2 class="wikiHeadline2" id="H-ReachingNirvanaOfNativeSql"><a href="/2006/03/17/Hibernate32TransformersForHQLAndSQL#H-ReachingNirvanaOfNativeSql">Reaching Nirvana of native sql</a></h2>
 
 <p class="wikiPara">
 We still <a href="http://opensource2.atlassian.com/projects/hibernate/browse/HHH-1359" target="" class="regularLink">miss </a> a <a href="http://opensource2.atlassian.com/projects/hibernate/browse/HHH-1020" target="" class="regularLink">few </a> things, but with the addition of ResultTranformer

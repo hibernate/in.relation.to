@@ -5,11 +5,13 @@ blogger_name: "Sanne"
 creation_date: "20-05-2014"
 tags: [Hibernate,Hibernate Search]
 
-absolute_url: http://in.relation.to/2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery
-lace: http://in.relation.to/25786.lace
+relative_url: /2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery
 slug: HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery
+lace: http://in.relation.to/25786.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -20,7 +22,7 @@ We worked in parallel on multiple fronts; the most notable changes are:
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-OSGiSupportAPIChanges"><a href="/Bloggers/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-OSGiSupportAPIChanges">OSGi support, API changes</a></h2>
+<h2 class="wikiHeadline2" id="H-OSGiSupportAPIChanges"><a href="/2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-OSGiSupportAPIChanges">OSGi support, API changes</a></h2>
 <p class="wikiPara">
 All our modules now provide OSGi metadata to make life easier for users running in OSGi containers. We also included an example features file and integration tests using Karaf.
 </p>
@@ -29,12 +31,12 @@ All our modules now provide OSGi metadata to make life easier for users running 
 Keep in mind that Apache Lucene is not providing this same metadata, so it might be worth looking into <a href="https://github.com/hibernate/hibernate-search/blob/5.0.0.Alpha4/integrationtest/osgi/karaf-features/src/main/features/features.xml" target="" class="regularLink">the features file we use</a> to learn how the Lucene modules need to be wrapped.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ClassRelocations"><a href="/Bloggers/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-ClassRelocations">Class Relocations</a></h3>
+<h3 class="wikiHeadline3" id="H-ClassRelocations"><a href="/2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-ClassRelocations">Class Relocations</a></h3>
 <p class="wikiPara">
 A consequence of being OSGi compliant is that we had to move some packages of well-known APIs; please see the <a href="https://community.jboss.org/wiki/HibernateSearchMigrationGuide#jive_content_id_Hibernate_Search_500Alpha4" target="" class="regularLink">migration guide</a> for all details.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ApacheLucene481Java7NowRequired"><a href="/Bloggers/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-ApacheLucene481Java7NowRequired">Apache Lucene 4.8.1, Java7 now required</a></h2>
+<h2 class="wikiHeadline2" id="H-ApacheLucene481Java7NowRequired"><a href="/2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-ApacheLucene481Java7NowRequired">Apache Lucene 4.8.1, Java7 now required</a></h2>
 <p class="wikiPara">
 Apache Lucene requires Java7 since version 4.8 and we don't want you to miss out some of the great improvements it provides, or potential bugfixes in the near future so we now require Java7 too.
 </p>
@@ -43,13 +45,13 @@ Apache Lucene requires Java7 since version 4.8 and we don't want you to miss out
 Apache Lucene 4.8.1 was released today, so we could include it in this release too.
 </p>
 
-<h2 class="wikiHeadline2" id="H-BridgeProvidersLoadedByAutodiscovery"><a href="/Bloggers/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-BridgeProvidersLoadedByAutodiscovery">Bridge Providers loaded by auto-discovery</a></h2>
+<h2 class="wikiHeadline2" id="H-BridgeProvidersLoadedByAutodiscovery"><a href="/2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-BridgeProvidersLoadedByAutodiscovery">Bridge Providers loaded by auto-discovery</a></h2>
 
 <p class="wikiPara">
 We always had a strong differentiation between FieldBridge(s) included in Hibernate Search, and custom (application provided) FieldBridges. From this release the discovery of <q>built-in</q> bridges uses the Service Loader pattern, so that we can move some bridge implementations to optional modules, and also eventually provide support for the new date/time types defined in Java8 but also by Joda Time, and potentially your own custom types but this will need some further refinement work.
 </p>
 
-<h2 class="wikiHeadline2" id="H-SeveralOtherImprovements"><a href="/Bloggers/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-SeveralOtherImprovements">Several other improvements</a></h2>
+<h2 class="wikiHeadline2" id="H-SeveralOtherImprovements"><a href="/2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-SeveralOtherImprovements">Several other improvements</a></h2>
 <p class="wikiPara">
 These won't make the headlines as a Java requirements change, still we have some more relevant news:
 </p>
@@ -70,7 +72,7 @@ These won't make the headlines as a Java requirements change, still we have some
 </pre>
 
 
-<h2 class="wikiHeadline2" id="H-TheUsualLinks"><a href="/Bloggers/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-TheUsualLinks">The usual links</a></h2>
+<h2 class="wikiHeadline2" id="H-TheUsualLinks"><a href="/2014/05/20/HibernateSearchNowRequiresJava7BringsOSGiAndFieldBridgeDiscovery#H-TheUsualLinks">The usual links</a></h2>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <a href="http://hibernate.org/search/downloads/" target="" class="regularLink">Downloads</a>
 </li>

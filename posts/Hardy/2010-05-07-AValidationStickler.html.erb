@@ -5,11 +5,13 @@ blogger_name: "Hardy"
 creation_date: "07-05-2010"
 tags: []
 
-absolute_url: http://in.relation.to/2010/05/07/AValidationStickler
-lace: http://in.relation.to/15401.lace
+relative_url: /2010/05/07/AValidationStickler
 slug: AValidationStickler
+lace: http://in.relation.to/15401.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/05/07/AValidationStickler
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -52,7 +54,7 @@ Not thinking about language limitations, the following solution would be nice:
 Of course this is not possible in the current version of Java. However, there is <a href="http://jcp.org/en/jsr/detail?id=308" target="" class="regularLink">JSR 308</a>, which allows the above example and which will hopefully be part <a href="http://openjdk.java.net/projects/jdk7/features/" target="" class="regularLink">Java 7</a>. For the Bean Validation specification it makes sense to wait for this feature (see <a href="http://opensource.atlassian.com/projects/hibernate/browse/BVAL-202" target="" class="regularLink">BVAL-202</a>), but should we have a interim solution for Hibernate Validator. This is what <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-296" target="" class="regularLink">HV-296</a> is about. HV-296 discusses several solutions to the problem. Two solutions I would like to introduce here:
 </p>
 
-<h2 class="wikiHeadline2" id="H-ThePayloadSolution"><a href="/Bloggers/AValidationStickler#H-ThePayloadSolution">The payload solution</a></h2>
+<h2 class="wikiHeadline2" id="H-ThePayloadSolution"><a href="/2010/05/07/AValidationStickler#H-ThePayloadSolution">The payload solution</a></h2>
 
 <p class="wikiPara">
 For this solution a custom payload class would be introduced. If this payload is specified on a constraint, the constraints will be applied on the elements of the collection:
@@ -73,7 +75,7 @@ For this solution a custom payload class would be introduced. If this payload is
 This seems to be the least intrusive solution and hopefully within the rules of the specification: <q>Payloads are typically used by validation clients to associate some metadata information with a given constraint declaration. Payloads are typically non-portable</q>. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheValidateEachAnnotationSolution"><a href="/Bloggers/AValidationStickler#H-TheValidateEachAnnotationSolution">The @ValidateEach annotation solution</a></h2>
+<h2 class="wikiHeadline2" id="H-TheValidateEachAnnotationSolution"><a href="/2010/05/07/AValidationStickler#H-TheValidateEachAnnotationSolution">The @ValidateEach annotation solution</a></h2>
 
 <p class="wikiPara">
 For this solution we would introduce a new annotation @ValidateEach (or maybe @ApplyOn).

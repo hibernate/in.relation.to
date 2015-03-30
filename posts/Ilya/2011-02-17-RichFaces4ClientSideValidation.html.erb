@@ -5,16 +5,18 @@ blogger_name: "Ilya"
 creation_date: "17-02-2011"
 tags: []
 
-absolute_url: http://in.relation.to/2011/02/17/RichFaces4ClientSideValidation
-lace: http://in.relation.to/18340.lace
+relative_url: /2011/02/17/RichFaces4ClientSideValidation
 slug: RichFaces4ClientSideValidation
+lace: http://in.relation.to/18340.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/02/17/RichFaces4ClientSideValidation
 ---
 <div id="documentDisplay" class="documentDisplay">
 
 
-<h2 class="wikiHeadline2" id="H-Introduction"><a href="/Bloggers/RichFaces4ClientSideValidation#H-Introduction">Introduction</a></h2>
+<h2 class="wikiHeadline2" id="H-Introduction"><a href="/2011/02/17/RichFaces4ClientSideValidation#H-Introduction">Introduction</a></h2>
 <div style="float: right; margin-left: 20px; margin-bottom: 20px;">
      <a href="http://labs.jboss.com/richfaces" target="blank"> 
          <img src="http://design.jboss.org/richfaces/logo/final_logo/richfaces_logo_200px.png">
@@ -69,7 +71,7 @@ Now with <b>RichFaces 4</b> we provide that final level of abstraction to the va
 <li class="wikiUnorderedListItem"> Extension points which allows the user to provide JavaScript implementation for his custom server side validators (in the future).</li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-Usage"><a href="/Bloggers/RichFaces4ClientSideValidation#H-Usage">Usage</a></h2>
+<h2 class="wikiHeadline2" id="H-Usage"><a href="/2011/02/17/RichFaces4ClientSideValidation#H-Usage">Usage</a></h2>
 
 <p class="wikiPara">
 First need to mention a common requirement for both JSF and RichFaces using bean validation. In order to use it with JSF 2 - you should use JEE 6 application server which is bundled with a JSR-303 implementation. Or if using just Tomcat or another simple servlet container add validation-api jar and some validators provider (e.g. <a href="http://www.hibernate.org/subprojects/validator/download.html" target="" class="regularLink">hibernate-validator</a>) to your application libraries.
@@ -111,7 +113,7 @@ Client implementation of <b>Length</b> validator will be registered to be called
 &lt;/h:inputText&gt;</pre>
 
 
-<h2 class="wikiHeadline2" id="H-AjaxFallback"><a href="/Bloggers/RichFaces4ClientSideValidation#H-AjaxFallback">Ajax Fall-back</a></h2>
+<h2 class="wikiHeadline2" id="H-AjaxFallback"><a href="/2011/02/17/RichFaces4ClientSideValidation#H-AjaxFallback">Ajax Fall-back</a></h2>
 
 <p class="wikiPara">
 In case you registered some validators but they have no client implementation available — <b>Ajax fall-back</b> will be used. This means that 
@@ -122,7 +124,7 @@ In case you registered some validators but they have no client implementation av
 <b>Note:</b> For now Ajax fall-back is always used if a client validator is not available. In future we planned to design some way to invoke only available client validators and not send Ajax request for the others <a href="https://issues.jboss.org/browse/RF-10142" target="" class="regularLink">RF-10142</a>. Could be useful in some cases where additional request to server are not expected because validators uses some complex services invocations or makes db calls for example.
 </blockquote>
 
-<h2 class="wikiHeadline2" id="H-MessagesFromClientValidators"><a href="/Bloggers/RichFaces4ClientSideValidation#H-MessagesFromClientValidators">Messages from client validators</a></h2>
+<h2 class="wikiHeadline2" id="H-MessagesFromClientValidators"><a href="/2011/02/17/RichFaces4ClientSideValidation#H-MessagesFromClientValidators">Messages from client validators</a></h2>
 
 <p class="wikiPara">
 And the last question is - how do users get notified with the client side validation results? It's rather simple actually. Messages for client validators will be displayed using the same <b><i>rich:message(s)</i></b> components which are used for common server side validation messages.
@@ -170,7 +172,7 @@ in case of failure of any validator registered to name <i>h:inputText</i> compon
 All the messages for inputs appeared without any server side validation invocation. Script validation invoked after you changed the field and shifting focus out of the component.  In this case only one Ajax request was sent – after clicking the check-box (<i>AssertTrue validator client implementation is not available for M6 actually so you see Ajax fall-back in action</i>). Pretty easy isn't it?
 </p>
 
-<h2 class="wikiHeadline2" id="H-M6Functionality"><a href="/Bloggers/RichFaces4ClientSideValidation#H-M6Functionality">M6 functionality</a></h2>
+<h2 class="wikiHeadline2" id="H-M6Functionality"><a href="/2011/02/17/RichFaces4ClientSideValidation#H-M6Functionality">M6 functionality</a></h2>
 
 <p class="wikiPara">
 In <b>RichFaces 4 Milestone 6</b> all the server side functionality related to registered validators look-up, validators script output, messages and behavior rendering were done. As for client side functionality – all messages, JSF validators and most of JSR-303 validators are complete. We have a few validators still missing (<i>e.g. AssertTrue/False, Past</i>) but they will be added in nearest time. See developer richfaces-showcase demo which was added with CSV samples prior to M6.
@@ -180,13 +182,13 @@ In <b>RichFaces 4 Milestone 6</b> all the server side functionality related to r
 <b>Note:</b> As it was mentioned before missed validators will be invoked using Ajax fall-back.
 </blockquote>
 
-<h2 class="wikiHeadline2" id="H-StartUsingNow"><a href="/Bloggers/RichFaces4ClientSideValidation#H-StartUsingNow">Start Using Now</a></h2>
+<h2 class="wikiHeadline2" id="H-StartUsingNow"><a href="/2011/02/17/RichFaces4ClientSideValidation#H-StartUsingNow">Start Using Now</a></h2>
 
 <p class="wikiPara">
 Even considering some minor issues reported and a few validators still missed – it's worth to start using the CSV right now. You will need to do nothing in the future in order for new validators to start working once they are implemented. When you update to next version they will be automatically added by behavior script renderer and start working on the client side. Also, you can help let us know about any problems or concerns prior to final. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheFuturePlansForValidation"><a href="/Bloggers/RichFaces4ClientSideValidation#H-TheFuturePlansForValidation">The future plans for validation</a></h2>
+<h2 class="wikiHeadline2" id="H-TheFuturePlansForValidation"><a href="/2011/02/17/RichFaces4ClientSideValidation#H-TheFuturePlansForValidation">The future plans for validation</a></h2>
 
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> Add default levels of validation support. This means that we will provide an option that will enable <b><i>&lt;rich:validator&gt;</i></b> automatically at some level such as for a form or view.</li>

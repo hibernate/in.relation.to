@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "24-05-2007"
 tags: []
 
-absolute_url: http://in.relation.to/2007/05/24/InDefenceOfTheRDBMS
-lace: http://in.relation.to/1992.lace
+relative_url: /2007/05/24/InDefenceOfTheRDBMS
 slug: InDefenceOfTheRDBMS
+lace: http://in.relation.to/1992.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/05/24/InDefenceOfTheRDBMS
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -21,7 +23,7 @@ As predictable as fog in San Francisco, every couple of months we are unsurprise
 First, a quick jargon note: these systems used to be called <q>object databases</q>. Since the total market failure of <q>object databases</q> in the 1980's, the systems are often not called <q>object databases</q> in today's marketing literature, but we will call them that anyway, since that is what they are.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Benefit1EliminateTheComplexityOfObjectrelationalMapping"><a href="/Bloggers/InDefenceOfTheRDBMS#H-Benefit1EliminateTheComplexityOfObjectrelationalMapping">Benefit #1: Eliminate the complexity of object/relational mapping!</a></h2>
+<h2 class="wikiHeadline2" id="H-Benefit1EliminateTheComplexityOfObjectrelationalMapping"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-Benefit1EliminateTheComplexityOfObjectrelationalMapping">Benefit #1: Eliminate the complexity of object/relational mapping!</a></h2>
 
 <p class="wikiPara">
 The <q>complexity</q> referred to is the cost of providing information about how classes and attributes relate to database tables and columns. ORM solutions support specification of this information either via some domain-specific language (usually XML-based) or via annotation of the classes and attributes. But this information is usually only needed when we are mapping to a pre-existing legacy database, or to some schema that is owned and managed by some external group in the organization. Eliminating the relational database certainly solves the problem of a pre-existing schema, but we don't need to eliminate the database to achieve this: almost every ORM solution on earth has the capability to automagically forward-engineer a schema from an object model, without the need to specify mapping information. In fact, the exact usecases where mapping information is needed (legacy databases, etc) cannot be handled by any other technology than ORM! 
@@ -47,7 +49,7 @@ At core, the reason we need mapping technology is that data and data models last
 Suppose that the IT industry, in a temporary attack of collective self-delusion, ever did decide to rip out all those massive rust-encrusted relational databases, and replace them with shiny new object databases. In a further ten years, we'd be hearing all about the <q>impedence mismatch</q> problem of object/object mapping.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Benefit2SupportTheNativeJavaTypeSystem"><a href="/Bloggers/InDefenceOfTheRDBMS#H-Benefit2SupportTheNativeJavaTypeSystem">Benefit #2: Support the native Java type system</a></h2>
+<h2 class="wikiHeadline2" id="H-Benefit2SupportTheNativeJavaTypeSystem"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-Benefit2SupportTheNativeJavaTypeSystem">Benefit #2: Support the native Java type system</a></h2>
 
 <p class="wikiPara">
 One of the cool things about object database technology (and the briefly fashionable object/relational database technology from the 1980's) is that the database can have a much richer type system compared to the simple primitive types available in traditional SQL databases. Isn't it nice to just be able to have an attribute of type Duration (from the Joda Time API), instead of having to map it back to relational database types? 
@@ -57,7 +59,7 @@ One of the cool things about object database technology (and the briefly fashion
 Well, it is nice for us, but it's not nice for the guy who comes along next! He's one of those shiny-eyed (and slightly scary) Ruby fanatics. Or maybe he's a VB guy (senior citizens matter too). Or maybe its 5000 years from now: Java and Ruby have both vanished (of course, VB is going strong) and a team of archeaologists from Ganymede are trying to piece together something about our forgotten civilization from what's left of your customer database, using the recently released Perl 6.0. Wouldn't it be easier for them if your database just had strings and numbers in it?
 </p>
 
-<h2 class="wikiHeadline2" id="H-Benefit3ImplementedInPureJava"><a href="/Bloggers/InDefenceOfTheRDBMS#H-Benefit3ImplementedInPureJava">Benefit #3: Implemented in pure Java</a></h2>
+<h2 class="wikiHeadline2" id="H-Benefit3ImplementedInPureJava"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-Benefit3ImplementedInPureJava">Benefit #3: Implemented in pure Java</a></h2>
 
 <p class="wikiPara">
 One thing that truly is beneficial about these new object database systems is that they tend to be implemented in Java. How I wish there was a truly mature pure Java RDBMS! Unfortunately, if we start building it now then by the time we are finished, Java's days will be numbered. And when you are a CIO investing in a data management system, you are investing for the long term. You care more about the maturity of the whole data management platform (which means a lot more than just OLTP) than you do about what's convenient for one little team of snotty-nosed Java developers who will all have moved on to their next consulting job by this time next year. CIOs understand these things. That's why they make more money than us. (Assholes.)
@@ -71,7 +73,7 @@ It might be nice if the whole world used Java, but they don't. And Java won't la
 Unfortunately, for MyReallyFastThingyButDontCallItAnObjectDatabase 1.0 beta 3 to achieve the maturity level of existing RDBMS systems is going to take just as long as it would take to build an RDBMS in Java. They will have it ready for real enterprise production usage just when everyone starts to leave Java for something better (ie. something other than Ruby).
 </p>
 
-<h2 class="wikiHeadline2" id="H-Benefit4253775454PercentFasterThanHibernate"><a href="/Bloggers/InDefenceOfTheRDBMS#H-Benefit4253775454PercentFasterThanHibernate">Benefit #4: 2537754.54 percent faster than Hibernate!!!!</a></h2>
+<h2 class="wikiHeadline2" id="H-Benefit4253775454PercentFasterThanHibernate"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-Benefit4253775454PercentFasterThanHibernate">Benefit #4: 2537754.54 percent faster than Hibernate!!!!</a></h2>
 
 <p class="wikiPara">
 And look, a totally objective benchmark to prove it! They even set up a website for the benchmark they wrote, just to show how objective it is! And it's open source and they invite the community to contribute! How objective can you get?
@@ -89,7 +91,7 @@ Imagine if MyReallyFastThingyButDontCallItAnObjectDatabase 1.0 beta 3 really was
 Or perhaps there is less here then meets the eye. Why exactly are the object databases faster?
 </p>
 
-<h3 class="wikiHeadline3" id="H-TheyRunInprocess"><a href="/Bloggers/InDefenceOfTheRDBMS#H-TheyRunInprocess">They run in-process</a></h3>
+<h3 class="wikiHeadline3" id="H-TheyRunInprocess"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-TheyRunInprocess">They run in-process</a></h3>
 
 <p class="wikiPara">
 Invariably, these sorts of solutions are benchmarked running in the same process as the application. In many cases, that's the only way they can run. But in a real enterprise environment, you only sometimes get the option of running the database on the same box as the application servers. When you do, it would certainly be nice to run in-process, but this is not a conceptual problem of relational technology, the problem is that existing, mature RDBMS systems happen to not be written in Java (see Benefit #3).
@@ -99,13 +101,13 @@ Invariably, these sorts of solutions are benchmarked running in the same process
 The biggest part of the cost of data access is the cost of inter-process or network calls. Indeed a lot of the complexity of working with ORM revolves around trying to minimize the number of inter-process calls by tuning association fetching strategies. If we run Hibernate against HSQLDB, we get the same kind of performance improvements that MyReallyFastThingyButDontCallItAnObjectDatabase claims in their marketing brochure, and we eliminate the need to fine-tune association fetching. Unfortunately, we also get the same level of reliability and scalability of MyReallyFastThingyButDontCallItAnObjectDatabase.
 </p>
 
-<h3 class="wikiHeadline3" id="H-TheyDontScale"><a href="/Bloggers/InDefenceOfTheRDBMS#H-TheyDontScale">They don't scale</a></h3>
+<h3 class="wikiHeadline3" id="H-TheyDontScale"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-TheyDontScale">They don't scale</a></h3>
 
 <p class="wikiPara">
 It's really easy to achieve high performance in simple benchmarks if you have an architecture that shares a lot of state between concurrent threads. Of course, this breaks down once you deploy onto a cluster, or onto a multi-CPU box. Mature relational-based solutions (and especially Hibernate) are optimized for the clustered and highly-concurrent case, so they minimize shared state. This does harm performance in the case of small scale, but usually people care a lot more about performance when the scale is large.
 </p>
 
-<h3 class="wikiHeadline3" id="H-TheyBenchmarkORMWithCachingTurnedOff"><a href="/Bloggers/InDefenceOfTheRDBMS#H-TheyBenchmarkORMWithCachingTurnedOff">They benchmark ORM with caching turned off</a></h3>
+<h3 class="wikiHeadline3" id="H-TheyBenchmarkORMWithCachingTurnedOff"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-TheyBenchmarkORMWithCachingTurnedOff">They benchmark ORM with caching turned off</a></h3>
 
 <p class="wikiPara">
 Duh!
@@ -119,7 +121,7 @@ Invariably, these benchmarks are done with the second-level cache disabled in th
 There is a well-known guy out there who claims to eliminate the performance problems of relational technology via a single simple idea: keep all the data in memory! He says that memory is so cheap that no-one needs disks anymore (I'm paraphrasing). His benchmarks show the usual multiple-order-of-magnitude performance increment compared to Oracle, et al. Of course, what he's forgotten is that Oracle has a cache! Oracle already keeps the data in memory, if it fits. The performance difference he is measuring is not due to the cost of disk access, it is the cost of inter-process communication. This guy also sells snake oil, if you're interested.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ThingsThatDoMoreStuffAreSlower"><a href="/Bloggers/InDefenceOfTheRDBMS#H-ThingsThatDoMoreStuffAreSlower">Things that do more stuff are slower</a></h3>
+<h3 class="wikiHeadline3" id="H-ThingsThatDoMoreStuffAreSlower"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-ThingsThatDoMoreStuffAreSlower">Things that do more stuff are slower</a></h3>
 
 <p class="wikiPara">
 It's no secret that as software products grow, they get slower. Hibernate3 is slower than Hibernate 1.0. Oracle is slower than HSQLDB. MS Word whatever-it-is-now is slower than MS Word-whatever-it-was-then. (You don't notice 'cos your PC got faster quicker than Word got slower.) Hibernate on Oracle is slower than MyReallyFastThingyButDontCallItAnObjectDatabase 1.0 beta 3. But once the MyReallyFastThingyButDontCallItAnObjectDatabase guys fix all the numerous bugs in their beta version, and once they spend another four years adding features and fixing scalability problems, and adding the potential for clustered deployment, the gap will be gone.
@@ -129,13 +131,13 @@ It's no secret that as software products grow, they get slower. Hibernate3 is sl
 So, does that mean we should, from time to time, throw away all existing software and replace it with betas? Of course not, each little bugfix and incremental improvement was worth the tiny incremental cost in performance. Does it mean that slow software always has less bugs than fast software? Not even that. It just means that you should try to compare performance of products of similar maturity levels and functionality.
 </p>
 
-<h3 class="wikiHeadline3" id="H-FetchingHierarchicalData"><a href="/Bloggers/InDefenceOfTheRDBMS#H-FetchingHierarchicalData">Fetching hierarchical data</a></h3>
+<h3 class="wikiHeadline3" id="H-FetchingHierarchicalData"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-FetchingHierarchicalData">Fetching hierarchical data</a></h3>
 
 <p class="wikiPara">
 It is often claimed that object databases help eliminate the n+1 requests problem when fetching data from a remote server. However, there is no a priori reason why an object database should be any faster than an ORM solution for this. Modern ORM solutions offer very efficient association fetching strategies and options for tuning fetching strategies. However, I will concede that there is a particular case where current relational technology is inferior: fetching of arbitrarily deep graphs of data in a hierarchical relationship. There is no reason why standard SQL could not provide features for optimizing this case, indeed, certain vendors already have proprietary extensions for this. And there is no good technical reason why ORM solutions could not take advantage of these extensions. However, as far as I am aware, no current product does so.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/InDefenceOfTheRDBMS#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2007/05/24/InDefenceOfTheRDBMS#H-Conclusion">Conclusion</a></h2>
 
 <p class="wikiPara">
 If you think that relational technology is for persisting the state of your application, you've missed the point. The value of the relational model is that it's democratic. Anyone's favorite programming language can understand sets of tuples of primitive values. Relational databases are an integration technology, not just a persistence technology. And integration is important. That's why we are stuck with them.

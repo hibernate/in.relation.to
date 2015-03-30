@@ -5,11 +5,13 @@ blogger_name: "Gunnar"
 creation_date: "17-03-2015"
 tags: [Hibernate,Hibernate OGM,News]
 
-absolute_url: http://in.relation.to/2015/03/17/HibernateOGMTimes2413And42Beta1Released
-lace: http://in.relation.to/42588.lace
+relative_url: /2015/03/17/HibernateOGMTimes2413And42Beta1Released
 slug: HibernateOGMTimes2413And42Beta1Released
+lace: http://in.relation.to/42588.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/03/17/HibernateOGMTimes2413And42Beta1Released
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -39,7 +41,7 @@ Note that from 4.2 onwards, <b>Hibernate OGM requires Java 7</b>. We aimed at Ja
 Let's dive into some of the new functionality of the 4.2 Beta1 release.
 </p>
 
-<h3 class="wikiHeadline3" id="H-QueryImprovements"><a href="/Bloggers/HibernateOGMTimes2413And42Beta1Released#H-QueryImprovements">Query improvements</a></h3>
+<h3 class="wikiHeadline3" id="H-QueryImprovements"><a href="/2015/03/17/HibernateOGMTimes2413And42Beta1Released#H-QueryImprovements">Query improvements</a></h3>
 
 <p class="wikiPara">
 We continued our quest for extensive query capabilities and enabled more JP-QL constructs, namely queries on element collections. For example consider the following entity <tt>Order</tt> which contains an element collection of its order lines:
@@ -87,7 +89,7 @@ As with other JP-QL queries, Hibernate OGM will convert the query string into a 
 Note that the JOIN syntax at this point is only supported for element collections, i.e. you cannot create join queries for arbitrary associations to other entities. The reason is that most NoSQL stores don't support joins between different tables/collections, therefore such query can't be translated in a sensible way. An exception are graph databases such as Neo4j where joins can be converted into queries based on relationships (which is what actually happens for the element collection case), but we are not quite there yet :)
 </p>
 
-<h3 class="wikiHeadline3" id="H-APIForRetrievingAllExecutedAndFailedDatastoreOperations"><a href="/Bloggers/HibernateOGMTimes2413And42Beta1Released#H-APIForRetrievingAllExecutedAndFailedDatastoreOperations">API for retrieving all executed and failed datastore operations</a></h3>
+<h3 class="wikiHeadline3" id="H-APIForRetrievingAllExecutedAndFailedDatastoreOperations"><a href="/2015/03/17/HibernateOGMTimes2413And42Beta1Released#H-APIForRetrievingAllExecutedAndFailedDatastoreOperations">API for retrieving all executed and failed datastore operations</a></h3>
 
 <p class="wikiPara">
 Hibernate ORM collects all write operations internally and propagates them to the database in most cases only upon transaction commit (in addition, changes will also be flushed prior to query execution or upon explicite <tt>flush()</tt> calls). This enables many optimizations such as batched inserts. Hibernate OGM follows this approach and also uses transaction boundaries for demarcating units of work and triggering writes to the datastore.
@@ -101,7 +103,7 @@ While this naturally works great with transactional NoSQL stores such as Infinis
 In order to not let this release announcement grow too big, there is a <a href="http://in.relation.to/Bloggers/HibernateOGMErrorHandlingOnNontransactionalNoSQLStores" target="" class="regularLink">separate post</a> just dedicated to this new API.
 </p>
 
-<h3 class="wikiHeadline3" id="H-SupportForFongo"><a href="/Bloggers/HibernateOGMTimes2413And42Beta1Released#H-SupportForFongo">Support for Fongo</a></h3>
+<h3 class="wikiHeadline3" id="H-SupportForFongo"><a href="/2015/03/17/HibernateOGMTimes2413And42Beta1Released#H-SupportForFongo">Support for Fongo</a></h3>
 
 <p class="wikiPara">
 <a href="https://github.com/fakemongo/fongo" target="" class="regularLink">Fongo</a> ("Fake Mongo") is a very nice tool when it comes to testing MongoDB applications. It provides a pure in-memory implementation of the MongoDB Java API which allows to test MongoDB-based applications without starting up an actual MongoDB instance.
@@ -147,7 +149,7 @@ Then specify "fongodb" as the Hibernate OGM datastore provider, e.g. via a persi
 Hibernate OGM will now use Fongo rather than a real MongoDB server as the backend. As said, this can be quite handy when testing your application, just do not forget to switch to a real datastore when deploying to production ;-)
 </p>
 
-<h3 class="wikiHeadline3" id="H-UsabilityImprovements"><a href="/Bloggers/HibernateOGMTimes2413And42Beta1Released#H-UsabilityImprovements">Usability improvements</a></h3>
+<h3 class="wikiHeadline3" id="H-UsabilityImprovements"><a href="/2015/03/17/HibernateOGMTimes2413And42Beta1Released#H-UsabilityImprovements">Usability improvements</a></h3>
 
 <p class="wikiPara">
 Finally, let's take a quick look at two nice usability improvements which you already get with the update to 4.1.3.
@@ -161,7 +163,7 @@ The first is a better support for the <tt>RESOURCE_LOCAL</tt> transaction type w
 If you work with Hibernate OGM and Hibernate Search, you will be happy to learn that the creation of full-text queries became easier. It is not necessary any longer to configure the database retrieval method for each and every <tt>FullTextQuery</tt>, instead this happens automatically on a global level now when bootstrapping the Hibernate OGM engine.
 </p>
 
-<h3 class="wikiHeadline3" id="H-SomeUsefulLinks"><a href="/Bloggers/HibernateOGMTimes2413And42Beta1Released#H-SomeUsefulLinks">Some useful links</a></h3>
+<h3 class="wikiHeadline3" id="H-SomeUsefulLinks"><a href="/2015/03/17/HibernateOGMTimes2413And42Beta1Released#H-SomeUsefulLinks">Some useful links</a></h3>
 
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> Change logs: <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&amp;version=19251" target="" class="regularLink">4.1.3</a>, <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&amp;version=19050" target="" class="regularLink">4.2 Beta1</a>

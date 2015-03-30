@@ -5,11 +5,13 @@ blogger_name: "Shane"
 creation_date: "18-04-2011"
 tags: []
 
-absolute_url: http://in.relation.to/2011/04/18/SeamFaces301FinalReleaseAndFacesModuleSpotlight
-lace: http://in.relation.to/19405.lace
+relative_url: /2011/04/18/SeamFaces301FinalReleaseAndFacesModuleSpotlight
 slug: SeamFaces301FinalReleaseAndFacesModuleSpotlight
+lace: http://in.relation.to/19405.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/04/18/SeamFaces301FinalReleaseAndFacesModuleSpotlight
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -19,7 +21,7 @@ I'm pleased to announce the availability of <a href="http://www.seamframework.or
 </p>
 
 
-<h1 class="wikiHeadline1" id="H-SeamModuleSpotlightSeamFaces"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamModuleSpotlightSeamFaces">Seam Module Spotlight: Seam Faces</a></h1>
+<h1 class="wikiHeadline1" id="H-SeamModuleSpotlightSeamFaces"><a href="/2011/04/18/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamModuleSpotlightSeamFaces">Seam Module Spotlight: Seam Faces</a></h1>
 
 <p class="wikiPara">
 <i class="wikiEmphasis">by Brian Leathem</i>
@@ -88,7 +90,7 @@ At first glance, the structure of the above configuration might appear odd.  The
 The properties of the enum are annotated with a <tt>@ViewPattern</tt> annotation, specifying to which views the adjacent annotations apply.  ViewPatterns support wildcards, and matches are made to a particular view weighted by the specificity of the match; therefore, if two annotations paired with different <tt>@ViewPattern</tt>s conflict for a given view, the annotation paired with the more specific <tt>@ViewPattern</tt> takes precedence.
 </p>
 
-<h2 class="wikiHeadline2" id="H-SeamSecurityViaTheTtViewConfigtt"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamSecurityViaTheTtViewConfigtt">Seam Security via the <tt>@ViewConfig</tt></a></h2>
+<h2 class="wikiHeadline2" id="H-SeamSecurityViaTheTtViewConfigtt"><a href="/2011/04/18/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamSecurityViaTheTtViewConfigtt">Seam Security via the <tt>@ViewConfig</tt></a></h2>
 
 <p class="wikiPara">
 Now let’s look at the Seam Security annotations <tt>@Admin</tt> and <tt>@Owner</tt>.  These annotations are user-provided, meaning they were built solely for this example, and are qualified with the Seam Security qualifier: <tt>@SecurityBindingType</tt>.  When a view is requested that matches a pattern in the <tt>@ViewConfig</tt> annotated with such an annotation, Seam Faces invokes Seam Security to determine if access should be granted. Authorization is evaluated with the following class:
@@ -124,17 +126,17 @@ Furthermore, the <tt>@Admin</tt> annotation is defined with an additional qualif
 This annotation causes the security restriction to be applied at the “Restore View” phase, rather than the default phases: “Invoke Application” and “Render Response”.  These default phases were chosen in order for application data to be present and allow access restrictions to be contextual.  The default phases also mean that the security restrictions are evaluated twice per lifecycle, as the view often changes at the end of the “Invoke Application” phase.
 
 
-<h2 class="wikiHeadline2" id="H-URLRewritingViaTtViewConfigtt"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-URLRewritingViaTtViewConfigtt">URL rewriting via <tt>@ViewConfig</tt></a></h2>
+<h2 class="wikiHeadline2" id="H-URLRewritingViaTtViewConfigtt"><a href="/2011/04/18/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-URLRewritingViaTtViewConfigtt">URL rewriting via <tt>@ViewConfig</tt></a></h2>
 <p class="wikiPara">
 The view config also let’s us configure URL rewriting for a view using the <tt>@UrlMapping</tt> annotation.  In the above <tt>@ViewConfig</tt>, urls like <tt>/item.jsf?item\=1</tt> gets mapped into <tt>/item/1/</tt>, courtesy of PrettyFaces and the <tt>@UrlMapping(“/item/\#{id}”)</tt> annotation, where “#{id}” tells the rewriting-engine to treat the last portion of the URL as a value in our application, what would have been the query-parameter named “id”.  By integrating the configuration of rewriting URLs alongside the rest of the view configuration, Seam Faces attempts to make this powerful technology more accessible, and a core part of JSF application development.
 </p>
 
-<h2 class="wikiHeadline2" id="H-SettingFacesredirecttrue"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SettingFacesredirecttrue">Setting faces-redirect=true</a></h2>
+<h2 class="wikiHeadline2" id="H-SettingFacesredirecttrue"><a href="/2011/04/18/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SettingFacesredirecttrue">Setting faces-redirect=true</a></h2>
 <p class="wikiPara">
 A seemingly simple annotation, <tt>@FacesRedirect</tt> is a surprisingly useful one.  When this annotation is present with a <tt>@ViewPattern</tt>, any navigation to a matching view is intercepted, and the faces-redirect attribute is activated.  In the provided example the <tt>@FacesRedirect</tt> annotation is applied once to the pattern “/*”, which applies the configuration to all views.  One could optionally override this catch all setting on a more specific pattern, or on an individual view, with the annotation <tt>@FacesRedirect(false)</tt>.  This annotation has a special place close to my heart - no more “?faces-redirect=true” peppered throughout any more applications!
 </p>
 
-<h2 class="wikiHeadline2" id="H-SeamPersistenceViaTtViewConfigtt"><a href="/Bloggers/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamPersistenceViaTtViewConfigtt">Seam Persistence via <tt>@ViewConfig</tt></a></h2>
+<h2 class="wikiHeadline2" id="H-SeamPersistenceViaTtViewConfigtt"><a href="/2011/04/18/SeamFaces301FinalReleaseAndFacesModuleSpotlight#H-SeamPersistenceViaTtViewConfigtt">Seam Persistence via <tt>@ViewConfig</tt></a></h2>
 <p class="wikiPara">
 Last, but not least, there is the SeamManagedTransaction annotation that can be applied in the <tt>@ViewConfig</tt>.  This allows transactional behaviour to be defined on a per view basis.  Exploring the possibilities here will be the subject matter for a subsequent post.
 </p>

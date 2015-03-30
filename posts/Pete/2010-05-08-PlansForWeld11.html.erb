@@ -5,11 +5,13 @@ blogger_name: "Pete"
 creation_date: "08-05-2010"
 tags: [Seam News,Weld]
 
-absolute_url: http://in.relation.to/2010/05/08/PlansForWeld11
-lace: http://in.relation.to/15447.lace
+relative_url: /2010/05/08/PlansForWeld11
 slug: PlansForWeld11
+lace: http://in.relation.to/15447.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/05/08/PlansForWeld11
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 We've been starting to think about what we want to include in Weld 1.1. Of course, you can expect the usual bug fixes, as well as a few new features -- I'll outline those for you here. 
 </p>
 
-<h3 class="wikiHeadline3" id="H-ContainerIntegrationImprovements"><a href="/Bloggers/PlansForWeld11#H-ContainerIntegrationImprovements">Container integration improvements</a></h3>
+<h3 class="wikiHeadline3" id="H-ContainerIntegrationImprovements"><a href="/2010/05/08/PlansForWeld11#H-ContainerIntegrationImprovements">Container integration improvements</a></h3>
 
 <p class="wikiPara">
 A number of refinements are planned to the existing requirements -- the biggest change will be exposing our reflection abstraction API to the container. The <a href="http://anonsvn.jboss.org/repos/weld/core/tags/1.0.1-Final/impl/src/main/java/org/jboss/weld/introspector/WeldClass.java" target="" class="regularLink">Weld Reflection API</a> extends the <a href="http://anonsvn.jboss.org/repos/weld/api/tags/1.0-SP1/cdi/src/main/java/javax/enterprise/inject/spi/Annotated.java" target="" class="regularLink">Annotated</a> interface hierarchy from the CDI SPI, adding in additional methods to support discovery of meta-annotated classes, methods, fields, constructors and parameters, as well as some methods to complete the reflection API. You can find the <a href="http://anonsvn.jboss.org/repos/weld/core/tags/1.0.1-Final/impl/src/main/java/org/jboss/weld/introspector/" target="" class="regularLink">API in SVN</a> (you can glean the intention from the API, but be aware we do intend to clean it up before exposing it to the world!).
@@ -28,7 +30,7 @@ A number of refinements are planned to the existing requirements -- the biggest 
 This will allow the container to replace our built in <a href="http://anonsvn.jboss.org/repos/weld/core/tags/1.0.1-Final/impl/src/main/java/org/jboss/weld/introspector/jlr/" target="" class="regularLink">implementation</a> (based on JDK Reflection) allowing extensive optimisations. For example, the container must scan classes for annotations for multiple components (such as JPA, EJB 3, JAX-RS, CDI, JSF, Servlet 3) - each implementation performing its own scan is clearly both a waste of time and memory (if the implementation caches this information). Further, a container might choose to use <a href="http://jboss.org/javassist" target="" class="regularLink">Javassist</a> rather than JDK Reflection to provide faster scanning.
 </p>
 
-<h3 class="wikiHeadline3" id="H-CDIAPI"><a href="/Bloggers/PlansForWeld11#H-CDIAPI">CDI API</a></h3>
+<h3 class="wikiHeadline3" id="H-CDIAPI"><a href="/2010/05/08/PlansForWeld11#H-CDIAPI">CDI API</a></h3>
 
 <p class="wikiPara">
 A CDI maintenance release is planned, and if finalised in time, we plan to include this update in Weld 1.1.

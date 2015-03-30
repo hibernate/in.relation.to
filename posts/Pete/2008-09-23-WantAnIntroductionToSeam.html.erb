@@ -5,11 +5,13 @@ blogger_name: "Pete"
 creation_date: "23-09-2008"
 tags: [JBoss Tools,Seam,Seam News,Web Beans]
 
-absolute_url: http://in.relation.to/2008/09/23/WantAnIntroductionToSeam
-lace: http://in.relation.to/9429.lace
+relative_url: /2008/09/23/WantAnIntroductionToSeam
 slug: WantAnIntroductionToSeam
+lace: http://in.relation.to/9429.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/09/23/WantAnIntroductionToSeam
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -43,14 +45,14 @@ I didn't get a chance to address all the questions asked in the webinar as we ra
 </p>
 
 
-<h3 class="wikiHeadline3" id="H-GettingStarted"><a href="/Bloggers/WantAnIntroductionToSeam#H-GettingStarted">Getting started</a></h3>
+<h3 class="wikiHeadline3" id="H-GettingStarted"><a href="/2008/09/23/WantAnIntroductionToSeam#H-GettingStarted">Getting started</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">If I don't use Seam framework, which patterns should I use? I mean, what are the good practices for developing with Seam? Can we use DAOs, Mediators or something else?</i> This is a big question - one we don't have time address here. In general, Seam allows you to design your app around your use cases, rather than artificially imposed patterns. There are quite a few good books out there on Seam - buy one :-)</li>
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Seam framework is a start point for new projects or can I use it together for new entities in an old project that is already in production?</i> I wouldn't say it's a great idea to do this. If you want to use Seam, you'd probably merge your webapp into Seam, not the other way around.</li>
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-Conversations"><a href="/Bloggers/WantAnIntroductionToSeam#H-Conversations">Conversations</a></h3>
+<h3 class="wikiHeadline3" id="H-Conversations"><a href="/2008/09/23/WantAnIntroductionToSeam#H-Conversations">Conversations</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Can an atomic conversation span several sessions? I.e. the user can start a conversation in one session, postpond it, log in and continue? Can a conversation/process be continued by another user than the one initiated it or will the answer to these questions to be jBPM?</i> As you say, a jBPM process is the way to have a <q>conversation</q> that lasts for longer than a session that can by multiple people. A conversation would typically be a task within the jBPM process.</li>
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">So, when I do not specify <tt>flushMode=manual</tt> everything will be flushed automatically at conversation end?</i> By default JPA flushes the persistence context at method boundaries. Manual flush mode means the persistence context will only be flushed when you call <tt>entityManager.flush()</tt>.</li>
@@ -60,7 +62,7 @@ I didn't get a chance to address all the questions asked in the webinar as we ra
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-ComponentsAmpContexts"><a href="/Bloggers/WantAnIntroductionToSeam#H-ComponentsAmpContexts">Components &amp; Contexts</a></h3>
+<h3 class="wikiHeadline3" id="H-ComponentsAmpContexts"><a href="/2008/09/23/WantAnIntroductionToSeam#H-ComponentsAmpContexts">Components &amp; Contexts</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">What is bijection?</i> Injection = container initializes bean fields with contextual <i class="wikiEmphasis">Stateful</i> variables (from the contexts - <q>cloud</q> of variables) just before they are needed. Outjection = container copies the stateful variable back to the contexts. Bijection = Injection + outjection. This makes it safe for multiple stateful components with different lifecycles to temparaly hold references to other stateful components. <a href="http://docs.jboss.com/seam/2.1.0.BETA1/reference/en-US/html/concepts.html" target="" class="regularLink">Read more</a>
 </li>
@@ -69,7 +71,7 @@ I didn't get a chance to address all the questions asked in the webinar as we ra
 
 
 
-<h3 class="wikiHeadline3" id="H-IDEsAndTools"><a href="/Bloggers/WantAnIntroductionToSeam#H-IDEsAndTools">IDEs and Tools</a></h3>
+<h3 class="wikiHeadline3" id="H-IDEsAndTools"><a href="/2008/09/23/WantAnIntroductionToSeam#H-IDEsAndTools">IDEs and Tools</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">What is the state of Maven-based Seam development? Are there related plugins/archetypes?</i> Seam publishes Maven poms which contain a transitive dependency tree for Seam. There aren't any archetypes yet, though there are plans afoot.</li>
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">What operating systems is JBoss Studio available for?</i> Linux, Mac and Windows</li>
@@ -81,7 +83,7 @@ I didn't get a chance to address all the questions asked in the webinar as we ra
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-ViewLayers"><a href="/Bloggers/WantAnIntroductionToSeam#H-ViewLayers">View layers</a></h3>
+<h3 class="wikiHeadline3" id="H-ViewLayers"><a href="/2008/09/23/WantAnIntroductionToSeam#H-ViewLayers">View layers</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">I noticed Seam 2.10 beta has provided first-class support for Wicket.  Are there any plans to do the same with GWT?  The provided example with remoting/GWT is not as extensive as the one for Wicket and I'm looking for better integration between the two.</i> Yes, keep your eyes open for more GWT support over the next few months :-)</li>
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Is it possible to mix Wicket and JSF view layer in one project?</i> Probably not, but I haven't tried. If you isolate the view mappings, it might work. Have a go, let us know how you get on at the <a href="http://www.seamframework.org/Community/Forums" target="" class="regularLink">forums</a>.</li>
@@ -90,27 +92,27 @@ I didn't get a chance to address all the questions asked in the webinar as we ra
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-Testing"><a href="/Bloggers/WantAnIntroductionToSeam#H-Testing">Testing</a></h3>
+<h3 class="wikiHeadline3" id="H-Testing"><a href="/2008/09/23/WantAnIntroductionToSeam#H-Testing">Testing</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">What about testing of seam applications? Selenium, JMeter, JSFUnit, other</i> Seam works great with unit tests as everything is POJOs, and provides a testing framework for doing integration tests with a mock JSF lifecycle. We're currently adding JSFUnit and Selenium tests to our examples - both work great with Seam.</li>
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-ApplicationServerInteroperability"><a href="/Bloggers/WantAnIntroductionToSeam#H-ApplicationServerInteroperability">Application Server interoperability</a></h3>
+<h3 class="wikiHeadline3" id="H-ApplicationServerInteroperability"><a href="/2008/09/23/WantAnIntroductionToSeam#H-ApplicationServerInteroperability">Application Server interoperability</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Does Seam run with Oracle's OC4J?</i> Yes, <a href="http://docs.jboss.org/seam/2.0.2.SP1/reference/en-US/html/oc4j.html" target="" class="regularLink">Seam runs on OC4J 11</a> and there are community reports of it working with OC4J 10.</li>
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Is it possible to use toplink instead of hibernate when using JBoss seam? What about OpenEJB?</i>  The biggest roadblock to using TopLink comfortably is that it does not support manual flushing of the persistence context like Hibernate. So it is more of an architectural limitation.  You can currently use Seam with OC4J11.4g <a href="http://docs.jboss.com/seam/2.0.2.SP1/reference/en-US/html_single/" target="" class="regularLink"> See Section 33.3 of the user guide for more information of using OC4J </a>.  As per OpenEJB, there has been experimentation done by Seam users around the world.  The best bet is inquire a search engine to view some of the work that they have been doing or try it yourself.  If you do try it yourself, please report to us so that we can spread the word about sing praises of your name.  </li>
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-Security"><a href="/Bloggers/WantAnIntroductionToSeam#H-Security">Security</a></h3>
+<h3 class="wikiHeadline3" id="H-Security"><a href="/2008/09/23/WantAnIntroductionToSeam#H-Security">Security</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Why seam asks twice for authentication?</i> This is <a href="http://docs.jboss.com/seam/2.0.2.GA/reference/en-US/html/security.html#d0e7622" target="" class="regularLink">discussed</a> in the documentation.</li>
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Will Seam 2.1 provide easy support for SSO (Single-Sign-On) using products where the JAAS context (Subject, Principals) is already available when the application starts?</i> Work on SSO is currently underway. We decided to get Seam 2.1.0 out there asap, rather than wait for it do be done, so Seam 2.1.2 will support SSO.</li>
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-TheFuture"><a href="/Bloggers/WantAnIntroductionToSeam#H-TheFuture">The future</a></h3>
+<h3 class="wikiHeadline3" id="H-TheFuture"><a href="/2008/09/23/WantAnIntroductionToSeam#H-TheFuture">The future</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">What are your thoughts on EJB3.1 lite and its interactions with Web beans?</i> EJB 3.1 brings a number of exciting developments, among them a much simpler deployment model - being able to deploy EJBs in your WAR. WB will integrate with EJB 3.1 lite just as it does with normal EJB containers (assuming it is also executed in a web beans container. EJB 3.1 lite and Web Beans should be a good match.</li>
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">What is the long term for Seam when Web Beans is out?  Is there that much of a difference that the two will proceed together or will Seam become maintenance only and all new features will be in Web Beans.</i> We anticipated this <a href="http://seamframework.org/WebBeans/WebBeansOverview#H-HowDoesSeamRelateToWebBeans" target="" class="regularLink">FAQ</a> ;-)</li>
@@ -120,7 +122,7 @@ I didn't get a chance to address all the questions asked in the webinar as we ra
 </ul>
 
 
-<h3 class="wikiHeadline3" id="H-Other"><a href="/Bloggers/WantAnIntroductionToSeam#H-Other">Other</a></h3>
+<h3 class="wikiHeadline3" id="H-Other"><a href="/2008/09/23/WantAnIntroductionToSeam#H-Other">Other</a></h3>
 <ul class="wikiUnorderedList">
 <li class="wikiUnorderedListItem"> <i class="wikiEmphasis">I can see that message in the Validation example is hardcoded. How do you I18N this example?</i> You can easily internationalize the message - just use the Seam message bundle <tt>@Length(min=3, max=1000, message="#{messages['validate.length'}") String description;</tt>
 </li>

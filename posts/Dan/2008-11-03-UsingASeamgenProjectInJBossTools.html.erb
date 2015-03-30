@@ -5,11 +5,13 @@ blogger_name: "Dan"
 creation_date: "03-11-2008"
 tags: [Eclipse,JBoss Tools,Seam,SeamGen]
 
-absolute_url: http://in.relation.to/2008/11/03/UsingASeamgenProjectInJBossTools
-lace: http://in.relation.to/9740.lace
+relative_url: /2008/11/03/UsingASeamgenProjectInJBossTools
 slug: UsingASeamgenProjectInJBossTools
+lace: http://in.relation.to/9740.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/11/03/UsingASeamgenProjectInJBossTools
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 The Seam distribution includes a tool named seam-gen to help you get started quickly using Seam. The tool collects information from you about your project and then uses that information to create a project structure. It can also generate a CRUD application by reverse engineering your database schema and generate various forms of stub code. In this entry, you'll learn how to get the generated project setup in Eclipse so that you can leverage the available tooling.
 </p>
 
-<h2 class="wikiHeadline2" id="H-TwoToolsOneGoal"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-TwoToolsOneGoal">Two tools, one goal</a></h2>
+<h2 class="wikiHeadline2" id="H-TwoToolsOneGoal"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-TwoToolsOneGoal">Two tools, one goal</a></h2>
 
 <p class="wikiPara">
 There are actually two interfaces to seam-gen. The first is the commandline script named seam, which resides at the root of the Seam distribution. When we talk about seam-gen, we are usually referring to this script. There is also new project wizard in <a href="http://www.jboss.org/tools" target="" class="regularLink">JBoss Tools</a> (the open source project behind <a href="http://www.jboss.com/products/devstudio" target="" class="regularLink">JBoss Developer Studio</a>) that is a complement to this script. Both tools share the same FreeMarker templates inside the seam-gen directory of the Seam distribution to produce the Java code, Facelets views, and TestNG configuration. Aside from these common templates, the two tools work independently of one another in setting up a Seam project. The projects they generate differ in one fundamental way, though. The commandline tool produces projects that are built using Ant, while the JBoss Tools new project wizard creates projects that are build purely with Eclipse builders.
@@ -28,7 +30,7 @@ There are actually two interfaces to seam-gen. The first is the commandline scri
 As you'd expect, when you create a project using the Eclipse plug-in, you can immediately start taking advantage of the tooling support for Seam in your project. However, like me, you may find it important to have a project that can be built outside of Eclipse using Ant. That means creating the project using the seam-gen commandline script. Don't fear that by creating the project outside of Eclipse, that the IDE is reduced to a syntax checker and Java compiler. The purpose of this article is to demonstrate how to fully activate the Seam tooling in Eclipse for projects created using the seam-gen commandline script, bringing you the best of both worlds. Plus, once the Seam tooling is activated, you can generate the CRUD application or stub code from either Eclipse or the commandline script.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Step1CreateTheProjectWithSeamgenIeTheCommandlineScript"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-Step1CreateTheProjectWithSeamgenIeTheCommandlineScript">Step 1. Create the project with seam-gen (i.e., the commandline script)</a></h2>
+<h2 class="wikiHeadline2" id="H-Step1CreateTheProjectWithSeamgenIeTheCommandlineScript"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-Step1CreateTheProjectWithSeamgenIeTheCommandlineScript">Step 1. Create the project with seam-gen (i.e., the commandline script)</a></h2>
 
 <p class="wikiPara">
 There are plenty of tutorials available for how to use seam-gen to create a project. You can find one in the <a href="http://docs.jboss.com/seam/2.1.0.SP1/reference/en-US/html/gettingstarted.html" target="" class="regularLink">Seam reference guide</a> and another in chapter 2 of <a href="http://mojavelinux.com/seaminaction" target="" class="regularLink">Seam in Action</a>. Let's just quickly review the steps for completeness.
@@ -47,7 +49,7 @@ There are plenty of tutorials available for how to use seam-gen to create a proj
 Your project is now created. The next step is to get the JBoss Tools plug-in for Eclipse installed so that you can use the Seam tooling once you get the project imported into Eclipse.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Step2InstallTheJBossToolsPluginForEclipse"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-Step2InstallTheJBossToolsPluginForEclipse">Step 2. Install the JBoss Tools plug-in for Eclipse</a></h2>
+<h2 class="wikiHeadline2" id="H-Step2InstallTheJBossToolsPluginForEclipse"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-Step2InstallTheJBossToolsPluginForEclipse">Step 2. Install the JBoss Tools plug-in for Eclipse</a></h2>
 
 <p class="wikiPara">
 If you are using <a href="http://www.jboss.com/products/devstudio" target="" class="regularLink">JBoss Developer Studio</a>, you can skip this step. JBoss Developer Studio comes with all the plug-ins you need to develop Seam applications (plus support). These instructions explain how to install the latest stable version of JBoss Tools, which should be used with Eclipse 3.3 (Europa). You can also install the development version, which works with Eclipse 3.4 (Ganymede).
@@ -69,7 +71,7 @@ If you are using <a href="http://www.jboss.com/products/devstudio" target="" cla
 JBoss Tools is now installed. If you are interested in seeing other ways to install JBoss Tools, refer to <a href="http://www.jboss.org/community/docs/DOC-10044" target="" class="regularLink">this page</a> on the JBoss Wiki.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Step3ImportTheProjectIntoEclipse"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-Step3ImportTheProjectIntoEclipse">Step 3. Import the project into Eclipse</a></h2>
+<h2 class="wikiHeadline2" id="H-Step3ImportTheProjectIntoEclipse"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-Step3ImportTheProjectIntoEclipse">Step 3. Import the project into Eclipse</a></h2>
 
 <p class="wikiPara">
 When seam-gen creates a project, it also generates Eclipse project files. Therefore, Eclipse will recognize the project directory as a valid Eclipse project. You simply need to use the Eclipse project import wizard.
@@ -98,7 +100,7 @@ You should immediately right click on your project in the Project Explorer and s
 You're seam-gen project is now a JBoss Tools Seam project! That means you can take advantage of the core Seam tooling. However, you cannot yet use the code generation. You need to inform JBoss Tools where your Seam runtime is in order to do things such as create a new Seam action.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Step4AttachTheProjectToTheSeamRuntime"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-Step4AttachTheProjectToTheSeamRuntime">Step 4. Attach the project to the Seam runtime</a></h2>
+<h2 class="wikiHeadline2" id="H-Step4AttachTheProjectToTheSeamRuntime"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-Step4AttachTheProjectToTheSeamRuntime">Step 4. Attach the project to the Seam runtime</a></h2>
 
 <p class="wikiPara">
 JBoss Tools needs to know where the Seam distribution is because that is where the shared code generation templates are that I mentioned earlier. To make that connection, right click on the root node of the project and select Properties. Select the Seam Settings in the sidebar of the window that appears to bring up the Seam settings properties sheet as shown here.
@@ -165,7 +167,7 @@ JBoss Tools also provides EL completion, such as in a Facelets view:
 You can also use the <a href="http://docs.jboss.org/tools/whatsnew/hibernate/images/dynamicsqlhighlighting.png" target="" class="regularLink">Hibernate Console</a>, the <a href="http://docs.jboss.org/tools/whatsnew/images/enhance_pagesxmleditor.png" target="" class="regularLink">Seam page descriptor editor</a>, the <a href="http://docs.jboss.org/tools/whatsnew/seam/componentsxmleditor.png" target="" class="regularLink">Seam component descriptor editor</a>, and so on. In fact, for the most part, you are able to work with your seam-gen project in JBoss Tools as if you had created the project using the Seam Web Project wizard in JBoss Tools. However, as of Seam 2.1, one features that you lose when you start with the commandline version of seam-gen is incremental deployment of the application through the Eclipse tooling.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Step5DeployTheApplicationToJBossAS"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-Step5DeployTheApplicationToJBossAS">Step 5. Deploy the application to JBoss AS</a></h2>
+<h2 class="wikiHeadline2" id="H-Step5DeployTheApplicationToJBossAS"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-Step5DeployTheApplicationToJBossAS">Step 5. Deploy the application to JBoss AS</a></h2>
 
 <p class="wikiPara">
 In order to deploy a seam-gen application to JBoss AS, you have to use the Ant targets in the project build file, even when developing in Eclipse. But you can drive those Ant tasks from Eclipse.
@@ -184,7 +186,7 @@ In order to deploy a seam-gen application to JBoss AS, you have to use the Ant t
 You can start JBoss AS either from the commandline or by setting up a JBoss AS runtime in Eclipse. However, as I mentioned in the last section, JBoss Tools cannot natively deploy a project created by seam-gen to the JBoss AS runtime at the moment. We are working on improving seam-gen to setup the Eclipse project so that the native incremental deployment works out of the box. Until then, you can still take advantage of incremental hot deployment because the explode Ant task is tied to the auto-build mechanism in Eclipse.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Step6DebugTheApplication"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-Step6DebugTheApplication">Step 6. Debug the application</a></h2>
+<h2 class="wikiHeadline2" id="H-Step6DebugTheApplication"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-Step6DebugTheApplication">Step 6. Debug the application</a></h2>
 
 <p class="wikiPara">
 If you start JBoss AS in debug mode, you can attach the Eclipse debugger to it by clicking on arrow next to the debug icon in the main toolbar and selecting debug-jboss-&lt;projectName&gt;, where &lt;projectName&gt; is the name you assigned to the project. (Close and open the project again if you don't see this option).
@@ -198,13 +200,13 @@ If you start JBoss AS in debug mode, you can attach the Eclipse debugger to it b
 The debugger connects to JBoss AS as a Remote Java Application.
 </p>
 
-<h2 class="wikiHeadline2" id="H-IntelliJIDEASneakPeak"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-IntelliJIDEASneakPeak">IntelliJ IDEA Sneak Peak</a></h2>
+<h2 class="wikiHeadline2" id="H-IntelliJIDEASneakPeak"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-IntelliJIDEASneakPeak">IntelliJ IDEA Sneak Peak</a></h2>
 
 <p class="wikiPara">
 If you checkout Seam from SVN and use the seam script to create a new project, you can import that project into IntelliJ IDEA and take advantage of the Seam tooling provided in IntelliJ IDEA 8. IntelliJ IDEA 8 offers wide range of Seam tooling support, including EL completion, validation, and refactoring. You can check out a screencast of the new features <a href="http://www.jetbrains.com/idea/training/demos/seam-development.html" target="" class="regularLink">here</a>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Summary"><a href="/Bloggers/UsingASeamgenProjectInJBossTools#H-Summary">Summary</a></h2>
+<h2 class="wikiHeadline2" id="H-Summary"><a href="/2008/11/03/UsingASeamgenProjectInJBossTools#H-Summary">Summary</a></h2>
 
 <p class="wikiPara">
 This tutorial demonstrated that you are able to use the Seam tooling provided by JBoss Tools for projects created using seam-gen. You learned how to import the project into Eclipse, setup a Seam runtime, configure a connection profile, and deploy and debug the application on JBoss AS. You also got a little sneak peak at the parallel tooling support for Seam in IntelliJ IDEA 8.</p>

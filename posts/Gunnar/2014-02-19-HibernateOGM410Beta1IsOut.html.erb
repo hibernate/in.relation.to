@@ -5,11 +5,13 @@ blogger_name: "Gunnar"
 creation_date: "19-02-2014"
 tags: [Hibernate,Hibernate OGM,News]
 
-absolute_url: http://in.relation.to/2014/02/19/HibernateOGM410Beta1IsOut
-lace: http://in.relation.to/24890.lace
+relative_url: /2014/02/19/HibernateOGM410Beta1IsOut
 slug: HibernateOGM410Beta1IsOut
+lace: http://in.relation.to/24890.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/02/19/HibernateOGM410Beta1IsOut
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -46,7 +48,7 @@ Note that we did move some packages around, so make sure to look at our <a href=
 Enough of the introductory words, let's have a closer look at some of the new features.
 </p>
 
-<h1 class="wikiHeadline1" id="H-SupportForCouchDB"><a href="/Bloggers/HibernateOGM410Beta1IsOut#H-SupportForCouchDB">Support for CouchDB</a></h1>
+<h1 class="wikiHeadline1" id="H-SupportForCouchDB"><a href="/2014/02/19/HibernateOGM410Beta1IsOut#H-SupportForCouchDB">Support for CouchDB</a></h1>
 
 <p class="wikiPara">
 Based on a huge contribution of community member <a href="https://github.com/dreab8" target="" class="regularLink">Andrea Boriero</a> (thanks again, Andrea!), Hibernate OGM comes now with support for <a href="https://couchdb.apache.org/" target="" class="regularLink">Apache CouchDB</a>. CouchDB is a scalable document datastore which persists data as JSON documents and offers an HTTP API, fully embracing REST principles.
@@ -98,7 +100,7 @@ As you can see, the <tt>@Id</tt> attribute is mapped to CouchDB's reserved <tt>_
 To learn more about the CouchDB dialect and how to use it, refer to the reference guide. Note that the dialect is considered experimental at this time, so don't expect everything to work perfectly yet. Of course any feedback is highly welcome; maybe you even want to tackle one of the <a href="https://hibernate.atlassian.net/issues/?jql=project%20%3D%20OGM%20AND%20status%20%3D%20Open%20AND%20text%20~%20%22couchdb%22%20ORDER%20BY%20status%20DESC%2C%20priority%20DESC" target="" class="regularLink">open issues</a>) in this field?
 </p>
 
-<h1 class="wikiHeadline1" id="H-QueryImprovements"><a href="/Bloggers/HibernateOGM410Beta1IsOut#H-QueryImprovements">Query improvements</a></h1>
+<h1 class="wikiHeadline1" id="H-QueryImprovements"><a href="/2014/02/19/HibernateOGM410Beta1IsOut#H-QueryImprovements">Query improvements</a></h1>
 
 <p class="wikiPara">
 We're very pleased to have progressed in the field of queries, addressing several long standing feature requests.
@@ -132,7 +134,7 @@ List&lt;Animal&gt; giraffes = em.createNamedQuery( AnimalQueries.BY_SPECIES, Ani
 Depending on the chosen backend, these queries will either be translated into Lucene Queries via Hibernate Search or into native queries of the backend (currently the case for MongoDB).
 </p>
 
-<h1 class="wikiHeadline1" id="H-OptionAPI"><a href="/Bloggers/HibernateOGM410Beta1IsOut#H-OptionAPI">Option API</a></h1>
+<h1 class="wikiHeadline1" id="H-OptionAPI"><a href="/2014/02/19/HibernateOGM410Beta1IsOut#H-OptionAPI">Option API</a></h1>
 
 <p class="wikiPara">
 One big challenge Hibernate OGM has to deal with is how to <u>expose store-specific functionality and configuration options</u> in case the JPA semantics are not sufficient. Taking MongoDB as example, you might want to configure the write concern or a strategy for persisting association information.
@@ -195,7 +197,7 @@ All you need to do is to create an <tt>OptionConfigurator</tt> implementation, w
 The work on options has been mainly behind the scenes in this release, with the shown options only being the first few examples for leveraging this new mechanism. You can expect to see more options specific to single stores or store families in future releases, providing you with all the flexibility you need to configure your datastore.
 </p>
 
-<h1 class="wikiHeadline1" id="H-StreamlinedConfigurationProperties"><a href="/Bloggers/HibernateOGM410Beta1IsOut#H-StreamlinedConfigurationProperties">Streamlined configuration properties</a></h1>
+<h1 class="wikiHeadline1" id="H-StreamlinedConfigurationProperties"><a href="/2014/02/19/HibernateOGM410Beta1IsOut#H-StreamlinedConfigurationProperties">Streamlined configuration properties</a></h1>
 
 <p class="wikiPara">
 The new option mechanism is an elegant way for specifying many options in a type-safe way. But plain properties in <u>persistence.xml</u> are just more appropriate for settings such as the host name of the store, user name etc. When working on the option API, it became apparent that several of our backend modules had the same or very similar configuration properties, but partly with different names and adhering to different naming conventions. So we took the chance to clean up the mess and <i class="wikiEmphasis">re-organized the properties</i>.

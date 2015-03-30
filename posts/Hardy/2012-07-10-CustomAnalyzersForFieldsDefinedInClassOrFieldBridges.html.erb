@@ -5,11 +5,13 @@ blogger_name: "Hardy"
 creation_date: "10-07-2012"
 tags: [Hibernate Search]
 
-absolute_url: http://in.relation.to/2012/07/10/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges
-lace: http://in.relation.to/23329.lace
+relative_url: /2012/07/10/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges
 slug: CustomAnalyzersForFieldsDefinedInClassOrFieldBridges
+lace: http://in.relation.to/23329.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/07/10/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -19,7 +21,7 @@ Inspired by these questions on the <a href="https://forum.hibernate.org/viewtopi
 to blog about different solutions for the problem using only the tools available in <a href="http://search.hibernate.org" target="" class="regularLink">Search</a> right now (<a href="http://www.hibernate.org/subprojects/search/download" target="" class="regularLink">4.1.1.Final</a>). But let's start with the problem.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheProblem"><a href="/Bloggers/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges#H-TheProblem">The Problem</a></h1>
+<h1 class="wikiHeadline1" id="H-TheProblem"><a href="/2012/07/10/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges#H-TheProblem">The Problem</a></h1>
 
 <p class="wikiPara">
 How can I define a custom analyzer for a field added in a custom class bridge? Let's look at an example. Below the 
@@ -37,7 +39,7 @@ public static class Foo {
 
 
 
-<h1 class="wikiHeadline1" id="H-Solution1"><a href="/Bloggers/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges#H-Solution1">Solution 1</a></h1>
+<h1 class="wikiHeadline1" id="H-Solution1"><a href="/2012/07/10/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges#H-Solution1">Solution 1</a></h1>
 
 <p class="wikiPara">
 The straight forward approach looks something like that.</p>
@@ -60,7 +62,7 @@ are specified per field identified by field name. Since from your <tt>@ClassBrid
 fields you are adding, there is no way of registering and applying the right analyzers. See also the related issue <a href="https://hibernate.onjira.com/browse/HSEARCH-904" target="" class="regularLink">HSEARCH-904</a>. 
 </p>
 
-<h1 class="wikiHeadline1" id="H-Solution2"><a href="/Bloggers/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges#H-Solution2">Solution 2</a></h1>
+<h1 class="wikiHeadline1" id="H-Solution2"><a href="/2012/07/10/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges#H-Solution2">Solution 2</a></h1>
 
 <p class="wikiPara">
 In the second solution you are managing the analyzers on your own. The relevant part is in the bridge implementation:</p>
@@ -92,7 +94,7 @@ public class FooBridge implements FieldBridge {
 As you can see you need to instantiate your analyzer yourself and then set the token stream for the field you want to add. This will work, but it does not work with <tt>@AnalyzerDef</tt> which is often used to define and reuse analyzers globally for your application. Lets have a look at this solution.
 
 
-<h1 class="wikiHeadline1" id="H-Solution3"><a href="/Bloggers/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges#H-Solution3">Solution 3</a></h1>
+<h1 class="wikiHeadline1" id="H-Solution3"><a href="/2012/07/10/CustomAnalyzersForFieldsDefinedInClassOrFieldBridges#H-Solution3">Solution 3</a></h1>
 
 <p class="wikiPara">
 Let's start directly with the code:</p>

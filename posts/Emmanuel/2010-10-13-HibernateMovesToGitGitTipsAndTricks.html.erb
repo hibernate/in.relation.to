@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "13-10-2010"
 tags: [Git,Hibernate,Hibernate Validator]
 
-absolute_url: http://in.relation.to/2010/10/13/HibernateMovesToGitGitTipsAndTricks
-lace: http://in.relation.to/17349.lace
+relative_url: /2010/10/13/HibernateMovesToGitGitTipsAndTricks
 slug: HibernateMovesToGitGitTipsAndTricks
+lace: http://in.relation.to/17349.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/10/13/HibernateMovesToGitGitTipsAndTricks
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 Yyou probably don't know it yet but Hibernate Core and Hibernate Validator source code is now on <a href="http://git-scm.com/" target="" class="regularLink">Git</a> and Hibernate Search and co will likely follow very soon. There are various reasons for the move but to summarize it, life was not bad under SVN but it's really great under Git.
 </p>
 
-<h1 class="wikiHeadline1" id="H-GettingHibernateSources"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-GettingHibernateSources">Getting Hibernate sources</a></h1>
+<h1 class="wikiHeadline1" id="H-GettingHibernateSources"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-GettingHibernateSources">Getting Hibernate sources</a></h1>
 
 <p class="wikiPara">
 The public <q>reference</q> Git repository is hosted at <a href="http://github.com/hibernate" target="" class="regularLink">GitHub</a>. We are not married to GitHub but so far, we really like the infrastructure they offer. Kudos to them! In any case moving is one clone away. That tends to keep services like that on their toes.
@@ -28,7 +30,7 @@ The public <q>reference</q> Git repository is hosted at <a href="http://github.c
 Hibernate Core is <a href="http://github.com/hibernate/hibernate-core" target="" class="regularLink">here</a> while Hibernate Validator is <a href="http://github.com/hibernate/hibernate-validator" target="" class="regularLink">there</a>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Contributing"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-Contributing">Contributing</a></h1>
+<h1 class="wikiHeadline1" id="H-Contributing"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-Contributing">Contributing</a></h1>
 
 <p class="wikiPara">
 If you want to contribute a fix or new feature, either:
@@ -56,19 +58,19 @@ Our preference is GitHub over pure Git over patches:
 If you still want to do it the old way a provide a patch file, that's ok too.
 </p>
 
-<h1 class="wikiHeadline1" id="H-VariousTipsOnGit"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-VariousTipsOnGit">Various tips on Git</a></h1>
+<h1 class="wikiHeadline1" id="H-VariousTipsOnGit"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-VariousTipsOnGit">Various tips on Git</a></h1>
 
 <p class="wikiPara">
 While in no way comprehensive, here are a collection of useful tips when using Git.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ReadABookOnIt"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-ReadABookOnIt">Read a book on it</a></h2>
+<h2 class="wikiHeadline2" id="H-ReadABookOnIt"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-ReadABookOnIt">Read a book on it</a></h2>
 
 <p class="wikiPara">
 The time will be worth it. I particularly enjoyed <a href="http://progit.org/book/" target="" class="regularLink">Pro Git</a>. It's an awesome book and very practical. It has a free html and epub version (buying the tree version is recommended to repay the author).
 </p>
 
-<h2 class="wikiHeadline2" id="H-Cloning"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-Cloning">Cloning</a></h2>
+<h2 class="wikiHeadline2" id="H-Cloning"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-Cloning">Cloning</a></h2>
 
 <p class="wikiPara">
 Prefer the <tt>git</tt> protocol when cloning over <tt>http</tt> (so say the experts). At the very least that will be much faster. cloning the repo from GitHub took me less than 3 minutes.
@@ -98,7 +100,7 @@ git remote add manu-core-github git@github.com:emmanuelbernard/hibernate-core.gi
 git fetch manu-core-github</pre>
 
 
-<h2 class="wikiHeadline2" id="H-PushingAndPulling"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-PushingAndPulling">Pushing and pulling</a></h2>
+<h2 class="wikiHeadline2" id="H-PushingAndPulling"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-PushingAndPulling">Pushing and pulling</a></h2>
 
 <p class="wikiPara">
 To initially get a copy of a remote branch locally, do
@@ -128,7 +130,7 @@ To delete a branch on a remote repository, you push an empty one
 <pre class="wikiPreformatted">git push origin :branch-to-remove</pre>
 
 
-<h2 class="wikiHeadline2" id="H-Branches"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-Branches">Branches</a></h2>
+<h2 class="wikiHeadline2" id="H-Branches"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-Branches">Branches</a></h2>
 
 <p class="wikiPara">
 Always work on a topic branch and merge your work when you are done.
@@ -151,7 +153,7 @@ There are many advantages to this, one of them being that you can work on many d
 Likewise if you want to share a work with somebody from the Hibernate team, push to the public repo and define the pull request of your topic branch. Make sure your topic branch is above the most recent master.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Commits"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-Commits">Commits</a></h2>
+<h2 class="wikiHeadline2" id="H-Commits"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-Commits">Commits</a></h2>
 
 <p class="wikiPara">
 Prefer small commits, they will be more readable and will very unlikely fail on merge.
@@ -166,7 +168,7 @@ Write good comments (one short line including the issue number at stake and a su
 Fix stupid bug by Gavin that lead to a NPE when persisting objects with components</pre>
 
 
-<h2 class="wikiHeadline2" id="H-MergeOrRebase"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-MergeOrRebase">Merge or rebase</a></h2>
+<h2 class="wikiHeadline2" id="H-MergeOrRebase"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-MergeOrRebase">Merge or rebase</a></h2>
 
 <p class="wikiPara">
 It's a debate, but here is my take on it.
@@ -196,7 +198,7 @@ While we are at rebasing, you can rewrite your commit history to clean comments 
 <pre class="wikiPreformatted">git rebase -i HEAD~6 (go back 6 commits in time)</pre>
 
 
-<h2 class="wikiHeadline2" id="H-BackportingCherrypicking"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-BackportingCherrypicking">Backporting: cherry-picking</a></h2>
+<h2 class="wikiHeadline2" id="H-BackportingCherrypicking"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-BackportingCherrypicking">Backporting: cherry-picking</a></h2>
 
 <p class="wikiPara">
 Git made backporting fun.
@@ -219,7 +221,7 @@ git cherry-pick 87ab34</pre>
 Bam, you're done. Now did I tell you to do small commits? That's also for the backporters.
 </p>
 
-<h2 class="wikiHeadline2" id="H-AliasesAndConfiguration"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-AliasesAndConfiguration">Aliases and configuration</a></h2>
+<h2 class="wikiHeadline2" id="H-AliasesAndConfiguration"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-AliasesAndConfiguration">Aliases and configuration</a></h2>
 
 <p class="wikiPara">
 Once you're fed up with typing longish command lines, use aliases. I've put a copy of my ~/.gitconfig file in case people want to copy some things including aliases (see below)
@@ -260,7 +262,7 @@ Once you're fed up with typing longish command lines, use aliases. I've put a co
      cp = cherry-pick</pre>
 
 
-<h2 class="wikiHeadline2" id="H-Tools"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-Tools">Tools</a></h2>
+<h2 class="wikiHeadline2" id="H-Tools"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-Tools">Tools</a></h2>
 
 <p class="wikiPara">
 If you use Mac OS X, GitX is a fantastic tool. In particular, you can very easily play with interactive staging and commit only some parts of a file in a couple of clicks. A typical use case is to separate the commit of a typo from the commit of a core feature. Some people like the built-in GitK GUI.
@@ -270,7 +272,7 @@ If you use Mac OS X, GitX is a fantastic tool. In particular, you can very easil
 Command completion support via <tt>git-completion.bash</tt> is pretty good if you are command shell type person. The script is available in the Git project sources and in other places (including Fedora). Pro Git has <a href="http://progit.org/book/ch2-11.html" target="" class="regularLink">some more information</a> on it.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Various"><a href="/Bloggers/HibernateMovesToGitGitTipsAndTricks#H-Various">Various</a></h2>
+<h2 class="wikiHeadline2" id="H-Various"><a href="/2010/10/13/HibernateMovesToGitGitTipsAndTricks#H-Various">Various</a></h2>
 
 <p class="wikiPara">
 You can also read <a href="http://blog.emmanuelbernard.com/2010/05/git-how-my-life-has-improved-since-last-month-when-i-used-svn/" target="" class="regularLink">this blog entry</a> that was some more info for people moving from SVN to Git.

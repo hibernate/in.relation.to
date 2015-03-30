@@ -5,11 +5,13 @@ blogger_name: "Ilya"
 creation_date: "18-10-2010"
 tags: []
 
-absolute_url: http://in.relation.to/2010/10/18/GoogleApplicationEngineSupportWithRichFaces4
-lace: http://in.relation.to/17465.lace
+relative_url: /2010/10/18/GoogleApplicationEngineSupportWithRichFaces4
 slug: GoogleApplicationEngineSupportWithRichFaces4
+lace: http://in.relation.to/17465.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/10/18/GoogleApplicationEngineSupportWithRichFaces4
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -27,7 +29,7 @@ Support for cloud deployment of RichFaces based applications was one of the hot 
 Let’s review what was done and the steps which should be performed to deploy your RichFaces application to Google Application Engine. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-RestrictionsOfGAEDeployment"><a href="/Bloggers/GoogleApplicationEngineSupportWithRichFaces4#H-RestrictionsOfGAEDeployment">Restrictions of GAE deployment</a></h2>
+<h2 class="wikiHeadline2" id="H-RestrictionsOfGAEDeployment"><a href="/2010/10/18/GoogleApplicationEngineSupportWithRichFaces4#H-RestrictionsOfGAEDeployment">Restrictions of GAE deployment</a></h2>
 
 <p class="wikiPara">
 Google Application Engine deployment introduces some restrictions for the Java developer. Here are some of them which are important for us to get started:
@@ -42,7 +44,7 @@ Google Application Engine deployment introduces some restrictions for the Java d
 </li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-HowToAvoidJava2DMavenPluginForResourcesGeneration"><a href="/Bloggers/GoogleApplicationEngineSupportWithRichFaces4#H-HowToAvoidJava2DMavenPluginForResourcesGeneration">How to avoid Java2D? Maven plugin for resources generation.</a></h2>
+<h2 class="wikiHeadline2" id="H-HowToAvoidJava2DMavenPluginForResourcesGeneration"><a href="/2010/10/18/GoogleApplicationEngineSupportWithRichFaces4#H-HowToAvoidJava2DMavenPluginForResourcesGeneration">How to avoid Java2D? Maven plugin for resources generation.</a></h2>
 
 <p class="wikiPara">
 One of the most important restrictions which required additional development from our team was the <b>Java2D usage restriction</b>. RichFaces Skinning mechanism relies to these classes for dynamic resources generation to support application skinning. To meet GAE restriction without losing RichFaces look'n’feel flexibility a new Resource Plugin that creates static version of RichFaces resources was needed:
@@ -77,7 +79,7 @@ All that is needed after that is to define static resource location in web.xml u
  <b>Note:</b> that this can also be useful for serving resources from different servers to aid in scalability in production environments.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhatShouldBeConsideredAdditionally"><a href="/Bloggers/GoogleApplicationEngineSupportWithRichFaces4#H-WhatShouldBeConsideredAdditionally">What should be considered additionally</a></h2>
+<h2 class="wikiHeadline2" id="H-WhatShouldBeConsideredAdditionally"><a href="/2010/10/18/GoogleApplicationEngineSupportWithRichFaces4#H-WhatShouldBeConsideredAdditionally">What should be considered additionally</a></h2>
 
 <p class="wikiPara">
 There are some more points related to GAE restrictions. Some of them are not directly related to RichFaces usage but should be considered by any JSF developer:
@@ -115,7 +117,7 @@ Check that <a href="http://appengine-cookbook.appspot.com/recipe/configuring-jav
 Developer should configure cache to use <a href="http://code.google.com/appengine/docs/java/memcache/" target="" class="regularLink">Google Memcache implementation</a>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ArchetypeForGAEProjectGenerationAndBuild"><a href="/Bloggers/GoogleApplicationEngineSupportWithRichFaces4#H-ArchetypeForGAEProjectGenerationAndBuild">Archetype for GAE project generation and build</a></h2>
+<h2 class="wikiHeadline2" id="H-ArchetypeForGAEProjectGenerationAndBuild"><a href="/2010/10/18/GoogleApplicationEngineSupportWithRichFaces4#H-ArchetypeForGAEProjectGenerationAndBuild">Archetype for GAE project generation and build</a></h2>
 
 <p class="wikiPara">
 As was mentioned above, and at <a href="http://www.slideshare.net/balunasj/rich-faces-inthecloudminibooth" target="" class="regularLink">JavaOne</a> we have created a special archetype in order to create JSF 2.0, RichFaces 4 application skeleton already configured for GAE deployment.  To generate a project – just execute: 
@@ -141,7 +143,7 @@ Now the project could be built using simple <i>mvn install</i> execution
 <li class="wikiOrderedListItem"> The readme.txt file contains instructions for deploying to GAE server, or using the local GAE SDK developer server for local testing.</li>
 </ol>
 
-<h2 class="wikiHeadline2" id="H-DeployingApplicationsToGAEAccount"><a href="/Bloggers/GoogleApplicationEngineSupportWithRichFaces4#H-DeployingApplicationsToGAEAccount">Deploying applications to GAE account</a></h2>
+<h2 class="wikiHeadline2" id="H-DeployingApplicationsToGAEAccount"><a href="/2010/10/18/GoogleApplicationEngineSupportWithRichFaces4#H-DeployingApplicationsToGAEAccount">Deploying applications to GAE account</a></h2>
 
 <p class="wikiPara">
 In order to avoid copy and paste work – <a href="http://code.google.com/intl/en/appengine/docs/java/gettingstarted/uploading.html" target="" class="regularLink">here is the link to official instructions </a> which we successfully using for our tests deployments.

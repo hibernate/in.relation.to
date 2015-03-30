@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "10-04-2008"
 tags: [Bean Validation,Bean Validation Sneak Peek]
 
-absolute_url: http://in.relation.to/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation
-lace: http://in.relation.to/8833.lace
+relative_url: /2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation
 slug: BeanValidationSneakPeekPartIIIGroupsAndPartialValidation
+lace: http://in.relation.to/8833.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -40,13 +42,13 @@ Some constraints need to run after others. There are several use cases for order
 To solve this class of problems, the Bean Validation specification uses the notion of group. Each constraint can define a set of groups it belongs to. When it comes to validate an object graph, one or several groups can be requested.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ThePrinciples"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-ThePrinciples">The principles</a></h2>
+<h2 class="wikiHeadline2" id="H-ThePrinciples"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-ThePrinciples">The principles</a></h2>
 
 <p class="wikiPara">
 Let's first describe the theory behind groups
 </p>
 
-<h3 class="wikiHeadline3" id="H-DeclareAConstraintAsBelongingToAGroup"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-DeclareAConstraintAsBelongingToAGroup">Declare a constraint as belonging to a group</a></h3>
+<h3 class="wikiHeadline3" id="H-DeclareAConstraintAsBelongingToAGroup"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-DeclareAConstraintAsBelongingToAGroup">Declare a constraint as belonging to a group</a></h3>
 
 <p class="wikiPara">
 Each constraint has a <tt>groups</tt> element whose default value is an empty array. When this element is not explicitly declared on an constraint annotation, the default group is assumed
@@ -71,7 +73,7 @@ Any constraint declaration can define one or several groups it belongs to. Note 
 In this example, <tt>@NotNull</tt> is checked any time either the <tt>basic</tt> or <tt>default</tt> group is requested.
 </p>
 
-<h3 class="wikiHeadline3" id="H-DefiningConstraintOrdering"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-DefiningConstraintOrdering">Defining constraint ordering</a></h3>
+<h3 class="wikiHeadline3" id="H-DefiningConstraintOrdering"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-DefiningConstraintOrdering">Defining constraint ordering</a></h3>
 
 <p class="wikiPara">
 Ordering constraints for the sake of ordering the execution does not make a lot of sense since the Bean Validation implementation ends up executing all the constraints and return all the failures (for a given set of groups). However, it is useful to have the ability to avoid the execution of a constraint if an other constraint fails.
@@ -97,7 +99,7 @@ public class Address {
 In an object graph (<tt>@Valid</tt>), group sequences from the parent object are inherited by the children objects. <tt>@GroupSequences</tt> is used to declare more than one sequence per class. A group sequence can contain the name of another group sequence.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ValidatingAGroup"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-ValidatingAGroup">Validating a group</a></h3>
+<h3 class="wikiHeadline3" id="H-ValidatingAGroup"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-ValidatingAGroup">Validating a group</a></h3>
 
 <p class="wikiPara">
 By default, the <tt>validate</tt> method validates the <tt>default</tt> group. You can decide to validate one or several groups:
@@ -111,13 +113,13 @@ validator.validate(address, "firstscreen", "secondscreen");</pre>
 The groups passed to the <tt>validate</tt> method are not processed in a particular order (if you need ordering, use a group sequence).
 </p>
 
-<h2 class="wikiHeadline2" id="H-PracticalUses"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-PracticalUses">Practical uses</a></h2>
+<h2 class="wikiHeadline2" id="H-PracticalUses"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-PracticalUses">Practical uses</a></h2>
 
 <p class="wikiPara">
 Enough theory, let's see how groups and group sequences solve our use cases.
 </p>
 
-<h3 class="wikiHeadline3" id="H-UseCaseSpecificValidation"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-UseCaseSpecificValidation">Use case specific validation</a></h3>
+<h3 class="wikiHeadline3" id="H-UseCaseSpecificValidation"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-UseCaseSpecificValidation">Use case specific validation</a></h3>
 
 <p class="wikiPara">
 Defining constraints based on specific use cases is sometimes useful. A typical example comes from reusing the same object model for different purposes, in different contexts.
@@ -180,7 +182,7 @@ else {
 The data consistency is ensured by the <tt>default</tt> group. And some additional state checking is provided by additional groups. Note that in an integrated world, your application framework or your web framework would let your declaratively express which group needs to be validated in a given page context, page, conversation etc. The application avoids the extra work of manually executing the validation.
 </p>
 
-<h3 class="wikiHeadline3" id="H-PartialDataValidationTheWizardScreenModel"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-PartialDataValidationTheWizardScreenModel">Partial data validation: the wizard screen model</a></h3>
+<h3 class="wikiHeadline3" id="H-PartialDataValidationTheWizardScreenModel"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-PartialDataValidationTheWizardScreenModel">Partial data validation: the wizard screen model</a></h3>
 
 <p class="wikiPara">
 In a wizard-style user interface, data is provided partially and gets more and more complete when the user move from one wizard screen to the other.
@@ -257,7 +259,7 @@ In JSF, it could look like:
 This is just a proposal / vision. This integration is not part of the JSR 303 specification.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ConstraintOrdering"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-ConstraintOrdering">Constraint ordering</a></h3>
+<h3 class="wikiHeadline3" id="H-ConstraintOrdering"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-ConstraintOrdering">Constraint ordering</a></h3>
 
 <p class="wikiPara">
 An other use case is the ability to stop constraint validations if a group of constraint fails. It is quite useful in (at least) two situations:
@@ -298,7 +300,7 @@ public class Address {
 The group sequence will first validate the constraints marked as <tt>basic</tt>, then validate the constraints marked as <tt>complex</tt> unless one (or more) constraint from the <tt>basic</tt> group failed.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2008/04/10/BeanValidationSneakPeekPartIIIGroupsAndPartialValidation#H-Conclusion">Conclusion</a></h2>
 <p class="wikiPara">
 In most cases, the default group will suffice. But more complex use cases need additional flexibility in the constraint definition and validation.
 While declaring groups is the application developers responsibility, validating a given set of groups will most likely be driven by the client framework (application frameworks, web frameworks and to a certain extends persistence frameworks). Either by using method annotations or template declarations, frameworks like WebBeans or JSF will capture the requested constraint validation groups and execute the validation calls for the application.

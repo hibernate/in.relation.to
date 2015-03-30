@@ -5,11 +5,13 @@ blogger_name: "Marko"
 creation_date: "13-11-2013"
 tags: []
 
-absolute_url: http://in.relation.to/2013/11/13/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport
-lace: http://in.relation.to/24532.lace
+relative_url: /2013/11/13/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport
 slug: ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport
+lace: http://in.relation.to/24532.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/11/13/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 <a href="http://www.jboss.org/capedwarf" target="" class="regularLink">JBoss CapeDwarf</a> is an implementation of the Google App Engine API, which allows applications written for the Google AppEngine to be deployed on JBoss Application Servers without modification. Behind the scenes, CapeDwarf uses existing JBoss APIs such as Infinispan, JGroups, PicketLink, HornetQ and others.
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheUsersAPI"><a href="/Bloggers/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-TheUsersAPI">The Users API</a></h2>
+<h2 class="wikiHeadline2" id="H-TheUsersAPI"><a href="/2013/11/13/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-TheUsersAPI">The Users API</a></h2>
 
 <p class="wikiPara">
 One of the smallest APIs of the Google AppEngine in terms of the number of API methods is the Users API. It basically contains only the following API methods: <tt>getLoginUrl</tt>, <tt>getCurrentUser</tt> and <tt>getLogoutUrl</tt>. By using the Users API, the application developer need not implement any kind of login system, because authentication is handled by AppEngine itself. Instead of directing the user to a custom login form, the application simply needs to point the user to the URL returned by <tt>getLoginUrl</tt>. This will allow the user to log in with either their Google account, their Google Apps Domain account or through an external OpenID provider. After the user logs in, they are redirected back to the application. The application can then obtain the logged-in user’s email address simply by calling the <tt>getCurrentUser</tt> API method.
@@ -38,7 +40,7 @@ Using PicketLink Social to authenticate the user through Google Accounts is a ve
 
 
 
-<h2 class="wikiHeadline2" id="H-DirectingTheUserToTheOpenIDProvidersAuthenticationPage"><a href="/Bloggers/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-DirectingTheUserToTheOpenIDProvidersAuthenticationPage">Directing the user to the OpenID provider's authentication page</a></h2>
+<h2 class="wikiHeadline2" id="H-DirectingTheUserToTheOpenIDProvidersAuthenticationPage"><a href="/2013/11/13/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-DirectingTheUserToTheOpenIDProvidersAuthenticationPage">Directing the user to the OpenID provider's authentication page</a></h2>
 
 <p class="wikiPara">
 When the user requests the login URL returned by <tt>getLoginUrl</tt>, CapeDwarf’s AuthServlet instantiates an instance of PicketLink Social’s <tt>OpenIDManager</tt>, associates it with CapeDwarf’s own implementation of <tt>OpenIDProtocolAdapter</tt> and then simply instructs the <tt>OpenIDManager</tt> to authenticate the user:
@@ -63,7 +65,7 @@ The OpenID provider then displays the login form to the user (or authenticates t
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-HandlingTheUsersReturnFromTheOpenIDProvidersAuthenticationPage"><a href="/Bloggers/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-HandlingTheUsersReturnFromTheOpenIDProvidersAuthenticationPage">Handling the user's return from the OpenID provider's authentication page</a></h2>
+<h2 class="wikiHeadline2" id="H-HandlingTheUsersReturnFromTheOpenIDProvidersAuthenticationPage"><a href="/2013/11/13/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-HandlingTheUsersReturnFromTheOpenIDProvidersAuthenticationPage">Handling the user's return from the OpenID provider's authentication page</a></h2>
 
 <p class="wikiPara">
 After the user is authenticated successfully, the provider redirects the browser back to the consumer - CapeDwarf. This returning request is also handled by AuthServlet. The servlet verifies if the user is authenticated by calling verify() on the <tt>OpenIDManager</tt>. If the user has been authenticated, CapeDwarf can now access the email address of the authenticated user, store it in the session and redirect the browser to the destination URL that was supplied by the application when it requested the login URL in the first step. 
@@ -86,7 +88,7 @@ The authentication process has now completed. Whenever the application now calls
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-HowWeHandleApplicationAdmins"><a href="/Bloggers/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-HowWeHandleApplicationAdmins">How we handle application admins</a></h2>
+<h2 class="wikiHeadline2" id="H-HowWeHandleApplicationAdmins"><a href="/2013/11/13/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-HowWeHandleApplicationAdmins">How we handle application admins</a></h2>
 
 <p class="wikiPara">
 On a final note, there is another API method that I haven’t mentioned yet: <tt>isUserAdmin</tt>. As is obvious from the method’s name, this method returns true if the logged in user is the admin of the application - either the Google user that uploaded the application to Google’s AppSpot or another user that was manually added as an admin by the application uploader through the Google Cloud Console. 
@@ -106,7 +108,7 @@ Since there is no user account/email associated with deploying an AppEngine appl
 
 
 
-<h2 class="wikiHeadline2" id="H-FurtherInfo"><a href="/Bloggers/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-FurtherInfo">Further info</a></h2>
+<h2 class="wikiHeadline2" id="H-FurtherInfo"><a href="/2013/11/13/ImplementingCapeDwarfsUsersAPIWithPicketLinkSocialsOpenIDSupport#H-FurtherInfo">Further info</a></h2>
 
 <p class="wikiPara">
 For the complete source code of how CapeDwarf uses PicketLink Social, please turn to the <a href="https://github.com/capedwarf/capedwarf-blue/tree/master/users/src/main/java/org/jboss/capedwarf/users" target="" class="regularLink">Users module</a> in CapeDwarf’s <a href="https://github.com/capedwarf/capedwarf-blue" target="" class="regularLink">GitHub repo</a></p>

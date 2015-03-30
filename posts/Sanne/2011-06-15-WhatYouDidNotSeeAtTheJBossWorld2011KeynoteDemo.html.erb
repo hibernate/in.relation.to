@@ -5,11 +5,13 @@ blogger_name: "Sanne"
 creation_date: "15-06-2011"
 tags: [Hibernate,Hibernate OGM,Hibernate Search,OGM,jbw2011keynote,jbwkeynote2011]
 
-absolute_url: http://in.relation.to/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo
-lace: http://in.relation.to/20826.lace
+relative_url: /2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo
 slug: WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo
+lace: http://in.relation.to/20826.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -23,13 +25,13 @@ Visualizing data structures is not easy, and I'm confident that a great deal of 
 So I bet that everybody in the room got a clear picture of the fact that the data was stored in Infinispan, and by live unplugging a random server everybody could see the data reorganize itself, making it seem a simple and natural way to process huge amounts of data. Not all technical details were explained, so in this and the following post we're going to detail what you did <i class="wikiEmphasis">not</i> see: how was the data stored, how could Drools filter the data, how could all visualizations load the grid stored data, and still be developed in record time?
 </p>
 
-<h1 class="wikiHeadline1" id="H-JPAOnAGrid"><a href="/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-JPAOnAGrid">JPA on a Grid</a></h1>
+<h1 class="wikiHeadline1" id="H-JPAOnAGrid"><a href="/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-JPAOnAGrid">JPA on a Grid</a></h1>
 
 <p class="wikiPara">
 All those applications were simply using JPA: Java Persistence API. Think about the name: it's clearly meant to address all persistence needs of Java applications; in fact while it's traditionally associated with JDBC databases, we have just shown it's not necessarily limited to those databases: our applications were running an early preview of the Hibernate Object/Grid Mapper: <a href="http://community.jboss.org/wiki/OverviewOfHibernateOGM" target="" class="regularLink">Hibernate OGM</a>, and the simple JPA model was mapped to Infinispan, a key/value store.
 </p>
 
-<h1 class="wikiHeadline1" id="H-CollectingRequirements"><a href="/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-CollectingRequirements">Collecting requirements</a></h1>
+<h1 class="wikiHeadline1" id="H-CollectingRequirements"><a href="/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-CollectingRequirements">Collecting requirements</a></h1>
 
 <p class="wikiPara">
 The initial plan didn't include Hibernate OGM, as it was very experimental yet, it was never released nor even tagged before, but it was clear that we wanted to use Infinispan: to store and to search the tweets. Kevin Conner was the architect envisioning the technical needs, who managed to push each involved developer to do its part, and finally assembled it all into a working application in record time; so he came to Emmanuel and me with a simple list of requirements:
@@ -44,7 +46,7 @@ The initial plan didn't include Hibernate OGM, as it was very experimental yet, 
 <li class="wikiUnorderedListItem">it has to perform well, potentially on a big set of data</li>
 </ul>
 
-<h1 class="wikiHeadline1" id="H-UsingLucene"><a href="/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-UsingLucene">Using Lucene</a></h1>
+<h1 class="wikiHeadline1" id="H-UsingLucene"><a href="/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-UsingLucene">Using Lucene</a></h1>
 
 <p class="wikiPara">
 So, to implement these search requirements, you have to consider that being Infinispan a key/value store, performing queries is not as natural as you would do on a database. Infinispan currently provides two main approaches: to use the <a href="http://community.jboss.org/wiki/QueryingInfinispan" target="" class="regularLink">Query module</a> or to define some simple <a href="http://community.jboss.org/wiki/InfinispanDistributedExecutionFramework" target="" class="regularLink">Map/Reduce tasks</a>.
@@ -62,13 +64,13 @@ A totally different approach is to use an inverted index: every time you save a 
 To count for who voted the most is a problem which is technically comparable to counting for term frequencies, so again Lucene would be perfect. Sorting all data on a timestamp is not a good reason to introduce Lucene, but still it's able to do that pretty well too, so Lucene would indeed solve all query needs for this application.
 </p>
 
-<h1 class="wikiHeadline1" id="H-HibernateOGMWithHibernateSearch"><a href="/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-HibernateOGMWithHibernateSearch">Hibernate OGM with Hibernate Search</a></h1>
+<h1 class="wikiHeadline1" id="H-HibernateOGMWithHibernateSearch"><a href="/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-HibernateOGMWithHibernateSearch">Hibernate OGM with Hibernate Search</a></h1>
 
 <p class="wikiPara">
 So Infinispan Query could have been a good choice. But we opted for Hibernate OGM with Search as they would provide the same indexing features, but on top of that using a nice JPA interface. Also I have to admit that Hibernate OGM was initially discarded as it was lacking an HQL query parser: my fault, being late with implementing it, but in this case it was not a problem as all queries we needed were better solved using the full text queries, which are not defined via HQL.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Model"><a href="/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-Model">Model</a></h2>
+<h2 class="wikiHeadline2" id="H-Model"><a href="/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-Model">Model</a></h2>
 
 <p class="wikiPara">
 So how does our model look like? Very simple, it's a single JPA entity, enhanced with some Hibernate Search annotations.
@@ -131,7 +133,7 @@ Note the <i class="wikiEmphasis">uuid</i> generator for the identifier: that's c
 On top of the standard <i class="wikiEmphasis">@Entity</i>, <i class="wikiEmphasis">@Indexed</i> enables the Lucene indexing engine, the <i class="wikiEmphasis">@AnalyzerDef</i> and <i class="wikiEmphasis">Analyzer</i> specifies the text cleanup we want to apply to the indexed tweets, <i class="wikiEmphasis">@Field</i> selects the property to be indexed, <i class="wikiEmphasis">@NumericField</i> makes sure the numeric sort will be performed efficiently treating the indexed value really as a number and not as an additional keyword: always remember that Lucene is focused on natural language matching.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ExampleQueries"><a href="/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-ExampleQueries">Example queries</a></h2>
+<h2 class="wikiHeadline2" id="H-ExampleQueries"><a href="/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-ExampleQueries">Example queries</a></h2>
 
 <p class="wikiPara">
 This is going to look like a bit verbose as I'm expanding all functions for clarity:
@@ -161,7 +163,7 @@ public List&lt;Tweet&gt; allTweetsSortedByTime() {
 </pre>
 
 
-<h2 class="wikiHeadline2" id="H-DownloadIt"><a href="/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-DownloadIt">Download it</a></h2>
+<h2 class="wikiHeadline2" id="H-DownloadIt"><a href="/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-DownloadIt">Download it</a></h2>
 
 <p class="wikiPara">
 To see the full example, I pushed a complete Maven project to github. It includes a test of all queries and all project details needed to get it running, such as Infinispan and JGroups configurations, the persistence.xml needed to enable HibernateOGM.
@@ -177,7 +179,7 @@ And see you on <a href="http://hibernate.org/community/irc" target="" class="reg
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-HowAreEntitiesPersistedInTheGrid"><a href="/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-HowAreEntitiesPersistedInTheGrid">How are entities persisted in the grid?</a></h2>
+<h2 class="wikiHeadline2" id="H-HowAreEntitiesPersistedInTheGrid"><a href="/2011/06/15/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo#H-HowAreEntitiesPersistedInTheGrid">How are entities persisted in the grid?</a></h2>
 
 <p class="wikiPara">
 Emmanuel is going to blog about that soon, keep an eye on the blog!

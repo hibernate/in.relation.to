@@ -5,11 +5,13 @@ blogger_name: "Shane"
 creation_date: "03-02-2010"
 tags: []
 
-absolute_url: http://in.relation.to/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1
-lace: http://in.relation.to/14203.lace
+relative_url: /2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1
 slug: WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1
+lace: http://in.relation.to/14203.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -32,7 +34,7 @@ This article is rather large and as such will come in two parts; part 1 will cov
 Oh, by the way if you want to see an example Weld app running on GAE (and see me getting my hands dirty) then you can check out my site at <a href="http://www.renovatorsblog.com" target="" class="regularLink">http://www.renovatorsblog.com</a>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-DownloadingTheGoogleAppEngineSDKEclipsePlugin"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-DownloadingTheGoogleAppEngineSDKEclipsePlugin">Downloading the Google App Engine SDK Eclipse Plugin</a></h2>
+<h2 class="wikiHeadline2" id="H-DownloadingTheGoogleAppEngineSDKEclipsePlugin"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-DownloadingTheGoogleAppEngineSDKEclipsePlugin">Downloading the Google App Engine SDK Eclipse Plugin</a></h2>
 
 <p class="wikiPara">
 I consider the GAE SDK to be an essential ingredient for GAE app development.  It handles all the work of setting up your project, enhancing your entity classes, running your app in local development mode and even deploying your app straight to the production GAE environment.
@@ -58,7 +60,7 @@ For the impatient though, here's a summary of the installation steps (for Eclips
 <li class="wikiOrderedListItem"> Click the Finish button, wait for installation to complete and then when asked if you want to restart Eclipse, select 'Yes'.  </li>
 </ol>
 
-<h2 class="wikiHeadline2" id="H-CreateAnAppEngineAccount"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-CreateAnAppEngineAccount">Create an App Engine account</a></h2>
+<h2 class="wikiHeadline2" id="H-CreateAnAppEngineAccount"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-CreateAnAppEngineAccount">Create an App Engine account</a></h2>
 
 <p class="wikiPara">
 If you don't have one already, then you'll need a GAE account.  
@@ -75,7 +77,7 @@ Once you've done that, you should be presented with the 'My Applications' screen
 
 <a href="http://in.relation.to/service/File/14198"><img src="http://in.relation.to/service/File/14198?thumbnail=true"></a>
 
-<h2 class="wikiHeadline2" id="H-CreateAnApplication"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-CreateAnApplication">Create an Application</a></h2>
+<h2 class="wikiHeadline2" id="H-CreateAnApplication"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-CreateAnApplication">Create an Application</a></h2>
 
 <p class="wikiPara">
 To be able to deploy an application to GAE, you need to give it a unique
@@ -94,7 +96,7 @@ For the authentication options, you either have the choice of using Google Accou
 Of course, if you don't want to then you don't have to require your users to sign in to your application at all (by not specifying any security restrictions for your pages, which we'll get to a bit later).  If you do want some kind of security though, the advantage of using the Google accounts API is that you don't have to worry about building the screens, creating user/role entities, writing action code, etc for managing the users in your app - Google takes care of all that for you.
 </p>
 
-<h2 class="wikiHeadline2" id="H-CreatingTheProject"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-CreatingTheProject">Creating the project</a></h2>
+<h2 class="wikiHeadline2" id="H-CreatingTheProject"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-CreatingTheProject">Creating the project</a></h2>
 
 <p class="wikiPara">
 Once you've created a new application with a unique application identifier, you'll be presented with an 'Application Registered Successfully' message.  Click the 'View the dashboard...' link to view the dashboard for your new app:
@@ -137,7 +139,7 @@ The complete file should look something like this:
 &lt;/appengine-web-app&gt;</pre>
 
 
-<h2 class="wikiHeadline2" id="H-ConfiguringJSF"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-ConfiguringJSF">Configuring JSF</a></h2>
+<h2 class="wikiHeadline2" id="H-ConfiguringJSF"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-ConfiguringJSF">Configuring JSF</a></h2>
 
 <p class="wikiPara">
 Like any servlet-based application, the <tt>web.xml</tt> file is where most of the important stuff is configured.  JSF requires quite a lot of config, so let's look at the options one at a time.  By the way, Google actually have some documentation on configuring JSF 2.0 for GAE, so if you're interested you can check it out <a href="https://sites.google.com/a/wildstartech.com/adventures-in-java/Java-Platform-Enterprise-Edition/JavaServer-Faces/sun-javaserver-faces-reference-implementation/configuring-jsf-20-to-run-on-the-google-appengine" target="" class="regularLink">here</a>.
@@ -225,7 +227,7 @@ Once you've added all these options to <tt>web.xml</tt>, you can also create a <
 &lt;/faces-config&gt;</pre>
 
 
-<h2 class="wikiHeadline2" id="H-AddingTheJSFLibsToYourProject"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-AddingTheJSFLibsToYourProject">Adding the JSF libs to your project</a></h2>
+<h2 class="wikiHeadline2" id="H-AddingTheJSFLibsToYourProject"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-AddingTheJSFLibsToYourProject">Adding the JSF libs to your project</a></h2>
 
 <p class="wikiPara">
 Due to the way that JSF 2.0 checks if it can use <tt>InitialContext</tt> (see the <tt>processJndiEntries()</tt> method in
@@ -260,7 +262,7 @@ We'll also need to download the EL libraries.  I couldn't really find an officia
 Once you download them both put them in the <tt>WEB-INF/lib</tt> directory.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ConfiguringWeld"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-ConfiguringWeld">Configuring Weld</a></h2>
+<h2 class="wikiHeadline2" id="H-ConfiguringWeld"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-ConfiguringWeld">Configuring Weld</a></h2>
 
 <p class="wikiPara">
 The configuration for Weld is quite simple, all you need to do is add the following entry to <tt>web.xml</tt>:
@@ -278,7 +280,7 @@ Next, create an empty file (no contents whatsoever) called <tt>beans.xml</tt> in
 Getting the Weld libs is a little more work, unfortunately.  We've made a few fixes to the Weld code to address some issues with running in GAE, so you can't use the 1.0 download.  The option here is to either a) build it yourself (which I'll go through the steps for in a moment, since you might be impatient ;) or b) wait for the 1.0.1.RC2 release, which should be out any day now.
 </p>
 
-<h2 class="wikiHeadline2" id="H-BuildingWeldFromSVN"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-BuildingWeldFromSVN">Building Weld from SVN</a></h2>
+<h2 class="wikiHeadline2" id="H-BuildingWeldFromSVN"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-BuildingWeldFromSVN">Building Weld from SVN</a></h2>
 
 <p class="wikiPara">
 Compiling the Weld libs from source is really not as scary as many people think, all you need is an SVN client and Maven 2.  We only need the weld-servlet module, so start by checking it out from SVN:
@@ -301,7 +303,7 @@ Build Path) and click on the Libraries tab.  Click the 'Add Jars' button and bro
 and select <tt>weld-servlet.jar</tt>, then click OK.  This will allow us to use the CDI annotations in our classes.
 </p>
 
-<h2 class="wikiHeadline2" id="H-HelloWorld"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-HelloWorld">Hello World</a></h2>
+<h2 class="wikiHeadline2" id="H-HelloWorld"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-HelloWorld">Hello World</a></h2>
 
 <p class="wikiPara">
 Now that we've got our project set up and all the required libraries in place, it's time to write some code.  Just to ensure
@@ -344,7 +346,7 @@ Next, create the following JSF page in the <tt>/war</tt> directory (call it <tt>
 &lt;/f:view&gt;</pre>
 
 
-<h2 class="wikiHeadline2" id="H-RunningYourAppLocally"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-RunningYourAppLocally">Running your app locally</a></h2>
+<h2 class="wikiHeadline2" id="H-RunningYourAppLocally"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-RunningYourAppLocally">Running your app locally</a></h2>
 
 <p class="wikiPara">
 To take your new application for a test run it's best to try running it locally before you deploy it to production.  
@@ -367,7 +369,7 @@ Once you see this, it means your app is up and running.  Open your web browser a
 If you see this page, then congratulations!  It's time to deploy your app to the GAE production environment.  If you don't see this page, then go through all the previous steps to make sure you haven't missed anything.  After that, if you still can't get this page to display then post a comment describing where you're stuck and we'll try to help you out.
 </p>
 
-<h2 class="wikiHeadline2" id="H-DeployingToGoogleAppEngine"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-DeployingToGoogleAppEngine">Deploying to Google App Engine</a></h2>
+<h2 class="wikiHeadline2" id="H-DeployingToGoogleAppEngine"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-DeployingToGoogleAppEngine">Deploying to Google App Engine</a></h2>
 
 <p class="wikiPara">
 Now it's time to deploy your application.  Right click on your project, and select Google -&gt; Deploy To App Engine.  You will be prompted for your Google accounts username and password, so enter them here.  After entering them the deployment process will take a little while complete, but eventually you'll get a 'Deployment completed successfully' message. 
@@ -384,7 +386,7 @@ To see if your deployment was successful, go to your web browser and open your a
 If all has gone well, then you should see the same <i class="wikiEmphasis">Hello, World</i> message that you saw when running your application locally.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Summary"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-Summary">Summary</a></h2>
+<h2 class="wikiHeadline2" id="H-Summary"><a href="/2010/02/03/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart1#H-Summary">Summary</a></h2>
 
 <p class="wikiPara">
 This concludes part 1 of this article, where we saw how to set up the GAE SDK, create a new GAE project, and configure JSF 2.0

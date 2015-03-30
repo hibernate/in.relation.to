@@ -5,11 +5,13 @@ blogger_name: "Ilya"
 creation_date: "22-11-2010"
 tags: []
 
-absolute_url: http://in.relation.to/2010/11/22/RichFaces4OverviewPartIVInputsComponents
-lace: http://in.relation.to/17788.lace
+relative_url: /2010/11/22/RichFaces4OverviewPartIVInputsComponents
 slug: RichFaces4OverviewPartIVInputsComponents
+lace: http://in.relation.to/17788.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/11/22/RichFaces4OverviewPartIVInputsComponents
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -23,7 +25,7 @@ layout: blog-post
 We're done with two more milestones [<a href="http://in.relation.to/17325.lace" target="" class="regularLink">M3</a>] [<a href="http://in.relation.to/17739.lace" target="" class="regularLink">M4</a>], introduced <a href="http://in.relation.to/17465.lace" target="" class="regularLink">GAE support</a>, visited great <a href="http://in.relation.to/17214.lace" target="" class="regularLink">JavaOne event</a> and finally I'm ready to continue this series in order to guide you through RichFaces 4 migration!! In this write-up I will review the migrated input components.
 </p>
 
-<h2 class="wikiHeadline2" id="H-InplaceComponents"><a href="/Bloggers/RichFaces4OverviewPartIVInputsComponents#H-InplaceComponents">Inplace Components</a></h2>
+<h2 class="wikiHeadline2" id="H-InplaceComponents"><a href="/2010/11/22/RichFaces4OverviewPartIVInputsComponents#H-InplaceComponents">Inplace Components</a></h2>
 
 <p class="wikiPara">
  <b>rich:inplaceInput</b> and <b>rich:inplaceSelect</b> components are almost unchanged from a usage point of view (<i class="wikiEmphasis">we want your migration to be smooth :) </i>). However, the markup and client-side code, which was the cause of number of issues raised by the community, were completely reviewed and rewritten. 
@@ -59,7 +61,7 @@ And the result:
 You can choose the events which will activate the editing and storing, configure advanced settings like storing on blur, add disablement conditions, add UI controls for applying values, and so on. Also, the components support navigation and control using the keyboard.
 </p>
 
-<h2 class="wikiHeadline2" id="H-InputNumberComponents"><a href="/Bloggers/RichFaces4OverviewPartIVInputsComponents#H-InputNumberComponents">Input Number components</a></h2>
+<h2 class="wikiHeadline2" id="H-InputNumberComponents"><a href="/2010/11/22/RichFaces4OverviewPartIVInputsComponents#H-InputNumberComponents">Input Number components</a></h2>
 
 <p class="wikiPara">
 Let’s check one more pair of components which have also been migrated with minimal changes to RichFaces 4.x. It’s the also well-known <b>rich:inputNumberSlider</b> and <b>rich:inputNumberSpinner</b> components. The most noticeable change (except markup optimization) is that keyboard navigation is greatly improved from the 3.3.x version. We removed some unnecessary cases of getting focus from internal controls (the buttons in the spinner), and made some of the parts additionally focus-able (the slider element in slider). The first change was done because you already could change the value with the up and down keys directly. The second was done because the text input is, in general, not required, and could be hidden for the component, using the horizontal slider for input. The usage of left and right arrow keys in the text input could not be processed in the same manner as they should work for cursor change.
@@ -80,7 +82,7 @@ And the result:
 
 <img src="http://in.relation.to/service/File/17785" alt="">
 
-<h2 class="wikiHeadline2" id="H-ComboVsSuggestionBoxUnifiedRichautocompleteComponent"><a href="/Bloggers/RichFaces4OverviewPartIVInputsComponents#H-ComboVsSuggestionBoxUnifiedRichautocompleteComponent">Combo vs SuggestionBox – unified rich:autocomplete component</a></h2>
+<h2 class="wikiHeadline2" id="H-ComboVsSuggestionBoxUnifiedRichautocompleteComponent"><a href="/2010/11/22/RichFaces4OverviewPartIVInputsComponents#H-ComboVsSuggestionBoxUnifiedRichautocompleteComponent">Combo vs SuggestionBox – unified rich:autocomplete component</a></h2>
 
 <p class="wikiPara">
 In 3.3.x we had two separate components (<i class="wikiEmphasis">rich:suggestionBox and rich:comboBox</i>) for simplified input with autocomplete support.  Both of them provided similar functionality but worked in different modes (<i class="wikiEmphasis">one used Ajax and the other worked completely on the client</i>). The second difference was that suggestionBox was able to be attached to any input and comboBox had the input and button built-in. So, after pre-migration redesign, we decided to create single <b>rich:autocomplete</b> component with all the features combined. The only feature it lost was the ability to be attached to any input, but we are planning the introduction of using behaviors for such components after the final release.
@@ -154,7 +156,7 @@ And the result:
 
 <img src="http://in.relation.to/service/File/17781" alt="">
 
-<h2 class="wikiHeadline2" id="H-SelectComponent"><a href="/Bloggers/RichFaces4OverviewPartIVInputsComponents#H-SelectComponent">Select component</a></h2>
+<h2 class="wikiHeadline2" id="H-SelectComponent"><a href="/2010/11/22/RichFaces4OverviewPartIVInputsComponents#H-SelectComponent">Select component</a></h2>
 
 <p class="wikiPara">
 Great news! You no longer need to use suggestionBox suggestObjects feature, which has limitations and is not native for input in 3.3.x). And you are no longer required to create more complex converters, as with the 3.3.x comboBox, in order to transform the label (which was only supported in selectItem) to an actual object value. In 4.0 Milestone 5 we are introducing the <b>rich:select</b> component! 
@@ -204,7 +206,7 @@ Accepts user input using keyboard:
 
 <img src="http://in.relation.to/service/File/17787" alt="">
 
-<h2 class="wikiHeadline2" id="H-Calendar"><a href="/Bloggers/RichFaces4OverviewPartIVInputsComponents#H-Calendar">Calendar</a></h2>
+<h2 class="wikiHeadline2" id="H-Calendar"><a href="/2010/11/22/RichFaces4OverviewPartIVInputsComponents#H-Calendar">Calendar</a></h2>
 
 <p class="wikiPara">
 The <b>rich:calendar</b> component was also migrated with few changes from a functional point of view. It still has the following main features:
@@ -247,7 +249,7 @@ One more note related to organizer creation using that component: after templati
 
 <b>To be continued...</b>
 
-<h1 class="wikiHeadline1" id="H-PSWhatOnMyWayBesidesThoseArticles"><a href="/Bloggers/RichFaces4OverviewPartIVInputsComponents#H-PSWhatOnMyWayBesidesThoseArticles">P.S. What on my way besides those articles</a></h1>
+<h1 class="wikiHeadline1" id="H-PSWhatOnMyWayBesidesThoseArticles"><a href="/2010/11/22/RichFaces4OverviewPartIVInputsComponents#H-PSWhatOnMyWayBesidesThoseArticles">P.S. What on my way besides those articles</a></h1>
 
 <p class="wikiPara">
 I'm proud to announce that me and <a href="http://mkblog.exadel.com" target="" class="regularLink">Max Katz</a> are starting to work on new RichFaces 4 book (Apress) to be published in the first half of 2011. I’ll be posting outline and more details later.

@@ -5,11 +5,13 @@ blogger_name: "Jesper"
 creation_date: "28-02-2013"
 tags: []
 
-absolute_url: http://in.relation.to/2013/02/28/IronJacamar110Beta4IsOut
-lace: http://in.relation.to/23963.lace
+relative_url: /2013/02/28/IronJacamar110Beta4IsOut
 slug: IronJacamar110Beta4IsOut
+lace: http://in.relation.to/23963.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/02/28/IronJacamar110Beta4IsOut
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,13 +24,13 @@ I'm happy to announce the release of IronJacamar 1.1.0.Beta4 - the first release
 Full release notes are <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12310691&amp;version=12320677" target="" class="regularLink">here</a>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-PoolOnSteroids"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-PoolOnSteroids">Pool on steroids</a></h2>
+<h2 class="wikiHeadline2" id="H-PoolOnSteroids"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-PoolOnSteroids">Pool on steroids</a></h2>
 
 <p class="wikiPara">
 We spent a lot time in this release going over our pool implementation, which of course controls all the physical connections to the Enterprise Information Systems such as databases.
 </p>
 
-<h3 class="wikiHeadline3" id="H-CapacityPolicies"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-CapacityPolicies">Capacity policies</a></h3>
+<h3 class="wikiHeadline3" id="H-CapacityPolicies"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-CapacityPolicies">Capacity policies</a></h3>
 
 <p class="wikiPara">
 First off we added support for capacity policies. So what is a capacity policy, and why is it important. Capacity policies are divided into two categories: incrementers and decrementers. 
@@ -67,7 +69,7 @@ The decrementer policy will allow you to optimize the resources used in a pool e
 You can read more about the capacity policies <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/ch05.html#deploying_capacity_policies" target="" class="regularLink">here</a>.
 </p>
 
-<h3 class="wikiHeadline3" id="H-FlushStrategies"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-FlushStrategies">Flush strategies</a></h3>
+<h3 class="wikiHeadline3" id="H-FlushStrategies"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-FlushStrategies">Flush strategies</a></h3>
 
 <p class="wikiPara">
 Next we looked at our flush strategies, which specifies which connections that are removed in case of an error on a connection. This led to
@@ -85,7 +87,7 @@ Next we looked at our flush strategies, which specifies which connections that a
 and their related strategy which works on all sub-pools across credentials. This allow much finer control of the pool in error situations.
 </p>
 
-<h3 class="wikiHeadline3" id="H-Statistics"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-Statistics">Statistics</a></h3>
+<h3 class="wikiHeadline3" id="H-Statistics"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-Statistics">Statistics</a></h3>
 
 <p class="wikiPara">
 We added some new metrics to our statistics too
@@ -104,7 +106,7 @@ We added some new metrics to our statistics too
 to give a more detailed view of the run-time behaviour of pool.
 </p>
 
-<h3 class="wikiHeadline3" id="H-InitialSize"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-InitialSize">Initial size</a></h3>
+<h3 class="wikiHeadline3" id="H-InitialSize"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-InitialSize">Initial size</a></h3>
 
 <p class="wikiPara">
 Last we added support for specifying the initial size of the pool upon start up.
@@ -114,7 +116,7 @@ Last we added support for specifying the initial size of the pool upon start up.
 Hopefully you find all these changes just as exciting as us ! 
 </p>
 
-<h2 class="wikiHeadline2" id="H-DistributedWorkManager"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-DistributedWorkManager">DistributedWorkManager</a></h2>
+<h2 class="wikiHeadline2" id="H-DistributedWorkManager"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-DistributedWorkManager">DistributedWorkManager</a></h2>
 
 <p class="wikiPara">
 The DistributedWorkManager implementation also got an update, and both the Socket and JGroups transports are now considered ready for general testing, so give them a spin.
@@ -124,7 +126,7 @@ The DistributedWorkManager implementation also got an update, and both the Socke
 In order to help creating a cluster of IronJacmar instances we added some <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/ch06.html#running_ant" target="" class="regularLink">Apache Ant</a> tasks, and <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/ch06.html#running_maven" target="" class="regularLink">Apache Maven</a> mojos to control IronJacamar instances. Our test suite features test cases for both transports, so you can get an idea of how a cluster is created by looking there.
 </p>
 
-<h2 class="wikiHeadline2" id="H-JavaEEConnectorArchitecture17"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-JavaEEConnectorArchitecture17">Java EE Connector Architecture 1.7</a></h2>
+<h2 class="wikiHeadline2" id="H-JavaEEConnectorArchitecture17"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-JavaEEConnectorArchitecture17">Java EE Connector Architecture 1.7</a></h2>
 
 <p class="wikiPara">
 As stated above, this release targets the upcoming Java EE Connector Architecture 1.7 specification which will be included in the Java Enterprise Edition 7 platform specification.
@@ -138,7 +140,7 @@ The specification adds some new feature, but remains backwards compatible with t
 So hopefully soon you will see this release featured in the upcoming JBoss Application Server 8.0 release.
 </p>
 
-<h2 class="wikiHeadline2" id="H-OtherChanges"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-OtherChanges">Other changes</a></h2>
+<h2 class="wikiHeadline2" id="H-OtherChanges"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-OtherChanges">Other changes</a></h2>
 
 <p class="wikiPara">
 There were other changes in this release
@@ -150,7 +152,7 @@ There were other changes in this release
 <li class="wikiUnorderedListItem"> Bucket of bug fixes</li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-TheRoadAhead"><a href="/Bloggers/IronJacamar110Beta4IsOut#H-TheRoadAhead">The Road Ahead</a></h2>
+<h2 class="wikiHeadline2" id="H-TheRoadAhead"><a href="/2013/02/28/IronJacamar110Beta4IsOut#H-TheRoadAhead">The Road Ahead</a></h2>
 
 <p class="wikiPara">
 A lot of changes (phew!) over the last 3 months to bring IronJacamar into a new league. But we are of course not stopping there - we still got more changes planned before we go into feature freeze for JCA 1.7 certification. So if you have a good idea now is the time to speak up in our forum !

@@ -5,11 +5,13 @@ blogger_name: "Max"
 creation_date: "01-02-2009"
 tags: [Eclipse,JBoss Tools]
 
-absolute_url: http://in.relation.to/2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern
-lace: http://in.relation.to/10609.lace
+relative_url: /2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern
 slug: NavelgazingClasspathContainersAnEclipseAntiPattern
+lace: http://in.relation.to/10609.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -43,7 +45,7 @@ versions of Drools plugins. Notice how all the jar's points to a fixed internal 
 inside the Drools plugin, that is what I call a navel-gazing class path container.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheGood"><a href="/Bloggers/NavelgazingClasspathContainersAnEclipseAntiPattern#H-TheGood">The Good</a></h1>
+<h1 class="wikiHeadline1" id="H-TheGood"><a href="/2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern#H-TheGood">The Good</a></h1>
 
 <p class="wikiPara">
 First, lets see why so many plugins seem to do it this way. There is (only) one <q>good</q> reason for having navel-gazing classpath containers.
@@ -52,7 +54,7 @@ With a navel-gazing class path container the Drools plugin can out-of-the-box pr
 Drools project without any knowledge and any influence by other plugins/projects. That is a good thing, right ? Well...
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheBad"><a href="/Bloggers/NavelgazingClasspathContainersAnEclipseAntiPattern#H-TheBad">The Bad</a></h1>
+<h1 class="wikiHeadline1" id="H-TheBad"><a href="/2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern#H-TheBad">The Bad</a></h1>
 
 <p class="wikiPara">
 Why do I not like this navel-gazing ? Don't I want users to get
@@ -104,7 +106,7 @@ Even worse is that if a user updates his plug-in via an updatesite he will (prob
 dependencies of his projects because the jar's inside the plug-in are now updated. 
 </p>
 
-<h1 class="wikiHeadline1" id="H-OtherExamples"><a href="/Bloggers/NavelgazingClasspathContainersAnEclipseAntiPattern#H-OtherExamples">Other Examples</a></h1>
+<h1 class="wikiHeadline1" id="H-OtherExamples"><a href="/2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern#H-OtherExamples">Other Examples</a></h1>
 
 <p class="wikiPara">
 Another example of a navel-gazing classpath container is the Ant or JUnit classpath container provided by eclipse.
@@ -113,7 +115,7 @@ since Ant and JUnit are very stable and mature frameworks it is not so bad but i
 projects should not use these classpath containers lightly.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Solutions"><a href="/Bloggers/NavelgazingClasspathContainersAnEclipseAntiPattern#H-Solutions">Solutions</a></h1>
+<h1 class="wikiHeadline1" id="H-Solutions"><a href="/2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern#H-Solutions">Solutions</a></h1>
 
 <p class="wikiPara">
 Ok, so navel-gazing is bad; what should plug-ins do instead ?
@@ -159,7 +161,7 @@ And that is also what the Drools team did in the end and the result is a non-nav
 <img src="/service/File/10615" width="338" height="270">
 </p>
 
-<h1 class="wikiHeadline1" id="H-Alternatives"><a href="/Bloggers/NavelgazingClasspathContainersAnEclipseAntiPattern#H-Alternatives">Alternatives</a></h1>
+<h1 class="wikiHeadline1" id="H-Alternatives"><a href="/2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern#H-Alternatives">Alternatives</a></h1>
 
 <p class="wikiPara">
 Of course there are other solutions to this problem, namely not to use plugin provided runtimes provided by plugins
@@ -171,7 +173,7 @@ If you want to use full dependency management inside Eclipse take a look at <a h
 a classpath container which jars are calculated based on your Maven dependencies. There is also <a href="http://ant.apache.org/ivy/ivyde" target="" class="regularLink">IvyIDE</a> that does the same for Ivy.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WantToHearMore"><a href="/Bloggers/NavelgazingClasspathContainersAnEclipseAntiPattern#H-WantToHearMore">Want to hear more</a></h1>
+<h1 class="wikiHeadline1" id="H-WantToHearMore"><a href="/2009/02/01/NavelgazingClasspathContainersAnEclipseAntiPattern#H-WantToHearMore">Want to hear more</a></h1>
 
 <p class="wikiPara">
 John Graham and I are doing a talk at <a href="http://www.eclipsecon.org" target="" class="regularLink">EclipseCon 2009</a> called <a href="http://www.eclipsecon.org/2009/sessions?id=338" target="" class="regularLink">"Max and John's excellent plugin adventure - The Highlight Reel"</a> where we will present and discuss anti-patterns like the above. 

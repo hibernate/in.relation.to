@@ -5,11 +5,13 @@ blogger_name: "Hardy"
 creation_date: "24-02-2015"
 tags: [Hibernate Validator]
 
-absolute_url: http://in.relation.to/2015/02/24/HibernateValidator520Beta1AJointEffort
-lace: http://in.relation.to/42554.lace
+relative_url: /2015/02/24/HibernateValidator520Beta1AJointEffort
 slug: HibernateValidator520Beta1AJointEffort
+lace: http://in.relation.to/42554.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/02/24/HibernateValidator520Beta1AJointEffort
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -26,7 +28,7 @@ joined forces to make this release happen. Thanks everyone!
 In total we were able to resolve <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10060&amp;version=18350" target="" class="regularLink">30</a> issues. Here are some highlights.
 </p>
 
-<h2 class="wikiHeadline2" id="H-AbilityToProvideExternalClassLoader"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-AbilityToProvideExternalClassLoader">Ability to provide external ClassLoader</a></h2>
+<h2 class="wikiHeadline2" id="H-AbilityToProvideExternalClassLoader"><a href="/2015/02/24/HibernateValidator520Beta1AJointEffort#H-AbilityToProvideExternalClassLoader">Ability to provide external ClassLoader</a></h2>
 
 <p class="wikiPara">
 There are several cases in which Hibernate Validator needs to load resources or classes:
@@ -53,7 +55,7 @@ fall-back. For cases where this strategy is not appropriate (e.g. modularized en
 </pre>
 
 
-<h2 class="wikiHeadline2" id="H-HibernateValidatorFeaturesxmlForApacheKaraf"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-HibernateValidatorFeaturesxmlForApacheKaraf">Hibernate Validator features.xml for Apache Karaf</a></h2>
+<h2 class="wikiHeadline2" id="H-HibernateValidatorFeaturesxmlForApacheKaraf"><a href="/2015/02/24/HibernateValidator520Beta1AJointEffort#H-HibernateValidatorFeaturesxmlForApacheKaraf">Hibernate Validator features.xml for Apache Karaf</a></h2>
 
 <p class="wikiPara">
 As a side effect of the class loader improvements we were able to write some OSGi integration tests
@@ -63,7 +65,7 @@ build artifacts.
 You can view the first version of this file <a href="https://repository.jboss.org/nexus/service/local/repositories/releases/content/org/hibernate/hibernate-validator-osgi-karaf-features/5.2.0.Beta1/hibernate-validator-osgi-karaf-features-5.2.0.Beta1-features.xml" target="" class="regularLink">here</a>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ProgrammaticConstraintMappingViaConstraintMappingContributor"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-ProgrammaticConstraintMappingViaConstraintMappingContributor">Programmatic constraint mapping via ConstraintMappingContributor</a></h2>
+<h2 class="wikiHeadline2" id="H-ProgrammaticConstraintMappingViaConstraintMappingContributor"><a href="/2015/02/24/HibernateValidator520Beta1AJointEffort#H-ProgrammaticConstraintMappingViaConstraintMappingContributor">Programmatic constraint mapping via ConstraintMappingContributor</a></h2>
 
 <p class="wikiPara">
 In Hibernate Validator you can, as a provider specific feature, <a href="https://docs.jboss.org/hibernate/validator/5.2/reference/en-US/html_single/#section-programmatic-api" target="" class="regularLink">programmatically define constraint mappings</a>. So far this feature was tied to a programmatic bootstrapping of the <tt>ValidatorFactory</tt> itself.
@@ -98,7 +100,7 @@ you then need to specify the fully-qualified class name of the contributor imple
 <tt>META-INF/validation.xml</tt>, using the property key <tt>hibernate.validator.constraint_mapping_contributor</tt>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ConstraintDefinitionContributorWithResourceBundles"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-ConstraintDefinitionContributorWithResourceBundles">ConstraintDefinitionContributor with resource bundles</a></h2>
+<h2 class="wikiHeadline2" id="H-ConstraintDefinitionContributorWithResourceBundles"><a href="/2015/02/24/HibernateValidator520Beta1AJointEffort#H-ConstraintDefinitionContributorWithResourceBundles">ConstraintDefinitionContributor with resource bundles</a></h2>
 
 <p class="wikiPara">
 We introduced <tt>ConstraintDefinitionContributor</tt> already in the <a href="http://in.relation.to/34906.lace" target="" class="regularLink">Alpha1</a>
@@ -107,7 +109,7 @@ you to contribute constraints. Default messages via a resource bundle were not c
 changed, and you can just place a <tt>ContributorValidationMessages.properties</tt> and/or its locale-specific specializations at the root your JAR. Hibernate Validator will aggregate the entries from all the bundles with this name found on the classpath.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhereDoIGetIt"><a href="/Bloggers/HibernateValidator520Beta1AJointEffort#H-WhereDoIGetIt">Where do I get it?</a></h2>
+<h2 class="wikiHeadline2" id="H-WhereDoIGetIt"><a href="/2015/02/24/HibernateValidator520Beta1AJointEffort#H-WhereDoIGetIt">Where do I get it?</a></h2>
 
 <p class="wikiPara">
 Maven artifacts for this release are in the JBoss Maven repository

@@ -5,11 +5,13 @@ blogger_name: "Steve"
 creation_date: "22-10-2010"
 tags: [ConnectionProvider,Filters,Hibernate,Shards]
 
-absolute_url: http://in.relation.to/2010/10/22/MultitenancyInHibernate
-lace: http://in.relation.to/17513.lace
+relative_url: /2010/10/22/MultitenancyInHibernate
 slug: MultitenancyInHibernate
+lace: http://in.relation.to/17513.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/10/22/MultitenancyInHibernate
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -28,7 +30,7 @@ This has come up a few times so I thought I'd write up the ways to handle multi-
 The approaches to handling the first two are pretty much the same.  So let's look at the third approach first as it requires a much different handling.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Partitioning"><a href="/Bloggers/MultitenancyInHibernate#H-Partitioning">Partitioning</a></h2>
+<h2 class="wikiHeadline2" id="H-Partitioning"><a href="/2010/10/22/MultitenancyInHibernate#H-Partitioning">Partitioning</a></h2>
 <p class="wikiPara">
 To be clear lets look at an example.  Lets say that the application in question has a <tt>CUSTOMER</tt> table:
 </p>
@@ -49,7 +51,7 @@ Notice the <tt>TENANT_ID</tt> column as it is the crux to this design.  Basicall
 This approach has the distinct advantage of being capable of leveraging Hibernate second level caching.  As we will see below, that is currently not possible with the other approaches.
 </p>
 
-<h2 class="wikiHeadline2" id="H-SeparateData"><a href="/Bloggers/MultitenancyInHibernate#H-SeparateData">Separate data</a></h2>
+<h2 class="wikiHeadline2" id="H-SeparateData"><a href="/2010/10/22/MultitenancyInHibernate#H-SeparateData">Separate data</a></h2>
 
 <p class="wikiPara">
 As I mentioned before, the first two options are pretty similar in terms of handling from JDBC, so therefore pretty similar in terms of handling from Hibernate.  Going back to the <tt>CUSTOMER</tt> table, here we have:

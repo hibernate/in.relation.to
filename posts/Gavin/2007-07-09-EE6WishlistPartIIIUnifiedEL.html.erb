@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "09-07-2007"
 tags: [EE6 Wishlist]
 
-absolute_url: http://in.relation.to/2007/07/09/EE6WishlistPartIIIUnifiedEL
-lace: http://in.relation.to/1995.lace
+relative_url: /2007/07/09/EE6WishlistPartIIIUnifiedEL
 slug: EE6WishlistPartIIIUnifiedEL
+lace: http://in.relation.to/1995.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/07/09/EE6WishlistPartIIIUnifiedEL
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -30,7 +32,7 @@ The new Unified EL API used by JSF and JSP is a really useful addition to the Ja
 Here's some suggestions I have, though I'm not at all attached to the suggested syntaxes.
 </p>
 
-<h2 class="wikiHeadline2" id="H-MethodParameters"><a href="/Bloggers/EE6WishlistPartIIIUnifiedEL#H-MethodParameters">Method parameters</a></h2>
+<h2 class="wikiHeadline2" id="H-MethodParameters"><a href="/2007/07/09/EE6WishlistPartIIIUnifiedEL#H-MethodParameters">Method parameters</a></h2>
 <p class="wikiPara">
 This is one of those <q>what were they thinking?!</q> moments. Unified EL does not support method expressions with parameters. Really. 
 </p>
@@ -44,7 +46,7 @@ customer.getOrder(ordernumber).product.name
 </pre>
 
 
-<h2 class="wikiHeadline2" id="H-SwitchStatement"><a href="/Bloggers/EE6WishlistPartIIIUnifiedEL#H-SwitchStatement">Switch statement</a></h2>
+<h2 class="wikiHeadline2" id="H-SwitchStatement"><a href="/2007/07/09/EE6WishlistPartIIIUnifiedEL#H-SwitchStatement">Switch statement</a></h2>
 <p class="wikiPara">
 In JSP or JSF pages it's very useful to be able to handle multiple cases in a single expression. 
 </p>
@@ -58,12 +60,12 @@ switch (order.status) { case OPEN: 'Open' case CLOSED: 'Closed' else '' }
 </pre>
 
 
-<h2 class="wikiHeadline2" id="H-DatesAndTimes"><a href="/Bloggers/EE6WishlistPartIIIUnifiedEL#H-DatesAndTimes">Dates and times</a></h2>
+<h2 class="wikiHeadline2" id="H-DatesAndTimes"><a href="/2007/07/09/EE6WishlistPartIIIUnifiedEL#H-DatesAndTimes">Dates and times</a></h2>
 <p class="wikiPara">
 Currently, there is no way to compare dates and times in EL. The <tt>&lt;</tt>, <tt>&gt;</tt>, <tt>&lt;=</tt> and <tt>&gt;=</tt> operators should be extended to support java.util.Date. It may also be worth introducing a syntax for date/time literals. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-CollectionSizeOperator"><a href="/Bloggers/EE6WishlistPartIIIUnifiedEL#H-CollectionSizeOperator">Collection size operator</a></h2>
+<h2 class="wikiHeadline2" id="H-CollectionSizeOperator"><a href="/2007/07/09/EE6WishlistPartIIIUnifiedEL#H-CollectionSizeOperator">Collection size operator</a></h2>
 <p class="wikiPara">
 Amazingly, there is no simple way to determine the size of a collection in EL! 
 </p>
@@ -81,7 +83,7 @@ size customer.orders
 This operator should work for any Collection, Map, String or Iterable. Furthermore, the empty operator should be extended to support Map and Iterable. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-CollectionConstructors"><a href="/Bloggers/EE6WishlistPartIIIUnifiedEL#H-CollectionConstructors">Collection constructors</a></h2>
+<h2 class="wikiHeadline2" id="H-CollectionConstructors"><a href="/2007/07/09/EE6WishlistPartIIIUnifiedEL#H-CollectionConstructors">Collection constructors</a></h2>
 <p class="wikiPara">
 When defining pages, it is useful to be able to iterate over collection literals. 
 </p>
@@ -113,7 +115,7 @@ Suggested syntax for creating a java.util.List instance with for a specified ran
 </pre>
 
 
-<h2 class="wikiHeadline2" id="H-CollectionIteration"><a href="/Bloggers/EE6WishlistPartIIIUnifiedEL#H-CollectionIteration">Collection iteration</a></h2>
+<h2 class="wikiHeadline2" id="H-CollectionIteration"><a href="/2007/07/09/EE6WishlistPartIIIUnifiedEL#H-CollectionIteration">Collection iteration</a></h2>
 <p class="wikiPara">
 This feature is a kind of poor-man's closure support. It should work for all instances of Iterable.
 </p>
@@ -185,7 +187,7 @@ An alternative approach might be to copy Python's list comprehensions:
 which results in {3, 4}.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/EE6WishlistPartIIIUnifiedEL#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2007/07/09/EE6WishlistPartIIIUnifiedEL#H-Conclusion">Conclusion</a></h2>
 <p class="wikiPara">
 The point of this is not to turn Unified EL into a programming language. I actually prefer it to be relatively bare-boned compared to OGNL or MVEL. Rather, the point is to remove certainl pain-points where the only current solution is to fall back to writing presentation logic in Java code.
 </p>

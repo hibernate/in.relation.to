@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "21-05-2011"
 tags: [Ceylon,Introduction to Ceylon]
 
-absolute_url: http://in.relation.to/2011/05/21/IntroductionToCeylonPart11
-lace: http://in.relation.to/20139.lace
+relative_url: /2011/05/21/IntroductionToCeylonPart11
 slug: IntroductionToCeylonPart11
+lace: http://in.relation.to/20139.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/21/IntroductionToCeylonPart11
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ layout: blog-post
 <i class="wikiEmphasis">This article was updated on 2/6/2011 to mention definite initialization of methods and on 28/5/2011 to reflect refinements to the language specification, and add new material dealing with self references, outer instance references, and circular references. The comment thread reflects information in the first version of article.</i>
 </p>
 
-<h1 class="wikiHeadline1" id="H-SelfReferencesAndOuterInstanceReferences"><a href="/Bloggers/IntroductionToCeylonPart11#H-SelfReferencesAndOuterInstanceReferences">Self references and outer instance references</a></h1>
+<h1 class="wikiHeadline1" id="H-SelfReferencesAndOuterInstanceReferences"><a href="/2011/05/21/IntroductionToCeylonPart11#H-SelfReferencesAndOuterInstanceReferences">Self references and outer instance references</a></h1>
 
 <p class="wikiPara">
 Ceylon features the keywords <tt>this</tt> and <tt>super</tt>, which refer to the <i class="wikiEmphasis">current instance</i> of a class — the receiving instance of an operation (method invocation, member class instantiation, or attribute evaluation/assignment), within the body of the definition of the operation. The semantics are exactly the same as what you're used to in Java. In particular, a reference to a member of <tt>super</tt> always refers to a member of a super<i class="wikiEmphasis">class</i>. There is currently no syntax defined for references to a concrete member of a super<i class="wikiEmphasis">interface</i>.
@@ -45,7 +47,7 @@ In addition to <tt>this</tt> and <tt>super</tt>, Ceylon features the keyword <tt
 There are some restrictions on the use of <tt>this</tt>, <tt>super</tt>, and <tt>outer</tt>, which we'll explore below.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MultipleInheritanceAndQlinearizationq"><a href="/Bloggers/IntroductionToCeylonPart11#H-MultipleInheritanceAndQlinearizationq">Multiple inheritance and <q>linearization</q></a></h1>
+<h1 class="wikiHeadline1" id="H-MultipleInheritanceAndQlinearizationq"><a href="/2011/05/21/IntroductionToCeylonPart11#H-MultipleInheritanceAndQlinearizationq">Multiple inheritance and <q>linearization</q></a></h1>
 
 <p class="wikiPara">
 There's a good reason why <tt>super</tt> always refers to a superclass, and never to a superinterface.
@@ -75,7 +77,7 @@ For a similar reason, interfaces shouldn't be able to define initialization logi
 So Ceylon is more restrictive than some other languages here. But we think that this restriction makes a subtype less vulnerable to breakage due to changes in its supertypes.
 </p>
 
-<h1 class="wikiHeadline1" id="H-DefiniteAssignmentAndDefiniteInitialization"><a href="/Bloggers/IntroductionToCeylonPart11#H-DefiniteAssignmentAndDefiniteInitialization">Definite assignment and definite initialization</a></h1>
+<h1 class="wikiHeadline1" id="H-DefiniteAssignmentAndDefiniteInitialization"><a href="/2011/05/21/IntroductionToCeylonPart11#H-DefiniteAssignmentAndDefiniteInitialization">Definite assignment and definite initialization</a></h1>
 
 <p class="wikiPara">
 A really nice feature of Java is that the compiler checks that a local variable has definitely been assigned a value before allowing use of the local variable in an expression. So, for example, the following code compiles without error:
@@ -135,7 +137,7 @@ This behavior is bad enough in and of itself. But it would be even less acceptab
 Indeed, <q>few</q> object-oriented languages (i.e. none that I know of) perform the necessary static analysis to ensure definite initialization of instance variables, and I believe that this is perhaps one main reason why object-oriented languages have never featured typesafe handling of null values.
 </p>
 
-<h1 class="wikiHeadline1" id="H-ClassBodies"><a href="/Bloggers/IntroductionToCeylonPart11#H-ClassBodies">Class bodies</a></h1>
+<h1 class="wikiHeadline1" id="H-ClassBodies"><a href="/2011/05/21/IntroductionToCeylonPart11#H-ClassBodies">Class bodies</a></h1>
 
 <p class="wikiPara">
 In order to make it possible for the compiler to guarantee definite initialization of attributes, Ceylon imposes some restrictions on the body of a class. (Remember that Ceylon <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-UnderstandingObjectInitialization" target="" class="regularLink">doesn't have constructors</a>!) Actually, to be completely fair, they're not really <i class="wikiEmphasis">restrictions</i> at all, at least not from one point of view, since you're actually allowed <i class="wikiEmphasis">extra</i> flexibility in the body of a class that you're not allowed in the body of method or attribute declarations! But compared to Java, there's some things you're not allowed to do.
@@ -158,7 +160,7 @@ Now we're going to introduce some rules that apply to code that appears in each 
 But you don't need to actually explicitly think about these rules when you write code. Only very rarely will you need to think about the <q>initializer section</q> and <q>declaration section</q> in explicit terms. The compiler will let you know when you break the rules, and force you to fix your code.
 </p>
 
-<h1 class="wikiHeadline1" id="H-InitializerSection"><a href="/Bloggers/IntroductionToCeylonPart11#H-InitializerSection">Initializer section</a></h1>
+<h1 class="wikiHeadline1" id="H-InitializerSection"><a href="/2011/05/21/IntroductionToCeylonPart11#H-InitializerSection">Initializer section</a></h1>
 
 <p class="wikiPara">
 The initializer section is responsible for initializing the state of the new instance of the class, before a reference to the new instance is available to clients. The declaration section contains members of the class which are <i class="wikiEmphasis">only</i> called after the instance has been fully initialized.
@@ -242,7 +244,7 @@ A statement or declaration that appears within the initializer of a class may no
 
 </blockquote>
 
-<h1 class="wikiHeadline1" id="H-DeclarationSection"><a href="/Bloggers/IntroductionToCeylonPart11#H-DeclarationSection">Declaration section</a></h1>
+<h1 class="wikiHeadline1" id="H-DeclarationSection"><a href="/2011/05/21/IntroductionToCeylonPart11#H-DeclarationSection">Declaration section</a></h1>
 
 <p class="wikiPara">
 The declaration section contains the definition of members that don't hold state, and that are never called until the instance to which they belong has been completely initialized.
@@ -269,7 +271,7 @@ However, the declarations in this second section may freely use <tt>this</tt> an
 Note that the rules governing the declaration section of a class body are essentially the same rules governing the body of an interface. That makes sense, because interfaces don't have initialization logic — what interfaces and declaration sections have in common is <i class="wikiEmphasis">statelessness</i>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-CircularReferences"><a href="/Bloggers/IntroductionToCeylonPart11#H-CircularReferences">Circular references</a></h1>
+<h1 class="wikiHeadline1" id="H-CircularReferences"><a href="/2011/05/21/IntroductionToCeylonPart11#H-CircularReferences">Circular references</a></h1>
 
 <p class="wikiPara">
 Unfortunately, these rules make it a little tricky to set up circular references between two objects without resort to non-<tt>variable</tt> attributes. This is a problem Ceylon has in common with functional languages, which also emphasize immutability. We can't write the following code in Ceylon:
@@ -301,7 +303,7 @@ class Parent() {
 }</pre>
 
 
-<h1 class="wikiHeadline1" id="H-DefiniteInitializationOfMethods"><a href="/Bloggers/IntroductionToCeylonPart11#H-DefiniteInitializationOfMethods">Definite initialization of methods</a></h1>
+<h1 class="wikiHeadline1" id="H-DefiniteInitializationOfMethods"><a href="/2011/05/21/IntroductionToCeylonPart11#H-DefiniteInitializationOfMethods">Definite initialization of methods</a></h1>
 
 <p class="wikiPara">
 Ceylon lets us separate the declaration of a <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-MoreAboutHigherorderFunctions" target="" class="regularLink">method defined using a method reference</a> from the actual specification statement that specifies the method reference.
@@ -320,7 +322,7 @@ case ("/") { op = x.divided; }</pre>
 The rules for definite initialization of locals and attributes also apply to methods defined using a specification statement.
 </p>
 
-<h1 class="wikiHeadline1" id="H-DefiniteReturn"><a href="/Bloggers/IntroductionToCeylonPart11#H-DefiniteReturn">Definite return</a></h1>
+<h1 class="wikiHeadline1" id="H-DefiniteReturn"><a href="/2011/05/21/IntroductionToCeylonPart11#H-DefiniteReturn">Definite return</a></h1>
 
 <p class="wikiPara">
 While we're on the topic, it's worth noting that the Ceylon compiler, just like the Java compiler, also performs definite return checking, to ensure that a method or getter always has an explicitly specified return value. So, this code compiles without error:
@@ -347,7 +349,7 @@ But the following code results in an error at compile time:
 }</pre>
 
 
-<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart11#H-TheresMore">There's more...</a></h1>
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/05/21/IntroductionToCeylonPart11#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
 In the <a href="/Bloggers/IntroductionToCeylonPart12" target="" class="regularLink">Part 12</a>, we're going to discuss annotations, and take a little peek at using the metamodel to build framework code.

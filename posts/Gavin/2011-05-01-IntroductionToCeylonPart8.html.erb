@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "01-05-2011"
 tags: [Ceylon,Introduction to Ceylon]
 
-absolute_url: http://in.relation.to/2011/05/01/IntroductionToCeylonPart8
-lace: http://in.relation.to/19720.lace
+relative_url: /2011/05/01/IntroductionToCeylonPart8
 slug: IntroductionToCeylonPart8
+lace: http://in.relation.to/19720.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/01/IntroductionToCeylonPart8
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ layout: blog-post
 <i class="wikiEmphasis">This article was updated on 31/5/2011 to add information about partial application of methods.</i>
 </p>
 
-<h1 class="wikiHeadline1" id="H-FirstClassAndHigherOrderFunctions"><a href="/Bloggers/IntroductionToCeylonPart8#H-FirstClassAndHigherOrderFunctions">First class and higher order functions</a></h1>
+<h1 class="wikiHeadline1" id="H-FirstClassAndHigherOrderFunctions"><a href="/2011/05/01/IntroductionToCeylonPart8#H-FirstClassAndHigherOrderFunctions">First class and higher order functions</a></h1>
 
 <p class="wikiPara">
 Ceylon isn't a functional language: it has <tt>variable</tt> attributes and so methods can have side effects. But Ceylon does let you use functions as values, which in some people's eyes makes the language a kind of hybrid. I'm not so sure about that. There's actually nothing at all new about having functions-as-values in an object oriented language — for example, Smalltalk, one of the first and still one of the cleanest object oriented languages, was built around this idea. (To my eyes, true <q>functional</q> programming is more about what you <i class="wikiEmphasis">can't</i> do — mutate values — than what you <i class="wikiEmphasis">can</i> do.) Anyway, Ceylon, like Smalltalk and a number of other object oriented languages, lets you treat a function as an object and pass it around the system.
@@ -36,7 +38,7 @@ In this installment, we're going to discuss Ceylon's support for <i class="wikiE
 A quick disclaimer: none of the things in this installment have actually been implemented in the compiler yet.
 </p>
 
-<h1 class="wikiHeadline1" id="H-RepresentingTheTypeOfAFunction"><a href="/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAFunction">Representing the type of a function</a></h1>
+<h1 class="wikiHeadline1" id="H-RepresentingTheTypeOfAFunction"><a href="/2011/05/01/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAFunction">Representing the type of a function</a></h1>
 
 <p class="wikiPara">
 Ceylon is a (very) statically typed language. So if we're going to treat a function as a value, the very first question that arises is: what is the type of the function? We need a way to encode the return type and parameter types of a function into the type system. Remember that Ceylon doesn't have <q>primitive</q> types. A strong design principle is that every type should be representable within the type system as a class or interface declaration.
@@ -98,7 +100,7 @@ What about <tt>void</tt> functions? Well, remember that <a href="http://in.relat
 <pre class="wikiPreformatted brush:ceylon">Callable&lt;Void,String&gt;</pre>
 
 
-<h1 class="wikiHeadline1" id="H-RepresentingTheTypeOfAMethod"><a href="/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAMethod">Representing the type of a method</a></h1>
+<h1 class="wikiHeadline1" id="H-RepresentingTheTypeOfAMethod"><a href="/2011/05/01/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAMethod">Representing the type of a method</a></h1>
 
 <p class="wikiPara">
 Here we've been discussing first class functions. But in Ceylon all named declarations are <q>first class</q>. That is to say, they all have a reified metamodel representable within the type system. For example, we could represent the type of a method like this:
@@ -135,7 +137,7 @@ Notice that we've declared a method to be a function that accepts a receiver obj
 Don't worry if you can't make sense of that right now. And actually I'm skipping over some details here, that's <i class="wikiEmphasis">not</i> quite exactly how <tt>Method</tt> is defined. But we'll come back to this in a future installment. Let's get back to today's topic.
 </p>
 
-<h1 class="wikiHeadline1" id="H-DefiningHigherOrderFunctions"><a href="/Bloggers/IntroductionToCeylonPart8#H-DefiningHigherOrderFunctions">Defining higher order functions</a></h1>
+<h1 class="wikiHeadline1" id="H-DefiningHigherOrderFunctions"><a href="/2011/05/01/IntroductionToCeylonPart8#H-DefiningHigherOrderFunctions">Defining higher order functions</a></h1>
 
 <p class="wikiPara">
 We now have enough machinery to be able to write higher order functions. For example, we could create a <tt>repeat()</tt> function that repeatedly executes a function.
@@ -175,7 +177,7 @@ There's one problem with this. In Ceylon, as we'll see later, we often call func
 I find this version also slightly more readable and more regular. This is the preferred syntax for defining higher-order functions. 
 </p>
 
-<h1 class="wikiHeadline1" id="H-FunctionReferences"><a href="/Bloggers/IntroductionToCeylonPart8#H-FunctionReferences">Function references</a></h1>
+<h1 class="wikiHeadline1" id="H-FunctionReferences"><a href="/2011/05/01/IntroductionToCeylonPart8#H-FunctionReferences">Function references</a></h1>
 
 <p class="wikiPara">
 When a name of a function appears without any arguments, like <tt>print</tt> does above, it's called a <i class="wikiEmphasis">function reference</i>. A function reference is the thing that really has the type <tt>Callable</tt>. In this case, <tt>print</tt> has the type <tt>Callable&lt;Void,Natural&gt;</tt>.
@@ -214,7 +216,7 @@ repeat(10, Hello("Gavin").say);</pre>
 Here the expression <tt>Hello("Gavin").say</tt> has the same type as <tt>print</tt> above. It is a <tt>Callable&lt;Void,Natural&gt;</tt>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MoreAboutHigherorderFunctions"><a href="/Bloggers/IntroductionToCeylonPart8#H-MoreAboutHigherorderFunctions">More about higher-order functions</a></h1>
+<h1 class="wikiHeadline1" id="H-MoreAboutHigherorderFunctions"><a href="/2011/05/01/IntroductionToCeylonPart8#H-MoreAboutHigherorderFunctions">More about higher-order functions</a></h1>
 
 <p class="wikiPara">
 Let's see a more practical example, which mixes both ways of representing a function type. Suppose we have some kind of user interface component which can be observed by other objects in the system. We could use something like Java's <tt>Observer</tt>/<tt>Observable</tt> pattern:
@@ -413,7 +415,7 @@ We've already seen how an attribute can be defined using a block of code. Now we
 Cool, huh? That's more <i class="wikiEmphasis">regularity</i>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart8#H-TheresMore">There's more...</a></h1>
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/05/01/IntroductionToCeylonPart8#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
 As you've probably noticed, all the functions we've defined so far have been declared with a name, using a traditional C-like syntax. We still need to see what Ceylon has instead of anonymous functions (sometimes called <q>lambda</q> expressions) for making it easy to take advantage of functions like <tt>repeat()</tt> which define specialized control structures. But I've hit my word limit already. Instead, you can <a href="/Bloggers/AnonymousFunctionsOrSmalltalkstyleArguments" target="" class="regularLink">find a discussion here</a>.

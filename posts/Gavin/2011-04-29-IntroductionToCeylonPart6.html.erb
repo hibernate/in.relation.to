@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "29-04-2011"
 tags: [Ceylon,Introduction to Ceylon]
 
-absolute_url: http://in.relation.to/2011/04/29/IntroductionToCeylonPart6
-lace: http://in.relation.to/19634.lace
+relative_url: /2011/04/29/IntroductionToCeylonPart6
 slug: IntroductionToCeylonPart6
+lace: http://in.relation.to/19634.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/04/29/IntroductionToCeylonPart6
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 <i class="wikiEmphasis">This is the sixth installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
 </p>
 
-<h1 class="wikiHeadline1" id="H-DefiningGenericTypes"><a href="/Bloggers/IntroductionToCeylonPart6#H-DefiningGenericTypes">Defining generic types</a></h1>
+<h1 class="wikiHeadline1" id="H-DefiningGenericTypes"><a href="/2011/04/29/IntroductionToCeylonPart6#H-DefiningGenericTypes">Defining generic types</a></h1>
 
 <p class="wikiPara">
 We've seen plenty of parameterized types in this series of articles, but now let's explore a few more details.
@@ -108,7 +110,7 @@ The bad news is we haven't implemented this yet ;-)
 Finally, Ceylon eliminates one of the bits of Java generics that's really hard to get your head around: wildcard types. Wildcard types were Java's solution to the problem of <i class="wikiEmphasis">covariance</i> in a generic type system. Let's first explore the idea of covariance, and then see how covariance in Ceylon works.
 </p>
 
-<h1 class="wikiHeadline1" id="H-CovarianceAndContravariance"><a href="/Bloggers/IntroductionToCeylonPart6#H-CovarianceAndContravariance">Covariance and contravariance</a></h1>
+<h1 class="wikiHeadline1" id="H-CovarianceAndContravariance"><a href="/2011/04/29/IntroductionToCeylonPart6#H-CovarianceAndContravariance">Covariance and contravariance</a></h1>
 
 <p class="wikiPara">
 It all starts with the intuitive expectation that a collection of <tt>Geek</tt>s is a collection of <tt>Person</tt>s. That's a reasonable intuition, but especially in non-functional languages, where collections can be mutable, it turns out to be incorrect. Consider the following possible definition of <tt>Collection</tt>:
@@ -245,7 +247,7 @@ These invariants can be very helpful if you need to abstract over all <tt>Produc
 You're unlikely to spend much time writing your own collection classes, since the Ceylon SDK has a powerful collections framework built in. But you'll still appreciate Ceylon's approach to covariance as a user of the built-in collection types. The collections framework defines two interfaces for each basic kind of collection. For example, there's an interface <tt>List&lt;Element&gt;</tt> which represents a read-only view of a list, and is covariant in <tt>Element</tt>, and <tt>OpenList&lt;Element&gt;</tt>, which represents a mutable list, and is nonvariant in <tt>Element</tt>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-GenericTypeConstraints"><a href="/Bloggers/IntroductionToCeylonPart6#H-GenericTypeConstraints">Generic type constraints</a></h1>
+<h1 class="wikiHeadline1" id="H-GenericTypeConstraints"><a href="/2011/04/29/IntroductionToCeylonPart6#H-GenericTypeConstraints">Generic type constraints</a></h1>
 
 <p class="wikiPara">
 Very commonly, when we write a parameterized type, we want to be able to invoke methods or evaluate attributes upon instances of the type parameter. For example, if we were writing a parameterized type <tt>Set&lt;Element&gt;</tt>, we would need to be able to compare instances of <tt>Element</tt> using <tt>==</tt> to see if a certain instance of <tt>Element</tt> is contained in the <tt>Set</tt>. Since <tt>==</tt> is only defined for expressions of type <tt>Equality</tt>, we need some way to assert that <tt>Element</tt> is a subtype of <tt>Equality</tt>. This is an example of a <i class="wikiEmphasis">type constraint</i> — in fact, it's an example of the most common kind of type constraint, an <i class="wikiEmphasis">upper bound</i>.
@@ -389,7 +391,7 @@ Set&lt;Object&gt; objects = Set("Gavin", 12, true);
 Set&lt;Object&gt; allTheObjects = hellos.union(objects);</pre>
 
 
-<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart6#H-TheresMore">There's more...</a></h1>
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/04/29/IntroductionToCeylonPart6#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
 I was about to start talking about <i class="wikiEmphasis">sequenced type parameters</i>, the foundation of Ceylon's typesafe metamodel. But I realize I already hit my word limit. If you're really impatient, you can skip forward to <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAFunction" target="" class="regularLink">Part 8</a>.

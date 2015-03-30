@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "01-04-2008"
 tags: [Bean Validation,Bean Validation Sneak Peek]
 
-absolute_url: http://in.relation.to/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints
-lace: http://in.relation.to/8787.lace
+relative_url: /2008/04/01/BeanValidationSneakPeekPartIICustomConstraints
 slug: BeanValidationSneakPeekPartIICustomConstraints
+lace: http://in.relation.to/8787.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -23,7 +25,7 @@ This part focuses on constraint definition.
 While Bean Validation will come with a set of predefined basic constraints (like <tt>@NotNull</tt>, <tt>@Length</tt> and so on), a key feature of the specification is its extensibility. Application developers can and are strongly encouraged to write their own custom constraints matching a particular business requirement.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WritingACustomConstraint"><a href="/Bloggers/BeanValidationSneakPeekPartIICustomConstraints#H-WritingACustomConstraint">Writing a custom constraint</a></h2>
+<h2 class="wikiHeadline2" id="H-WritingACustomConstraint"><a href="/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints#H-WritingACustomConstraint">Writing a custom constraint</a></h2>
 
 <p class="wikiPara">
 Because writing custom constraints is a core part of the specification goal, great care have been taken to make it as simple as possible. Let's walk through the process of creating a custom constraint.
@@ -38,7 +40,7 @@ As we have seen in the <a href="http://in.relation.to/Bloggers/BeanValidationSne
 <li class="wikiUnorderedListItem"> an implementation</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-ConstraintAnnotation"><a href="/Bloggers/BeanValidationSneakPeekPartIICustomConstraints#H-ConstraintAnnotation">Constraint annotation</a></h3>
+<h3 class="wikiHeadline3" id="H-ConstraintAnnotation"><a href="/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints#H-ConstraintAnnotation">Constraint annotation</a></h3>
 <p class="wikiPara">
 Every constraint is associated to an annotation. You can see it as a type safe alias and a descriptor. Constraint annotations can also hold one or several parameters that will help customize the behavior at declaration time
 </p>
@@ -109,7 +111,7 @@ public @interface Range {
 Now that we have a way to express a constraint and its parameters, we need to provide the logic to validate the constraint.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ConstraintImplementation"><a href="/Bloggers/BeanValidationSneakPeekPartIICustomConstraints#H-ConstraintImplementation">Constraint implementation</a></h3>
+<h3 class="wikiHeadline3" id="H-ConstraintImplementation"><a href="/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints#H-ConstraintImplementation">Constraint implementation</a></h3>
 
 <p class="wikiPara">
 The constraint implementation is associated to its annotation through the use of <tt>@ConstraintValidator</tt>. In the first early draft, <tt>@ValidatorClass</tt> is sometimes used in lieu of <tt>@ConstraintValidator</tt>: this is a mistake driven by a last minute change, sorry. The implementation must implement a very simple interface <tt>Constraint&lt;A extends Annotation&gt;</tt> where <tt>A</tt> is the targeted constraint annotation
@@ -174,7 +176,7 @@ As you can see the interface entirely focuses on validation and leaves other con
 This easily customizable approach gives application programmers the freedom they need to express constraints and validate them.
 </p>
 
-<h3 class="wikiHeadline3" id="H-ApplyingTheSameConstraintTypeMultipleTimes"><a href="/Bloggers/BeanValidationSneakPeekPartIICustomConstraints#H-ApplyingTheSameConstraintTypeMultipleTimes">Applying the same constraint type multiple times</a></h3>
+<h3 class="wikiHeadline3" id="H-ApplyingTheSameConstraintTypeMultipleTimes"><a href="/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints#H-ApplyingTheSameConstraintTypeMultipleTimes">Applying the same constraint type multiple times</a></h3>
 
 <p class="wikiPara">
 Especially when using <tt>groups</tt>, you will sometimes need to apply the same type of constraint multiple times on the same element. The Bean Validation specification takes into account annotations containing an array of constraint annotations:
@@ -216,7 +218,7 @@ In this example, you can apply multiple patterns on the same property
         ...</pre>
 
 
-<h3 class="wikiHeadline3" id="H-BuildingConstraints"><a href="/Bloggers/BeanValidationSneakPeekPartIICustomConstraints#H-BuildingConstraints">Building constraints</a></h3>
+<h3 class="wikiHeadline3" id="H-BuildingConstraints"><a href="/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints#H-BuildingConstraints">Building constraints</a></h3>
 
 <p class="wikiPara">
 By default, Bean Validation providers instantiate constraint validation implementations using a no-arg constructor. However, the specification offers an extension point to delegate the instantiation process to a dependency management library such as Web Beans, Guice, Spring, JBoss Seam or even the JBoss Microcontainer. 
@@ -226,7 +228,7 @@ By default, Bean Validation providers instantiate constraint validation implemen
 Depending on the capacity of the dependency management tool, we expect validation implementations to be able to receive injected resources if needed: this mechanism will be entirely dependent on the dependency management tool.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ClasslevelConstraints"><a href="/Bloggers/BeanValidationSneakPeekPartIICustomConstraints#H-ClasslevelConstraints">Class-level constraints</a></h2>
+<h2 class="wikiHeadline2" id="H-ClasslevelConstraints"><a href="/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints#H-ClasslevelConstraints">Class-level constraints</a></h2>
 
 <p class="wikiPara">
 Some of you have expressed concerns about the ability to apply a constraint spanning multiple properties, or to express constraint which depend on several properties. The classical example is address validation. Addresses have intricate rules:
@@ -309,7 +311,7 @@ The advanced address validation rules have been left out of the address object a
 The expert group has discussed various multiple properties support approaches: we think the class level constraint approach provides both enough simplicity and flexibility compared to other property level approaches involving dependencies. Your feedback is welcome.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/BeanValidationSneakPeekPartIICustomConstraints#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2008/04/01/BeanValidationSneakPeekPartIICustomConstraints#H-Conclusion">Conclusion</a></h2>
 
 <p class="wikiPara">
 Custom constraints are at the heart of JSR 303 Bean Validation flexibility. It should not be considered awkward to write a custom constraint:

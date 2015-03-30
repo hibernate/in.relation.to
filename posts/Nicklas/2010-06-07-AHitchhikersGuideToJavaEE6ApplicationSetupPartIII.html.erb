@@ -5,11 +5,13 @@ blogger_name: "Nicklas"
 creation_date: "07-06-2010"
 tags: [Bean Validation,JSF,JSF 2]
 
-absolute_url: http://in.relation.to/2010/06/07/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII
-lace: http://in.relation.to/15767.lace
+relative_url: /2010/06/07/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII
 slug: AHitchhikersGuideToJavaEE6ApplicationSetupPartIII
+lace: http://in.relation.to/15767.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/06/07/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 In this third part we'll be hooking up JPA 2 with the static metamodel generator, Bean Validation and Envers
 </p>
 
-<h1 class="wikiHeadline1" id="H-JPA"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII#H-JPA">JPA</a></h1>
+<h1 class="wikiHeadline1" id="H-JPA"><a href="/2010/06/07/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII#H-JPA">JPA</a></h1>
 
 <p class="wikiPara">
 Let's get persistent. When we're talking persistence, we need a persistence.xml so let's make a folder META-INF src/main/resources and create one there
@@ -299,7 +301,7 @@ That observes @Added Greetings and store them to the database. Notice also the l
 to populate itself with old comments. Well, with create-drop in our persistence.xml there won't be much to load but let's fix that later.
 </p>
 
-<h1 class="wikiHeadline1" id="H-JPA2"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII#H-JPA2">JPA 2</a></h1>
+<h1 class="wikiHeadline1" id="H-JPA2"><a href="/2010/06/07/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII#H-JPA2">JPA 2</a></h1>
 
 <p class="wikiPara">
 That's all nice but we're trying to be livin' on the edge so let's bring in JPA and typesafe queries and with those we better have some static metamodel
@@ -519,7 +521,7 @@ public class GreetingArchiver
 </pre>
 
 
-<h1 class="wikiHeadline1" id="H-BeanValidation"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII#H-BeanValidation">Bean Validation</a></h1>
+<h1 class="wikiHeadline1" id="H-BeanValidation"><a href="/2010/06/07/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII#H-BeanValidation">Bean Validation</a></h1>
 
 <p class="wikiPara">
 Adding Bean Validation is a breeze, just stick the annotations on the entity fields in Greeting:
@@ -546,7 +548,7 @@ I tried placing a @NotNull on text but it still failed on submit because the val
 behavior) so I used min = 1 instead.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Envers"><a href="/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII#H-Envers">Envers</a></h1>
+<h1 class="wikiHeadline1" id="H-Envers"><a href="/2010/06/07/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII#H-Envers">Envers</a></h1>
 
 <p class="wikiPara">
 If you would like to have auditing on your entities, you need to add the Envers dep to pom.xml

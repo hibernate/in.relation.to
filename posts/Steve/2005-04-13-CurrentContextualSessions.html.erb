@@ -5,11 +5,13 @@ blogger_name: "Steve"
 creation_date: "13-04-2005"
 tags: []
 
-absolute_url: http://in.relation.to/2005/04/13/CurrentContextualSessions
-lace: http://in.relation.to/2037.lace
+relative_url: /2005/04/13/CurrentContextualSessions
 slug: CurrentContextualSessions
+lace: http://in.relation.to/2037.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2005/04/13/CurrentContextualSessions
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ or rely on third party stuff to do for them.  Let's take a look at how this is i
 how it might be useful.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ContextScope"><a href="/Bloggers/CurrentContextualSessions#H-ContextScope">Context Scope</a></h2>
+<h2 class="wikiHeadline2" id="H-ContextScope"><a href="/2005/04/13/CurrentContextualSessions#H-ContextScope">Context Scope</a></h2>
 
 <p class="wikiPara">
 I said that SessionFactory.getCurrentSession() tracks the current session on behalf of the application developer.
@@ -38,7 +40,7 @@ Map is built lazily, and only utilized during getCurrentSession() calls: if you 
 never even built.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ExampleUsage"><a href="/Bloggers/CurrentContextualSessions#H-ExampleUsage">Example Usage</a></h2>
+<h2 class="wikiHeadline2" id="H-ExampleUsage"><a href="/2005/04/13/CurrentContextualSessions#H-ExampleUsage">Example Usage</a></h2>
 
 <p class="wikiPara">
 Imagine a simple scenario coordinating efforts between three DAOs:
@@ -111,7 +113,7 @@ transaction and reuse the same session throughout that JTA transaction.  But how
 session?  And how do we manage flushing of the session state with the database?
 </p>
 
-<h2 class="wikiHeadline2" id="H-AutoFlushAndClose"><a href="/Bloggers/CurrentContextualSessions#H-AutoFlushAndClose">Auto flush and close</a></h2>
+<h2 class="wikiHeadline2" id="H-AutoFlushAndClose"><a href="/2005/04/13/CurrentContextualSessions#H-AutoFlushAndClose">Auto flush and close</a></h2>
 
 <p class="wikiPara">
 Two new configuration options introduced in Hibernate3 are extremely powerful, especially when 
@@ -135,7 +137,7 @@ use it, and then immediately release it back to the datasource.  This allows bet
 JTA environments which implement some form of connection <q>containment</q> check (i.e. the JBoss CachedConnectionManager).
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/CurrentContextualSessions#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2005/04/13/CurrentContextualSessions#H-Conclusion">Conclusion</a></h2>
 
 <p class="wikiPara">
 All of these together allow application developers to free themselves from managing <q>session lifecycle</q> and have Hibernate do it for them.

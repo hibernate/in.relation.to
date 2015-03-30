@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "29-04-2011"
 tags: [Ceylon,Introduction to Ceylon]
 
-absolute_url: http://in.relation.to/2011/04/29/IntroductionToCeylonPart7
-lace: http://in.relation.to/19678.lace
+relative_url: /2011/04/29/IntroductionToCeylonPart7
 slug: IntroductionToCeylonPart7
+lace: http://in.relation.to/19678.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/04/29/IntroductionToCeylonPart7
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 <i class="wikiEmphasis">This is the seventh installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
 </p>
 
-<h1 class="wikiHeadline1" id="H-AttributesAndLocals"><a href="/Bloggers/IntroductionToCeylonPart7#H-AttributesAndLocals">Attributes and locals</a></h1>
+<h1 class="wikiHeadline1" id="H-AttributesAndLocals"><a href="/2011/04/29/IntroductionToCeylonPart7#H-AttributesAndLocals">Attributes and locals</a></h1>
 
 <p class="wikiPara">
 In Java, a field of a class is quite easily distinguished from a local constant or variable of a method or constructor. Ceylon doesn't really make this distinction very strongly. An attribute is really just a local that happens to be captured by some <tt>shared</tt> declaration.
@@ -74,7 +76,7 @@ This might seem a bit strange at first, but it's really just how closure works. 
 Even though we'll continue to use the words <q>local</q> and <q>attribute</q>, keep in mind that there's no really strong distinction between the terms. Any named value might be captured by some other declaration in the same containing scope. (I'm still searching for a really good word to collectively describe attributes and locals.)
 </p>
 
-<h1 class="wikiHeadline1" id="H-Variables"><a href="/Bloggers/IntroductionToCeylonPart7#H-Variables">Variables</a></h1>
+<h1 class="wikiHeadline1" id="H-Variables"><a href="/2011/04/29/IntroductionToCeylonPart7#H-Variables">Variables</a></h1>
 
 <p class="wikiPara">
 Ceylon encourages you to use immutable attributes as much as possible. An immutable attribute has its value specified when the object is initialized, and is never reassigned.
@@ -107,7 +109,7 @@ The <tt>=</tt> specifier is <i class="wikiEmphasis">not</i> an operator, and can
 }</pre>
 
 
-<h1 class="wikiHeadline1" id="H-Setters"><a href="/Bloggers/IntroductionToCeylonPart7#H-Setters">Setters</a></h1>
+<h1 class="wikiHeadline1" id="H-Setters"><a href="/2011/04/29/IntroductionToCeylonPart7#H-Setters">Setters</a></h1>
 
 <p class="wikiPara">
 If we want to make an attribute with a getter mutable, we need to define a matching <i class="wikiEmphasis">setter</i>. Usually this is only useful if you have some other internal attribute you're trying to set the value of indirectly.
@@ -148,7 +150,7 @@ A setter is identified by the keyword <tt>assign</tt> in place of a type declara
 Yes, this is a lot like a Java get/set method pair, though the syntax is significantly streamlined. But since Ceylon attributes are polymorphic, and since you can redefine a simple attribute as a getter or getter/setter pair without affecting clients that call the attribute, you don't need to write getters and setters unless you're doing something special with the value you're getting or setting.
 </p>
 
-<h1 class="wikiHeadline1" id="H-ControlStructures"><a href="/Bloggers/IntroductionToCeylonPart7#H-ControlStructures">Control structures</a></h1>
+<h1 class="wikiHeadline1" id="H-ControlStructures"><a href="/2011/04/29/IntroductionToCeylonPart7#H-ControlStructures">Control structures</a></h1>
 
 <p class="wikiPara">
 Ceylon has five built-in control structures. There's nothing much new here for Java or C# developers, so I'll just give a few quick examples without much additional commentary. However, one thing to be aware of is that Ceylon doesn't allow you to omit the braces in a control structure. The following doesn't parse:
@@ -239,7 +241,7 @@ And <tt>try</tt> supports a <q>resource</q> expression similar to Java 7.
 }</pre>
 
 
-<h1 class="wikiHeadline1" id="H-SequencedParameters"><a href="/Bloggers/IntroductionToCeylonPart7#H-SequencedParameters">Sequenced parameters</a></h1>
+<h1 class="wikiHeadline1" id="H-SequencedParameters"><a href="/2011/04/29/IntroductionToCeylonPart7#H-SequencedParameters">Sequenced parameters</a></h1>
 
 <p class="wikiPara">
 A <i class="wikiEmphasis">sequenced parameter</i> of a method or class is declared using an ellipsis. There may be only one sequenced parameter for a method or class, and it must be the <i class="wikiEmphasis">last</i> parameter.
@@ -271,7 +273,7 @@ A slightly more sophisticated example is the <tt>coalesce()</tt> method we saw a
 Sequenced parameters turn out to be especially interesting when used in named argument lists for defining user interfaces or structured data.
 </p>
 
-<h1 class="wikiHeadline1" id="H-PackagesAndImports"><a href="/Bloggers/IntroductionToCeylonPart7#H-PackagesAndImports">Packages and imports</a></h1>
+<h1 class="wikiHeadline1" id="H-PackagesAndImports"><a href="/2011/04/29/IntroductionToCeylonPart7#H-PackagesAndImports">Packages and imports</a></h1>
 
 <p class="wikiPara">
 There's no special <tt>package</tt> statement in Ceylon. The compiler determines the package and module to which a toplevel program element belongs by the location of the source file in which it is declared. A class named <tt>Hello</tt> in the package <tt>org.jboss.hello</tt> must be defined in the file <tt>org/jboss/hello/Hello.ceylon</tt>.
@@ -313,7 +315,7 @@ To resolve a name conflict, we can rename an imported declaration:
 We think renaming is a much cleaner solution than the use of qualified names.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart7#H-TheresMore">There's more...</a></h1>
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/04/29/IntroductionToCeylonPart7#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
 Now that we've mopped up a few <q>missing</q> topics, we're ready to look at first class functions in <a href="/Bloggers/IntroductionToCeylonPart8" target="" class="regularLink">Part 8</a>, and the declarative <q>object-tree-builder</q> syntax for defining user interfaces and structured data in <a href="/Bloggers/IntroductionToCeylonPart9" target="" class="regularLink">Part 9</a>.

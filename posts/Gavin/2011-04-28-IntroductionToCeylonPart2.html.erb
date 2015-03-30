@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "28-04-2011"
 tags: [Ceylon,Introduction to Ceylon]
 
-absolute_url: http://in.relation.to/2011/04/28/IntroductionToCeylonPart2
-lace: http://in.relation.to/19556.lace
+relative_url: /2011/04/28/IntroductionToCeylonPart2
 slug: IntroductionToCeylonPart2
+lace: http://in.relation.to/19556.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/04/28/IntroductionToCeylonPart2
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 <i class="wikiEmphasis">This is the second installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
 </p>
 
-<h1 class="wikiHeadline1" id="H-CreatingYourOwnClasses"><a href="/Bloggers/IntroductionToCeylonPart2#H-CreatingYourOwnClasses">Creating your own classes</a></h1>
+<h1 class="wikiHeadline1" id="H-CreatingYourOwnClasses"><a href="/2011/04/28/IntroductionToCeylonPart2#H-CreatingYourOwnClasses">Creating your own classes</a></h1>
 
 <p class="wikiPara">
 Ceylon is an object oriented language, so we usually write most of our code in <i class="wikiEmphasis">classes</i>. A class is a type that packages:
@@ -63,7 +65,7 @@ class Hello(String? name) {
 To understand this code completely, we're going to need to first explore Ceylon's approach to program element accessibility — the <tt>shared</tt> annotation above, then meet the concept of an attribute, and finally discuss how object initialization works in Ceylon.
 </p>
 
-<h1 class="wikiHeadline1" id="H-HidingImplementationDetails"><a href="/Bloggers/IntroductionToCeylonPart2#H-HidingImplementationDetails">Hiding implementation details</a></h1>
+<h1 class="wikiHeadline1" id="H-HidingImplementationDetails"><a href="/2011/04/28/IntroductionToCeylonPart2#H-HidingImplementationDetails">Hiding implementation details</a></h1>
 
 <p class="wikiPara">
 In Java and C#, a class controls the accessibility of its members using visibility modifier annotations, allowing the class to hide its internal implementation from other code. The visibility modifiers select between pre-defined, definite visibility levels like <tt>public</tt>, <tt>protected</tt>, package private, and <tt>private</tt>. Ceylon provides just one annotation for access control. The key difference is that Ceylon's <tt>shared</tt> annotation does not represent a single definite scope. Rather, its meaning is contextual, relative to the program element at which it appears. The <tt>shared</tt> annotation is in some cases more flexible, in certain cases less flexible, but almost always simpler and easier to use than the approach taken by Java and C#. And it's a far better fit to a language like Ceylon with a regular, recursive block structure.
@@ -89,7 +91,7 @@ It's not possible to create a shared toplevel class with package-private members
 Ceylon doesn't have anything like Java's <tt>protected</tt>. The purpose of visibility rules and access control is to limit dependencies between code that is developed by different teams, maintained by different developers, or has different release cycles. From a software engineering point of view, any code element exposed to a different package or module is a dependency that must be managed. And a dependency is a dependency. It's not any less of a dependency if the code to which the program element is exposed is in a subclass of the type which contains the program element!
 </p>
 
-<h1 class="wikiHeadline1" id="H-AbstractingStateUsingAttributes"><a href="/Bloggers/IntroductionToCeylonPart2#H-AbstractingStateUsingAttributes">Abstracting state using attributes</a></h1>
+<h1 class="wikiHeadline1" id="H-AbstractingStateUsingAttributes"><a href="/2011/04/28/IntroductionToCeylonPart2#H-AbstractingStateUsingAttributes">Abstracting state using attributes</a></h1>
 
 <p class="wikiPara">
 The attribute <tt>greeting</tt> is a <i class="wikiEmphasis">simple attribute</i>, the closest thing Ceylon has to a Java field. Its value is specified immediately after it is declared. Usually we can declare and specify the value of an attribute in a single line of code.
@@ -137,7 +139,7 @@ Notice that the syntax of a getter declaration looks a lot like a method declara
 Clients of a class never need to know whether the attribute they access holds state directly, or is a getter that derives its value from other attributes of the same object or other objects. In Ceylon, you don't need to go around declaring all your attributes private and wrapping them in getter and setter methods. Get out of that habit right now!
 </p>
 
-<h1 class="wikiHeadline1" id="H-UnderstandingObjectInitialization"><a href="/Bloggers/IntroductionToCeylonPart2#H-UnderstandingObjectInitialization">Understanding object initialization</a></h1>
+<h1 class="wikiHeadline1" id="H-UnderstandingObjectInitialization"><a href="/2011/04/28/IntroductionToCeylonPart2#H-UnderstandingObjectInitialization">Understanding object initialization</a></h1>
 
 <p class="wikiPara">
 In Ceylon, classes don't have constructors. Instead:
@@ -196,7 +198,7 @@ We've just met our first example of <i class="wikiEmphasis">closure</i>. We say 
 In fact, one way to look at the whole notion of a class in Ceylon is to think of it as a function which returns a closure of its own local variables. This helps explain why the syntax of class declarations is so similar to the syntax of method declarations (a class declaration looks a lot like a method declaration where the return type and the name of the method are the same).
 </p>
 
-<h1 class="wikiHeadline1" id="H-InstantiatingClassesAndOverloadingTheirInitializerParameters"><a href="/Bloggers/IntroductionToCeylonPart2#H-InstantiatingClassesAndOverloadingTheirInitializerParameters">Instantiating classes and overloading their initializer parameters</a></h1>
+<h1 class="wikiHeadline1" id="H-InstantiatingClassesAndOverloadingTheirInitializerParameters"><a href="/2011/04/28/IntroductionToCeylonPart2#H-InstantiatingClassesAndOverloadingTheirInitializerParameters">Instantiating classes and overloading their initializer parameters</a></h1>
 
 <p class="wikiPara">
 Oops, I got so excited about attributes and closure and null value handling that I forgot to show you the code that uses <tt>Hello</tt>!
@@ -292,7 +294,7 @@ void hello() {
 }</pre>
 
 
-<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/Bloggers/IntroductionToCeylonPart2#H-TheresMore">There's more...</a></h1>
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/04/28/IntroductionToCeylonPart2#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
 In <a href="/Bloggers/IntroductionToCeylonPart3" target="" class="regularLink">Part 3</a>, we'll explore inheritance and refinement (overriding).

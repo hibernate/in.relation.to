@@ -5,11 +5,13 @@ blogger_name: "Max"
 creation_date: "22-04-2008"
 tags: [JBoss Tools]
 
-absolute_url: http://in.relation.to/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes
-lace: http://in.relation.to/8895.lace
+relative_url: /2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes
 slug: HowToCreateAVisualDocBookEditorIn10Minutes
+lace: http://in.relation.to/8895.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -38,7 +40,7 @@ Yes, that is a two-way visual editor for a DocBook document.
 <b>Warning:</b> Before you go on please note that this is a work in progress and the API and file format used in this blog might change in future releases until we get it stabilized.
 </blockquote>
 
-<h1 class="wikiHeadline1" id="H-TheEasyWay"><a href="/Bloggers/HowToCreateAVisualDocBookEditorIn10Minutes#H-TheEasyWay">The easy way</a></h1>
+<h1 class="wikiHeadline1" id="H-TheEasyWay"><a href="/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes#H-TheEasyWay">The easy way</a></h1>
 
 <p class="wikiPara">
 Go to <a href="http://jira.jboss.com/jira/browse/JBIDE-1304" target="" class="regularLink">JBIDE-1304</a> and download the attachment which is a plugin you can unzip into your Eclipse plugins directory with JBoss Tools or JBDS pre-installed.
@@ -48,13 +50,13 @@ Go to <a href="http://jira.jboss.com/jira/browse/JBIDE-1304" target="" class="re
 Run Eclipse with JBoss Tools installed and open your DocBook .xml file with the editor by using <q>Open with &gt; Other &gt; JBoss Tools HTML Editor</q>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheHarderWay"><a href="/Bloggers/HowToCreateAVisualDocBookEditorIn10Minutes#H-TheHarderWay">The harder way</a></h1>
+<h1 class="wikiHeadline1" id="H-TheHarderWay"><a href="/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes#H-TheHarderWay">The harder way</a></h1>
 
 <p class="wikiPara">
 The following describes the parts in play and how to write the plugin. First we need to understand how the Visual Page Editor works.
 </p>
 
-<h2 class="wikiHeadline2" id="H-MechanicsOfTheVisualPageEditor"><a href="/Bloggers/HowToCreateAVisualDocBookEditorIn10Minutes#H-MechanicsOfTheVisualPageEditor">Mechanics of the Visual Page Editor</a></h2>
+<h2 class="wikiHeadline2" id="H-MechanicsOfTheVisualPageEditor"><a href="/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes#H-MechanicsOfTheVisualPageEditor">Mechanics of the Visual Page Editor</a></h2>
 
 <p class="wikiPara">
 The Visual Page Editor (VPE) in JBoss Tools is actually more than <q>just</q> an editor for html-like languages like (X)HTML, JSP and JSF/Facelets, it is a general editor that can be adapted to edit (almost) any kind of XML based document in a visual editor. As long as you can define a set of transformation rules that gives you a good approximation of the rendering in HTML then using VPE is an option for you. 
@@ -83,7 +85,7 @@ An example of these templates is:
 This template says if a 'section' tag is found transform it into a 'h3' tag with the text of the section as the title.
 </p>
 
-<h2 class="wikiHeadline2" id="H-CreateADocBookVPEExtension"><a href="/Bloggers/HowToCreateAVisualDocBookEditorIn10Minutes#H-CreateADocBookVPEExtension">Create a DocBook VPE extension</a></h2>
+<h2 class="wikiHeadline2" id="H-CreateADocBookVPEExtension"><a href="/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes#H-CreateADocBookVPEExtension">Create a DocBook VPE extension</a></h2>
 
 <p class="wikiPara">
 You either create a fresh new plugin or add the following to your existing plugin.
@@ -163,13 +165,13 @@ Some tags might require more than just basic transformation, but that must wait 
 But otherwise that it is it! It is that simple.
 </p>
 
-<h1 class="wikiHeadline1" id="H-RunEclipseWithThePlugin"><a href="/Bloggers/HowToCreateAVisualDocBookEditorIn10Minutes#H-RunEclipseWithThePlugin">Run Eclipse with the plugin</a></h1>
+<h1 class="wikiHeadline1" id="H-RunEclipseWithThePlugin"><a href="/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes#H-RunEclipseWithThePlugin">Run Eclipse with the plugin</a></h1>
 
 <p class="wikiPara">
 You should now be able to run your Eclipse directly from PDE or standalone with the plugin installed and open any DocBook .xml file with the editor by using <q>Open with &gt; Other &gt; JBoss Tools HTML Editor</q>
 </p>
 
-<h1 class="wikiHeadline1" id="H-Future"><a href="/Bloggers/HowToCreateAVisualDocBookEditorIn10Minutes#H-Future">Future</a></h1>
+<h1 class="wikiHeadline1" id="H-Future"><a href="/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes#H-Future">Future</a></h1>
 
 <p class="wikiPara">
 The current version is just a prototype and still has some quirks but it functional for most editing of DocBook files. 
@@ -183,7 +185,7 @@ We plan on putting this into JBoss Tools when we fix some of quirks described at
 Let us know what you think about this feature and consider contributing any enhancements you do back to us. If you want to see more example of possible transformations go look for .vpe files in JBoss Tools or JBDS distribution.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Thanks"><a href="/Bloggers/HowToCreateAVisualDocBookEditorIn10Minutes#H-Thanks">Thanks</a></h1>
+<h1 class="wikiHeadline1" id="H-Thanks"><a href="/2008/04/22/HowToCreateAVisualDocBookEditorIn10Minutes#H-Thanks">Thanks</a></h1>
 
 <p class="wikiPara">
 This is a write up of the 10 minutes short talk I did at EclipseCon 2008 called <q>How to extend the Visual Page Editor in JBoss tools</q> inspired from what Max Katz, Alexey Kazakov and Sergey Vasilyev taught me about the extensions point in VPE.

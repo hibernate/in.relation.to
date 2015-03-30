@@ -5,17 +5,19 @@ blogger_name: "Gavin"
 creation_date: "11-06-2009"
 tags: [Contexts and Dependency Injection,Seam News,Web Beans]
 
-absolute_url: http://in.relation.to/2009/06/11/JSR299ProposedFinalDraftSubmitted
-lace: http://in.relation.to/11777.lace
+relative_url: /2009/06/11/JSR299ProposedFinalDraftSubmitted
 slug: JSR299ProposedFinalDraftSubmitted
+lace: http://in.relation.to/11777.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/06/11/JSR299ProposedFinalDraftSubmitted
 ---
 <div id="documentDisplay" class="documentDisplay">
 
 
 <p class="wikiPara">
-I just submitted the Proposed Final Draft of <a href="http://jcp.org/en/jsr/detail?id=299" target="" class="regularLink">JSR-299</a>, Contexts and Dependency Injection, to the JCP. Download it <a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#attachment1" target="" class="regularLink">here[1]</a>. We're gearing up for a final release in August, in time for the Java EE 6 release in September. Thanks to everyone who put so much effort into this!
+I just submitted the Proposed Final Draft of <a href="http://jcp.org/en/jsr/detail?id=299" target="" class="regularLink">JSR-299</a>, Contexts and Dependency Injection, to the JCP. Download it <a href="/2009/06/11/JSR299ProposedFinalDraftSubmitted#attachment1" target="" class="regularLink">here[1]</a>. We're gearing up for a final release in August, in time for the Java EE 6 release in September. Thanks to everyone who put so much effort into this!
 </p>
 
 <p class="wikiPara">
@@ -41,7 +43,7 @@ Best of all, this functionality is provided with a clean, simple, uniform progra
 Now is a good time to clear up some misconceptions I've seen floating about.
 </p>
 
-<h3 class="wikiHeadline3" id="H-JSR299IsJustForEJBs"><a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#H-JSR299IsJustForEJBs">JSR-299 is just for EJBs</a></h3>
+<h3 class="wikiHeadline3" id="H-JSR299IsJustForEJBs"><a href="/2009/06/11/JSR299ProposedFinalDraftSubmitted#H-JSR299IsJustForEJBs">JSR-299 is just for EJBs</a></h3>
 
 <p class="wikiPara">
 This isn't true at all. 
@@ -88,13 +90,13 @@ Here's a class that uses injection:
 There's also a simple SPI to allow third-party frameworks (including other container like Spring) to offer their own objects up for injection via the 299 container.
 </p>
 
-<h3 class="wikiHeadline3" id="H-JSR299IsTiedToJSF"><a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#H-JSR299IsTiedToJSF">JSR-299 is tied to JSF</a></h3>
+<h3 class="wikiHeadline3" id="H-JSR299IsTiedToJSF"><a href="/2009/06/11/JSR299ProposedFinalDraftSubmitted#H-JSR299IsTiedToJSF">JSR-299 is tied to JSF</a></h3>
 
 <p class="wikiPara">
 Also not true. In an EE 6 environment, JSR-299 comes pre-integrated with Java Servlets, JSP and JAX-RS, in addition to JSF. And 299 provides SPIs to enable integration with your favorite web framework. These SPIs make it easier than ever before to integrate third-party web frameworks with the rest of the EE environment.
 </p>
 
-<h3 class="wikiHeadline3" id="H-JSR299IsTiedToQheavyweightqJavaEEContainers"><a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#H-JSR299IsTiedToQheavyweightqJavaEEContainers">JSR-299 is tied to <q>heavyweight</q> Java EE containers</a></h3>
+<h3 class="wikiHeadline3" id="H-JSR299IsTiedToQheavyweightqJavaEEContainers"><a href="/2009/06/11/JSR299ProposedFinalDraftSubmitted#H-JSR299IsTiedToQheavyweightqJavaEEContainers">JSR-299 is tied to <q>heavyweight</q> Java EE containers</a></h3>
 
 <p class="wikiPara">
 Obviously, integration with the Java EE environment was an extremely high priority for the expert group, so you'll come across lots of information about Java EE integration when you read the specification. Certain functionality defined by JSR-299 is specific to certain other EE technologies. For example, if there's no EJB container, we can't inject EJBs! But this doesn't mean that JSR-299 is only available in a traditional Java EE container like JBoss or GlassFish.
@@ -113,7 +115,7 @@ Instead, 299 was designed to be suitable for inclusion in a variety of execution
 However, JSR-299 does not currently define a bootstrap API for starting and running the container standalone in the SE environment. Instead, this API is being defined by <a href="http://jcp.org/en/jsr/detail?id=330" target="" class="regularLink">JSR-330</a>. Unlike JSR-299, JSR-330 <a href="/Bloggers/CommentsOnAnnotationsForDependencyInjection" target="" class="regularLink">is not defining everything that is needed in order to write portable applications</a>. So you'll still need JSR-299 if you want your application to be portable to other container implementations. Therefore, we plan a maintenance release of JSR-299 that includes support for the JSR-330 bootstrap API. For now, if you want to run JSR-299 in the SE environment, you'll need to use a vendor-specific bootstrap API.
 </p>
 
-<h3 class="wikiHeadline3" id="H-JSR299UsesALotOfAnnotations"><a href="/Bloggers/JSR299ProposedFinalDraftSubmitted#H-JSR299UsesALotOfAnnotations">JSR-299 uses a lot of annotations</a></h3>
+<h3 class="wikiHeadline3" id="H-JSR299UsesALotOfAnnotations"><a href="/2009/06/11/JSR299ProposedFinalDraftSubmitted#H-JSR299UsesALotOfAnnotations">JSR-299 uses a lot of annotations</a></h3>
 
 <p class="wikiPara">
 We've been very careful to not require the use of many annotations in simple usecases. Let's take dependency injection as an example of this. 

@@ -5,11 +5,13 @@ blogger_name: "Pete"
 creation_date: "08-09-2007"
 tags: []
 
-absolute_url: http://in.relation.to/2007/09/08/StoringYourMessagesInADatabase
-lace: http://in.relation.to/2303.lace
+relative_url: /2007/09/08/StoringYourMessagesInADatabase
 slug: StoringYourMessagesInADatabase
+lace: http://in.relation.to/2303.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/09/08/StoringYourMessagesInADatabase
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ Seam has great i8ln - it provides a built in locale selector which it uses to pr
 Seam's built in message bundle uses properties files to define the resources - but what if you want to store your messages in a database?  You might want to allow an admin to edit the properties through a web admin panel for example.  Here we will cover the basic entities and wiring needed - you will probably want to add in some CRUD views for the resources.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Entities"><a href="/Bloggers/StoringYourMessagesInADatabase#H-Entities">Entities</a></h2>
+<h2 class="wikiHeadline2" id="H-Entities"><a href="/2007/09/08/StoringYourMessagesInADatabase#H-Entities">Entities</a></h2>
 
 <p class="wikiPara">
 We create two entites, first a resource bundle entity, which defines the bundle name, and the locale which it is for:
@@ -102,7 +104,7 @@ public class Resource
 }</pre>
 
 
-<h2 class="wikiHeadline2" id="H-Wiring"><a href="/Bloggers/StoringYourMessagesInADatabase#H-Wiring">Wiring</a></h2>
+<h2 class="wikiHeadline2" id="H-Wiring"><a href="/2007/09/08/StoringYourMessagesInADatabase#H-Wiring">Wiring</a></h2>
 
 <p class="wikiPara">
 We need to make Seam use our new resource loading scheme:
@@ -148,13 +150,13 @@ public class DatabaseResourceLoader extends ResourceLoader {
 }</pre>
 
 
-<h2 class="wikiHeadline2" id="H-Java6"><a href="/Bloggers/StoringYourMessagesInADatabase#H-Java6">Java 6</a></h2>
+<h2 class="wikiHeadline2" id="H-Java6"><a href="/2007/09/08/StoringYourMessagesInADatabase#H-Java6">Java 6</a></h2>
 
 <p class="wikiPara">
 This approach will work on Java 5 - but I believe Java 6 provides enhanced <tt>ResourceBundle</tt> support (but as there is no Java 6 for the Mac I didn't ;-) ).  You might want to investigate this.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Caching"><a href="/Bloggers/StoringYourMessagesInADatabase#H-Caching">Caching</a></h2>
+<h2 class="wikiHeadline2" id="H-Caching"><a href="/2007/09/08/StoringYourMessagesInADatabase#H-Caching">Caching</a></h2>
 
 <p class="wikiPara">
 We've not used any caching here - every request for a key will result in a database lookup.  You could use a Java <tt>Map</tt> to cache resources as they are loaded (taking care to flush the cash when the locale changes - use Seam's event bus to observe <tt>org.jboss.seam.localeSelected</tt>), or perhaps you could rely on the Hibernate second level cache... Up to you!</p>

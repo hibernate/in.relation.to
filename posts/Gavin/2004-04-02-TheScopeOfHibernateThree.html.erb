@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "02-04-2004"
 tags: []
 
-absolute_url: http://in.relation.to/2004/04/02/TheScopeOfHibernateThree
-lace: http://in.relation.to/1524.lace
+relative_url: /2004/04/02/TheScopeOfHibernateThree
 slug: TheScopeOfHibernateThree
+lace: http://in.relation.to/1524.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2004/04/02/TheScopeOfHibernateThree
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -27,7 +29,7 @@ So, in this spirit of hubris, I'll drop my normal policy of not boasting about t
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-QVirtualizationq"><a href="/Bloggers/TheScopeOfHibernateThree#H-QVirtualizationq"><q>Virtualization</q></a></h2>
+<h2 class="wikiHeadline2" id="H-QVirtualizationq"><a href="/2004/04/02/TheScopeOfHibernateThree#H-QVirtualizationq"><q>Virtualization</q></a></h2>
 
 <p class="wikiPara">
 A number of important and interesting problems may be solved by presenting the user with a certain, filtered, subset of the data. For example, a user might want to see data valid at a particular point in time, or may have permissions to view data only in a particular region. Rather than forcing application code to specify this filter criteria in tedious query conditions, Hibernate 3 will allow the (parametrized) filters to be applied at the session level.
@@ -38,7 +40,7 @@ A number of important and interesting problems may be solved by presenting the u
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-MoreMappingFlexibility"><a href="/Bloggers/TheScopeOfHibernateThree#H-MoreMappingFlexibility">More Mapping Flexibility</a></h2>
+<h2 class="wikiHeadline2" id="H-MoreMappingFlexibility"><a href="/2004/04/02/TheScopeOfHibernateThree#H-MoreMappingFlexibility">More Mapping Flexibility</a></h2>
 
 <p class="wikiPara">
 For the overwhelming majority of cases, Hibernate2 provides all the O/R mapping options you will need. However, there are now a few new features that are powerful, if used judiciously.
@@ -122,7 +124,7 @@ If your table-per-class-hierarchy mapping does not feature a nice simple discrim
 All of these features have been implemented in the Hibernate3 branch.
 </p>
 
-<h2 class="wikiHeadline2" id="H-RepresentationIndependence"><a href="/Bloggers/TheScopeOfHibernateThree#H-RepresentationIndependence">Representation Independence</a></h2>
+<h2 class="wikiHeadline2" id="H-RepresentationIndependence"><a href="/2004/04/02/TheScopeOfHibernateThree#H-RepresentationIndependence">Representation Independence</a></h2>
 
 <p class="wikiPara">
 Hibernate was conceived as a persistence solution for POJO domain models, and that remains the focus. Occasionally, we run into people who would like to represent their persistent entities in some more dynamic way, as a map, essentially. We used to point them to OFBiz Entity Engine. Well, Hibernate3 lets you represent your domain model as trees of HashMaps, or, with a little bit of user-written code, as just about anything. Here are three immediate applications of this new feature:
@@ -149,7 +151,7 @@ This feature has been implemented in the Hibernate3 branch.
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-JDK15Support"><a href="/Bloggers/TheScopeOfHibernateThree#H-JDK15Support">JDK 1.5 Support</a></h2>
+<h2 class="wikiHeadline2" id="H-JDK15Support"><a href="/2004/04/02/TheScopeOfHibernateThree#H-JDK15Support">JDK 1.5 Support</a></h2>
 
 <p class="wikiPara">
 JSR 175 annotations are a perfect fit for Hibernate metadata and we will embrace them aggressively. Emmanuel Bernard is working on this.
@@ -160,14 +162,14 @@ We will also need to support Java generics, which basically boils down to allowi
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-StoredProcedureSupport"><a href="/Bloggers/TheScopeOfHibernateThree#H-StoredProcedureSupport">Stored Procedure Support</a></h2>
+<h2 class="wikiHeadline2" id="H-StoredProcedureSupport"><a href="/2004/04/02/TheScopeOfHibernateThree#H-StoredProcedureSupport">Stored Procedure Support</a></h2>
 
 <p class="wikiPara">
 We are not enormous fans of using stored procedures for CRUD operations (of course, there are some other use cases where SPs make wonderful sense) but  people working with legacy databases often need Hibernate to call a SP instead of generating its own SQL statement. In Hibernate 2.1, it is possible to achieve this with a custom persister. Hibernate3 will allow arbitrary SQL statements to be specified in the mapping document for create, update and delete. Max Andersen is currently implementing this feature.
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-FullEventDrivenDesign"><a href="/Bloggers/TheScopeOfHibernateThree#H-FullEventDrivenDesign">Full Event Driven Design</a></h2>
+<h2 class="wikiHeadline2" id="H-FullEventDrivenDesign"><a href="/2004/04/02/TheScopeOfHibernateThree#H-FullEventDrivenDesign">Full Event Driven Design</a></h2>
 
 <p class="wikiPara">
 In the early days of the project, I applied YAGNI aggressively. Hibernate was occasionally criticized for supposed <q>architectural</q> deficiencies, due to the absence of a clear upfront design. (In my view, this lack of upfront design was not actually an architectural problem - at least by my understanding of the word <q>architecture</q> - but that debate is for another day...) Anyway, it was my firm belief that an elegant and flexible design would eventually grow naturally, and that our scarce attention and development resources were better spent solving actual user-visible problems. I now feel quite vindicated in this decision; Hibernate has flourished, and the design that has emerged is both powerful and reasonably elegant. Take that, YAGNI-skeptics!
@@ -178,7 +180,7 @@ There is one final step of this process, that is now in the hands of Steve Ebers
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-NewASTdrivenQueryParser"><a href="/Bloggers/TheScopeOfHibernateThree#H-NewASTdrivenQueryParser">New AST-driven Query Parser</a></h2>
+<h2 class="wikiHeadline2" id="H-NewASTdrivenQueryParser"><a href="/2004/04/02/TheScopeOfHibernateThree#H-NewASTdrivenQueryParser">New AST-driven Query Parser</a></h2>
 
 <p class="wikiPara">
 Well, actually /two/ final steps. (No-one expected the Spanish inquisition, did they?)
@@ -189,7 +191,7 @@ When I wrote the HQL parser, I knew zip about parsers. Hibernate ended up with a
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-DeclarativeSessionManagement"><a href="/Bloggers/TheScopeOfHibernateThree#H-DeclarativeSessionManagement">Declarative Session Management</a></h2>
+<h2 class="wikiHeadline2" id="H-DeclarativeSessionManagement"><a href="/2004/04/02/TheScopeOfHibernateThree#H-DeclarativeSessionManagement">Declarative Session Management</a></h2>
 
 <p class="wikiPara">
 This is a JBoss-specific feature for now. New users often find session management to be tricky at first. It can take a bit of thought to get your head around the schizophrenic role played by the Hibernate session as both a kind of <q>cache</q>, and a kind of <q>connection</q>. A JDBC Connection is stateless; a Hibernate Session, on the other hand, is a stateful connection! We further confuse the issue by telling people that, actually, the session is really representing a kind of <q>transaction</q>!

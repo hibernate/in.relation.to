@@ -5,11 +5,13 @@ blogger_name: "Davide"
 creation_date: "23-02-2015"
 tags: [Hibernate,Hibernate OGM,Hibernate OGM 101]
 
-absolute_url: http://in.relation.to/2015/02/23/NoSQLForHibernateOGMQueryingForYourData
-lace: http://in.relation.to/42552.lace
+relative_url: /2015/02/23/NoSQLForHibernateOGMQueryingForYourData
 slug: NoSQLForHibernateOGMQueryingForYourData
+lace: http://in.relation.to/42552.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/02/23/NoSQLForHibernateOGMQueryingForYourData
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -36,7 +38,7 @@ All of these alternatives will allow you to run a query on the datastore
 and get the result as a list of managed entities.
 </p>
 
-<h3 class="wikiHeadline3" id="H-PreparingTheTestClass"><a href="/Bloggers/NoSQLForHibernateOGMQueryingForYourData#H-PreparingTheTestClass">Preparing the test class</a></h3>
+<h3 class="wikiHeadline3" id="H-PreparingTheTestClass"><a href="/2015/02/23/NoSQLForHibernateOGMQueryingForYourData#H-PreparingTheTestClass">Preparing the test class</a></h3>
 
 <p class="wikiPara">
 We are going to add a new class HikeQueryTest. It will populate the datastore with some information about hikes:
@@ -100,7 +102,7 @@ This methods will make sure that the entity manager factory is created before ru
 Now that we have some data in place, we can start to write some tests to search for them.
 </p>
 
-<h3 class="wikiHeadline3" id="H-UsingTheJavaPersistenceQueryLangageJPQL"><a href="/Bloggers/NoSQLForHibernateOGMQueryingForYourData#H-UsingTheJavaPersistenceQueryLangageJPQL">Using the Java Persistence Query Langage (JP-QL)</a></h3>
+<h3 class="wikiHeadline3" id="H-UsingTheJavaPersistenceQueryLangageJPQL"><a href="/2015/02/23/NoSQLForHibernateOGMQueryingForYourData#H-UsingTheJavaPersistenceQueryLangageJPQL">Using the Java Persistence Query Langage (JP-QL)</a></h3>
 
 <p class="wikiPara">
 The JP-QL is a query language defined as part of the <a href="http://download.oracle.com/otndocs/jcp/persistence-2.0-fr-eval-oth-JSpec/" target="" class="regularLink">Java Persistence API (JPA) specification</a>.
@@ -231,7 +233,7 @@ In case JP-QL is not a good fit for your use case, we will see how you can execu
 a query using the native language of the backend of your choice.
 </p>
 
-<h3 class="wikiHeadline3" id="H-UsingTheNativeBackendQueryLanguage"><a href="/Bloggers/NoSQLForHibernateOGMQueryingForYourData#H-UsingTheNativeBackendQueryLanguage">Using the native backend query language</a></h3>
+<h3 class="wikiHeadline3" id="H-UsingTheNativeBackendQueryLanguage"><a href="/2015/02/23/NoSQLForHibernateOGMQueryingForYourData#H-UsingTheNativeBackendQueryLanguage">Using the native backend query language</a></h3>
 
 <p class="wikiPara">
 Sometimes you might decide to sacrifice portablility in favor of the power of the underlying native query language. For example, you might want to benefit from the abilities of Neo4j's Cypher language for running hierarchical/recursive queries.
@@ -277,7 +279,7 @@ and then execute it like this:
 </pre>
 
 
-<h3 class="wikiHeadline3" id="H-UsingHibernateSearchQueries"><a href="/Bloggers/NoSQLForHibernateOGMQueryingForYourData#H-UsingHibernateSearchQueries">Using Hibernate Search queries</a></h3>
+<h3 class="wikiHeadline3" id="H-UsingHibernateSearchQueries"><a href="/2015/02/23/NoSQLForHibernateOGMQueryingForYourData#H-UsingHibernateSearchQueries">Using Hibernate Search queries</a></h3>
 
 <p class="wikiPara">
 Hibernate Search offers a way to index Java objects into Lucene indexes and to execute full-text queries on them. The indexes do live outside your datastore. This means you can have query capabilities even if they are not supported natively. It also offers a few interesting properties in terms of feature set and scalability. In particular, using Hibernate Search, you can off-load query execution to separate nodes and scale it independently from the actual datastore nodes.
@@ -379,7 +381,7 @@ The result of the code will be a list of hikes mentioning “Carisbrooke castle�
 Hibernate Search is a very powerful tool with many different options, it would take too long to describe all of them in this tutorial. You can check the <a href="http://hibernate.org/search/documentation/" target="" class="regularLink">reference documentation</a> to learn more about it.
 </p>
 
-<h3 class="wikiHeadline3" id="H-WrapUp"><a href="/Bloggers/NoSQLForHibernateOGMQueryingForYourData#H-WrapUp">Wrap up</a></h3>
+<h3 class="wikiHeadline3" id="H-WrapUp"><a href="/2015/02/23/NoSQLForHibernateOGMQueryingForYourData#H-WrapUp">Wrap up</a></h3>
 
 <p class="wikiPara">
 That’s all for now.

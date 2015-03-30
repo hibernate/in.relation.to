@@ -5,11 +5,13 @@ blogger_name: "Gavin"
 creation_date: "06-10-2007"
 tags: [Web Beans,Web Beans Sneak Peek]
 
-absolute_url: http://in.relation.to/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents
-lace: http://in.relation.to/2564.lace
+relative_url: /2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents
 slug: WebBeansSneakPeekPartVInterceptorsAndEvents
+lace: http://in.relation.to/2564.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -47,7 +49,7 @@ Web Beans provides two extra important facilities that further the goal of loose
 Let's explore these features.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Interceptors"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-Interceptors">Interceptors</a></h2>
+<h2 class="wikiHeadline2" id="H-Interceptors"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-Interceptors">Interceptors</a></h2>
 
 <p class="wikiPara">
 Web Beans re-uses the basic interceptor architecture of EJB 3.0, extending the functionality in two directions:
@@ -122,7 +124,7 @@ Well, the XML declaration solves two problems:
 For example, we could specify that our security interceptor runs before our <tt>TransactionInterceptor</tt>. And we can turn them both off in our test environment.
 </p>
 
-<h3 class="wikiHeadline3" id="H-InterceptorBindingsWithMembers"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-InterceptorBindingsWithMembers">Interceptor bindings with members</a></h3>
+<h3 class="wikiHeadline3" id="H-InterceptorBindingsWithMembers"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-InterceptorBindingsWithMembers">Interceptor bindings with members</a></h3>
 
 <p class="wikiPara">
 Suppose we want to add some extra information to our <tt>@Transactional</tt> annotation:
@@ -166,7 +168,7 @@ public @interface Secure {
 }</pre>
 
 
-<h3 class="wikiHeadline3" id="H-MultipleInterceptorBindingAnnotations"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-MultipleInterceptorBindingAnnotations">Multiple interceptor binding annotations</a></h3>
+<h3 class="wikiHeadline3" id="H-MultipleInterceptorBindingAnnotations"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-MultipleInterceptorBindingAnnotations">Multiple interceptor binding annotations</a></h3>
 <p class="wikiPara">
 Usually we use combinations of interceptor bindings types to bind multiple interceptors to a component. For example, the following declaration would be used to bind <tt>TransactionInterceptor</tt> and <tt>SecurityInterceptor</tt> to the same component:
 </p>
@@ -211,7 +213,7 @@ public class ShoppingCart {
 }</pre>
 
 
-<h3 class="wikiHeadline3" id="H-BindingAnInterceptorToEverything"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-BindingAnInterceptorToEverything">Binding an interceptor to /everything/</a></h3>
+<h3 class="wikiHeadline3" id="H-BindingAnInterceptorToEverything"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-BindingAnInterceptorToEverything">Binding an interceptor to /everything/</a></h3>
 <p class="wikiPara">
 What if we want an interceptor for /every/ component? Easy, just declare the interceptor without any interceptor binding type!
 </p>
@@ -220,7 +222,7 @@ What if we want an interceptor for /every/ component? Easy, just declare the int
 public class UberInterceptor { ... }</pre>
 
 
-<h3 class="wikiHeadline3" id="H-InterceptorBindingTypeInheritance"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-InterceptorBindingTypeInheritance">Interceptor binding type inheritance</a></h3>
+<h3 class="wikiHeadline3" id="H-InterceptorBindingTypeInheritance"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-InterceptorBindingTypeInheritance">Interceptor binding type inheritance</a></h3>
 <p class="wikiPara">
 One of the awful, embarrassing, mistakes of the Java language is the lack of support for annotation inheritance. Really, annotations should have reuse built in, to allow this kind of thing to work:
 </p>
@@ -243,7 +245,7 @@ public @interface Action { ... }</pre>
 And now any component annotated <tt>@Action</tt> will be bound to both <tt>TransactionInterceptor</tt> and <tt>SecurityInterceptor</tt>. (And even <tt>TransactionalSecureInterceptor</tt>, if it exists.)
 </p>
 
-<h2 class="wikiHeadline2" id="H-Events"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-Events">Events</a></h2>
+<h2 class="wikiHeadline2" id="H-Events"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-Events">Events</a></h2>
 
 <p class="wikiPara">
 /Please note that the following section describes functionality that is still under active discussion in the Web Beans expert group!/
@@ -259,7 +261,7 @@ The Web Beans event notification facility allows components to interact in a tot
 <li class="wikiUnorderedListItem"> observers can be notified immediately, or can specify that delivery of the event should be delayed until the end of the current transaction</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-EventObservers"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-EventObservers">Event observers</a></h3>
+<h3 class="wikiHeadline3" id="H-EventObservers"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-EventObservers">Event observers</a></h3>
 
 <p class="wikiPara">
 An /observer method/ is a method of any Web Bean with a parameter annotated <tt>@Observes</tt>.
@@ -292,7 +294,7 @@ The observer method may have additional parameters, which are injected, accordin
 <pre class="wikiPreformatted">public void afterDocumentUpdate(@Observes @Updated Document document, @Current User user) { ... }</pre>
 
 
-<h3 class="wikiHeadline3" id="H-EventProducers"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-EventProducers">Event producers</a></h3>
+<h3 class="wikiHeadline3" id="H-EventProducers"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-EventProducers">Event producers</a></h3>
 
 <p class="wikiPara">
 The event producer may obtain an /event notifier/ by injection:
@@ -326,7 +328,7 @@ Of may specify the selector at the injection point:
 <pre class="wikiPreformatted">@In @Notifier @Updated Event&lt;Document&gt; documentUpdatedEvent;</pre>
 
 
-<h3 class="wikiHeadline3" id="H-EventBindingsWithMembers"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-EventBindingsWithMembers">Event bindings with members</a></h3>
+<h3 class="wikiHeadline3" id="H-EventBindingsWithMembers"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-EventBindingsWithMembers">Event bindings with members</a></h3>
 
 <p class="wikiPara">
 An event binding type may have annotation members:
@@ -361,7 +363,7 @@ Or dynamically:
 <pre class="wikiPreformatted">documentEvent.raise( document, new Role() { public void value() { return user.getRole(); } } );</pre>
 
 
-<h3 class="wikiHeadline3" id="H-MultipleEventBindings"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-MultipleEventBindings">Multiple event bindings</a></h3>
+<h3 class="wikiHeadline3" id="H-MultipleEventBindings"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-MultipleEventBindings">Multiple event bindings</a></h3>
 
 <p class="wikiPara">
 Event binding types can be combined, for example:
@@ -385,7 +387,7 @@ In this case, any of the following observer methods would be notified:
 <pre class="wikiPreformatted">public void onAnyDocumentEvent(@Observes Document document) { ... }</pre>
 
 
-<h3 class="wikiHeadline3" id="H-TransactionalObservers"><a href="/Bloggers/WebBeansSneakPeekPartVInterceptorsAndEvents#H-TransactionalObservers">Transactional observers</a></h3>
+<h3 class="wikiHeadline3" id="H-TransactionalObservers"><a href="/2007/10/06/WebBeansSneakPeekPartVInterceptorsAndEvents#H-TransactionalObservers">Transactional observers</a></h3>
 
 <p class="wikiPara">
 Transactional observers receive their event notifications during the before or after completion phase of the transaction in which the event was raised. For example, the following observer method needs to refresh a query result set that is cached in the application context, but only when transactions that update the <tt>Category</tt> tree succeed:

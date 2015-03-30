@@ -5,11 +5,13 @@ blogger_name: "Shane"
 creation_date: "07-07-2014"
 tags: [Contexts and Dependency Injection,DeltaSpike,News,PicketLink]
 
-absolute_url: http://in.relation.to/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike
-lace: http://in.relation.to/27758.lace
+relative_url: /2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike
 slug: SecuringYourApplicationsWithPicketLinkAndDeltaSpike
+lace: http://in.relation.to/27758.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -24,19 +26,19 @@ If you’re looking for a simple way to secure your Java EE application’s clas
 Before we get started though, let’s take a closer look at each of these individual projects.
 </p>
 
-<h1 class="wikiHeadline1" id="H-PicketLink"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-PicketLink">PicketLink</a></h1>
+<h1 class="wikiHeadline1" id="H-PicketLink"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-PicketLink">PicketLink</a></h1>
 
 <p class="wikiPara">
 PicketLink (<a href="http://www.picketlink.org" target="" class="regularLink">http://www.picketlink.org</a>) is an application security framework for Java EE.  It provides features such as Identity Management (IDM), credential management, authentication API, permissions and permission management, plus much more.  At the time of writing, the latest available version of PicketLink is 2.6.0.Final.
 </p>
 
-<h1 class="wikiHeadline1" id="H-ApacheDeltaSpike"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-ApacheDeltaSpike">Apache DeltaSpike</a></h1>
+<h1 class="wikiHeadline1" id="H-ApacheDeltaSpike"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-ApacheDeltaSpike">Apache DeltaSpike</a></h1>
 
 <p class="wikiPara">
 Apache DeltaSpike (<a href="http://deltaspike.apache.org" target="" class="regularLink">http://deltaspike.apache.org</a>) is a collection of portable extensions for Java EE, built on top of the CDI (Contexts and Dependency Injection) standard.  It enhances the Java EE platform by providing a set of useful features for application developers.  The latest release of Deltaspike is 1.0.
 </p>
 
-<h1 class="wikiHeadline1" id="H-SettingUpTheMavenDependencies"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-SettingUpTheMavenDependencies">Setting up the Maven Dependencies</a></h1>
+<h1 class="wikiHeadline1" id="H-SettingUpTheMavenDependencies"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-SettingUpTheMavenDependencies">Setting up the Maven Dependencies</a></h1>
 
 <p class="wikiPara">
 This step is required to add the PicketLink libraries to your application.  Start by defining a property value for the version of PicketLink that you’ll be using - the latest version at time of writing is 2.6.0.Final.  Add the following property declaration to the <tt>&lt;properties&gt;</tt> section of your project’s pom.xml:
@@ -93,7 +95,7 @@ Finally, add the PicketLink dependency to the <tt>&lt;dependencies&gt;</tt> sect
 We’re done!  The next step is to enable the DeltaSpike security interceptor.
 </p>
 
-<h1 class="wikiHeadline1" id="H-EnablingTheSecurityInterceptor"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-EnablingTheSecurityInterceptor">Enabling the Security Interceptor</a></h1>
+<h1 class="wikiHeadline1" id="H-EnablingTheSecurityInterceptor"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-EnablingTheSecurityInterceptor">Enabling the Security Interceptor</a></h1>
 
 <p class="wikiPara">
 For the security interceptor to perform authorization checks for the classes or methods that we wish to secure with our security binding annotations, we must first enable it in our application’s <tt>beans.xml</tt> file.  In a web application this file can be found in the <tt>WEB-INF</tt> directory.  Add the <tt>&lt;interceptors&gt;</tt> section as shown in the following example:
@@ -114,7 +116,7 @@ For the security interceptor to perform authorization checks for the classes or 
 
 
 
-<h1 class="wikiHeadline1" id="H-Step1CreateTheSecurityAnnotation"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-Step1CreateTheSecurityAnnotation">Step 1: Create the Security Annotation</a></h1>
+<h1 class="wikiHeadline1" id="H-Step1CreateTheSecurityAnnotation"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-Step1CreateTheSecurityAnnotation">Step 1: Create the Security Annotation</a></h1>
 
 <p class="wikiPara">
 This first step is extremely simple - all we need to do is create an annotation and meta-annotate it with <tt>@SecurityBindingType</tt>.  As an example let’s create a security annotation that we can use to restrict access only to users that are currently logged in:
@@ -135,7 +137,7 @@ public @interface LoggedIn { }</pre>
 Make sure that the <tt>@Target</tt> is set to both <tt>TYPE</tt> and <tt>METHOD</tt> - this will ensure that the annotation can be used to secure either <i class="wikiEmphasis">all</i> the methods of a class (when applied to the class itself) or to secure individual methods.  The <tt>@SecurityBindingType</tt> annotation can be found in the <tt>org.apache.deltaspike.security.api.authorization</tt> package.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Step2CreateTheAuthorizerMethod"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-Step2CreateTheAuthorizerMethod">Step 2: Create the Authorizer method</a></h1>
+<h1 class="wikiHeadline1" id="H-Step2CreateTheAuthorizerMethod"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-Step2CreateTheAuthorizerMethod">Step 2: Create the Authorizer method</a></h1>
 
 <p class="wikiPara">
 This step is where we’ll be implementing the business logic for our security annotation.  Each security binding annotation requires a corresponding authorizer method.  This method must match the security binding annotation and any of its member values (excluding those annotated with <tt>@NonBinding</tt>, mirroring the behaviour of CDI itself).  There must be exactly one authorizer method per unique security binding annotation usage.
@@ -163,7 +165,7 @@ public class Authorizer {
 The parameters of the authorizer method are treated as injection points (except for parameters of type InvocationContext which may be used to inspect metadata pertaining to the method from which the security check is being invoked).  In the above example, we inject the Identity bean which represents the currently authenticated user - the Identity bean provides a method called isLoggedIn() that allows us to check if the current user is logged in.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Step3ApplyTheAnnotationToYourMethods"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-Step3ApplyTheAnnotationToYourMethods">Step 3: Apply the annotation to your methods</a></h1>
+<h1 class="wikiHeadline1" id="H-Step3ApplyTheAnnotationToYourMethods"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-Step3ApplyTheAnnotationToYourMethods">Step 3: Apply the annotation to your methods</a></h1>
 
 <p class="wikiPara">
 By the time we reach this step all of the hard work has been already done.  The only remaining task is to apply the new security binding annotation to the methods and/or classes that you wish to secure.  Let’s start off with a really simple example:
@@ -199,7 +201,7 @@ public class PostController {
 
 
 
-<h1 class="wikiHeadline1" id="H-ACompleteExample"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-ACompleteExample">A Complete Example</a></h1>
+<h1 class="wikiHeadline1" id="H-ACompleteExample"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-ACompleteExample">A Complete Example</a></h1>
 
 <p class="wikiPara">
 You can find a complete example of using PicketLink with DeltaSpike in the following quickstart project:
@@ -209,7 +211,7 @@ You can find a complete example of using PicketLink with DeltaSpike in the follo
 <a href="https://github.com/jboss-developer/jboss-picketlink-quickstarts/tree/master/picketlink-deltaspike-authorization" target="" class="regularLink">https://github.com/jboss-developer/jboss-picketlink-quickstarts/tree/master/picketlink-deltaspike-authorization</a>
 </p>
 
-<h1 class="wikiHeadline1" id="H-Summary"><a href="/Bloggers/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-Summary">Summary</a></h1>
+<h1 class="wikiHeadline1" id="H-Summary"><a href="/2014/07/07/SecuringYourApplicationsWithPicketLinkAndDeltaSpike#H-Summary">Summary</a></h1>
 
 <p class="wikiPara">
 In this article we examined how we can get the most out of DeltaSpike’s security annotation feature by combining it with a powerful security framework such as PicketLink.  By following three simple steps we learned how to define a new security annotation, implement its business logic and then apply it to the methods and classes which we wish to protect.</p>

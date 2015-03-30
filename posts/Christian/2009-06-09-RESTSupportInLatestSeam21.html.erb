@@ -5,11 +5,13 @@ blogger_name: "Christian"
 creation_date: "09-06-2009"
 tags: [REST,Seam,Seam News]
 
-absolute_url: http://in.relation.to/2009/06/09/RESTSupportInLatestSeam21
-lace: http://in.relation.to/11745.lace
+relative_url: /2009/06/09/RESTSupportInLatestSeam21
 slug: RESTSupportInLatestSeam21
+lace: http://in.relation.to/11745.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/06/09/RESTSupportInLatestSeam21
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -26,7 +28,7 @@ Norman released <a href="/Bloggers/Seam212" target="" class="regularLink">Seam 2
 I'm going to demonstrate some of the unique features of that integration here, how you can create a RESTful Seam application or simply add an HTTP web service interface to an existing one.
 </p>
 
-<h2 class="wikiHeadline2" id="H-DeployingResourcesAndProviders"><a href="/Bloggers/RESTSupportInLatestSeam21#H-DeployingResourcesAndProviders">Deploying resources and providers</a></h2>
+<h2 class="wikiHeadline2" id="H-DeployingResourcesAndProviders"><a href="/2009/06/09/RESTSupportInLatestSeam21#H-DeployingResourcesAndProviders">Deploying resources and providers</a></h2>
 
 <p class="wikiPara">
 With JAX-RS you write a plain Java class and put <tt>@javax.ws.rs.Path("/customer")</tt> on it to make it available under the HTTP base URI path <tt>/customer</tt>. You then map methods of that class to particular sub-paths and HTTP methods with <tt>@javax.ws.rs.GET</tt>, <tt>@POST</tt>, <tt>@DELETE</tt>, and so on. These classes are called <i class="wikiEmphasis">Resource</i> classes. The default life cycle of an instance is per-HTTP-request, an instance is created for a request and destroyed when processing completes and the response has been sent.
@@ -52,7 +54,7 @@ You do not have to configure RESTEasy at all. Just drop in the right JAR files (
 So without changing any code, you get easier deployment and integrated configuration of JAX-RS artifacts in your Seam application.
 </p>
 
-<h2 class="wikiHeadline2" id="H-UtilizingSeamComponents"><a href="/Bloggers/RESTSupportInLatestSeam21#H-UtilizingSeamComponents">Utilizing Seam components</a></h2>
+<h2 class="wikiHeadline2" id="H-UtilizingSeamComponents"><a href="/2009/06/09/RESTSupportInLatestSeam21#H-UtilizingSeamComponents">Utilizing Seam components</a></h2>
 
 <p class="wikiPara">
 Resources and providers can be made Seam components, with bijection, life cycle management, authorization, interception, etc. Just put an <tt>@Name</tt> on your resource class:
@@ -88,7 +90,7 @@ Of course your resource Seam component doesn't have to be a POJO, you can also u
 The <tt>@Restrict</tt> annotation is just a regular Seam authorization check, currently you can configure <tt>Basic</tt> or <tt>Digest</tt> authentication as you'd for any other Seam application.
 </p>
 
-<h2 class="wikiHeadline2" id="H-CRUDFrameworkIntegration"><a href="/Bloggers/RESTSupportInLatestSeam21#H-CRUDFrameworkIntegration">CRUD framework integration</a></h2>
+<h2 class="wikiHeadline2" id="H-CRUDFrameworkIntegration"><a href="/2009/06/09/RESTSupportInLatestSeam21#H-CRUDFrameworkIntegration">CRUD framework integration</a></h2>
 
 <p class="wikiPara">
 Seam has a framework for building basic CRUD database applications quickly, you probably already have seen <tt>EntityHome</tt> and <tt>EntityQuery</tt> in other Seam examples. <a href="http://www.seamframework.org/user/jharting" target="" class="regularLink">Jozef Hartinger</a> built an extension that allows you to create a basic CRUD application with full HTTP/REST support in minutes. You can declare it through <tt>components.xml</tt>:
@@ -140,7 +142,7 @@ You do not have to use XML configuration; as you'd with the Seam CRUD superclass
 There is a reason this CRUD framework feature is not documented in the current release: We are not sure the API will stay as it is. Consider this release as our proposal and we really need feedback on it, what works and what can be improved. Jozef also wrote a full-featured RESTful application with a jQuery based client for regular webbrowsers to demonstrate the CRUD framework. Have a look at the <a href="http://fisheye.jboss.com/browse/Seam/branches/community/Seam_2_1/examples/tasks" target="" class="regularLink">Tasks example in the Seam distribution</a>. You can find more demo code and tests in the <a href="http://fisheye.jboss.com/browse/Seam/branches/community/Seam_2_1/examples/restbay" target="" class="regularLink">Restbay example</a> which we use for general RESTEasy integration testing and demonstration.
 </p>
 
-<h2 class="wikiHeadline2" id="H-FeatureShortlist"><a href="/Bloggers/RESTSupportInLatestSeam21#H-FeatureShortlist">Feature shortlist</a></h2>
+<h2 class="wikiHeadline2" id="H-FeatureShortlist"><a href="/2009/06/09/RESTSupportInLatestSeam21#H-FeatureShortlist">Feature shortlist</a></h2>
 
 <p class="wikiPara">
 I've only highlighted three of the main features of Seam and RESTEasy but there is more available and more to come:
@@ -177,7 +179,7 @@ public Customer getCustomer(@PathParam("id") String id) { ... }
 This is just pseudo-code, this feature is not available in the release. It wouldn't be very useful as it is, because we don't know how to transform incoming HTTP requests with XHTML payload back into a Facelet view. It's not trivial to implement either and we'll probably wait for JSF2 before we finalize this. But it shows that providing a JSF-based human client interface and a RESTful HTTP web service interface in the same application might be a natural fit with the given technologies.
 </p>
 
-<h2 class="wikiHeadline2" id="H-NextVersion"><a href="/Bloggers/RESTSupportInLatestSeam21#H-NextVersion">Next version?</a></h2>
+<h2 class="wikiHeadline2" id="H-NextVersion"><a href="/2009/06/09/RESTSupportInLatestSeam21#H-NextVersion">Next version?</a></h2>
 
 <p class="wikiPara">
 The currently available RESTEasy version is still not GA, although it is a release candidate. There are also a few open issues with the integration code that we'd like to close, and we have to finalize the CRUD framework interface. This is all expected to happen in the Seam 2.2 releases.

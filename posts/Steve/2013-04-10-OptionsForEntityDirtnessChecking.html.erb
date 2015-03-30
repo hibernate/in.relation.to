@@ -5,11 +5,13 @@ blogger_name: "Steve"
 creation_date: "10-04-2013"
 tags: [dirtiness,feature,orm]
 
-absolute_url: http://in.relation.to/2013/04/10/OptionsForEntityDirtnessChecking
-lace: http://in.relation.to/24105.lace
+relative_url: /2013/04/10/OptionsForEntityDirtnessChecking
 slug: OptionsForEntityDirtnessChecking
+lace: http://in.relation.to/24105.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/04/10/OptionsForEntityDirtnessChecking
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -19,7 +21,7 @@ At flush-time, Hibernate needs to know what entity state has become dirty (chang
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-FlushtimeStateComparisonStrategy"><a href="/Bloggers/OptionsForEntityDirtnessChecking#H-FlushtimeStateComparisonStrategy">flush-time state comparison strategy</a></h2>
+<h2 class="wikiHeadline2" id="H-FlushtimeStateComparisonStrategy"><a href="/2013/04/10/OptionsForEntityDirtnessChecking#H-FlushtimeStateComparisonStrategy">flush-time state comparison strategy</a></h2>
 
 <p class="wikiPara">
 In such a scheme, the <q>loaded state</q> of an entity is kept around as part of the persistence context (Session/EntityManager).  This loaded state is the last known state of the entity data as it exists in the database.  That happens whenever the entity is loaded or whenever we update the entity from that persistence context.  But either way, we have a <q>last, well-known state</q> of the entity in the database as part of this transaction.
@@ -38,7 +40,7 @@ This strategy, then, at flush time, performs a deep comparison between that load
 Such a strategy falls into a category of dirtiness checking that I call computed.  Initially, this was the only strategy supported by Hibernate.  However even as far back as 3.0 (which dates back 8-9 years ago!) Hibernate started branching out into <q>tracked</q> dirtiness checking strategies.  The most well known general approach to this is using bytecode enhancement.
 </p>
 
-<h2 class="wikiHeadline2" id="H-TrackedApproachBytecodeEnhancement"><a href="/Bloggers/OptionsForEntityDirtnessChecking#H-TrackedApproachBytecodeEnhancement">Tracked approach : bytecode enhancement</a></h2>
+<h2 class="wikiHeadline2" id="H-TrackedApproachBytecodeEnhancement"><a href="/2013/04/10/OptionsForEntityDirtnessChecking#H-TrackedApproachBytecodeEnhancement">Tracked approach : bytecode enhancement</a></h2>
 
 <p class="wikiPara">
 Hibernate's first foray into tracked strategies was through bytecode enhancement, which was how most other JPA providers did tracked dirty checking.  This is a process whereby your Java Class's bytecode is read and enhanced (changed) to introduce new bytecode level instructions.  Hibernate supports this as an Ant task and also through runtime enhancment, although runtime enhancement currently requires a JPA container and container-managed EntityManagerFactory bootstrapping.  Basically, Hibernate does not provide a Java agent to perform the enhancement at classload time.  We are not against it so much as we just do not have time and no one has contributed such support to-date; though if you are interested... ;)  
@@ -82,7 +84,7 @@ Be aware that work is under way (actually its first steps are already in the 4.2
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-TrackedApproachDelegation"><a href="/Bloggers/OptionsForEntityDirtnessChecking#H-TrackedApproachDelegation">Tracked approach : delegation</a></h2>
+<h2 class="wikiHeadline2" id="H-TrackedApproachDelegation"><a href="/2013/04/10/OptionsForEntityDirtnessChecking#H-TrackedApproachDelegation">Tracked approach : delegation</a></h2>
 
 <p class="wikiPara">
 A new feature added in 4.1 allows all dirtiness checking to be delegated to application code.  See <a href="http://hibernate.onjira.com/browse/HHH-3910" target="" class="regularLink">HHH-3910</a> and <a href="http://hibernate.onjira.com/browse/HHH-6998" target="" class="regularLink">HHH-6998</a> for complete design discussions.  But essentially this feature allows your application to control how dirtiness checking happens.  The idea is that your application model classes are monitoring their own dirtiness.  Imagine an entity class like:
@@ -182,7 +184,7 @@ There can currently be only one <tt>CustomEntityDirtinessStrategy</tt> associate
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/OptionsForEntityDirtnessChecking#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2013/04/10/OptionsForEntityDirtnessChecking#H-Conclusion">Conclusion</a></h2>
 
 <p class="wikiPara">
 Hopefully this gives a more clear picture of the possibilities for managing dirtiness checking in Hibernate.  If things are still unclear discuss in comments and I'll try to aggregate all constructive criticisms and suggestions into the docs.</p>

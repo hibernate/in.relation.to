@@ -5,11 +5,13 @@ blogger_name: "Steve"
 creation_date: "09-01-2012"
 tags: [EventListeners,Hibernate]
 
-absolute_url: http://in.relation.to/2012/01/09/EventListenerRegistration
-lace: http://in.relation.to/22722.lace
+relative_url: /2012/01/09/EventListenerRegistration
 slug: EventListenerRegistration
+lace: http://in.relation.to/22722.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/01/09/EventListenerRegistration
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 4.0 changes the way event listeners get registered to leverage some added capabilities, namely services and integrators.  I won't get into services too much as they are covered elsewhere.  But lets start with the notion of an Integrator.
 </p>
 
-<h1 class="wikiHeadline1" id="H-IntegratorContract"><a href="/Bloggers/EventListenerRegistration#H-IntegratorContract">Integrator contract</a></h1>
+<h1 class="wikiHeadline1" id="H-IntegratorContract"><a href="/2012/01/09/EventListenerRegistration#H-IntegratorContract">Integrator contract</a></h1>
 
 <p class="wikiPara">
 Specifically, we are talking about the <code>org.hibernate.integrator.spi.Integrator</code> interface.  The idea behind an <code>org.hibernate.integrator.spi.Integrator</code> is to provide a simple means to allow developers to hook into the process of building a functioning <code>SessionFactory</code>.  A standard service provided by Hibernate is the ability to discover <code>org.hibernate.integrator.spi.Integrator</code> implementations by utilizing the Java <code>java.util.ServiceLoader</code> mechanism.  Developers simply define a file named <code>/META-INF/services/org.hibernate.integrator.spi.Integrator</code> and make it available on the classpath.  Essentially, the content of this file is one or more fully-qualified <code>org.hibernate.integrator.spi.Integrator</code> implementation class names, one per line each.  Please see the <code>java.util.ServiceLoader</code> JavaDocs for the complete spec of the allowed syntax of content in this file.
@@ -57,7 +59,7 @@ The <code>org.hibernate.integrator.spi.Integrator</code> interface defines 2 met
 The method <code>integrate</code> allows us to hook into the building process; <code>disintegrate</code> allows us to hook into a <code>SessionFactory</code> shutting down.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Registration"><a href="/Bloggers/EventListenerRegistration#H-Registration">Registration</a></h1>
+<h1 class="wikiHeadline1" id="H-Registration"><a href="/2012/01/09/EventListenerRegistration#H-Registration">Registration</a></h1>
 
 <p class="wikiPara">
 Hibernate itself has a few implementations of the <code>org.hibernate.integrator.spi.Integrator</code> interface that perform event listener registration that might be good to look at for reference.

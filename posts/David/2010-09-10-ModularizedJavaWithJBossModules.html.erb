@@ -5,11 +5,13 @@ blogger_name: "David"
 creation_date: "10-09-2010"
 tags: [Modules]
 
-absolute_url: http://in.relation.to/2010/09/10/ModularizedJavaWithJBossModules
-lace: http://in.relation.to/16904.lace
+relative_url: /2010/09/10/ModularizedJavaWithJBossModules
 slug: ModularizedJavaWithJBossModules
+lace: http://in.relation.to/16904.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/09/10/ModularizedJavaWithJBossModules
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ It was almost a year ago that Mark Reinhold (one of the top Java engineers over 
 I've <a href="http://dmlloyd.blogspot.com/2009/12/jsr-294277-why-dont-we-have-standard.html" target="" class="regularLink">long maintained</a> that it would take far less than this to introduce a solid, usable modularity standard.  And as part of our <a href="http://community.jboss.org/community/jbossas/dev/jboss_as7_development" target="" class="regularLink">JBoss AS 7 proof-of-concept work</a>, we've proven it with the creation of JBoss Modules.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhatIsInAModule"><a href="/Bloggers/ModularizedJavaWithJBossModules#H-WhatIsInAModule">What is in a module?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatIsInAModule"><a href="/2010/09/10/ModularizedJavaWithJBossModules#H-WhatIsInAModule">What is in a module?</a></h1>
 
 <p class="wikiPara">
 If you haven't been following the developments around JDK 7, you may not even be aware of what you're missing.
@@ -36,7 +38,7 @@ A <i class="wikiEmphasis">module</i> is any collection of classes and resources,
 So what a module system provides is a way to package up classes and resources into modules, and establish a graph, at run time, of class loaders such that all the expressed dependencies are satisfied.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhatsSoGreatAboutModules"><a href="/Bloggers/ModularizedJavaWithJBossModules#H-WhatsSoGreatAboutModules">What's so great about modules?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatsSoGreatAboutModules"><a href="/2010/09/10/ModularizedJavaWithJBossModules#H-WhatsSoGreatAboutModules">What's so great about modules?</a></h1>
 
 <p class="wikiPara">
 The traditional method of running an application in Java uses the well-known <q>classpath</q> mechanism.  This basically creates a single application class loader with all those JARs' resources concatenated together in one big blob.
@@ -50,7 +52,7 @@ Now imagine you have a very, very large and complex application with dozens of J
 Modules can greatly alleviate this problem.  When all JARs are bundled as modules, a JAR will never <q>see</q> a conflicting version of a dependency class, or pick up resources from other JARs inadvertently.  Also, a module which is never used will never be loaded which can improve startup time of large applications.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhyWait"><a href="/Bloggers/ModularizedJavaWithJBossModules#H-WhyWait">Why wait?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhyWait"><a href="/2010/09/10/ModularizedJavaWithJBossModules#H-WhyWait">Why wait?</a></h1>
 
 <p class="wikiPara">
 JBoss Modules is a standalone module system for Java 6 and up.  It supports the following features (and more):
@@ -101,7 +103,7 @@ In your module path (<q>-mp</q>) you specify the root directory (or directories)
 There is a full schema bundled in jboss-modules.jar for this descriptor format, so integration with your favorite IDE is easy.  There are also many extended capabilities available which allow tight control over what packages are exported or imported, and you can also selectively exclude content from your resource JARs (making it even easier to use prepackaged JARs).
 </p>
 
-<h1 class="wikiHeadline1" id="H-HowDoesThisCompareWithJSR294"><a href="/Bloggers/ModularizedJavaWithJBossModules#H-HowDoesThisCompareWithJSR294">How does this compare with JSR 294?</a></h1>
+<h1 class="wikiHeadline1" id="H-HowDoesThisCompareWithJSR294"><a href="/2010/09/10/ModularizedJavaWithJBossModules#H-HowDoesThisCompareWithJSR294">How does this compare with JSR 294?</a></h1>
 
 <p class="wikiPara">
 This simple module system has several advantages over JSR 294 as it stands today.
@@ -113,7 +115,7 @@ This simple module system has several advantages over JSR 294 as it stands today
 <li class="wikiOrderedListItem"> As things stand today, JBoss Modules <i class="wikiEmphasis">should</i> be compatible with JSR 294, and we will strive to maintain compatibility if and when Jigsaw solidifies and becomes part of OpenJDK.</li>
 </ol>
 
-<h1 class="wikiHeadline1" id="H-HowDoesThisCompareWithOSGi"><a href="/Bloggers/ModularizedJavaWithJBossModules#H-HowDoesThisCompareWithOSGi">How does this compare with OSGi?</a></h1>
+<h1 class="wikiHeadline1" id="H-HowDoesThisCompareWithOSGi"><a href="/2010/09/10/ModularizedJavaWithJBossModules#H-HowDoesThisCompareWithOSGi">How does this compare with OSGi?</a></h1>
 
 <ol class="wikiOrderedList">
 <li class="wikiOrderedListItem"> It is much simpler; one JAR is all that is needed to get your modular application off the ground.</li>
@@ -121,7 +123,7 @@ This simple module system has several advantages over JSR 294 as it stands today
 <li class="wikiOrderedListItem"> At the same time, it is very powerful, and could form the basis of a class loading framework which an OSGi implementation could use (more on this in the future, stay tuned!).</li>
 </ol>
 
-<h1 class="wikiHeadline1" id="H-WhatIsTheCurrentStatus"><a href="/Bloggers/ModularizedJavaWithJBossModules#H-WhatIsTheCurrentStatus">What is the current status?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatIsTheCurrentStatus"><a href="/2010/09/10/ModularizedJavaWithJBossModules#H-WhatIsTheCurrentStatus">What is the current status?</a></h1>
 
 <p class="wikiPara">
 JBoss Modules is available now <a href="https://repository.jboss.org/nexus/content/repositories/releases/org/jboss/modules/jboss-modules" target="" class="regularLink">via Maven</a> as <q>org.jboss.modules:jboss-modules</q>.  There is also a <a href="http://jira.jboss.org/browse/MODULES" target="" class="regularLink">JIRA Instance</a> available for reporting problems.  Discussion relating to Modules in AS 7 happens <a href="http://community.jboss.org/en/jbossas/dev/jboss_as7_development?view=discussions" target="" class="regularLink">here</a> or on #jboss-msc on FreeNode IRC (join <a href="http://webchat.freenode.net/?channels=jboss-msc" target="" class="regularLink">via webchat</a> with your <a href="http://freenode.net/faq.shtml#userregistration" target="" class="regularLink">registered nickname</a>).  The source code is hosted <a href="http://github.com/jbossas/jboss-modules" target="" class="regularLink">on GitHub</a>.

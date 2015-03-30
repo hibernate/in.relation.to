@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "03-12-2009"
 tags: [Bean Validation,Hibernate Validator,JBoss AS 6,JPA 2,JSF 2,Java EE 6]
 
-absolute_url: http://in.relation.to/2009/12/03/BeanValidationValidationEverywhereEE6Edition
-lace: http://in.relation.to/13317.lace
+relative_url: /2009/12/03/BeanValidationValidationEverywhereEE6Edition
 slug: BeanValidationValidationEverywhereEE6Edition
+lace: http://in.relation.to/13317.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/12/03/BeanValidationValidationEverywhereEE6Edition
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 Now that Bean Validation is officially part of Java EE 6 and that Java EE6 is officially voted <a href="http://jcp.org/en/jsr/results?id=5006" target="" class="regularLink">YES</a>, let's see how Bean Validation integrates with the rest of the eco system.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhatIsBeanValidation"><a href="/Bloggers/BeanValidationValidationEverywhereEE6Edition#H-WhatIsBeanValidation">What is Bean Validation</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatIsBeanValidation"><a href="/2009/12/03/BeanValidationValidationEverywhereEE6Edition#H-WhatIsBeanValidation">What is Bean Validation</a></h1>
 
 <p class="wikiPara">
 It's goal is to let application developers declare their data constraints once by annotating their model and make sure these constraints are validated by the different layers of the application in a consistent manner. Without Bean Validation, people have to write their validation rules in their favorite presentation framework, then in their business layer, then in their persistent layer, to some degree in the database schema and keep all of them synchronized. 
@@ -45,7 +47,7 @@ Here is how this centralized constraint declaration looks like:
 There are many more features like constraint composition, grouping but let's focus on how Bean Validation integrates with the EE 6 stack.
 </p>
 
-<h1 class="wikiHeadline1" id="H-SoWhatDoIHaveToDoToMakeItWorkInJavaEE6"><a href="/Bloggers/BeanValidationValidationEverywhereEE6Edition#H-SoWhatDoIHaveToDoToMakeItWorkInJavaEE6">So what do I have to do to make it work in Java EE 6</a></h1>
+<h1 class="wikiHeadline1" id="H-SoWhatDoIHaveToDoToMakeItWorkInJavaEE6"><a href="/2009/12/03/BeanValidationValidationEverywhereEE6Edition#H-SoWhatDoIHaveToDoToMakeItWorkInJavaEE6">So what do I have to do to make it work in Java EE 6</a></h1>
 
 <p class="wikiPara">
 The short answer is nothing. Not even an XML configuration trick.
@@ -55,7 +57,7 @@ The short answer is nothing. Not even an XML configuration trick.
 Simply add your constraints on your domain model and the platform does the rest for you.
 </p>
 
-<h2 class="wikiHeadline2" id="H-JSFAndHowToExposeConstraintViolationsToTheUser"><a href="/Bloggers/BeanValidationValidationEverywhereEE6Edition#H-JSFAndHowToExposeConstraintViolationsToTheUser">JSF and how to expose constraint violations to the user</a></h2>
+<h2 class="wikiHeadline2" id="H-JSFAndHowToExposeConstraintViolationsToTheUser"><a href="/2009/12/03/BeanValidationValidationEverywhereEE6Edition#H-JSFAndHowToExposeConstraintViolationsToTheUser">JSF and how to expose constraint violations to the user</a></h2>
 
 <p class="wikiPara">
 In JSF, you bind form inputs to properties of your domain model. JSF 2 and Bean Validation smartly figure out which property you are binding to and execute the constraints associated to it.
@@ -145,7 +147,7 @@ In the future, we want to work with RichFaces so that the constraints declared o
 But not all your data comes from the presentation layer.
 </p>
 
-<h2 class="wikiHeadline2" id="H-JPA2LastLineOfDefense"><a href="/Bloggers/BeanValidationValidationEverywhereEE6Edition#H-JPA2LastLineOfDefense">JPA 2: last line of defense</a></h2>
+<h2 class="wikiHeadline2" id="H-JPA2LastLineOfDefense"><a href="/2009/12/03/BeanValidationValidationEverywhereEE6Edition#H-JPA2LastLineOfDefense">JPA 2: last line of defense</a></h2>
 
 <p class="wikiPara">
 Again, by default, your JPA 2 provider runs Bean Validation on the entities you are about to persist or update. You are then guaranteed to not put invalid data in your database and thus increasing the quality of your data overall. Oh, and these are the same constraints you would have validated in JSF 2.0.
@@ -169,7 +171,7 @@ Hibernate Core and Hibernate Validator go a bit beyond that and propagate the co
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-HowAboutMyServiceLayer"><a href="/Bloggers/BeanValidationValidationEverywhereEE6Edition#H-HowAboutMyServiceLayer">How about my service layer</a></h2>
+<h2 class="wikiHeadline2" id="H-HowAboutMyServiceLayer"><a href="/2009/12/03/BeanValidationValidationEverywhereEE6Edition#H-HowAboutMyServiceLayer">How about my service layer</a></h2>
 
 <p class="wikiPara">
 You can inject a <tt>Validator</tt> or <tt>ValidatorFactory</tt> instance in any injectable POJO in Java EE 6.
@@ -184,7 +186,7 @@ You can inject a <tt>Validator</tt> or <tt>ValidatorFactory</tt> instance in any
   }</pre>
 
 
-<h1 class="wikiHeadline1" id="H-WhereCanITryIt"><a href="/Bloggers/BeanValidationValidationEverywhereEE6Edition#H-WhereCanITryIt">Where can I try it?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhereCanITryIt"><a href="/2009/12/03/BeanValidationValidationEverywhereEE6Edition#H-WhereCanITryIt">Where can I try it?</a></h1>
 
 <p class="wikiPara">
 All of this is now available in <a href="/Bloggers/IntroducingJBossAS600M1" target="" class="regularLink">JBoss AS 6 M1</a> that have just been released. Enjoy!

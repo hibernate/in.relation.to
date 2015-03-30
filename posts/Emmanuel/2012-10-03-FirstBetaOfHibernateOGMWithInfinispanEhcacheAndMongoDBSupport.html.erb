@@ -5,11 +5,13 @@ blogger_name: "Emmanuel"
 creation_date: "03-10-2012"
 tags: [Hibernate,Hibernate OGM,News]
 
-absolute_url: http://in.relation.to/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport
-lace: http://in.relation.to/23569.lace
+relative_url: /2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport
 slug: FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport
+lace: http://in.relation.to/23569.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -20,7 +22,7 @@ time for us to speak up because we have a lot to show. And to celebrate, we are 
 its first beta.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhatIsHibernateOGM"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-WhatIsHibernateOGM">What is Hibernate OGM</a></h2>
+<h2 class="wikiHeadline2" id="H-WhatIsHibernateOGM"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-WhatIsHibernateOGM">What is Hibernate OGM</a></h2>
 
 <p class="wikiPara">
 Hibernate OGM is for NoSQL datastores what Hibernate ORM is for relational databases. A way to
@@ -35,7 +37,7 @@ at supporting all of JPA features (and the Hibernate native APIs):
 <li class="wikiUnorderedListItem"> and JP-QL</li>
 </ul>
 
-<h2 class="wikiHeadline2" id="H-WorkOnTheNoSQLSide"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-WorkOnTheNoSQLSide">Work on the NoSQL side</a></h2>
+<h2 class="wikiHeadline2" id="H-WorkOnTheNoSQLSide"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-WorkOnTheNoSQLSide">Work on the NoSQL side</a></h2>
 
 <p class="wikiPara">
 We initially started with Infinispan as single backend and we worked our way to abstract
@@ -51,7 +53,7 @@ it to support more:
 </li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-Infinispan"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-Infinispan">Infinispan</a></h3>
+<h3 class="wikiHeadline3" id="H-Infinispan"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-Infinispan">Infinispan</a></h3>
 
 <p class="wikiPara">
 We did not stand still on Infinispan. We greatly improved the backend in particular
@@ -59,14 +61,14 @@ by using the <tt>FineGrainedAtomicMap</tt> class to store data and benefit from 
 scalability. See more in the performance section later on.
 </p>
 
-<h3 class="wikiHeadline3" id="H-Ehcache"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-Ehcache">Ehcache</a></h3>
+<h3 class="wikiHeadline3" id="H-Ehcache"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-Ehcache">Ehcache</a></h3>
 
 <p class="wikiPara">
 Ehcache was the first to jump on the wagon and propose an alternative backend implementation.
 Kudos to Alex Snaps and Greg Luck for taking this bet and help us improve our abstraction API.
 </p>
 
-<h3 class="wikiHeadline3" id="H-MongoDB"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-MongoDB">MongoDB</a></h3>
+<h3 class="wikiHeadline3" id="H-MongoDB"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-MongoDB">MongoDB</a></h3>
 
 <p class="wikiPara">
 MongoDB was the first non key-value based NoSQL solution we supported and we worked very hard to make
@@ -106,7 +108,7 @@ it made more sense for models persisted with Hibernate OGM and because we don't 
 for killing kittens. You can switch this back off of course.
 </p>
 
-<h3 class="wikiHeadline3" id="H-OtherNoSQLEngines"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-OtherNoSQLEngines">Other NoSQL engines</a></h3>
+<h3 class="wikiHeadline3" id="H-OtherNoSQLEngines"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-OtherNoSQLEngines">Other NoSQL engines</a></h3>
 
 <p class="wikiPara">
 Expect the list of supported NoSQL engines to grow as we continuously strive to integrate more and more
@@ -115,7 +117,7 @@ want to help out! You can either contribute to any ongoing effort or even start 
 </p>
 
 
-<h2 class="wikiHeadline2" id="H-PerformanceConsiderations"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-PerformanceConsiderations">Performance considerations</a></h2>
+<h2 class="wikiHeadline2" id="H-PerformanceConsiderations"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-PerformanceConsiderations">Performance considerations</a></h2>
 
 <p class="wikiPara">
 We worked a lot around performance. The project started as an experiment but we did not manage to
@@ -134,7 +136,7 @@ At the moment, the profiler does not show much overhead on using Hibernate OGM's
 compared to directly using the underling NoSQL datastore.
 </p>
 
-<h2 class="wikiHeadline2" id="H-QuerySupport"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-QuerySupport">Query support</a></h2>
+<h2 class="wikiHeadline2" id="H-QuerySupport"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-QuerySupport">Query support</a></h2>
 
 <p class="wikiPara">
 While you won't unfortunately see much in this release, we have been hard at work on the JP-QL
@@ -180,7 +182,7 @@ If you are interested in how we plan on doing queries, come talk to us or go rea
 the architecture chapter in our <a href="http://www.hibernate.org/subprojects/ogm/docs" target="" class="regularLink">reference documentation</a>
 </p>
 
-<h2 class="wikiHeadline2" id="H-CommunityDocumentationAndDownload"><a href="/Bloggers/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-CommunityDocumentationAndDownload">Community, documentation and download</a></h2>
+<h2 class="wikiHeadline2" id="H-CommunityDocumentationAndDownload"><a href="/2012/10/03/FirstBetaOfHibernateOGMWithInfinispanEhcacheAndMongoDBSupport#H-CommunityDocumentationAndDownload">Community, documentation and download</a></h2>
 
 <p class="wikiPara">
 We worked on many more stuff like better JPA support, better ease of use, less redundant

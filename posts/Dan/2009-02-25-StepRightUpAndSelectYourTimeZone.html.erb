@@ -5,11 +5,13 @@ blogger_name: "Dan"
 creation_date: "25-02-2009"
 tags: [JavaServer Faces,Proposal]
 
-absolute_url: http://in.relation.to/2009/02/25/StepRightUpAndSelectYourTimeZone
-lace: http://in.relation.to/10748.lace
+relative_url: /2009/02/25/StepRightUpAndSelectYourTimeZone
 slug: StepRightUpAndSelectYourTimeZone
+lace: http://in.relation.to/10748.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/02/25/StepRightUpAndSelectYourTimeZone
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -22,7 +24,7 @@ Prior to revision 2.0, the JavaServer Faces specification states that all dates 
 <i class="wikiEmphasis">Note: Dates are always assumed to be defined using UTC, so this proposal merely addresses the display offset.</i>
 </p>
 
-<h4 class="wikiHeadline4" id="H-MakingTheSystemTimeZoneTheDefault"><a href="/Bloggers/StepRightUpAndSelectYourTimeZone#H-MakingTheSystemTimeZoneTheDefault">Making the system time zone the default</a></h4>
+<h4 class="wikiHeadline4" id="H-MakingTheSystemTimeZoneTheDefault"><a href="/2009/02/25/StepRightUpAndSelectYourTimeZone#H-MakingTheSystemTimeZoneTheDefault">Making the system time zone the default</a></h4>
 
 <p class="wikiPara">
 The JavaServer Faces 2.0 (proposed) specification offers a way to override the standard time zone setting of the JavaServer Faces application so that it uses the time zone where the application server is running (which happens to be the default behavior for Java SE according to java.util.TimeZone) rather than UTC. This override is activated using the following web.xml context parameter declaration, documented in section 11.1.3:
@@ -49,7 +51,7 @@ In addition to name being shorter, it's much less specific, opening the door for
 Naming aside, this setting is important because it allows the developer to restore the default time zone behavior of the JVM. However, it does not address the real problem that JSF was attempting to solve, which is that the time zone used by the application should not be affected by the geographic location of the deployment. Optimally, the default time zone should reflect the time zone preference of the user (i.e., it should be a user time zone).
 </p>
 
-<h4 class="wikiHeadline4" id="H-SettingTheDefaultTimeZoneInJSF"><a href="/Bloggers/StepRightUpAndSelectYourTimeZone#H-SettingTheDefaultTimeZoneInJSF">Setting the default time zone in JSF</a></h4>
+<h4 class="wikiHeadline4" id="H-SettingTheDefaultTimeZoneInJSF"><a href="/2009/02/25/StepRightUpAndSelectYourTimeZone#H-SettingTheDefaultTimeZoneInJSF">Setting the default time zone in JSF</a></h4>
 
 <p class="wikiPara">
 Time zones are extremely important in data-driven web applications. That's why the JSF runtime should make it easy for the developer to get the time zone setting correct. Both the UTC and the system default time zone choices are inadequate. The UTC default is annoying because it forces every developer to deal with the time zone issue on day one (no good default). The system default is risky because it's dependent on the geographic location where the application is deployed.
@@ -137,13 +139,13 @@ public abstract void setDefaultTimeZoneId(ValueExpression timeZoneId);
 public abstract ValueExpression getDefaultTimeZoneId();</pre>
 
 
-<h4 class="wikiHeadline4" id="H-WhatAboutAutodetectingTheUsersTimeZone"><a href="/Bloggers/StepRightUpAndSelectYourTimeZone#H-WhatAboutAutodetectingTheUsersTimeZone">What about auto-detecting the user's time zone?</a></h4>
+<h4 class="wikiHeadline4" id="H-WhatAboutAutodetectingTheUsersTimeZone"><a href="/2009/02/25/StepRightUpAndSelectYourTimeZone#H-WhatAboutAutodetectingTheUsersTimeZone">What about auto-detecting the user's time zone?</a></h4>
 
 <p class="wikiPara">
 The main challenge is that browsers don't send a preferred timezone header like they do a preferred language header. And you can't rely on a geo-IP address resolution since VPNs and other network configurations can move the source address across timezones. For now, it's the application's responsibly to collect the user's preference and store it in either the database or a browser cookie. The ValueExpression defined in the <tt>&lt;default-time-zone-id&gt;</tt> element is expected to return this stored value.
 </p>
 
-<h4 class="wikiHeadline4" id="H-ProvideYourFeedback"><a href="/Bloggers/StepRightUpAndSelectYourTimeZone#H-ProvideYourFeedback">Provide your feedback</a></h4>
+<h4 class="wikiHeadline4" id="H-ProvideYourFeedback"><a href="/2009/02/25/StepRightUpAndSelectYourTimeZone#H-ProvideYourFeedback">Provide your feedback</a></h4>
 
 <p class="wikiPara">
 Let me know what you think about this solution. Does it seem adequate? Do you think the configuration is simple enough? Am I missing something? (Please see the <a href="http://seamframework.org/Documentation/JSF21#H-DefaultApplicationTimeZoneP1" target="" class="regularLink">JSF 2.1</a> page on the Seam Wiki for the latest revision of this proposal). 

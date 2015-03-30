@@ -5,11 +5,13 @@ blogger_name: "Dan"
 creation_date: "09-04-2009"
 tags: [Interoperability,JPA,Seam,Seam News]
 
-absolute_url: http://in.relation.to/2009/04/09/UsingAnAlternateJPAProviderWithSeam
-lace: http://in.relation.to/11081.lace
+relative_url: /2009/04/09/UsingAnAlternateJPAProviderWithSeam
 slug: UsingAnAlternateJPAProviderWithSeam
+lace: http://in.relation.to/11081.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/04/09/UsingAnAlternateJPAProviderWithSeam
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 What, you didn't think it was possible? Of course it is! Although the Seam development team encourages you to use Hibernate as the JPA provider, Seam is capable of working with any JPA provider. This entry will show you how.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhyHibernateOrWhyNot"><a href="/Bloggers/UsingAnAlternateJPAProviderWithSeam#H-WhyHibernateOrWhyNot">Why Hibernate or why not?</a></h2>
+<h2 class="wikiHeadline2" id="H-WhyHibernateOrWhyNot"><a href="/2009/04/09/UsingAnAlternateJPAProviderWithSeam#H-WhyHibernateOrWhyNot">Why Hibernate or why not?</a></h2>
 
 <p class="wikiPara">
 Hibernate is recommended for a good reason. It provides several <q>vendor extensions</q> that Seam is able to leverage to your advantage. If you are willing to pass on these enhancements (most notably manual flushing, advanced mappings and Hibernate Search), then you should have no problem swapping out Hibernate for another provider. In fact, I encourage you to try an alternate provider so that you can appreciate the value Hibernate adds ;)
@@ -28,7 +30,7 @@ Hibernate is recommended for a good reason. It provides several <q>vendor extens
 Enough with the advice, let's get to it.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ChangingTheJPAPersistenceProvider"><a href="/Bloggers/UsingAnAlternateJPAProviderWithSeam#H-ChangingTheJPAPersistenceProvider">Changing the JPA persistence provider</a></h2>
+<h2 class="wikiHeadline2" id="H-ChangingTheJPAPersistenceProvider"><a href="/2009/04/09/UsingAnAlternateJPAProviderWithSeam#H-ChangingTheJPAPersistenceProvider">Changing the JPA persistence provider</a></h2>
 
 <p class="wikiPara">
 There are three steps to changing the JPA persistence provider in a Seam application:
@@ -44,13 +46,13 @@ There are three steps to changing the JPA persistence provider in a Seam applica
 After you have the JPA provider configured, you should check your code for uses of Hibernate-specific extensions. This will keep you from bumping into exceptions.
 </p>
 
-<h4 class="wikiHeadline4" id="H-Step1PreparingAnAlternateProvider"><a href="/Bloggers/UsingAnAlternateJPAProviderWithSeam#H-Step1PreparingAnAlternateProvider">Step 1: Preparing an alternate provider</a></h4>
+<h4 class="wikiHeadline4" id="H-Step1PreparingAnAlternateProvider"><a href="/2009/04/09/UsingAnAlternateJPAProviderWithSeam#H-Step1PreparingAnAlternateProvider">Step 1: Preparing an alternate provider</a></h4>
 
 <p class="wikiPara">
 The first step is usually just deciding to use the JPA provider that comes with the application server. For instance, if you are using GlassFish V2, TopLink Essentials is the bundled provider. Otherwise, you have to add the JAR files to the application server's extension directory. You had to do this same step if you have ever used Hibernate on GlassFish.
 </p>
 
-<h4 class="wikiHeadline4" id="H-Step2AttachingThePersistenceUnitToTheProvider"><a href="/Bloggers/UsingAnAlternateJPAProviderWithSeam#H-Step2AttachingThePersistenceUnitToTheProvider">Step 2: Attaching the persistence unit to the provider</a></h4>
+<h4 class="wikiHeadline4" id="H-Step2AttachingThePersistenceUnitToTheProvider"><a href="/2009/04/09/UsingAnAlternateJPAProviderWithSeam#H-Step2AttachingThePersistenceUnitToTheProvider">Step 2: Attaching the persistence unit to the provider</a></h4>
 
 <p class="wikiPara">
 The second step is how you tell JPA which provider you want to use. You enter the SPI class that extends the <tt>javax.persistence.spi.PersistenceProvider</tt> interface in the <tt>&lt;provider&gt;</tt> element under <tt>&lt;persistence-unit&gt;</tt> in the persistence unit descriptor (persistence.xml).
@@ -89,7 +91,7 @@ I also find that when I am using an exploded archive, I have to tell TopLink not
 Your mileage may vary. I'll admit that depending on your packaging, getting the persistence unit setup right can be hairy. This has nothing to do with Seam.
 </p>
 
-<h4 class="wikiHeadline4" id="H-Step3BreakingTheNewsToSeamThatYouWontBeUsingHibernate"><a href="/Bloggers/UsingAnAlternateJPAProviderWithSeam#H-Step3BreakingTheNewsToSeamThatYouWontBeUsingHibernate">Step 3: Breaking the news to Seam that you won't be using Hibernate</a></h4>
+<h4 class="wikiHeadline4" id="H-Step3BreakingTheNewsToSeamThatYouWontBeUsingHibernate"><a href="/2009/04/09/UsingAnAlternateJPAProviderWithSeam#H-Step3BreakingTheNewsToSeamThatYouWontBeUsingHibernate">Step 3: Breaking the news to Seam that you won't be using Hibernate</a></h4>
 
 <p class="wikiPara">
 The third and final step to configuring the application is to give Seam the hint as to which persistence provider manager component to use. That's how Seam keeps straight which JPA providers support which features. For any non-Hibernate JPA provider, you define the generic JPA persistence provider in the Seam component descriptor (components.xml).
@@ -136,7 +138,7 @@ public class NoManualFlushPersistenceProvider extends PersistenceProvider {
 You should now be able to start your Seam application using the alternate JPA provider! Now it's time to reset your expectations.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Implications"><a href="/Bloggers/UsingAnAlternateJPAProviderWithSeam#H-Implications">Implications</a></h2>
+<h2 class="wikiHeadline2" id="H-Implications"><a href="/2009/04/09/UsingAnAlternateJPAProviderWithSeam#H-Implications">Implications</a></h2>
 
 <p class="wikiPara">
 First and foremost, without Hibernate, manual flushing will not be available. Therefore, when using a long-running conversation, you are likely to get flushing of the persistence context after each request. The reason for this is that Seam uses a wrapper (global) transaction around each non-faces request and two transactions for each faces request. Since a JPA provider will flush prior to the transaction committing, you are guaranteed the flush will happen on every request. You can choose to disable Seam's wrapper transactions by configuring the <tt>&lt;core:init&gt;</tt> component in the Seam component descriptor as follows:
@@ -153,7 +155,7 @@ Now you can control flushing by avoiding any calls to transactional methods unti
 Also be aware that you cannot cast EntityManager to the FullTextEntityManager (Hibernate Search). Also, when you retrieve the delegate from the EntityManager, it will be the delegate for the provider, which is a <tt>oracle.toplink.essentials.ejb.cmp3.EntityManager</tt> in the case of TopLink.
 </p>
 
-<h2 class="wikiHeadline2" id="H-FeelFree"><a href="/Bloggers/UsingAnAlternateJPAProviderWithSeam#H-FeelFree">Feel free</a></h2>
+<h2 class="wikiHeadline2" id="H-FeelFree"><a href="/2009/04/09/UsingAnAlternateJPAProviderWithSeam#H-FeelFree">Feel free</a></h2>
 
 <p class="wikiPara">
 There you have it, Seam with an alternate JPA provider! That's the beauty of leveraging the Java EE standards. In fact, you can even grab seam-gen and create a Seam project that you can deploy to GlassFish, the ultimate proof that Seam is a Java EE framework. While you may enjoy your freedom, you'll also miss out on the nice features that Hibernate adds. Still, it's good to know you have options.

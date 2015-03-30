@@ -5,11 +5,13 @@ blogger_name: "David"
 creation_date: "26-05-2011"
 tags: [Modules]
 
-absolute_url: http://in.relation.to/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1
-lace: http://in.relation.to/20431.lace
+relative_url: /2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1
 slug: ModulesInJDK8AndProjectJigsawRequirementsReviewPart1
+lace: http://in.relation.to/20431.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -26,13 +28,13 @@ The requirements as posted however contain some things that are specifically not
 Since this is a big document, I'm going to comment on it a bit at a time and see where we end up.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheRequirements"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-TheRequirements">The Requirements</a></h1>
+<h1 class="wikiHeadline1" id="H-TheRequirements"><a href="/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-TheRequirements">The Requirements</a></h1>
 
 <p class="wikiPara">
 The document, which may be found <a href="http://openjdk.java.net/projects/jigsaw/doc/draft-java-module-system-requirements-12" target="" class="regularLink">here</a>, is broken up into a number of sections, which I will attempt address approximately in order.
 </p>
 
-<h2 class="wikiHeadline2" id="H-FundamentalsVersions"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsVersions">Fundamentals: Versions</a></h2>
+<h2 class="wikiHeadline2" id="H-FundamentalsVersions"><a href="/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsVersions">Fundamentals: Versions</a></h2>
 
 <p class="wikiPara">
 The fundamentals paragraph items all indicate a strong sense that the Jigsaw project is on the right general track.  However I found a couple sections noteworthy:
@@ -74,7 +76,7 @@ Therefore it is very important to allow (better yet, require) builds to use spec
 Another very important consideration is that after an artifact is produced, the versions of its dependencies that it is known to be compatible with evolves over time as new versions of various things are released.  Thus dependency version ranges with a closed upper end cannot be a fixed part of the module's internal metadata, or there is a risk over time that the module will have to be repackaged to accomodate new version compatibilities.  My personal recommendation in fact is that modules only ever support a lower bound to version ranges for package/run-time constraining.
 </p>
 
-<h2 class="wikiHeadline2" id="H-FundamentalsTargetConstraintsOnModules"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsTargetConstraintsOnModules">Fundamentals: Target constraints on modules</a></h2>
+<h2 class="wikiHeadline2" id="H-FundamentalsTargetConstraintsOnModules"><a href="/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsTargetConstraintsOnModules">Fundamentals: Target constraints on modules</a></h2>
 
 <p class="wikiPara">
 I admit I do not understand the purpose of this paragraph, which reads as follows:
@@ -92,13 +94,13 @@ If the purpose of this is security, which I can very much get behind, then I thi
 Overall I think this mechanism also risks fragmentation of the module ecosystem that would (hopefully) arise around this enhancement.  I think Perl for example benefits greatly from a single repository of modules which is yet open to contributors with relatively little restriction; yet operating system distributors (know any of those?) have established best practices for the distribution of these modules.  And of course today's Java developers often use the Maven central repository and expect it to contain <q>everything</q> in reasonable locations.  However by creating these filtering mechanisms, the problem of many publishers is being solved at the wrong place, and it allows for some potentially very surprising behavior (I can see the FAQ now: <q>I installed a module but Java says it's not found... what gives?</q>).
 </p>
 
-<h2 class="wikiHeadline2" id="H-FundamentalsNativeCode"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsNativeCode">Fundamentals: Native code</a></h2>
+<h2 class="wikiHeadline2" id="H-FundamentalsNativeCode"><a href="/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsNativeCode">Fundamentals: Native code</a></h2>
 
 <p class="wikiPara">
 This section basically says that modules need to support native code somehow, though it seems to imply that the native library has to live inside the module itself, which I think is probably unneccessary (though of course it would have to exist within the module <i class="wikiEmphasis">packaging</i>, else there would be no way to actually install it).  In JBoss Modules, we simply require that native libraries exist in filesystem-backed resource loaders (as opposed to jar-backed resource loaders which one would normally use for classes).  In addition the filesystem resource loader uses the name of the OS and hardware platform to allow for packaging modules which contain native bits for more than one platform (actually not unlike how Perl's DynaLoader does it, if I recall correctly).
 </p>
 
-<h2 class="wikiHeadline2" id="H-FundamentalsPackageSubsetsAndSharedClassLoaders"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsPackageSubsetsAndSharedClassLoaders">Fundamentals: Package subsets and Shared class loaders</a></h2>
+<h2 class="wikiHeadline2" id="H-FundamentalsPackageSubsetsAndSharedClassLoaders"><a href="/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-FundamentalsPackageSubsetsAndSharedClassLoaders">Fundamentals: Package subsets and Shared class loaders</a></h2>
 
 <p class="wikiPara">
 These sections I have a serious problem with:
@@ -120,13 +122,13 @@ I am very much against this notion.  One module, one class loader, period, end o
 Rather than thus weakening the definition of a module, I recommend that modules be allowed to be packaged in portions, which may be separately shipped and installed - perhaps a module/submodule concept could be introduced, where the contract of a submodule is clearly defined as sharing the parent module's class loader.  In other words, the label should be clearly marked, so to speak.  There is no reasonable expectation that a package may be split between modules, and doing so is definitely a violation of the Principle of Least WTF.
 </p>
 
-<h2 class="wikiHeadline2" id="H-SecurityWhereArtThou"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-SecurityWhereArtThou">Security: Where art thou?</a></h2>
+<h2 class="wikiHeadline2" id="H-SecurityWhereArtThou"><a href="/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-SecurityWhereArtThou">Security: Where art thou?</a></h2>
 
 <p class="wikiPara">
 Though there are various paragraphs which allude to it, there is no specific section addressing security, which I think is a somewhat serious oversight.  I would personally like to see some enhancements to the standard security provider mechanism to accomodate modules and module signers more conveniently than the mechanisms at our disposal today, and I commented earlier about module signing, to say nothing about modular security provider discovery (okay, this kind of thing is currently listed as a non-requirement to be fair - but it will always be in the back of my mind, and you can bet that it will show up in JBoss AS 7.x at some point if I have anything to say about it).
 </p>
 
-<h2 class="wikiHeadline2" id="H-SummaryPart1"><a href="/Bloggers/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-SummaryPart1">Summary, Part 1</a></h2>
+<h2 class="wikiHeadline2" id="H-SummaryPart1"><a href="/2011/05/26/ModulesInJDK8AndProjectJigsawRequirementsReviewPart1#H-SummaryPart1">Summary, Part 1</a></h2>
 
 <p class="wikiPara">
 That's about it for the first chapter.  Overall the Fundamentals leave me with a sense that things are somewhat more under control in Jigsaw-land... in particular, it's good news that the brakes are apparently being gently applied to implementation in order to come up with real requirements, which are essential to ensuring that a project is firmly on the correct planetary surface.  Just ask any of my colleagues, they'll tell you how I like a good requirements document!

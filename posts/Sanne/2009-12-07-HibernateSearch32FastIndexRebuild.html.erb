@@ -5,11 +5,13 @@ blogger_name: "Sanne"
 creation_date: "07-12-2009"
 tags: [Hibernate,Hibernate Search]
 
-absolute_url: http://in.relation.to/2009/12/07/HibernateSearch32FastIndexRebuild
-lace: http://in.relation.to/13387.lace
+relative_url: /2009/12/07/HibernateSearch32FastIndexRebuild
 slug: HibernateSearch32FastIndexRebuild
+lace: http://in.relation.to/13387.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/12/07/HibernateSearch32FastIndexRebuild
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -27,12 +29,12 @@ So while Hibernate Search keeps the index in sync with the database during regul
 <li class="wikiUnorderedListItem"> ...you get the point, this list could be very long</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-EvolvingUserDriven"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-EvolvingUserDriven">Evolving, user driven</a></h3>
+<h3 class="wikiHeadline3" id="H-EvolvingUserDriven"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-EvolvingUserDriven">Evolving, user driven</a></h3>
 <p class="wikiPara">
 An API to perform this operations always existed in previous versions of Hibernate Search, but questions about how to make this faster weren't unusual on the forums. Keep in mind that rebuilding the whole index basically means that you have to load all indexed entities from the database to the Java world to feed Lucene with data to index. I'm a user myself and the code for the new MassIndexer API was tuned after field experience on several applications and with much involvement of the community.
 </p>
 
-<h2 class="wikiHeadline2" id="H-QuickStartMassIndexerAPI"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-QuickStartMassIndexerAPI">QuickStart: MassIndexer API</a></h2>
+<h2 class="wikiHeadline2" id="H-QuickStartMassIndexerAPI"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-QuickStartMassIndexerAPI">QuickStart: MassIndexer API</a></h2>
 
 <p class="wikiPara">
 Since version 3.0 the documentation provided a recommended re-indexing routine; this method is still available but a new API providing better performance was added in version 3.2. No configuration changes are required, just start it:
@@ -51,7 +53,7 @@ If you don't need to wait for it use the asynchronous method:
 <pre class="wikiPreformatted brush: java; gutter: true;">fullTextSession.createIndexer().start();
 </pre>
 
-<h3 class="wikiHeadline3" id="H-SelectingTheEntitiesToRebuildTheIndexFor"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-SelectingTheEntitiesToRebuildTheIndexFor">Selecting the entities to rebuild the index for</a></h3>
+<h3 class="wikiHeadline3" id="H-SelectingTheEntitiesToRebuildTheIndexFor"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-SelectingTheEntitiesToRebuildTheIndexFor">Selecting the entities to rebuild the index for</a></h3>
 <p class="wikiPara">
 You don't need to rebuild the index for all indexed entities; let's say you want to re-index only the DVDs:
 </p>
@@ -63,7 +65,7 @@ You don't need to rebuild the index for all indexed entities; let's say you want
 This will include all of Dvd's subclasses, as all Hibernate Search's APIs are polymorphic.
 </p>
 
-<h3 class="wikiHeadline3" id="H-IndexOptimizationAndClearing"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-IndexOptimizationAndClearing">Index optimization and clearing</a></h3>
+<h3 class="wikiHeadline3" id="H-IndexOptimizationAndClearing"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-IndexOptimizationAndClearing">Index optimization and clearing</a></h3>
 <p class="wikiPara">
 As in Lucene's world an update is implemented as remove and then add, before adding all entities to the index we need to remove them all from the index.
 This operation is known as <u>purgeAll</u> in Hibernate Search.
@@ -77,7 +79,7 @@ By default the index is purged and optimized at start, and optimized again at th
    .start();
 </pre>
 
-<h2 class="wikiHeadline2" id="H-FasterFaster"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-FasterFaster">Faster, Faster!</a></h2>
+<h2 class="wikiHeadline2" id="H-FasterFaster"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-FasterFaster">Faster, Faster!</a></h2>
 
 <p class="wikiPara">
 A MassIndexer is very sensitive to tuning; some settings can make it orders of magnitude faster when tuned properly, and the good values depend on your specific mapping, environment, database, and even your content. To find out which settings you need to tune you should be aware of some implementation details.
@@ -107,7 +109,7 @@ The queues are blocking and bounded, so there's no danger in setting too many pr
 All thread pools have names assigned, so if you connect with a profiler or debugger the different stages can be promptly identified.
 </p>
 
-<h3 class="wikiHeadline3" id="H-APIForDataLoadTuning"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-APIForDataLoadTuning">API for data load tuning</a></h3>
+<h3 class="wikiHeadline3" id="H-APIForDataLoadTuning"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-APIForDataLoadTuning">API for data load tuning</a></h3>
 
 <p class="wikiPara">
 The following settings rebuild my personal reference database in 3 minutes, while I started at 6 hours before enabling these settings, or at 2 months before looking into any kind of Hibernate or Lucene tuning.
@@ -123,19 +125,19 @@ The following settings rebuild my personal reference database in 3 minutes, whil
 </pre>
 
 
-<h3 class="wikiHeadline3" id="H-Caching"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-Caching">Caching</a></h3>
+<h3 class="wikiHeadline3" id="H-Caching"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-Caching">Caching</a></h3>
 <p class="wikiPara">
 When some information is embedded in the index from entities having a low cardinality (a high cache hit ratio), for example when there's a ManyToOne relation to gender or countrycode it might make sense to enable the cache, which is ignored by default.
 In most cases ignoring the cache will result in best performance, especially if you're using a distributed cache which would introduce unneeded network events.
 </p>
 
-<h2 class="wikiHeadline2" id="H-OfflineJob"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-OfflineJob">Offline job</a></h2>
+<h2 class="wikiHeadline2" id="H-OfflineJob"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-OfflineJob">Offline job</a></h2>
 
 <p class="wikiPara">
 While normally all changes done by Hibernate Search are coupled to a transaction, the MassIndexer uses several transactions and consistency is not guaranteed if you make changes to data while it's running. The index will only contain the entities which where existing in the database when the job started, and any update made to the index in this timeframe by other means might be lost. While nothing wrong would happen to the data on database, the index might be inconsistent if changes are made while the job is busy.
 </p>
 
-<h2 class="wikiHeadline2" id="H-PerformanceChecklist"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-PerformanceChecklist">Performance checklist</a></h2>
+<h2 class="wikiHeadline2" id="H-PerformanceChecklist"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-PerformanceChecklist">Performance checklist</a></h2>
 <p class="wikiPara">
 After having parallelized the indexing code, there are some other bottlenecks to avoid:
 </p>
@@ -150,7 +152,7 @@ After having parallelized the indexing code, there are some other bottlenecks to
 <li class="wikiOrderedListItem"> If the indexing CPUs are not at 100% usage and the DB is not hitting his limits, you know you can improve the settings</li>
 </ol>
 
-<h2 class="wikiHeadline2" id="H-ProgressMonitoring"><a href="/Bloggers/HibernateSearch32FastIndexRebuild#H-ProgressMonitoring">Progress Monitoring</a></h2>
+<h2 class="wikiHeadline2" id="H-ProgressMonitoring"><a href="/2009/12/07/HibernateSearch32FastIndexRebuild#H-ProgressMonitoring">Progress Monitoring</a></h2>
 <p class="wikiPara">
 An API is on the road to plug your own monitoring implementation; currently beta1 uses a logger to periodically print status, so you can enable or disable your loggers to control it. Let us know what kind of monitoring you would like to have, or contribute one!
 </p>

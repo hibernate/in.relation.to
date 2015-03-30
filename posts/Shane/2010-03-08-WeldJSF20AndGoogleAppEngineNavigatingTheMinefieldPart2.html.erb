@@ -5,11 +5,13 @@ blogger_name: "Shane"
 creation_date: "08-03-2010"
 tags: []
 
-absolute_url: http://in.relation.to/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2
-lace: http://in.relation.to/14671.lace
+relative_url: /2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2
 slug: WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2
+lace: http://in.relation.to/14671.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -33,7 +35,7 @@ the comments area.
 Let's get started! We'll begin by looking at one of the most important things, the persistence layer.
 </p>
 
-<h2 class="wikiHeadline2" id="H-TheGoogleAppEngineDatastore"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-TheGoogleAppEngineDatastore">The Google App Engine datastore</a></h2>
+<h2 class="wikiHeadline2" id="H-TheGoogleAppEngineDatastore"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-TheGoogleAppEngineDatastore">The Google App Engine datastore</a></h2>
 
 <p class="wikiPara">
 If you're used to working with relational databases, then the 
@@ -53,7 +55,7 @@ here's a brief list:
 <li class="wikiUnorderedListItem"> Aggregation queries such as group by, sum, having, etc</li>
 </ul>
 
-<h3 class="wikiHeadline3" id="H-PrimaryKeys"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-PrimaryKeys">Primary Keys</a></h3>
+<h3 class="wikiHeadline3" id="H-PrimaryKeys"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-PrimaryKeys">Primary Keys</a></h3>
 
 <p class="wikiPara">
 There are <a href="http://code.google.com/appengine/docs/java/datastore/creatinggettinganddeletingdata.html#Keys" target="" class="regularLink">four different options</a> 
@@ -99,7 +101,7 @@ By using an encoded String primary key value, you can then create references usi
   
 </p>
 
-<h3 class="wikiHeadline3" id="H-EntityRelationships"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-EntityRelationships">Entity Relationships</a></h3>
+<h3 class="wikiHeadline3" id="H-EntityRelationships"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-EntityRelationships">Entity Relationships</a></h3>
 
 <p class="wikiPara">
 By default, relationships to other entities defined via the <tt>@OneToOne</tt> or <tt>@ManyToOne</tt> annotations are lazy-loaded.
@@ -115,7 +117,7 @@ entities) cached, and simply store the primary key values of the lookup records 
 object reference.  It means a little more work, however is probably worth it for the performance benefits.
 </p>
 
-<h3 class="wikiHeadline3" id="H-CreatingTheEntityManagerFactory"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-CreatingTheEntityManagerFactory">Creating the EntityManagerFactory</a></h3>
+<h3 class="wikiHeadline3" id="H-CreatingTheEntityManagerFactory"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-CreatingTheEntityManagerFactory">Creating the EntityManagerFactory</a></h3>
 
 <p class="wikiPara">
 This is a very expensive operation, and should only be done once.  The recommended way is to store the <tt>EntityManagerFactory</tt>
@@ -156,7 +158,7 @@ To get <tt>EntityManager</tt> instances you can use a producer method.  Since we
 
 
 
-<h3 class="wikiHeadline3" id="H-DetachingEntities"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-DetachingEntities">Detaching entities</a></h3>
+<h3 class="wikiHeadline3" id="H-DetachingEntities"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-DetachingEntities">Detaching entities</a></h3>
 
 <p class="wikiPara">
 This one can be quite a gotcha.  In GAE, managed entities may have hidden references back to certain database objects,
@@ -172,7 +174,7 @@ in question, or alternatively create DTOs that contain only the properties that 
 support JPA 2.0 in the future.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Indexes"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Indexes">Indexes</a></h2>
+<h2 class="wikiHeadline2" id="H-Indexes"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Indexes">Indexes</a></h2>
 
 <p class="wikiPara">
 Table indexes are configured in a file called <tt>datastore-indexes.xml</tt> in the <tt>WEB-INF</tt> directory.  There is a
@@ -202,7 +204,7 @@ SLOW!  Even if your table contains no data whatsoever, it can literally take hou
 don't get worried if it seems like Google has forgotten to create your index, just be patient.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Security"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Security">Security</a></h2>
+<h2 class="wikiHeadline2" id="H-Security"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Security">Security</a></h2>
 
 <p class="wikiPara">
 A great feature of GAE is its integration with the Google Accounts API.  In my opinion, why would you want to bother
@@ -304,7 +306,7 @@ This method returns a long identifier value which is unique to that particular u
 their nickname or e-mail address, both of which can potentially change, whereas the user ID will never change.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Caching"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Caching">Caching</a></h2>
+<h2 class="wikiHeadline2" id="H-Caching"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Caching">Caching</a></h2>
 
 <p class="wikiPara">
 GAE provides a feature called Memcache, which is a high performance distributed cache with 
@@ -346,7 +348,7 @@ Once we're written this producer method we can simply inject the cache directly 
 <tt>@Inject Cache cache</tt>.  We're going to look at caching a little more, further down in the performance section.
 </p>
 
-<h2 class="wikiHeadline2" id="H-JSF"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-JSF">JSF</a></h2>
+<h2 class="wikiHeadline2" id="H-JSF"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-JSF">JSF</a></h2>
 
 <p class="wikiPara">
 I don't want to get too deep into the JSF side of things because it's really outside the scope of this article.
@@ -354,7 +356,7 @@ Basically JSF works as intended in GAE, with very little in the way of gotchas. 
 you're new to JSF 2.
 </p>
 
-<h3 class="wikiHeadline3" id="H-RequestParameters"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-RequestParameters">Request parameters</a></h3>
+<h3 class="wikiHeadline3" id="H-RequestParameters"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-RequestParameters">Request parameters</a></h3>
 
 <p class="wikiPara">
 Request parameters are now defined in the page itself, using the <tt>f:metadata</tt> tag.  Simply use a <tt>f:viewParam</tt> to
@@ -378,7 +380,7 @@ receiving the parameter value isn't a primitive (i.e. it must be nullable).
 Using request parameters are a great way of achieving bookmarkable URLs, and of developing a stateless application.
 </p>
 
-<h3 class="wikiHeadline3" id="H-PageActions"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-PageActions">Page actions</a></h3>
+<h3 class="wikiHeadline3" id="H-PageActions"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-PageActions">Page actions</a></h3>
 
 <p class="wikiPara">
 This one may be a little strange to you if you're used to using Seam 2's <tt>pages.xml</tt> to define page actions. Like
@@ -394,7 +396,7 @@ listener:
 
 
 
-<h2 class="wikiHeadline2" id="H-Logging"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Logging">Logging</a></h2>
+<h2 class="wikiHeadline2" id="H-Logging"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Logging">Logging</a></h2>
 
 <p class="wikiPara">
 My recommendation for logging is to use SLF4J.  It's already included as part of the <tt>weld-servlet</tt> distribution so
@@ -419,7 +421,7 @@ Log messages created by SLF4J will show up in the GAE dashboard, to view them ju
 hand column.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Performance"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Performance">Performance</a></h2>
+<h2 class="wikiHeadline2" id="H-Performance"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Performance">Performance</a></h2>
 
 <p class="wikiPara">
 Let's get the important stuff out of the way first.  When it comes to performance in GAE, there's a huge elephant in 
@@ -513,7 +515,7 @@ query the database).  Make use of the <tt>setMaxResults()</tt> and <tt>setFirstR
 limit how much data you present to the user in any single request.
 </p>
 
-<h2 class="wikiHeadline2" id="H-UnsupportedFeatures"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-UnsupportedFeatures">Unsupported features</a></h2>
+<h2 class="wikiHeadline2" id="H-UnsupportedFeatures"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-UnsupportedFeatures">Unsupported features</a></h2>
 
 <p class="wikiPara">
 The most glaring omission in features is Weld's support for conversations.  Due to the way that conversation cleanup
@@ -524,7 +526,7 @@ Use request parameters wherever it makes sense (see the JSF section above) and m
 (which when placed on a bean makes it <tt>@Named</tt> and <tt>@RequestScoped</tt>).
 </p>
 
-<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/Bloggers/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Conclusion">Conclusion</a></h2>
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2010/03/08/WeldJSF20AndGoogleAppEngineNavigatingTheMinefieldPart2#H-Conclusion">Conclusion</a></h2>
 
 <p class="wikiPara">
 While we've covered a fair bit of ground in this article, there's probably a lot of other useful tips that I've missed.

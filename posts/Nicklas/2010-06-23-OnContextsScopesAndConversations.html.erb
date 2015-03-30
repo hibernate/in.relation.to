@@ -5,11 +5,13 @@ blogger_name: "Nicklas"
 creation_date: "23-06-2010"
 tags: []
 
-absolute_url: http://in.relation.to/2010/06/23/OnContextsScopesAndConversations
-lace: http://in.relation.to/15960.lace
+relative_url: /2010/06/23/OnContextsScopesAndConversations
 slug: OnContextsScopesAndConversations
+lace: http://in.relation.to/15960.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/06/23/OnContextsScopesAndConversations
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -19,7 +21,7 @@ Contexts in JSR-299 is so important that it actually was incorporated in the nam
 at what the contexts and scopes really are. We'll be using Weld as the reference when we want to get into implementation details but the core stuff is implementation agnostic and follow the rules of the specification. This blog posting is sort of a "scopes and contexts for dummies" with some simplifications, for a more formal approach you might want to Read The Fine Specification.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Contexts"><a href="/Bloggers/OnContextsScopesAndConversations#H-Contexts">Contexts</a></h1>
+<h1 class="wikiHeadline1" id="H-Contexts"><a href="/2010/06/23/OnContextsScopesAndConversations#H-Contexts">Contexts</a></h1>
 
 <p class="wikiPara">
 A context is like a labeled shelf. There are shelves named @RequestScoped, @SessionScoped etc. When you use a bean of a particular scope, a bean instance is fetched from that shelf (or one is created and placed there if it wasn't already there) so that you are guaranteed to get the same instance the next time you reference it (withing the same lifecycle)
@@ -29,19 +31,19 @@ A context is like a labeled shelf. There are shelves named @RequestScoped, @Sess
 As a curiosity can be mentioned that there can actually be many shelves for a particular scope (as long as only one is active at any given time). 5 minutes of fame and honor to the one that can find a usecase for that. I think it has something to do with child activites that once was a part of the spec.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Scopes"><a href="/Bloggers/OnContextsScopesAndConversations#H-Scopes">Scopes</a></h1>
+<h1 class="wikiHeadline1" id="H-Scopes"><a href="/2010/06/23/OnContextsScopesAndConversations#H-Scopes">Scopes</a></h1>
 
 <p class="wikiPara">
 The scope is the link between a bean and a context. Different contexts/scopes have different lifecycles and that determines for how long your stuff should be kept on the shelf. The shelf is automatically wiped clean when the scope hits it's end-of-life (e.g. the contents of the session context is destroyed when the session expires etc). There is no cheating, in Seam you could place almost any bean in any scope but in CDI, a bean of a particular scope always end up on the corresponding shelf. A bean has one and only one scope.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Proxies"><a href="/Bloggers/OnContextsScopesAndConversations#H-Proxies">Proxies</a></h1>
+<h1 class="wikiHeadline1" id="H-Proxies"><a href="/2010/06/23/OnContextsScopesAndConversations#H-Proxies">Proxies</a></h1>
 
 <p class="wikiPara">
 Proxies are wrappers. There are different kinds of proxies, there are placeholder proxies used at injection points for normal scoped beans that look up the real instance before invoking methods on it and there are proxies that wrap interceptors and stuff around the real instance of the bean class. 
 </p>
 
-<h1 class="wikiHeadline1" id="H-BehindTheScenes"><a href="/Bloggers/OnContextsScopesAndConversations#H-BehindTheScenes">Behind the scenes</a></h1>
+<h1 class="wikiHeadline1" id="H-BehindTheScenes"><a href="/2010/06/23/OnContextsScopesAndConversations#H-BehindTheScenes">Behind the scenes</a></h1>
 
 <p class="wikiPara">
 So what really happens when you have something like this
@@ -111,7 +113,7 @@ When the request is over, the request context is destroyed and any destructors o
 Now another request from the same webapp comes along. The request scope is once again empty and we have a new instance for foo but this time bar is already found in the session context and we get the same instance of Bar. Just as we should since we have a new request (fresh request context) but same 'ol session (old session context). In this way we can mix injection between contexts - we can inject @RequestScoped beans in @SessionScoped ones and vice versa and the proxies will make sure the correct instances are hit (or created) in the contexts.
 </p>
 
-<h1 class="wikiHeadline1" id="H-ContextNotActive"><a href="/Bloggers/OnContextsScopesAndConversations#H-ContextNotActive">Context not active</a></h1>
+<h1 class="wikiHeadline1" id="H-ContextNotActive"><a href="/2010/06/23/OnContextsScopesAndConversations#H-ContextNotActive">Context not active</a></h1>
 
 <p class="wikiPara">
 All contexts are not active all the time. Getting a <q>context not active</q> exception from an @ApplicationScoped bean is a bit tricky but the request context is only available when there is an active HTTP request and the session context is only available when there is an active HTTP session. It means that accessing beans in those contexts are no-go from e.g. MDB:s. Why is this?
@@ -145,7 +147,7 @@ It is important to realize that the <q>limitations</q> are not that of Welds imp
 As a curiosity can be mentioned that due to the fact that the specification say the session context must survive session invalidation (which is not a Good Thing when you have direct HTTP session backed beanstore and try to access it after invalidation) there is a sort of buffering built into the session context that loads on init and caches stuff if the session should go AWOL at some point.
 </p>
 
-<h1 class="wikiHeadline1" id="H-HoneyWeNeedToHaveAConversation"><a href="/Bloggers/OnContextsScopesAndConversations#H-HoneyWeNeedToHaveAConversation">Honey, we need to have a conversation</a></h1>
+<h1 class="wikiHeadline1" id="H-HoneyWeNeedToHaveAConversation"><a href="/2010/06/23/OnContextsScopesAndConversations#H-HoneyWeNeedToHaveAConversation">Honey, we need to have a conversation</a></h1>
 
 <p class="wikiPara">
 The conversation context is actually like a named sub-session-context. The @RequestScoped shelf can have only one box where stuff is stored in but on the @ConversationScoped shelf there can be many boxes. The labels on the boxes is the conversation ID. Conversations can be either transient (the default) and in this case it behaves much like the request context and only lives during one HTTP request. This is not very useful, therefore conversations can be promoted to non-transient (long-running). This is achieved by calling the begin() or begin(String) methods on the Conversation bean that's available for injection. When the request ends, the Conversation Manager decides the fate of the conversation context by looking at the transient flag of the Conversation. If it is transient, the conversation context is destroyed, if it's non-transient it's left alone and the generated (or assigned) conversation ID is passed along as a HTTP parameter to the next request. 
@@ -163,7 +165,7 @@ If you think you can get cute and do some URL-rewriting by modify the passed-alo
 As a curiosity could be mentioned that it's harder and harder with modern browsers to actually get new sessions since tabbed browsings etc have brought along the side-effect that the session and cookies are shared among browser instances. Earlier it was usually enough to start a new browser but nowadays you usually have to use incognito/private browsing to test the session boundaries with the same brand of browser.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Conclusion"><a href="/Bloggers/OnContextsScopesAndConversations#H-Conclusion">Conclusion</a></h1>
+<h1 class="wikiHeadline1" id="H-Conclusion"><a href="/2010/06/23/OnContextsScopesAndConversations#H-Conclusion">Conclusion</a></h1>
 
 <p class="wikiPara">
 Hopefully you are now confused at a higher level. You might also want to check out the specification on how to write custom contexts and scope types. You might also want to have a look at the Weld source code in the org.jboss.weld.context package and look at how the BeanManagerImpl does the resolving.

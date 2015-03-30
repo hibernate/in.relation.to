@@ -5,11 +5,13 @@ blogger_name: "Shane"
 creation_date: "09-05-2014"
 tags: [News,PicketLink]
 
-absolute_url: http://in.relation.to/2014/05/09/PicketLinkDeepDivePart2
-lace: http://in.relation.to/25571.lace
+relative_url: /2014/05/09/PicketLinkDeepDivePart2
 slug: PicketLinkDeepDivePart2
+lace: http://in.relation.to/25571.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/05/09/PicketLinkDeepDivePart2
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -24,19 +26,19 @@ Welcome to part 2 of the PicketLink Deep Dive series.  In case you missed part 1
 In this issue, we’re going to be taking a closer look at PicketLink’s support for partitions. Let’s start though by establishing what exactly partitions are in the scope of PicketLink and how they are used.
 </p>
 
-<h1 class="wikiHeadline1" id="H-WhatIsAPartition"><a href="/Bloggers/PicketLinkDeepDivePart2#H-WhatIsAPartition">What is a Partition?</a></h1>
+<h1 class="wikiHeadline1" id="H-WhatIsAPartition"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-WhatIsAPartition">What is a Partition?</a></h1>
 
 <p class="wikiPara">
 In the simplest definition, partitions in PicketLink are used to segregate identities (such as users, groups and roles) from each other.  Why would you want to do this, you wonder?  Well one common use case for such a feature would be for an application that serves multiple clients/companies, with each client having its own distinct set of user accounts.  Another use case might be when you wish to use PicketLink as an IDP (Identity Provider) that services multiple applications, with each application having a distinct set of identities.  Whenever you need to support the creation of distinct “sets” of users or other identity types, partitions are there to help you.
 </p>
 
-<h1 class="wikiHeadline1" id="H-DoINeedToUseThem"><a href="/Bloggers/PicketLinkDeepDivePart2#H-DoINeedToUseThem">Do I need to use them?</a></h1>
+<h1 class="wikiHeadline1" id="H-DoINeedToUseThem"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-DoINeedToUseThem">Do I need to use them?</a></h1>
 
 <p class="wikiPara">
 If your application has simple security requirements, such as a single set of user accounts and maybe perhaps a few groups and roles, then you probably don’t need to use PicketLink’s extended support for partitions.  The good news is that you don’t really need to do anything special - simply ignore the partition aspect of PicketLink and it shouldn’t ever bother you! (You can probably also skip the rest of this article if you like and just come back for part 3).
 </p>
 
-<h1 class="wikiHeadline1" id="H-PartitionsAndTheIdentityModel"><a href="/Bloggers/PicketLinkDeepDivePart2#H-PartitionsAndTheIdentityModel">Partitions and the Identity Model</a></h1>
+<h1 class="wikiHeadline1" id="H-PartitionsAndTheIdentityModel"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-PartitionsAndTheIdentityModel">Partitions and the Identity Model</a></h1>
 
 <p class="wikiPara">
 If you read part 1, you may remember how the identity model was described and how each identity object implements the <tt>IdentityType</tt> interface, as shown in this class diagram:
@@ -56,7 +58,7 @@ What we didn’t explain in part 1 was how every <tt>IdentityType</tt> object mu
 At first glance it might seem that the first of these methods might return a “partitionless” <tt>IdentityManager</tt> instance, however behind the scenes PicketLink actually returns an <tt>IdentityManager</tt> for the default partition.  We’ll examine this in more detail shortly, but first let’s look at how PicketLink supports different partition types.
 </p>
 
-<h1 class="wikiHeadline1" id="H-CreatingACustomPartitionType"><a href="/Bloggers/PicketLinkDeepDivePart2#H-CreatingACustomPartitionType">Creating a custom partition type</a></h1>
+<h1 class="wikiHeadline1" id="H-CreatingACustomPartitionType"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-CreatingACustomPartitionType">Creating a custom partition type</a></h1>
 
 <p class="wikiPara">
 Since the <tt>Partition</tt> interface cannot be instantiated itself, it is generally up to the developer to provide a concrete partition implementation.  PicketLink provides two built-in partition types which you are free to use (see the next section for details), but otherwise it is very simple to create your own partition type.  The <tt>AbstractPartition</tt> abstract base class makes this easy by doing most of the work for us, and may be easily extended to create a custom partition type.  Let’s take a look at a really simple example:
@@ -97,31 +99,31 @@ partitionManager.add(org);
 log.info(“Created new Organization partition with id: “ + org.getId());</pre>
 
 
-<h1 class="wikiHeadline1" id="H-BuiltInPartitionTypes"><a href="/Bloggers/PicketLinkDeepDivePart2#H-BuiltInPartitionTypes">Built In Partition Types</a></h1>
+<h1 class="wikiHeadline1" id="H-BuiltInPartitionTypes"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-BuiltInPartitionTypes">Built In Partition Types</a></h1>
 
 <p class="wikiPara">
 PicketLink provides two built-in, optional partition types - <tt>Realm</tt> and <tt>Tier</tt>.  Both of these classes can be found in the <tt>org.picketlink.idm.model.basic</tt> package along with the other classes that form the basic identity model.  Both of these partition types are provided for convenience only, there is absolutely no requirement that you use either of them.  If you do wish to use these built-in partition types, then here are our guidelines (which you may choose to ignore if you wish):
 </p>
 
-<h2 class="wikiHeadline2" id="H-Realm"><a href="/Bloggers/PicketLinkDeepDivePart2#H-Realm">Realm</a></h2>
+<h2 class="wikiHeadline2" id="H-Realm"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-Realm">Realm</a></h2>
 
 <p class="wikiPara">
 The <tt>Realm</tt> partition type is analogous to the commonly accepted definition of a security realm and is recommended for use when you need to create a distinct set of users, groups and roles (or other identity types) for restricting access to an application.  It supports all identity types.
 </p>
 
-<h2 class="wikiHeadline2" id="H-Tier"><a href="/Bloggers/PicketLinkDeepDivePart2#H-Tier">Tier</a></h2>
+<h2 class="wikiHeadline2" id="H-Tier"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-Tier">Tier</a></h2>
 
 <p class="wikiPara">
 A <tt>Tier</tt> is designed to be used in conjunction with a <tt>Realm</tt> and is intended for storing only roles or groups (or any other non-<tt>Account</tt> identity type, i.e. an identity type that isn’t capable of authenticating such as a <tt>User</tt>) while the <tt>Realm</tt> stores the Users.  It is intended for storing tier-specific identities; for example if your application consists of multiple tiers, then each tier can define its own set of roles which in turn may be assigned certain tier-specific privileges.  This way, a user in a separate <tt>Realm</tt> can be easily assigned one or more <tt>Tier</tt>-specific roles to give them access to the services provided by that tier.
 </p>
 
-<h1 class="wikiHeadline1" id="H-TheDefaultPartition"><a href="/Bloggers/PicketLinkDeepDivePart2#H-TheDefaultPartition">The Default Partition</a></h1>
+<h1 class="wikiHeadline1" id="H-TheDefaultPartition"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-TheDefaultPartition">The Default Partition</a></h1>
 
 <p class="wikiPara">
 As mentioned above, Identity Management operations performed on an <tt>IdentityManager</tt> returned by the <tt>PartitionManager.createIdentityManager()</tt> method are actually done in the default partition.  This default partition is actually a <tt>Realm</tt> object with a name of “DEFAULT”.  If your PicketLink environment isn’t configured to support partitions then it doesn’t matter, PicketLink will transparently handle the support for the default partition without you having to do anything special.
 </p>
 
-<h1 class="wikiHeadline1" id="H-PartitionsAndRelationships"><a href="/Bloggers/PicketLinkDeepDivePart2#H-PartitionsAndRelationships">Partitions and Relationships</a></h1>
+<h1 class="wikiHeadline1" id="H-PartitionsAndRelationships"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-PartitionsAndRelationships">Partitions and Relationships</a></h1>
 
 <p class="wikiPara">
 So far we haven’t mentioned where identity relationships fit into the picture in regards to partitions.  By their very nature, relationships differ from identities in that they don’t belong to a specific partition.  If you think about this, it makes quite a lot of sense as a relationship is a <i class="wikiEmphasis">typed association between two or more identities</i> and those identities may not all exist within the same partition.  For example, based on the description of the <tt>Realm</tt> and <tt>Tier</tt> partitions above we know that it is possible to have a <tt>Role</tt> that exists in a <tt>Tier</tt>, granted (via a <tt>Grant</tt> relationship) to a <tt>User</tt> in a <tt>Realm</tt>.
@@ -133,7 +135,7 @@ So far we haven’t mentioned where identity relationships fit into the picture 
 It is outside the scope of this article to go into detail about how PicketLink determines where to store relationship state, however this might be a good topic for a future deep dive.
 </p>
 
-<h1 class="wikiHeadline1" id="H-PartitionsAndMultipleConfigurations"><a href="/Bloggers/PicketLinkDeepDivePart2#H-PartitionsAndMultipleConfigurations">Partitions and Multiple Configurations</a></h1>
+<h1 class="wikiHeadline1" id="H-PartitionsAndMultipleConfigurations"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-PartitionsAndMultipleConfigurations">Partitions and Multiple Configurations</a></h1>
 
 <p class="wikiPara">
 PicketLink allows multiple configurations to be simultaneously declared, each with its own distinct name.  A single configuration may have one or more identity stores configured for storing identity state.  By supporting multiple configurations, PicketLink provides control over which backend identity store is used to store the identity state for each partition.  This all might sound a little confusing, so let’s illustrate it with a diagram that describes a possible use case for a fictional paper company:
@@ -171,7 +173,7 @@ Let’s say for example that an “admin” role for our paper company’s web p
 As we can see, it doesn’t matter that the user to which this role is assigned exists in a different realm, because as we mentioned previously, relationships by their very nature are “cross-partitioned” and so can be used to assign privileges between distinct realms.
 </p>
 
-<h1 class="wikiHeadline1" id="H-PartitionManagementAPI"><a href="/Bloggers/PicketLinkDeepDivePart2#H-PartitionManagementAPI">Partition Management API</a></h1>
+<h1 class="wikiHeadline1" id="H-PartitionManagementAPI"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-PartitionManagementAPI">Partition Management API</a></h1>
 
 <p class="wikiPara">
 PicketLink provides a simple <tt>PartitionManager</tt> API for managing partitions.  It can be easily injected into your application like so:
@@ -277,7 +279,7 @@ Or between relationships in different partitions:
     rm.add(new Grant(jsmith, admin));</pre>
 
 
-<h1 class="wikiHeadline1" id="H-Summary"><a href="/Bloggers/PicketLinkDeepDivePart2#H-Summary">Summary</a></h1>
+<h1 class="wikiHeadline1" id="H-Summary"><a href="/2014/05/09/PicketLinkDeepDivePart2#H-Summary">Summary</a></h1>
 
 <p class="wikiPara">
 PicketLink’s advanced support for partitions allows us to create security architectures suitable for simple, single-purpose applications ranging through to complex, multi-tier enterprise platforms.  In this article we examined how partitions can be used to create distinct sets of identities, and we explored how to manage partitions using the PartitionManager API.

@@ -5,11 +5,13 @@ blogger_name: "Christian"
 creation_date: "13-12-2007"
 tags: [Seam,Seam Wiki]
 
-absolute_url: http://in.relation.to/2007/12/13/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery
-lace: http://in.relation.to/3266.lace
+relative_url: /2007/12/13/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery
 slug: ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery
+lace: http://in.relation.to/3266.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/12/13/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -18,7 +20,7 @@ layout: blog-post
 A robust web application should not crash and die when the session times out. I guess we can all agree on that, but thanks to the stateless nature of HTTP and the usual hacks attaching session state onto that protocol, this is quite difficult to accomplish. Just search for <q><a href="http://www.google.com/search?q=session%20timeout" target="" class="regularLink">session timeout</a></q> on Google. So here I am with my JSF/Seam/Ajax4JSF/jQuery application, trying to make it more robust.
 </p>
 
-<h2 class="wikiHeadline2" id="H-SessionTimeoutHappensOnTheServer"><a href="/Bloggers/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery#H-SessionTimeoutHappensOnTheServer">Session timeout happens on the server</a></h2>
+<h2 class="wikiHeadline2" id="H-SessionTimeoutHappensOnTheServer"><a href="/2007/12/13/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery#H-SessionTimeoutHappensOnTheServer">Session timeout happens on the server</a></h2>
 
 <p class="wikiPara">
 Well, duh. The HTTP session is stored on the server in some fashion. Of course you could be one of the radicals who think that RIA means that the client keeps all the session state, or that you don't need no stinkin' session because you are all REST. Well, show me your app and we'll talk. You just have whitepapers to show? Too bad.
@@ -47,7 +49,7 @@ public class HttpSessionChecker {
 I know that this is extremely sophisticated. Here is the trick: When you ask the server if the session has timed out, you need to ask it if the <i class="wikiEmphasis">current</i> session it has is new. You have no other way to find out if the (previous) session timed out. Because your poll request will create a new session if the previous one timed out. So if you happen to check <tt>isNewSession()</tt> after the previous session timed out, you get a <tt>true</tt> result. (By the way, who had the braindead idea that Tomcat should re-use session identifiers? How incompetent can you be?)
 </p>
 
-<h2 class="wikiHeadline2" id="H-PollingTheServer"><a href="/Bloggers/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery#H-PollingTheServer">Polling the server</a></h2>
+<h2 class="wikiHeadline2" id="H-PollingTheServer"><a href="/2007/12/13/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery#H-PollingTheServer">Polling the server</a></h2>
 
 <p class="wikiPara">
 At that point I still don't know what I want to do on the client when a <q>new</q> session happens to be present on the server. Well, first I need to find out if that is the case by polling the server:
@@ -115,7 +117,7 @@ Those three methods (start, stop, reset) will be useful later when I integrate t
 So from that point on, I'm handling a client callback and I can do whatever I want to react to the new session.
 </p>
 
-<h2 class="wikiHeadline2" id="H-AdaptingTheClient"><a href="/Bloggers/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery#H-AdaptingTheClient">Adapting the client</a></h2>
+<h2 class="wikiHeadline2" id="H-AdaptingTheClient"><a href="/2007/12/13/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery#H-AdaptingTheClient">Adapting the client</a></h2>
 
 <p class="wikiPara">
 My goal is to not just kick the user out when a session timeout occurs. I don't want to just redirect him to some start page, I want to provide a choice. But I also don't want him to do anything dangerous that could throw an exception after his session is gone. 
@@ -192,7 +194,7 @@ All elements of class <tt>sessionEventTrigger</tt> will be hidden at that point.
 Just a coincidence, this is a button that doesn't trigger page navigation put a partial page-rendering after completion of the AJAX request. Now, that is an additional complication we need to take into account.
 </p>
 
-<h2 class="wikiHeadline2" id="H-DealingWithAJAXRequests"><a href="/Bloggers/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery#H-DealingWithAJAXRequests">Dealing with AJAX requests</a></h2>
+<h2 class="wikiHeadline2" id="H-DealingWithAJAXRequests"><a href="/2007/12/13/ImplementingGracefulSessionTimeoutWithSeamJSFAndJQuery#H-DealingWithAJAXRequests">Dealing with AJAX requests</a></h2>
 
 <p class="wikiPara">
 If you request a page and the session poll interval starts running when the page is rendered, everything is fine. The poll interval will be /session timeout/ + 3 seconds (that's just a safety margin). So, while you are focused on that page and working on it, no request is send to the server and both client and server keep counting the seconds. The server times out after /session timeout/ and 3 seconds later the client asks it if there is a new session present. The server should answer /yes/.

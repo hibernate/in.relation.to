@@ -5,11 +5,13 @@ blogger_name: "Dan"
 creation_date: "20-12-2010"
 tags: [Seam,Seam 3,Seam News,Weld Extensions]
 
-absolute_url: http://in.relation.to/2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable
-lace: http://in.relation.to/17950.lace
+relative_url: /2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable
 slug: WeldExtensionsBecomesSeamSolder300Beta1NowAvailable
+lace: http://in.relation.to/17950.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -28,7 +30,7 @@ Seam's new project lead, <a href="http://community.jboss.org/people/shane.bryzak
 In other words, Generally Useful Stuff (tm) that you'd likely end up having to painstakingly create anyway.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhyTheChange"><a href="/Bloggers/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-WhyTheChange">Why the change?</a></h2>
+<h2 class="wikiHeadline2" id="H-WhyTheChange"><a href="/2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-WhyTheChange">Why the change?</a></h2>
 
 <p class="wikiPara">
 Ever since Weld Extensions was first proposed, there's been confusion about how it differs from Weld and how it fits with the Seam project. Now, the distinction is more clear.
@@ -43,19 +45,19 @@ Ever since Weld Extensions was first proposed, there's been confusion about how 
 CDI is the foundation programming model in Seam 3, but there's still room for core extensions and utilities that all Seam modules share to align and avoid code duplication. That's what Seam Solder provides.
 </p>
 
-<h2 class="wikiHeadline2" id="H-WhatsTheNameAbout"><a href="/Bloggers/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-WhatsTheNameAbout">What's the name about?</a></h2>
+<h2 class="wikiHeadline2" id="H-WhatsTheNameAbout"><a href="/2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-WhatsTheNameAbout">What's the name about?</a></h2>
 
 <p class="wikiPara">
 We choose <q>solder</q> because it's the term for an alloy that is used to join metallic parts, but not so strongly as a weld. For instance, fastening modules to a circuitboard. Although CDI extensions don't require Solder, they will greatly benefit from the extra reinforcement it supplies. 
 </p>
 
-<h2 class="wikiHeadline2" id="H-ItsNotJustForSeam"><a href="/Bloggers/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-ItsNotJustForSeam">It's not just for Seam!</a></h2>
+<h2 class="wikiHeadline2" id="H-ItsNotJustForSeam"><a href="/2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-ItsNotJustForSeam">It's not just for Seam!</a></h2>
 
 <p class="wikiPara">
 Solder has a life outside of Seam. If you are building on CDI, we <i class="wikiEmphasis">strongly</i> encourage you to evaluate Solder <i class="wikiEmphasis">before</i> spending time writing your own utilities. Solder will save you tons of time, and you'll get your extension working much sooner. Plus, we believe that we'll be able to implement startup optimizations for CDI in Solder that you'll immediately benefit from.
 </p>
 
-<h2 class="wikiHeadline2" id="H-AboutTheMigration"><a href="/Bloggers/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-AboutTheMigration">About the migration</a></h2>
+<h2 class="wikiHeadline2" id="H-AboutTheMigration"><a href="/2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-AboutTheMigration">About the migration</a></h2>
 
 <p class="wikiPara">
 Rather than migrating all the resources for Weld Extensions, we made a clean break (i.e., a fork). We encourage everyone using Weld Extensions to switch to Seam Solder. If you are adding new features or fixing issues, please apply them to Seam Solder unless there is some specific reason you are updating Weld Extensions. Weld Extensions is effectively closed.
@@ -76,7 +78,7 @@ The switch to Solder has an important implication for the other Seam modules. We
 should happen quite quickly, since Seam Solder will prevent the application from deploying if Weld Extensions is detected on the classpath.
 </p>
 
-<h2 class="wikiHeadline2" id="H-AboutTheRelease"><a href="/Bloggers/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-AboutTheRelease">About the release</a></h2>
+<h2 class="wikiHeadline2" id="H-AboutTheRelease"><a href="/2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-AboutTheRelease">About the release</a></h2>
 
 <p class="wikiPara">
 All the resources can be found on the <a href="http://seamframework.org/Seam3/Solder" target="" class="regularLink">Seam Solder project page</a>. For your convenience, I've laid out the key resources here:
@@ -133,7 +135,7 @@ This project wouldn't have been possible without the hard work of Pete Muir and 
 <strong>NOTE</strong><br>It's important to note that we are still having some difficulties getting Solder to work on GlassFish. There appears to be some confusion about how extensions are supposed to be handled in non-bean archives (follow <a href="http://java.net/jira/browse/GLASSFISH-14808" target="" class="regularLink">GLASSFISH-14808</a>), a feature that Solder makes use of for performance reasons. We anticipate a resolution for GlassFish 3.1, but not likely GlassFish 3.0.1.
 </blockquote>
 
-<h2 class="wikiHeadline2" id="H-AndBeyond"><a href="/Bloggers/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-AndBeyond">And beyond</a></h2>
+<h2 class="wikiHeadline2" id="H-AndBeyond"><a href="/2010/12/20/WeldExtensionsBecomesSeamSolder300Beta1NowAvailable#H-AndBeyond">And beyond</a></h2>
 
 <p class="wikiPara">
 For <a href="https://issues.jboss.org/browse/SOLDER/fixforversion/12315848" target="" class="regularLink">Beta 2</a>, we're planning to tidy up the test suite, compliance, documentation and validation. Then we'll move towards a Final release. That should all happen very soon.

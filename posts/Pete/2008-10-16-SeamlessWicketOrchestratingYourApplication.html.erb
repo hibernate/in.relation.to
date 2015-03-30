@@ -5,11 +5,13 @@ blogger_name: "Pete"
 creation_date: "16-10-2008"
 tags: [Seam,Seam News,Wicket]
 
-absolute_url: http://in.relation.to/2008/10/16/SeamlessWicketOrchestratingYourApplication
-lace: http://in.relation.to/9564.lace
+relative_url: /2008/10/16/SeamlessWicketOrchestratingYourApplication
 slug: SeamlessWicketOrchestratingYourApplication
+lace: http://in.relation.to/9564.lace
 
 layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/10/16/SeamlessWicketOrchestratingYourApplication
 ---
 <div id="documentDisplay" class="documentDisplay">
 
@@ -26,7 +28,7 @@ In the <a href="/Bloggers/SeamlessWicket" target="" class="regularLink">first pa
 Of course, some annotations and their results don't make sense when using Wicket, and some annotations just aren't supported yet - if you see an annotation you would like supported in Wicket, please <a href="http://seamframework.org/Community/SeamUsers" target="" class="regularLink">let us know</a>.
 </p>
 
-<h3 class="wikiHeadline3" id="H-Security"><a href="/Bloggers/SeamlessWicketOrchestratingYourApplication#H-Security">Security</a></h3>
+<h3 class="wikiHeadline3" id="H-Security"><a href="/2008/10/16/SeamlessWicketOrchestratingYourApplication#H-Security">Security</a></h3>
 
 <p class="wikiPara">
 First, let's look at using Seam Security with Wicket. Both <tt>@Restrict</tt> and <tt>@RoleCheck</tt> are supported. You can read more about the use of these annotations and their attributes in the Seam Security chapter; but briefly
@@ -74,7 +76,7 @@ Finally, you can set the login page through your <tt>Application</tt>:
 
 
 
-<h3 class="wikiHeadline3" id="H-ConversationsAndValidation"><a href="/Bloggers/SeamlessWicketOrchestratingYourApplication#H-ConversationsAndValidation">Conversations and Validation</a></h3>
+<h3 class="wikiHeadline3" id="H-ConversationsAndValidation"><a href="/2008/10/16/SeamlessWicketOrchestratingYourApplication#H-ConversationsAndValidation">Conversations and Validation</a></h3>
 
 <p class="wikiPara">
 Just as you can use <tt>@Begin</tt> and <tt>@End</tt> in a Seam component to start and end a conversation, you can do the same in your Wicket component. For example, to start a long running conversation as we click on the link to create a new user. We can even enable <a href="http://docs.jboss.org/seam/2.1.0.CR1/reference/en-US/html/persistence.html#d0e6811" target="" class="regularLink">manual flush mode</a> to start an atomic conversation:
@@ -155,7 +157,7 @@ Sometimes, you might want to ensure that a Wicket page can only be accessed insi
 public class CreateUser extends WebPage {</pre>
 
 
-<h3 class="wikiHeadline3" id="H-Bijection"><a href="/Bloggers/SeamlessWicketOrchestratingYourApplication#H-Bijection">Bijection</a></h3>
+<h3 class="wikiHeadline3" id="H-Bijection"><a href="/2008/10/16/SeamlessWicketOrchestratingYourApplication#H-Bijection">Bijection</a></h3>
 
 <p class="wikiPara">
 In <a href="/Bloggers/SeamlessWicket" target="" class="regularLink">part 1</a> we showed some basic injection, and it really doesn't get any harder! Let's say the <tt>User</tt> entity was a Seam component as well, we could just biject it into the Wicket component:
@@ -170,7 +172,7 @@ In <a href="/Bloggers/SeamlessWicket" target="" class="regularLink">part 1</a> w
    @In @Out User user;</pre>
 
 
-<h3 class="wikiHeadline3" id="H-AndMore"><a href="/Bloggers/SeamlessWicketOrchestratingYourApplication#H-AndMore">And more!</a></h3>
+<h3 class="wikiHeadline3" id="H-AndMore"><a href="/2008/10/16/SeamlessWicketOrchestratingYourApplication#H-AndMore">And more!</a></h3>
 
 <p class="wikiPara">
 Seam's event bus is a simple way to write a very loosely coupled application. You might want to use events from Wicket; of course, you can raise an event programatically:
