@@ -16,7 +16,7 @@ disqus_thread_id: http://in.relation.to/2014/05/09/PicketLinkDeepDivePart2
 <div id="documentDisplay" class="documentDisplay">
 
 
-<img src="http://in.relation.to/service/File/24529" align="left" style="margin-left:20px">
+<img src="/images/24529.png" align="left" style="margin-left:20px">
 
 <p class="wikiPara">
 Welcome to part 2 of the PicketLink Deep Dive series.  In case you missed part 1, you can find it <a href="http://in.relation.to/Bloggers/PicketLinkDeepDivePart1" target="" class="regularLink">here</a>.  In part 1 you’ll also find links to helpful resources, such as the PicketLink documentation, distribution binaries, source code and more.
@@ -44,7 +44,7 @@ If your application has simple security requirements, such as a single set of us
 If you read part 1, you may remember how the identity model was described and how each identity object implements the <tt>IdentityType</tt> interface, as shown in this class diagram:
 </p>
 
-<img src="http://in.relation.to/service/File/25567">
+<img src="/images/25567.png">
 
 <p class="wikiPara">
 What we didn’t explain in part 1 was how every <tt>IdentityType</tt> object must belong to a <tt>Partition</tt>.  This means that every user, group, role, agent, account (or any other identity type) always has a partition object, and its <tt>getPartition()</tt> method will always return this object (and never <tt>null</tt>).  If you’ve worked with the PicketLink API already you may have noticed these overloaded methods on the <tt>PartitionManager</tt> interface:
@@ -129,7 +129,7 @@ As mentioned above, Identity Management operations performed on an <tt>IdentityM
 So far we haven’t mentioned where identity relationships fit into the picture in regards to partitions.  By their very nature, relationships differ from identities in that they don’t belong to a specific partition.  If you think about this, it makes quite a lot of sense as a relationship is a <i class="wikiEmphasis">typed association between two or more identities</i> and those identities may not all exist within the same partition.  For example, based on the description of the <tt>Realm</tt> and <tt>Tier</tt> partitions above we know that it is possible to have a <tt>Role</tt> that exists in a <tt>Tier</tt>, granted (via a <tt>Grant</tt> relationship) to a <tt>User</tt> in a <tt>Realm</tt>.
 </p>
 
-<img src="http://in.relation.to/service/File/25565">
+<img src="/images/25565.png">
 
 <p class="wikiPara">
 It is outside the scope of this article to go into detail about how PicketLink determines where to store relationship state, however this might be a good topic for a future deep dive.
@@ -141,7 +141,7 @@ It is outside the scope of this article to go into detail about how PicketLink d
 PicketLink allows multiple configurations to be simultaneously declared, each with its own distinct name.  A single configuration may have one or more identity stores configured for storing identity state.  By supporting multiple configurations, PicketLink provides control over which backend identity store is used to store the identity state for each partition.  This all might sound a little confusing, so let’s illustrate it with a diagram that describes a possible use case for a fictional paper company:
 </p>
 
-<img src="http://in.relation.to/service/File/25569">
+<img src="/images/25569.png">
 
 <p class="wikiPara">
 In this example our paper company has two configurations, “Public” and “Internal”.  The “Public” configuration has been configured to use a JPA-based identity store which uses a database to store its identity state.  The “Internal” configuration uses an LDAP-based identity store which is backed by a corporate LDAP directory.  In addition to these two configurations, we also have two realm partitions - “Users” and “Employees”.
@@ -151,13 +151,13 @@ In this example our paper company has two configurations, “Public” and “In
 Let’s also assume that our paper company runs an ecommerce web site where anyone can log in and place an order for their products.  The login page for public users might look something like this:
 </p>
 
-<img src="http://in.relation.to/service/File/25568">
+<img src="/images/25568.png">
 
 <p class="wikiPara">
 When logging in through this login form (which is easily found via a “Sign In” link on the main page of the site), authentication will be performed using the “Users” realm.  The site may also provide an employee portal for managing orders and possibly performing other back-office tasks.  Employees wishing to access this portal would use a different web address (or maybe an entirely different application, possibly even available only on the company private network) and would authenticate with an “employee-only” login form backed by the “Employees” realm.  We can represent the distinct login pages and their associated realms using the following diagram:
 </p>
 
-<img src="http://in.relation.to/service/File/25570">
+<img src="/images/25570.png">
 
 <p class="wikiPara">
 An application may be modelled to support this multi-faceted application in a number of ways; it may be structured as a number of separate Tiers, with each tier providing a limited set of functions (possibly implemented as separate applications and/or services) and a set of tier-specific roles to control how privileges to access those functions are assigned; it could also be structured as a single monolithic application that “does everything” (™), restricting access to certain areas depending on the access level of the current user.  In either case, application-wide privileges can be easily assigned to individual users from either realm.  For example, if the privilege takes the form of a role or group membership, it’s possible for that role or group to exist in one realm and a user to which it is assigned exist in another realm.  
@@ -167,7 +167,7 @@ An application may be modelled to support this multi-faceted application in a nu
 Let’s say for example that an “admin” role for our paper company’s web portal is defined in the “Users” realm, and that this role is required to access the “Review Orders” page of the site:
 </p>
 
-<img src="http://in.relation.to/service/File/25566">
+<img src="/images/25566.png">
 
 <p class="wikiPara">
 As we can see, it doesn’t matter that the user to which this role is assigned exists in a different realm, because as we mentioned previously, relationships by their very nature are “cross-partitioned” and so can be used to assign privileges between distinct realms.

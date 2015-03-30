@@ -16,7 +16,7 @@ disqus_thread_id: http://in.relation.to/2014/02/21/AddonDevelopmentWithForge2ABa
 <div id="documentDisplay" class="documentDisplay">
 
 
-<img src="http://in.relation.to/service/File/24897" align="right" style="margin-left:20px">
+<img src="/images/24897.png" align="right" style="margin-left:20px">
 
 <p class="wikiPara">
 I had the privilege today of receiving some expert tutelage on Forge Addon development in Eclipse from the Forge Team’s George Gastaldi, and I was so impressed by how easy it was that I’m going to describe the process step by step so that you too can experience the pleasure of writing a Forge addon!  This guide is written from the perspective of a complete Forge noob, so you can rest assured that it has made a very strong attempt to capture all the little important details.  Also, while the addon itself won’t actually do that much, we’ll try to cover all the basics which will hopefully provide the solid foundation you need to be able to implement more complex features.
@@ -44,7 +44,7 @@ I strongly recommend that you work with the latest trunk of Forge, so fire up yo
 <a href="https://github.com/jbosstools/jbosstools-forge" target="" class="regularLink">https://github.com/jbosstools/jbosstools-forge</a>
 </p>
 
-<img src="http://in.relation.to/service/File/24898">
+<img src="/images/24898.png">
 
 <p class="wikiPara">
 Once you have them all build each of them using <a href="http://maven.apache.org/" target="" class="regularLink">Maven</a>, making sure to skip the tests.  You’ll need Maven 3.1 or higher for this step:
@@ -58,13 +58,13 @@ mvn clean install -Dmaven.test.skip=true</pre>
 
 
 
-<img src="http://in.relation.to/service/File/24899">
+<img src="/images/24899.png">
 
 <p class="wikiPara">
 If all goes well you’ll get a <tt>BUILD SUCCESS</tt> message at the end:
 </p>
 
-<img src="http://in.relation.to/service/File/24900">
+<img src="/images/24900.png">
 
 <p class="wikiPara">
 Continue by building the other three projects (<tt>furnace-cdi</tt>, <tt>forge-code</tt> and <tt>jbosstools-forge</tt>) in order using the same Maven command.
@@ -76,13 +76,13 @@ Continue by building the other three projects (<tt>furnace-cdi</tt>, <tt>forge-c
 Once everything has built successfully, it’s time to install Forge.  Open the <tt>forge-core/dist/target</tt> directory where you’ll find some zip files containing the Forge distribution:
 </p>
 
-<img src="http://in.relation.to/service/File/24901">
+<img src="/images/24901.png">
 
 <p class="wikiPara">
 You have a choice here, you can either use the (smaller) distribution zip which doesn’t come pre-packaged with all of the core addons, or you can use the larger offline distribution which has the addons packaged also.  For now, I recommend you use the offline distribution, so extract it to its own folder somewhere.  I generally like to install tools like this into a dedicated apps folder, and if you’re on a *nix based OS I recommend creating a symbolic link also:
 </p>
 
-<img src="http://in.relation.to/service/File/24902">
+<img src="/images/24902.png">
 
 <p class="wikiPara">
 Once that’s done, you need to create a <tt>FORGE_HOME</tt> environment variable pointing to this directory, and add the <tt>$FORGE_HOME/bin</tt> directory to your path (this will allow you to execute the forge shell from anywhere).  This is an OS-specific step so it’s up to you to complete this by yourself.  When that’s done, run the <tt>forge</tt> command from a command prompt.  
@@ -92,25 +92,25 @@ Once that’s done, you need to create a <tt>FORGE_HOME</tt> environment variabl
 (Note: If you didn’t install the offline distribution, you’ll be prompted to install the core addons.  When you start forge, it will attempt to install the latest released versions, however in our case we want to install the artifacts that we just built ourselves, so to do that we must first run <tt>forge -i core,2.0.1-SNAPSHOT</tt> - alternatively just use the offline distribution and save yourself a lot of trouble.)
 </p>
 
-<img src="http://in.relation.to/service/File/24903">
+<img src="/images/24903.png">
 
 <p class="wikiPara">
 Forge will download a bunch of stuff and then prompt you to confirm the installation, so select <tt>Y</tt> and press <tt>Enter</tt> again.
 </p>
 
-<img src="http://in.relation.to/service/File/24904">
+<img src="/images/24904.png">
 
 <p class="wikiPara">
 Eventually the installation will complete and you’ll be sitting at the Forge command prompt:
 </p>
 
-<img src="http://in.relation.to/service/File/24905">
+<img src="/images/24905.png">
 
 <p class="wikiPara">
 From here you can press the <tt>tab</tt> key to see the available commands:
 </p>
 
-<img src="http://in.relation.to/service/File/24906">
+<img src="/images/24906.png">
 
 <p class="wikiPara">
 We’ve successfully set up the Forge shell!  Let’s quit out for now by typing <tt>exit</tt> then pressing enter and we’ll go through the steps to install the JBoss Tools Forge plugin in Eclipse.
@@ -122,31 +122,31 @@ We’ve successfully set up the Forge shell!  Let’s quit out for now by typing
 At the time of writing I’m using the latest release version of Eclipse, Kepler SR1.  If you are using an older version of Eclipse then I recommend that you update to the latest, otherwise results might be unpredictable.  The first step in installing the Eclipse plugin is to start up Eclipse, then go to the <i class="wikiEmphasis">Help -&gt; Install New Software…</i> menu option:
 </p>
 
-<img src="http://in.relation.to/service/File/24907">
+<img src="/images/24907.png">
 
 <p class="wikiPara">
 Then click the <i class="wikiEmphasis">Add</i> button, then in the popup window click <i class="wikiEmphasis">Archive</i>:
 </p>
 
-<img src="http://in.relation.to/service/File/24908">
+<img src="/images/24908.png">
 
 <p class="wikiPara">
 Browse to the <tt>jbosstools-forge/site/target</tt> directory, select the <tt>forge.site.XXX</tt> zip file and click OK:
 </p>
 
-<img src="http://in.relation.to/service/File/24909">
+<img src="/images/24909.png">
 
 <p class="wikiPara">
 Click OK again in the <i class="wikiEmphasis">Add Repository</i> window, then select the checkbox next to <i class="wikiEmphasis">JBoss Tools Forge Nightly Build Update Site</i>, then click the <i class="wikiEmphasis">Next</i> button:
 </p>
 
-<img src="http://in.relation.to/service/File/24910">
+<img src="/images/24910.png">
 
 <p class="wikiPara">
 You’ll be prompted to review the install details, so click the <i class="wikiEmphasis">Next</i> button again.  You’ll be asked to review and accept the terms of the license agreement, so after accepting them click the <i class="wikiEmphasis">Finish</i> button and Eclipse will go ahead and install the plugin.  If you get a security warning about unsigned content don’t panic; it’s just a warning and it's fine to click OK here.  Once finished, Eclipse will inform you that it needs to be restarted so go ahead and click the Yes button.  After Eclipse has restarted you can confirm that the Forge plugin has been successfully installed by pressing Ctrl + 5, which will present you with the following popup window:
 </p>
 
-<img src="http://in.relation.to/service/File/24911">
+<img src="/images/24911.png">
 
 <p class="wikiPara">
 If you can see the Forge command window after pressing Ctrl + 5, then congratulations on making it this far!  Next we’ll go ahead and create our Forge Addon project.
@@ -158,13 +158,13 @@ If you can see the Forge command window after pressing Ctrl + 5, then congratula
 Forge does a great job of doing the heavy lifting when it comes to creating a new Addon.  Let’s create the initial project structure for our addon by opening the Forge command window in Eclipse with Ctrl + 5, then scrolling down until we find the <i class="wikiEmphasis">Project/Generation - Project: New</i> option:
 </p>
 
-<img src="http://in.relation.to/service/File/24912">
+<img src="/images/24912.png">
 
 <p class="wikiPara">
 Clicking on the <i class="wikiEmphasis">Project: New</i> option gives us a dialog window that lets us enter some basic details for our addon project.  Fill in the details for the project name, top level package, version, final name and project location.  Select <i class="wikiEmphasis">Forge Addon</i> for the project type and leave the Build system default of Maven, then click Next.  
 </p>
 
-<img src="http://in.relation.to/service/File/24913">
+<img src="/images/24913.png">
 
 <p class="wikiPara">
 On the next screen, click the checkbox next to <i class="wikiEmphasis">Create API, Impl, SPI, Tests and Addon modules</i> and select the following addons from the addon list:
@@ -186,13 +186,13 @@ On the next screen, click the checkbox next to <i class="wikiEmphasis">Create AP
 After you’ve selected these addons, click the <i class="wikiEmphasis">Finish</i> button to generate the new project.
 </p>
 
-<img src="http://in.relation.to/service/File/24914">
+<img src="/images/24914.png">
 
 <p class="wikiPara">
 After grinding away for a few seconds you should see the following new projects in the Eclipse project explorer:
 </p>
 
-<img src="http://in.relation.to/service/File/24915">
+<img src="/images/24915.png">
 
 <p class="wikiPara">
 Our new addon project is created!  Next we’ll start adding some basic functionality.
@@ -285,32 +285,32 @@ public class HelloWorldUICommand extends AbstractUICommand {
 Once that’s done, save the class and build the project by running <tt>mvn clean install</tt> in the parent folder of your <tt>addon</tt> project:
 </p>
 
-<img src="http://in.relation.to/service/File/24919">
+<img src="/images/24919.png">
 
 <p class="wikiPara">
 Then in Eclipse, select the <tt>helloworld-addon</tt> project (or whatever you have called it), press Ctrl + 5 to display the Forge command window and select the <i class="wikiEmphasis">Addon/Manage - Install an Addon</i> command:
 </p>
 
-<img src="http://in.relation.to/service/File/24920">
+<img src="/images/24920.png">
 
 <p class="wikiPara">
 Leave the default values in the <i class="wikiEmphasis">Install an Addon</i> window unchanged and click the <i class="wikiEmphasis">Finish</i> button:
 </p>
 
-<img src="http://in.relation.to/service/File/24921">
+<img src="/images/24921.png">
 
 <p class="wikiPara">
 If everything has gone to plan, you should notice a little popup window in the bottom right corner of the screen confirming that the addon was successfully installed.  We can test our new addon immediately by pressing Ctrl + 5 and scrolling down until we find our new command:
 </p>
 
-<img src="http://in.relation.to/service/File/24922">
+<img src="/images/24922.png">
 
 
 <p class="wikiPara">
 Clicking on the command should give us another popup window that displays our hello world message:
 </p>
 
-<img src="http://in.relation.to/service/File/24923">
+<img src="/images/24923.png">
 
 <h1 class="wikiHeadline1" id="H-CreatingUserInterfaceElements"><a href="/2014/02/21/AddonDevelopmentWithForge2ABasicPrimer#H-CreatingUserInterfaceElements">Creating User Interface Elements</a></h1>
 
@@ -354,7 +354,7 @@ public class HelloWorldUICommand extends AbstractUICommand {
 Rebuild the project the same way as before, and reinstall the addon from the Forge command screen (Ctrl + 5 and select <i class="wikiEmphasis">Addon/Manage : Install an Addon</i>).  Press Ctrl + 5 again and select <tt>HelloWorldUICommand</tt>, and you should now see the following dialog window:
 </p>
 
-<img src="http://in.relation.to/service/File/24924">
+<img src="/images/24924.png">
 
 <p class="wikiPara">
 We can customize our input control further by adding a <tt>@WithAttributes</tt> annotation - add the following import:
@@ -399,7 +399,7 @@ The control can be customized by setting the various member values:
 Save your class, then build and reinstall the addon following the same steps as before.  Execute the addon command using Ctrl + 5 and you should now see this:
 </p>
 
-<img src="http://in.relation.to/service/File/24925">
+<img src="/images/24925.png">
 
 <p class="wikiPara">
 We can now begin to see how simple it is to build a user interface for our addon.  Let’s extend it further by adding a select control that allows you to select a Maven dependency.  In this example I’ll use the PicketLink project as our guinea pig.  We’ll need to <tt>@Inject</tt> a <tt>DependencyResolver</tt> to locate the dependencies that we’re interested in, and a <tt>UISelectOne</tt> control to allow the user to select one of the dependencies.  Add this code to your class:
@@ -489,7 +489,7 @@ public class HelloWorldUICommand extends AbstractUICommand {
 Rebuild and reinstall the addon, then invoke it from the Forge command window - you should see something that looks like this:
 </p>
 
-<img src="http://in.relation.to/service/File/24926">
+<img src="/images/24926.png">
 
 <p class="wikiPara">
 We can use these newfound powers to make changes to an actual project.  Let’s start by modifying our addon class so that it extends <tt>AbstractProjectCommand</tt> instead of <tt>AbstractUICommand</tt>:
@@ -678,20 +678,20 @@ public class HelloWorldUICommand extends AbstractProjectCommand {
 Rebuild and reinstall your addon, then select a project in Eclipse and invoke our addon from the Forge command window.  Keep in mind that we’ll be adding some new dependencies to the project you select so make sure it’s not something too important!  I suggest you use the addon project itself as it is quite easy to remove the dependencies afterwards.  Enter any value for the Name field (since we’ve marked it as required we’re forced to at least enter something) and select one of the dependencies from the Version control:
 </p>
 
-<img src="http://in.relation.to/service/File/24927">
+<img src="/images/24927.png">
 
 
 <p class="wikiPara">
 Click the Finish button and you should see the Hello World popup window appear briefly confirming that our addon ran successfully.  To check it actually did something, open the project’s <tt>pom.xml</tt> in an editor and you should notice that Forge has added the selected dependency by declaring it in the <tt>&lt;dependencyManagement&gt;</tt> section:
 </p>
 
-<img src="http://in.relation.to/service/File/24928">
+<img src="/images/24928.png">
 
 <p class="wikiPara">
 And also adding the dependency itself to the <tt>&lt;dependencies&gt;</tt> section:
 </p>
 
-<img src="http://in.relation.to/service/File/24929">
+<img src="/images/24929.png">
 
 <p class="wikiPara">
 Congratulations, you’ve made it to the end!  You’ve now created your first useful Forge addon that can add dependencies to an existing project.  Hopefully this guide has helped by providing a high level overview of the Forge Addon architecture and a beginner’s primer on creating a new Forge Addon.

@@ -83,7 +83,7 @@ public class UserBean {
 So we solved half of the problem:
 </p>
 
-<img src="http://in.relation.to/service/File/18374" alt="">
+<img src="/images/18374.png" alt="">
 
 <p class="wikiPara">
 We are seeing the error messages if the password fields do not satisfy the validation rules given. Nothing is checking if passwords are the same though, just that they are independently valid.  So what is the easiest way to validate if the fields are equals? We could perform that in action but that is quite late in the JSF lifecycle for validation. We could use some solutions using f:attribute in order to pass dependent field id to the other input and find the component by that id in custom validate method. There are also some other ways which are pretty easy to find across different knowledge-bases'. But most of them are either invoked in an improper phase (<i>like action at INVOKE_APPLICATION</i>) or has possible maintenance problems(<i>f:attribute solution requires us to be patient with id's changes in view as validation depends on them</i>). 
@@ -149,13 +149,13 @@ public class UserBean implements Cloneable{
  <i>Different passwords entered(but valid according to size):</i>
 </p>
 
-<img src="http://in.relation.to/service/File/18375" alt="">
+<img src="/images/18375.png" alt="">
 
 <p class="wikiPara">
  <i>Verification successful:</i>
 </p>
 
-<img src="http://in.relation.to/service/File/18376" alt="">
+<img src="/images/18376.png" alt="">
 
 <h2 class="wikiHeadline2" id="H-ImplementationDetails"><a href="/2011/02/24/RichFaces4ObjectValidation#H-ImplementationDetails">Implementation Details</a></h2>
 

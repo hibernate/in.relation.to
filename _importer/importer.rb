@@ -90,9 +90,9 @@ class Importer
     @limit = limit
 
     # images and assets/attachments go into subdirectories
-    @image_dir = @output_dir + '/images'
+    @image_dir = @output_dir + '/../images'
     FileUtils.mkdir_p( @image_dir )
-    @asset_dir = @output_dir + '/assets'
+    @asset_dir = @output_dir + '/../assets'
     FileUtils.mkdir_p( @asset_dir )
   end
 
@@ -208,14 +208,6 @@ class Importer
       export_comments(doc)
     end
 
-    unless @skip_image_procesing
-      import_images(doc)
-    end
-
-    unless @skip_asset_procesing
-      import_assets(doc)
-    end
-
     return true
   end
 
@@ -238,6 +230,14 @@ class Importer
         updated_href = blog_entry.relative_url + link_node['href'].match(/^\/Bloggers\/.*(#.*)$/).captures[0]
         link_node['href'] = updated_href
       end
+    end
+
+    unless @skip_image_procesing
+      import_images(content_node)
+    end
+
+    unless @skip_asset_procesing
+      import_assets(doc, content_node)
     end
 
     return content_node.to_s
@@ -308,9 +308,8 @@ class Importer
     end
   end
 
-  def import_images(doc)
-    content = doc.search('#documentDisplay')
-    content.css('img').map do |image|
+  def import_images(content_node)
+    content_node.css('img').each do |image|
       if (image['src'] =~ /http:\/\/in.relation.to\/service\/File/)
         # get the image and type
         image_data, type = download_resource(image['src'])
@@ -323,17 +322,16 @@ class Importer
         write_resource(image_data, File.join( @image_dir, image_name ))
 
         # adjust the image target
-        # TODO - verify this is the correct path. Where and how do images go in awestruct
-        image['src'] = "<%= site.base_url %>/images/" + image_name
+        image['src'] = "/images/" + image_name
       end
     end
   end
 
-  def import_assets(doc)
+  def import_assets(doc, content_node)
     # attachements are in a table at the bottom of the post. Let's process the table first and then adjust the actual post content
     attachments = Hash.new
     attachment_count = 1
-    doc.css('div.attachmentDisplay tr').map do |attachment_row|
+    doc.css('div.attachmentDisplay tr').each do |attachment_row|
       attachment_row.css('a').map do |a|
         if(a['href'] =~ /\/service\/File/)
           # get the asset
@@ -354,9 +352,9 @@ class Importer
     end
     # last but ot least we have to adjust the link in the actual post (it is just an anchor to the attachment table)
     attachments.each_pair do |k,v|
-      doc.css('div[id = "documentDisplayContainer"] a').map do |a|
+      content_node.css('a').map do |a|
         if(a['href'] =~ /\##{k}/)
-          a['href'] = "<%= site.base_url %>/assets/" + v
+          a['href'] = "/assets/" + v
           a.content = a.content.gsub(/\[.*\]/, '')
         end
       end
