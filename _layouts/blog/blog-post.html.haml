@@ -15,7 +15,25 @@ layout: project
           %i.icon-circle.icon-stack-base.icon-fixed-width
           %i{:class => "icon icon-light icon-fixed-width icon-quote-right"}
           /icon-rss icon-signal
-      %hr.divider
+    %hr.divider
+    %ul.nav.nav-list
+      -# removes index.html and then replace download.html to download/
+      - current_path = page.output_path.sub(/index\.html$/, "").sub(/\.html$/,"/")
+
+      - href = "/"
+      - active = false
+      %li{:class => "#{(active ? "active" : "")}"}
+        %a{:href => "#{relative("#{href}")}"}
+          %i{:class => "icon-home menu-icon"}
+          Home
+
+      - href = "/blog.atom"
+      - active = false
+      %li{:class => "#{(active ? "active" : "")}"}
+        %a{:href => "#{relative("#{href}")}"}
+          %i{:class => "icon-rss menu-icon"}
+          Feed
+    %hr.divider
     .blogtagbar
       .single_blog_author
         - page.author.each do |author|
