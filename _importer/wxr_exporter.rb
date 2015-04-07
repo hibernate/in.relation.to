@@ -4,7 +4,18 @@ require 'nokogiri'
 
 # Class encapsulating the creation of a WXR comment exort file for Disqus
 class WxrExporter
-  $spam_keywords = ['sex', 'porn', 'penis', 'rolex', 'xxx', 'kitchen', 'handbag', 'replica', 'tinnitus', 'acne']
+  $spam_keywords = ['sex',
+                    'porn',
+                    'penis',
+                    'rolex',
+                    'xxx',
+                    'kitchen',
+                    'handbag',
+                    'replica',
+                    'tinnitus',
+                    'acne',
+                    'ebook',
+                    'loan']
 
   # array of suspected spam
   @spam
@@ -101,6 +112,19 @@ class WxrExporter
       return
     end
 
+    # Disqus does not allow longer comments and they are most likely spam anyways
+    if content.length > 25000
+      @spam << comment.to_s
+      return
+    end
+
+    # Not sure whether id there is a limit in theory, but Disqus does not even
+    # allow that long emails
+    if email.length > 75
+      @spam << comment.to_s
+      return
+    end
+
     @current_item.add_child comment
     @number_of_comments += 1
   end
@@ -114,12 +138,12 @@ class WxrExporter
       f.print('</spam>')
     }
     puts "\n\n"
-    puts "-------------------------------------------"
+    puts "------------------------------------------------------------------------"
     puts "Created #{@wxr_file_name} with #{@number_of_comments} comments for import into Disqus"
     puts "\n"
     puts "Skipped #{@spam.length} comments during import due to suspected SPAM."
     puts "Check #{spam_file_name}."
-    puts "-------------------------------------------"
+    puts "------------------------------------------------------------------------"
   end
 end
 

@@ -38,6 +38,26 @@ Choice.options do
     desc 'The name of WXR XML file. If specified comments are exported, otherwise not'
   end
 
+  separator 'Debugging:'
+
+  option :errors, :required => false do
+    short '-e'
+    long '--log-errors'
+    desc 'Whether failed imports should be logged with stacktrace'
+  end
+
+  option :lace, :required => false do
+    short '-l'
+    long '--lace=<lace-url>'
+    desc 'Runs the importer only for the given lave url'
+  end
+
+  option :limit, :required => false do
+    short '-l'
+    long '--limit=<n>'
+    desc 'Limit the imported posts (for debugging purposes)'
+  end
+
   option :skip_images, :required => false do
     short '-ni'
     long '--no-images'
@@ -48,18 +68,6 @@ Choice.options do
     short '-na'
     long '--no-assets'
     desc 'Wether asset processing should be skipped'
-  end
-
-  option :errors, :required => false do
-    short '-e'
-    long '--log-errors'
-    desc 'Whether failed imports should be logged with stacktrace'
-  end
-
-  option :limit, :required => false do
-    short '-l'
-    long '--limit=<n>'
-    desc 'Limit the imported posts (for debugging purposes)'
   end
 
   separator 'Common:'
@@ -75,7 +83,7 @@ class Importer
 
   BASE_URL = "http://in.relation.to"
 
-  def initialize(import_file, output_dir, wxr_file_name, skip_image_procesing, skip_asset_procesing, log_errors, limit=-1)
+  def initialize(import_file, output_dir, wxr_file_name, skip_image_procesing, skip_asset_procesing, log_errors, limit=-1, lace=nil)
     @import_file = import_file
     @output_dir = output_dir
 
@@ -88,6 +96,7 @@ class Importer
     @skip_asset_procesing = skip_asset_procesing.nil? ? false : true
     @log_errors = log_errors.nil? ? false : true
     @limit = limit
+    @single_lace = lace
 
     # images and assets/attachments go into subdirectories
     @image_dir = @output_dir + '/../images'
@@ -104,6 +113,10 @@ class Importer
     posts = PStore.new(@import_file)
     posts.transaction(true) do
       posts.roots.each do |lace|
+        if(!@single_lace.nil? && @single_lace != lace.to_s)
+          next
+        end
+
         # create a blog entry and parse its content
         blog_entry = BlogEntry.new
         blog_entry.lace = lace
@@ -138,12 +151,11 @@ class Importer
       end
     end
 
-    puts "-------------------------------------------"
+    puts "------------------------------------------------------------------------"
     puts "Successfull imports #{successful_imports}"
     puts "Skipped imports #{skipped_imports}"
     puts "Failed imports #{failed_imports}"
-    puts "-------------------------------------------
-    "
+    puts "------------------------------------------------------------------------"
   end
 
   private
@@ -250,17 +262,30 @@ class Importer
     doc.css('td.commentColumn').each do |comment|
       begin
         comment_id = comment.css('a[id^="comment"]')[0]['id'].gsub!(/comment/, '')
-        comment_content = comment.css('div.commentText').inner_html.strip!
+        comment_node = comment.css('div.commentText')
+        comment_content = nil
+        if  comment_node.attribute("class").to_s =~ /plaintext/
+          comment_content = comment_node[0].content
+        else
+          comment_content = comment_node.inner_html.strip
+        end
 
         comment_date = parse_comment_date comment.css('td.commentAuthorInfo div')[0]
         author, email, url = parse_author_info comment.css('td.commentAuthorInfo div')[1]
 
-        #puts "===> author: " << author << "\n     email : " << email << "\n     url   : " << url << "\n     date  : " << comment_date.to_s
+        # puts "===> author  : " << author
+        # puts "     email   : " << email
+        # puts "     url     : " << url
+        # puts "     date    : " << comment_date.to_s
+        # puts "     content : " << comment_content
+        # puts "\n\n"
+
         @wxr_exporter.add_comment(comment_id, author, email, url, comment_date, comment_content)
       rescue => e
         puts "-------------------------------------------"
         puts "WARN: Skipping import of comment: \n"
         puts comment
+        puts e
         puts e.backtrace
         puts "-------------------------------------------"
       end
@@ -396,12 +421,18 @@ limit = -1
 if(Choice.choices[:limit])
   limit = Choice.choices[:limit].to_i
 end
+
+lace = nil
+if(Choice.choices[:lace])
+  lace = Choice.choices[:lace]
+end
 importer = Importer.new(Choice.choices.pstore,
                         Choice.choices.outdir,
                         Choice.choices.wxr,
                         Choice.choices.skip_images,
                         Choice.choices.skip_assets,
                         Choice.choices.errors,
-                        limit
+                        limit,
+                        lace
                         )
 importer.import_posts
