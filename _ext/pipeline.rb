@@ -21,6 +21,7 @@ require 'atomizer'
 require 'paginator'
 require 'posts'
 
+require 'legacy_post_code_highlighter'
 
 # hack to add asciidoc support in HAML
 # remove once haml_contrib has accepted the asciidoc registration patch
@@ -99,6 +100,7 @@ Awestruct::Extensions::Pipeline.new do
   extension   Awestruct::Extensions::WgetWrapper.new
   extension   Awestruct::Extensions::FileMerger.new
   extension   Awestruct::Extensions::Indexifier.new
+  transformer InRelationTo::Extensions::LegacyPostCodeHighlightingTransformer.new
 
 end
 
