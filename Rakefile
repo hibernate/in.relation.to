@@ -55,25 +55,27 @@ task :update => :init do
   exit 0
 end
 
-desc 'Build and preview the site locally in development mode'
-task :preview, :profile do |task, args|
+desc 'Build and preview the site locally in development mode. preview[<options>] can be used to pass awestruct options, eg \'preview[--no-generate]\''
+task :preview, [:profile, :options] do |task, args|
   if args[:profile].nil?
     profile = "editor"
   else
     profile = args[:profile]
   end
-  run_awestruct "-P #{profile} --server --auto"
+  options = args[:options]
+  run_awestruct "-P #{profile} --server --auto #{options}"
   exit 0
 end
 
-desc 'Generate the site using the specified profile, default is \'development\''
-task :gen, :profile do |task, args|
+desc 'Generate the site using the specified profile, default is \'development\'. Additional options can also be specified, eg \'gen[development, \'-w\']'
+task :gen, [:profile, :options] do |task, args|
   if args[:profile].nil?
     profile = "development"
   else
     profile = args[:profile]
   end
-  run_awestruct "-P #{profile} -g --force"
+  options = args[:options]
+  run_awestruct "-P #{profile} -g --force #{options}"
 end
 
 desc 'Push local commits to origin/master'
