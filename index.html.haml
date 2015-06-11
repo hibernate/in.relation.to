@@ -7,15 +7,22 @@ title: In Relation To
     %h2
       %a{:href=>post.url}= post.title
     .blogtagbar
-      - post.author.each do |author|
-        %a{:href=>author.primary_page.url}
+      - authors = post.author
+      - # when splitting are disabled in the pipeline, authors is a string
+      - if not authors.kind_of?(Array)
+        - authors = [ authors ]
+      - authors.each do |author|
+        - url = author.kind_of?(String) ? '' : author.primary_page.url
+        %a{:href=>url}
           = author
         &nbsp;
       |&nbsp;
       #{post.date.strftime( '%Y-%m-%d' )}
       &nbsp;|&nbsp;
       - post.tags.each do |tag|
-        %a.label{:href=>tag.primary_page.url}
+        - # when splitting are disabled in the pipeline, tag is a string
+        - url = tag.kind_of?(String) ? '' : tag.primary_page.url
+        %a.label{:href=>url}
           = tag
         &nbsp;
     %p
