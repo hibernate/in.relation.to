@@ -36,14 +36,21 @@ layout: project
     %hr.divider
     .blogtagbar
       .single_blog_author
-        - page.author.each do |author|
-          %a{:href=>author.primary_page.url}
+        - authors = page.author
+        - # when splitting are disabled in the pipeline, authors is a string
+        - if not authors.kind_of?(Array)
+          - authors = [ authors ]
+        - authors.each do |author|
+          - url = author.kind_of?(String) ? '' : author.primary_page.url
+          %a{:href=>url}
             = author
       .single_blog_date
         #{page.date.strftime( '%Y-%m-%d' )}
       .single_blog_tags
         - page.tags.each do |tag|
-          %a.label{:href=>tag.primary_page.url}
+          - # when splitting are disabled in the pipeline, tag is a string
+          - url = tag.kind_of?(String) ? '' : tag.primary_page.url
+          %a.label{:href=>url}
             = tag
           &nbsp;
   .span8
