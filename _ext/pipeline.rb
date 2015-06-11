@@ -59,43 +59,47 @@ Awestruct::Extensions::Pipeline.new do
                                                      :sanitize=>true,
                                                      :blacklist=>['author', 'authors', 'tags', 'tag',
                                                       'page', 'javascripts', 'images', 'readme', 'templates']
-                                                    ) 
-  extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>10, :per_page_init=>10 )
-  extension Awestruct::Extensions::Splitter.new( :posts,
-                                                 'tags',
-                                                 'templates/tag',
-                                                 '/tag',
-                                                 :per_page=>10, :per_page_init=>10,
-                                                 :output_home_file=>'index',
-                                                 :sanitize=>true )
-  extension Awestruct::Extensions::SplitCloud.new( :posts,
-                                                 'tags',
-                                                 '/tags/index.html',
-                                                 :title=>'Tags')
-  extension Awestruct::Extensions::Splitter.new( :posts,
-                                                 'author',
-                                                 'templates/author',
-                                                 '/author',
-                                                 :per_page=>10, :per_page_init=>10,
-                                                 :output_home_file=>'index',
-                                                 :sanitize=>true )
-  extension Awestruct::Extensions::SplitCloud.new( :posts,
-                                                 'author',
-                                                 '/authors/index.html',
-                                                 :title=>'Author')
+                                                    )
+
+  if Engine.instance.site.profile == 'editor'
+    # make very few paginated pages
+    pagination = 100
+  else
+    pagination = 10
+    extension Awestruct::Extensions::Splitter.new( :posts,
+                                                   'tags',
+                                                   'templates/tag',
+                                                   '/tag',
+                                                   :per_page=>10, :per_page_init=>10,
+                                                   :output_home_file=>'index',
+                                                   :sanitize=>true )
+    extension Awestruct::Extensions::SplitCloud.new( :posts,
+                                                   'tags',
+                                                   '/tags/index.html',
+                                                   :title=>'Tags')
+    extension Awestruct::Extensions::Splitter.new( :posts,
+                                                   'author',
+                                                   'templates/author',
+                                                   '/author',
+                                                   :per_page=>10, :per_page_init=>10,
+                                                   :output_home_file=>'index',
+                                                   :sanitize=>true )
+    extension Awestruct::Extensions::SplitCloud.new( :posts,
+                                                   'author',
+                                                   '/authors/index.html',
+                                                   :title=>'Author')
+  end
+
+  extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>pagination, :per_page_init=>pagination )
 
   # register extensions and transformers
-  extension Awestruct::Extensions::WgetWrapper.new
   transformer Awestruct::Extensions::JsMinifier.new
   transformer Awestruct::Extensions::CssMinifier.new
   transformer Awestruct::Extensions::HtmlMinifier.new
-  extension Awestruct::Extensions::FileMerger.new
-  extension Awestruct::Extensions::Indexifier.new
-  
-  development = Engine.instance.site.profile == 'development'
-  if not development
-    extension Awestruct::Extensions::RedirectCreator.new "redirects", "hib-docs-reference-redirects", "hib-docs-v3-api-redirects"
-  end
+  extension   Awestruct::Extensions::WgetWrapper.new
+  extension   Awestruct::Extensions::FileMerger.new
+  extension   Awestruct::Extensions::Indexifier.new
+
 end
 
 # vim: softtabstop=2 shiftwidth=2 expandtab

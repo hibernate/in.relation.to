@@ -56,8 +56,14 @@ task :update => :init do
 end
 
 desc 'Build and preview the site locally in development mode'
-task :preview do
-  run_awestruct '-d'
+task :preview, :profile do |task, args|
+  if args[:profile].nil?
+    profile = "editor"
+  else
+    profile = args[:profile]
+  end
+  run_awestruct "-P #{profile} --server --auto"
+  exit 0
 end
 
 desc 'Generate the site using the specified profile, default is \'development\''
