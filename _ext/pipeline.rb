@@ -60,29 +60,39 @@ Awestruct::Extensions::Pipeline.new do
                                                      :blacklist=>['author', 'authors', 'tags', 'tag',
                                                       'page', 'javascripts', 'images', 'readme', 'templates']
                                                     ) 
-  extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>10, :per_page_init=>10 )
-  extension Awestruct::Extensions::Splitter.new( :posts,
-                                                 'tags',
-                                                 'templates/tag',
-                                                 '/tag',
-                                                 :per_page=>10, :per_page_init=>10,
-                                                 :output_home_file=>'index',
-                                                 :sanitize=>true )
-  extension Awestruct::Extensions::SplitCloud.new( :posts,
-                                                 'tags',
-                                                 '/tags/index.html',
-                                                 :title=>'Tags')
-  extension Awestruct::Extensions::Splitter.new( :posts,
-                                                 'author',
-                                                 'templates/author',
-                                                 '/author',
-                                                 :per_page=>10, :per_page_init=>10,
-                                                 :output_home_file=>'index',
-                                                 :sanitize=>true )
-  extension Awestruct::Extensions::SplitCloud.new( :posts,
-                                                 'author',
-                                                 '/authors/index.html',
-                                                 :title=>'Author')
+
+  editor = Engine.instance.site.profile == 'editor'
+  pagination = 10
+  if editor
+    # make very few paginated pages
+    pagination = 100
+  end
+  extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>pagination, :per_page_init=>pagination )
+  
+  if not editor
+    extension Awestruct::Extensions::Splitter.new( :posts,
+                                                   'tags',
+                                                   'templates/tag',
+                                                   '/tag',
+                                                   :per_page=>10, :per_page_init=>10,
+                                                   :output_home_file=>'index',
+                                                   :sanitize=>true )
+    extension Awestruct::Extensions::SplitCloud.new( :posts,
+                                                   'tags',
+                                                   '/tags/index.html',
+                                                   :title=>'Tags')
+    extension Awestruct::Extensions::Splitter.new( :posts,
+                                                   'author',
+                                                   'templates/author',
+                                                   '/author',
+                                                   :per_page=>10, :per_page_init=>10,
+                                                   :output_home_file=>'index',
+                                                   :sanitize=>true )
+    extension Awestruct::Extensions::SplitCloud.new( :posts,
+                                                   'author',
+                                                   '/authors/index.html',
+                                                   :title=>'Author')
+  end
 
   # register extensions and transformers
   extension Awestruct::Extensions::WgetWrapper.new
@@ -93,7 +103,7 @@ Awestruct::Extensions::Pipeline.new do
   extension Awestruct::Extensions::Indexifier.new
   
   development = Engine.instance.site.profile == 'development'
-  if not development
+  if not development and not editor
     extension Awestruct::Extensions::RedirectCreator.new "redirects", "hib-docs-reference-redirects", "hib-docs-v3-api-redirects"
   end
 end
