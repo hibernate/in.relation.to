@@ -1,4 +1,4 @@
-= How to build hibernate.org
+= How to build in.relation.to
 :awestruct-layout: title-nocol
 :toc:
 :toc-placement: preamble
@@ -66,7 +66,7 @@ If you get "_command not found_":
 > rake check
 ----
 
-=== Serve the site
+=== Serve the site locally
 
 [source]
 ----
@@ -89,6 +89,26 @@ or
 ----
 rake preview[production]
 ----
+
+== Preview changes on staging.in.relation.to
+
+Use git to push on the _staging_ branch on GitHub.
+You might need to use "git push --force" to overwrite previous experiments;
+possibly check when doing so to not interfere with someone else also looking to publish a preview.
+
+Pushing on this branch will trigger a build at http://ci.hibernate.org/view/Website/job/staging.in.relation.to/[the CI Server],
+if the build is successfull your changes should be visibile on http://staging.in.relation.to.org/[the staging website].
+
+== Publish changes to production
+
+Use git to push on the _production_ branch on GitHub.
+
+In this case, never use "--force" !
+If you have a push error, please rebase first, and possibly repeat the staging phase.
+
+Also in this case a build is triggered on http://ci.hibernate.org/view/Website/job/in.relation.to/[the CI Server],
+and if successfull the content is then visible on http://in.relation.to.org/[the public blog].
+
 
 == Tips & Tricks
 
