@@ -3,12 +3,18 @@
 # An extension of type transformer which modifies posts using the legacy syntax highlighting by replacing affected
 # <pre> blocks with an equivalent <pre> highlighted by CodeRay.
 #
+# The extension can be disabled by setting legacy_post_syntax_highlighting: disabled for a given profile. By default it
+# is enabled.
+#
 ##
 module InRelationTo
   module Extensions
     class LegacyPostCodeHighlightingTransformer
 
       def transform(site, page, input)
+        if !site.legacy_post_syntax_highlighting.nil? and !site.legacy_post_syntax_highlighting.to_s.eql?('enabled')
+          return input
+        end
 
         ext = File.extname(page.output_path)
         if !ext.empty?
