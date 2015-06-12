@@ -3,7 +3,7 @@
 # Class encapsulating the bits and pieces of a single post
 class BlogEntry
 
-  attr_accessor :title, :content, :author, :blogger_name, :tags, :slug, :date, :lace, :relative_url,:disqus_thread_id
+  attr_accessor :title, :content, :author, :blogger_name, :tags, :assets, :slug, :date, :lace, :relative_url,:disqus_thread_id
 
   def to_erb
   	# quotes in title must be escaped, also backslash with double backslash
@@ -14,6 +14,18 @@ class BlogEntry
     tags.each { |tag| tag_string = tag_string + tag + "," }
     tag_string = tag_string.gsub(/,$/, '')
 
+    # prepare list of attachments
+    if !assets.empty?
+      assets_content = '<div class="attachments">' <<
+                     "\n" <<
+                     '<h4>Attachments</h4>' <<
+                     "\n" <<
+                     '<ol class="wikiOrderedList">'
+      assets.each { |anchor, filename| assets_content += '<li class="wikiOrderedListItem"><a name="' + anchor + '" href="/assets/' + filename + '">' + filename + '</a></li>' + "\n" }
+      assets_content += "</ol>\n</div>\n\n"
+    end
+
+    # Prepare ERB content
     erb = "---\n" <<
     "title: \"#{escaped_title}\"\n" <<
     "author: \"#{@author}\"\n" <<
@@ -29,7 +41,9 @@ class BlogEntry
     "\n" <<
     "disqus_thread_id: #{@disqus_thread_id}\n" <<
     "---\n" <<
-    "#{content}\n"
+    "#{content}\n" <<
+    "\n" <<
+    "#{assets_content}"
   end
 
   def file_name
