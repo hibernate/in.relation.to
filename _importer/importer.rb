@@ -249,7 +249,7 @@ class Importer
     end
 
     unless @skip_asset_procesing
-      import_assets(doc, content_node)
+      blog_entry.assets = import_assets(doc, content_node)
     end
 
     return content_node.to_s
@@ -378,9 +378,8 @@ class Importer
     # last but ot least we have to adjust the link in the actual post (it is just an anchor to the attachment table)
     attachments.each_pair do |k,v|
       content_node.css('a').map do |a|
-        if(a['href'] =~ /\##{k}/)
-          a['href'] = "/assets/" + v
-          a.content = a.content.gsub(/\[.*\]/, '')
+        if (a['href'] =~ /\##{k}/)
+          a['href'] = "\##{k}"
         end
       end
     end
