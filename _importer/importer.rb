@@ -415,7 +415,7 @@ class Importer
 
   def write_file(blog_entry)
     out = File.join( @output_dir, blog_entry.file_name )
-    # makre sure the directory exists
+    # make sure the directory exists
     FileUtils.mkdir_p( File.dirname( out ) )
     File.open( out, 'w' ) do |f|
       f.puts blog_entry.to_erb
