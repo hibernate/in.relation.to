@@ -53,7 +53,7 @@ Choice.options do
   end
 
   option :limit, :required => false do
-    short '-l'
+    short '-n'
     long '--limit=<n>'
     desc 'Limit the imported posts (for debugging purposes)'
   end
@@ -335,7 +335,8 @@ class Importer
 
   def import_images(content_node)
     content_node.css('img').each do |image|
-      if (image['src'] =~ /http:\/\/in.relation.to\/service\/File/)
+      # match images either as absolute in.relation.to url or site relative
+      if (image['src'] =~ /http:\/\/in.relation.to\/service\/File/ || image['src'] =~ /^\/service\/File/)
         # get the image and type
         image_data, type = download_resource(image['src'])
 
@@ -387,7 +388,12 @@ class Importer
   end
 
   def download_resource(resource_url)
-    #puts "Downloading #{resource_url}"
+
+    if( resource_url !~ /http:\/\/in.relation.to/ )
+      resource_url = 'http://in.relation.to' + resource_url
+    end
+
+    puts "Downloading #{resource_url}"
     uri = URI.parse( resource_url )
 
     http = Net::HTTP.new(uri.host, uri.port)
