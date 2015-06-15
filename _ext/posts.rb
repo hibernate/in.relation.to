@@ -56,7 +56,7 @@ module Awestruct
             if( year and month and day)
               page.slug ||= slug
               context = page.create_context
-              page.output_path = "#{@path_prefix}/#{year}/#{month}/#{day}/#{page.slug}.html"
+              page.output_path = "#{@path_prefix}/#{year}/#{month}/#{day}/#{page.slug}/index.html"
               posts << page
             end
           end
@@ -98,7 +98,7 @@ module Awestruct
         def generate_pages( engine, template, output_path )
           pages = []
           posts.keys.sort.each do |year|
-            posts[year].keys.sort.each do |month| 
+            posts[year].keys.sort.each do |month|
               posts[year][month].keys.sort.each do |day|
                 archive_page = engine.find_and_load_site_page( template )
                 archive_page.send( "archive=", posts[year][month][day] )

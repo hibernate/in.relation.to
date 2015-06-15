@@ -21,8 +21,7 @@
       %entry
         %id #{site.base_url}#{entry.url}
         %title= escape_once( entry.title )
-        %updated= entry.input_mtime.xmlschema
-        %published= entry.date.xmlschema
+        %updated= entry.date.xmlschema
         %link{:rel=>"alternate", :type=>"text/html", :href=>"#{site.base_url}#{entry.url}" }
         - if ( not entry.author.nil? )
           %author
@@ -39,4 +38,4 @@
           #{summarize( html_to_text( entry.content.force_encoding("UTF-8") ), 100 )}
         %content{:type=>'html'}
           = clean_html( html_escape( fully_qualify_urls( site.base_url, find_and_preserve( entry.content.force_encoding("UTF-8") ) ) ) )
-  
+

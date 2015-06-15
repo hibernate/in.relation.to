@@ -17,7 +17,6 @@ require 'splitter'
 require 'split_cloud'
 require 'split_filterer'
 require 'split_atomizer'
-require 'atomizer'
 require 'paginator'
 require 'posts'
 
@@ -89,18 +88,24 @@ Awestruct::Extensions::Pipeline.new do
                                                    'author',
                                                    '/authors/index.html',
                                                    :title=>'Author')
+    extension Awestruct::Extensions::Atomizer.new( :posts,
+                                                   '/blog.atom',
+                                                   :template=>File.join(File.dirname(__FILE__), 'template.atom.haml'),
+                                                   :feed_title=>'In Relation To Blog')
   end
 
   extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>pagination, :per_page_init=>pagination )
+
 
   # register extensions and transformers
   transformer Awestruct::Extensions::JsMinifier.new
   transformer Awestruct::Extensions::CssMinifier.new
   transformer Awestruct::Extensions::HtmlMinifier.new
+  transformer InRelationTo::Extensions::LegacyPostCodeHighlightingTransformer.new
+
   extension   Awestruct::Extensions::WgetWrapper.new
   extension   Awestruct::Extensions::FileMerger.new
   extension   Awestruct::Extensions::Indexifier.new
-  transformer InRelationTo::Extensions::LegacyPostCodeHighlightingTransformer.new
 
 end
 
