@@ -51,7 +51,7 @@ Choice.options do
   option :lace, :required => false do
     short '-l'
     long '--lace=<lace-url>'
-    desc 'Runs the importer only for the given lave url'
+    desc 'Runs the importer only for the given lace url'
   end
 
   option :limit, :required => false do
@@ -85,7 +85,7 @@ class Importer
 
   BASE_URL = "http://in.relation.to"
 
-  def initialize(import_file, output_dir, wxr_file_name, skip_image_procesing, skip_asset_procesing, log_errors, limit=-1, lace=nil)
+  def initialize(import_file, output_dir, wxr_file_name, skip_image_processing, skip_asset_processing, log_errors, limit=-1, lace=nil)
     @import_file = import_file
     @output_dir = output_dir
 
@@ -94,8 +94,8 @@ class Importer
       @wxr_exporter = WxrExporter.new "./disqus.xml", @output_dir + '/' + wxr_file_name
     end
 
-    @skip_image_procesing = skip_image_procesing.nil? ? false : true
-    @skip_asset_procesing = skip_asset_procesing.nil? ? false : true
+    @skip_image_processing = skip_image_processing.nil? ? false : true
+    @skip_asset_processing = skip_asset_processing.nil? ? false : true
     @log_errors = log_errors.nil? ? false : true
     @limit = limit
     @single_lace = lace
@@ -248,11 +248,11 @@ class Importer
       end
     end
 
-    unless @skip_image_procesing
+    unless @skip_image_processing
       import_images(content_node)
     end
 
-    unless @skip_asset_procesing
+    unless @skip_asset_processing
       blog_entry.assets = import_assets(doc, blog_entry.slug, content_node)
     end
 
