@@ -47,7 +47,7 @@ fileMerger:
 # Cache hosted fonts, images and javascript
 wget:
   enabled: true
-  rerunEach: 86400 # seconds
+  rerunEach: 86400 # seconds (24h)
   timestampFilename: _wget-timestamp
   options:
     - --no-remove-listing
@@ -57,7 +57,7 @@ wget:
     - -N
     - --reject 'index.html*'
     - -e robots=off
-    - --directory-prefix=cache
+    - --directory-prefix=.wget-cache
   urls:
     - http://static.jboss.org/theme/js/libs/jquery/jquery-1.9.1.js
     - http://static.jboss.org/theme/js/libs/jquery/jquery-1.9.1.min.js
