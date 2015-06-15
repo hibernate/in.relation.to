@@ -249,7 +249,7 @@ class Importer
     end
 
     unless @skip_asset_procesing
-      blog_entry.assets = import_assets(doc, content_node)
+      blog_entry.assets = import_assets(doc, blog_entry.slug, content_node)
     end
 
     return content_node.to_s
@@ -352,8 +352,9 @@ class Importer
     end
   end
 
-  def import_assets(doc, content_node)
+  def import_assets(doc, slug, content_node)
     # attachements are in a table at the bottom of the post. Let's process the table first and then adjust the actual post content
+    prefix = slug + "_"
     attachments = Hash.new
     attachment_count = 1
     doc.css('div.attachmentDisplay tr').each do |attachment_row|
@@ -369,7 +370,8 @@ class Importer
             # download and save
             asset = download_resource(url)[0]
             write_resource(asset, File.join( @asset_dir, original_file_name ))
-            attachments["attachment" + attachment_count.to_s] = original_file_name
+            anchor = prefix + "attachment" + attachment_count.to_s
+            attachments[anchor] = original_file_name
             attachment_count += 1
           end
         end
@@ -378,7 +380,10 @@ class Importer
     # last but ot least we have to adjust the link in the actual post (it is just an anchor to the attachment table)
     attachments.each_pair do |k,v|
       content_node.css('a').map do |a|
-        if (a['href'] =~ /\##{k}/)
+        # The new anchor looks like Hibernate2MillionDownloads5Years25Books_attachment1
+        # the original anchor looks like attachment1
+        originalAnchor = k.sub( prefix, "" )
+        if (a['href'] =~ /\##{originalAnchor}/)
           a['href'] = "\##{k}"
         end
       end
