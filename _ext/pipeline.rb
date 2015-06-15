@@ -69,7 +69,7 @@ Awestruct::Extensions::Pipeline.new do
     extension Awestruct::Extensions::Splitter.new( :posts,
                                                    'tags',
                                                    'templates/tag',
-                                                   '/tag',
+                                                   '',
                                                    :per_page=>10, :per_page_init=>10,
                                                    :output_home_file=>'index',
                                                    :sanitize=>true )
@@ -80,7 +80,7 @@ Awestruct::Extensions::Pipeline.new do
     extension Awestruct::Extensions::Splitter.new( :posts,
                                                    'author',
                                                    'templates/author',
-                                                   '/author',
+                                                   '',
                                                    :per_page=>10, :per_page_init=>10,
                                                    :output_home_file=>'index',
                                                    :sanitize=>true )
