@@ -205,6 +205,7 @@ class Importer
 
     # tags
     tags = doc.css('div.documentTags  a').map {|link| link.text.to_s}
+    blog_entry.original_tags = tags
     blog_entry.tags = normalize_tags(blog_entry.slug, tags)
 
     # misc
