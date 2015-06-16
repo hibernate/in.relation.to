@@ -39,7 +39,6 @@ task :init do
   # Detect using gems local to project
   if File.exist? '.bin'
     ENV['PATH'] = ".bin#{File::PATH_SEPARATOR}#{ENV['PATH']}"
-    ENV['GEM_HOME'] = '.bundle'
   else
     msg "No local bundle installation. Run 'rake setup' first", :warn
     exit 0
