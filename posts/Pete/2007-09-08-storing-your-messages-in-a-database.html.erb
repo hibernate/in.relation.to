@@ -1,0 +1,164 @@
+---
+title: "Storing your messages in a database"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "08-09-2007"
+tags: []
+
+relative_url: /2007/09/08/storing-your-messages-in-a-database
+slug: storing-your-messages-in-a-database
+lace: http://in.relation.to/2303.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/09/08/storing-your-messages-in-a-database
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Seam has great i8ln - it provides a built in locale selector which it uses to provide localized message bundles.  You can load different message bundles for different pages.
+</p>
+
+<p class="wikiPara">
+Seam's built in message bundle uses properties files to define the resources - but what if you want to store your messages in a database?  You might want to allow an admin to edit the properties through a web admin panel for example.  Here we will cover the basic entities and wiring needed - you will probably want to add in some CRUD views for the resources.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Entities"><a href="/2007/09/08/storing-your-messages-in-a-database#H-Entities">Entities</a></h2>
+
+<p class="wikiPara">
+We create two entites, first a resource bundle entity, which defines the bundle name, and the locale which it is for:
+</p>
+
+<pre class="wikiPreformatted">@Entity
+public class ResourceBundle {
+        
+   @Id @GeneratedValue
+   private Integer id;
+
+   private String name;
+
+   private ResourceLocale resourceLocale;
+        
+   @OneToMany(mappedBy="resourceBundle")
+   ¨¨private List&lt;Resource&gt; resources;
+}</pre>
+
+
+<p class="wikiPara">
+And the embedded locale:
+</p>
+
+<pre class="wikiPreformatted">@Embeddable
+public class ResourceLocale {
+        
+        @Column(length=2)
+        @Length(max=2)
+        private String language;
+        
+        @Column(length=2)
+        @Length(max=2)
+        private String country;
+        
+        @Column(length=2)
+        @Length(max=2)
+        private String variant;
+
+}</pre>
+
+
+<p class="wikiPara">
+And the resource itself, consisting of a key and a value:
+</p>
+
+<pre class="wikiPreformatted">@Entity
+@NamedQueries({
+   @NamedQuery(
+      name="keys", 
+      query="select r.key from Resource r where 
+         r.resourceBundle.name = :bundleName and
+         r.resourceBundle.resourceLocale.language = :language and 
+         r.resourceBundle.resourceLocale.country = :country and
+         r.resourceBundle.resourceLocale.variant = :variant"),
+   @NamedQuery(
+      name="value", 
+      query="select r.value from Resource r where 
+         r.resourceBundle.name = :bundleName and 
+         r.resourceBundle.resourceLocale.language = :language and 
+         r.resourceBundle.resourceLocale.country = :country and 
+         r.resourceBundle.resourceLocale.variant = :variant and r.key = :key")
+})
+public class Resource 
+{
+   @Id @GeneratedValue
+   private Integer id;
+
+   @Column(name="_key")
+   private String key;
+
+   @Column(name="_value")
+   private String value;
+   
+   @ManyToOne
+   private ResourceBundle resourceBundle;
+}</pre>
+
+
+<h2 class="wikiHeadline2" id="H-Wiring"><a href="/2007/09/08/storing-your-messages-in-a-database#H-Wiring">Wiring</a></h2>
+
+<p class="wikiPara">
+We need to make Seam use our new resource loading scheme:
+</p>
+
+<pre class="wikiPreformatted">@Name("org.jboss.seam.core.resourceLoader")
+@BypassInterceptors
+public class DatabaseResourceLoader extends ResourceLoader {
+   
+   // Redefine how we load a resource bundle
+   public ResourceBundle loadBundle(final String bundleName) {
+      return new ResourceBundle() {
+
+         public Enumeration&lt;String&gt; getKeys() {
+            Locale locale = org.jboss.seam.core.Locale.instance();
+            EntityManager entityManager = (EntityManager) Component.getInstance("entityManager");
+            List resources = entityManager.createNamedQuery("keys")
+               .setParameter("bundleName", bundleName)
+               .setParameter("language", locale.getLanguage())
+               .setParameter("country", locale.getCountry())
+               .setParameter("variant", locale.getVariant())
+               .getResultList();
+            return Collections.enumeration(resources);
+         }
+
+         protected Object handleGetObject(String key) {
+            Locale locale = org.jboss.seam.core.Locale.instance();
+            EntityManager entityManager = (EntityManager) Component.getInstance("entityManager");
+            try {
+               return entityManager.createNamedQuery("value")
+                  .setParameter("bundleName", bundleName)
+                  .setParameter("language", locale.getLanguage())
+                  .setParameter("country", locale.getCountry())
+                  .setParameter("variant", locale.getVariant())
+                  .setParameter("key", key)
+                  .getSingleResult();
+            } catch (NoResultException e) {
+               return null;
+            }
+         }
+      };
+   }
+}</pre>
+
+
+<h2 class="wikiHeadline2" id="H-Java6"><a href="/2007/09/08/storing-your-messages-in-a-database#H-Java6">Java 6</a></h2>
+
+<p class="wikiPara">
+This approach will work on Java 5 - but I believe Java 6 provides enhanced <tt>ResourceBundle</tt> support (but as there is no Java 6 for the Mac I didn't ;-) ).  You might want to investigate this.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Caching"><a href="/2007/09/08/storing-your-messages-in-a-database#H-Caching">Caching</a></h2>
+
+<p class="wikiPara">
+We've not used any caching here - every request for a key will result in a database lookup.  You could use a Java <tt>Map</tt> to cache resources as they are loaded (taking care to flush the cash when the locale changes - use Seam's event bus to observe <tt>org.jboss.seam.localeSelected</tt>), or perhaps you could rely on the Hibernate second level cache... Up to you!</p>
+</div>
+

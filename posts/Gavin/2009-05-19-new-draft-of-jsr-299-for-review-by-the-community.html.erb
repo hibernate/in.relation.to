@@ -1,0 +1,64 @@
+---
+title: "New draft of JSR-299 for review by the community"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "19-05-2009"
+tags: [Contexts and Dependency Injection,Seam News,Web Beans]
+
+relative_url: /2009/05/19/new-draft-of-jsr-299-for-review-by-the-community
+slug: new-draft-of-jsr-299-for-review-by-the-community
+lace: http://in.relation.to/11466.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/05/19/new-draft-of-jsr-299-for-review-by-the-community
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+We've been busy with the <a href="http://jcp.org/en/jsr/detail?id=299" target="" class="regularLink">JSR-299</a> specification (Contexts and Dependency Injection for Java EE) over the last couple of weeks, preparing to submit a Proposed Final Draft in early June. At this point I would like to solicit feedback from the community on the recent changes, so I'm posting a <a href="#new-draft-of-jsr-299-for-review-by-the-community_attachment1" target="" class="regularLink">current revision of the specification[1]</a> here.
+</p>
+
+<p class="wikiPara">
+Since the revised public draft, we've made the following changes:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Removed the XML configuration format, since we would prefer to define a new, unified, XML deployment descriptor incorporating metadata for both EJB and CDI as part of a future JSR, and because the expert group was unable to achieve consensus upon the merits of the typesafe XML format.</li>
+<li class="wikiUnorderedListItem"> Significantly enhanced the SPIs that provide for integration of third-party frameworks, allowing portable extensions to define their own metadata facilities and integrate fully with the container initialization lifecycle. A portable extension might define an XML-based metadata format, or even Java-based configuration. Indeed, it would be possible to support Guice modules or Spring XML as portable extensions to CDI. <i class="wikiEmphasis">See chapter 11.</i>
+</li>
+<li class="wikiUnorderedListItem"> Added support for Java-based declaration of dependencies to Java EE component environment resources, persistence contexts, persistence units, remote EJBs and web services, and for Java-based declaration of JMS event mappings. Previously XML was required. <i class="wikiEmphasis">See sections 3.6.1, 3.7.2 and 10.7.</i>
+</li>
+<li class="wikiUnorderedListItem"> Required that all Java EE component classes supporting injection (as defined by the EE spec) support the typesafe dependency injection mechanism defined by CDI.</li>
+<li class="wikiUnorderedListItem"> Improved support for resolution of dependencies based upon parameterized types.</li>
+<li class="wikiUnorderedListItem"> Enhanced the <tt>Instance</tt> and <tt>Event</tt> APIs, and introduced the special <tt>@Any</tt> binding. <i class="wikiEmphasis">See sections 5.5 and 10.4.</i>
+</li>
+<li class="wikiUnorderedListItem"> Slightly changed the definition of <tt>@New</tt>. <i class="wikiEmphasis">See section 3.11.</i>
+</li>
+<li class="wikiUnorderedListItem"> Minimized constraints upon implementations, by separating the definition of the CDI services from the portable extension SPI.</li>
+<li class="wikiUnorderedListItem"> Updated the spec to refer to the new platform-level Managed Bean and Interceptors specifications.</li>
+</ul>
+
+<p class="wikiPara">
+JCDI is not just a set of annotations that lets you inject things. It's the key to an ecosystem that allows Java EE developers to easily wire together their Java EE components and services using portable code, framework developers to write portable extensions that integrate with the container, and deployers to reconfigure the system with minimal XML.
+</p>
+
+<p class="wikiPara">
+Meanwhile, the <a href="http://seamframework.org/WebBeans" target="" class="regularLink">Web Beans</a> team has made great progress on the RI and TCK and a usable release is <a href="http://seamframework.org/Download/SeamDownloads#H-WebBeansReleases" target="" class="regularLink">already available</a>.
+</p>
+
+<p class="wikiPara">
+Please send feedback on this new spec draft to <tt>jsr-299-comments@jcp.org</tt>. Enjoy!
+</p>
+
+<p class="wikiPara">
+UPDATE: I updated the draft to include the license agreement.</p>
+</div>
+
+<div class="attachments">
+<h4>Attachments</h4>
+<ol class="wikiOrderedList"><li class="wikiOrderedListItem"><a name="new-draft-of-jsr-299-for-review-by-the-community_attachment1" href="/assets/JSR-299-20090519.pdf">JSR-299-20090519.pdf</a></li>
+</ol>
+</div>
+

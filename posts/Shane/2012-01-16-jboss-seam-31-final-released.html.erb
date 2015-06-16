@@ -1,0 +1,139 @@
+---
+title: "JBoss Seam 3.1 Final Released"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+creation_date: "16-01-2012"
+tags: [News,Seam,Seam News]
+
+relative_url: /2012/01/16/jboss-seam-31-final-released
+slug: jboss-seam-31-final-released
+lace: http://in.relation.to/22750.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/01/16/jboss-seam-31-final-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm pleased to announce the immediate availability of Seam 3.1 Final.
+</p>
+
+<p class="wikiPara">
+Links:
+</p>
+
+<p class="wikiPara">
+<a href="https://sourceforge.net/projects/jboss/files/Seam/3/3.1.0.Final/" target="" class="regularLink">Download Seam 3.1.0.Final bundled distribution</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/seam/3/3.1.0.Final/reference/en-US/html/" target="" class="regularLink">Reference Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/seam/3/3.1.0.Final/api/" target="" class="regularLink">API Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://issues.jboss.org/browse/SEAM" target="" class="regularLink">Report issues</a>
+</p>
+
+<p class="wikiPara">
+Maven users, please update your project to include the following:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;dependencyManagement&gt;
+   &lt;dependencies&gt;
+      &lt;dependency&gt;
+         &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+	 &lt;artifactId&gt;seam-bom&lt;/artifactId&gt;
+         &lt;version&gt;3.1.0.Final&lt;/version&gt;
+         &lt;scope&gt;import&lt;/scope&gt;
+         &lt;type&gt;pom&lt;/type&gt;
+       &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;</pre>
+
+
+
+
+<h1 class="wikiHeadline1" id="H-WhatsChangedSinceSeam30"><a href="/2012/01/16/jboss-seam-31-final-released#H-WhatsChangedSinceSeam30">What's changed since Seam 3.0?</a></h1>
+
+<p class="wikiPara">
+ 
+</p>
+
+<h2 class="wikiHeadline2" id="H-ExistingModules"><a href="/2012/01/16/jboss-seam-31-final-released#H-ExistingModules">Existing modules</a></h2>
+
+<p class="wikiPara">
+ 
+</p>
+
+<h3 class="wikiHeadline3" id="H-Solder"><a href="/2012/01/16/jboss-seam-31-final-released#H-Solder">Solder</a></h3>
+
+<p class="wikiPara">
+The Solder module now incorporates an exception handling framework (formerly Seam Catch), XML-based configuration (formerly Seam Config) and Servlet integration (formerly Seam Servlet).  The integration of these core features into Solder means they will now be available without having to declare an explicit dependency on them.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SeamTransaction"><a href="/2012/01/16/jboss-seam-31-final-released#H-SeamTransaction">Seam Transaction</a></h3>
+
+<p class="wikiPara">
+Previously part of the Seam Persistence module, Seam Transaction is a new module that provides transaction-related features for your POJO-based beans.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NewModules"><a href="/2012/01/16/jboss-seam-31-final-released#H-NewModules">New modules</a></h2>
+
+<p class="wikiPara">
+ 
+</p>
+
+<h3 class="wikiHeadline3" id="H-SeamSocial"><a href="/2012/01/16/jboss-seam-31-final-released#H-SeamSocial">Seam Social</a></h3>
+
+<p class="wikiPara">
+The Seam Social module provides various useful integrations with social networks such as Twitter, Facebook and LinkedIn.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SeamReports"><a href="/2012/01/16/jboss-seam-31-final-released#H-SeamReports">Seam Reports</a></h3>
+
+<p class="wikiPara">
+Seam Reports integrates with a number of reporting engines to provide report generation features from your Seam application.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SeamJCR"><a href="/2012/01/16/jboss-seam-31-final-released#H-SeamJCR">Seam JCR</a></h3>
+
+<p class="wikiPara">
+The Seam JCR module allows easy interaction with a JCR (Java Content Repository) repository, and currently supports both Apache Jackrabbit and Modeshape implementations.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SeamSpring"><a href="/2012/01/16/jboss-seam-31-final-released#H-SeamSpring">Seam Spring</a></h3>
+
+<p class="wikiPara">
+The Seam Spring module allows you to integrate your Spring application with CDI, allowing injection of Spring beans into your CDI bean, and the injection of your CDI beans from a Spring application context.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SeamJMS"><a href="/2012/01/16/jboss-seam-31-final-released#H-SeamJMS">Seam JMS</a></h3>
+
+<p class="wikiPara">
+The Seam JMS module allows you to inject JMS resources, such as Connections, Topics, Queues and more directly into your beans, and also provides a bidirectional bridge between the JMS message bus and CDI, allowing JMS events to be propagated to the CDI event bus, and vice versa.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SeamMail"><a href="/2012/01/16/jboss-seam-31-final-released#H-SeamMail">Seam Mail</a></h3>
+
+<p class="wikiPara">
+Seam Mail provides a number of features that makes working with JavaMail easier, and comes with a pluggable template engine for the composition of mail content, and simple mail server configuration options.
+</p>
+
+<h2 class="wikiHeadline2" id="H-FixedIssues"><a href="/2012/01/16/jboss-seam-31-final-released#H-FixedIssues">Fixed Issues</a></h2>
+
+<p class="wikiPara">
+In additional to the new modules listed above, we've also resolved 249 issues identified with the Seam 3.0 release as well as numerous documentation and example improvements.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>
+

@@ -1,0 +1,223 @@
+---
+title: "Functional testing with Seam, DBUnit, and TestNG"
+author: "Christian Bauer"
+blogger_name: "Christian"
+creation_date: "13-07-2006"
+tags: []
+
+relative_url: /2006/07/13/functional-testing-with-seam-db-unit-and-test-ng
+slug: functional-testing-with-seam-db-unit-and-test-ng
+lace: http://in.relation.to/1420.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2006/07/13/functional-testing-with-seam-db-unit-and-test-ng
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I was looking for a good way to integrate DBUnit with Seam, so that I can prepare a dataset for functional testing without too much hassle. This is what I came up with, a test superclass that integrates with Seam and adds DBUnit operations that run before and after every test method. 
+</p>
+
+<p class="wikiPara">
+The <tt>org.jboss.seam.mock.SeamTest</tt> class is the base class you'd usually use for functional testing in a Seam application. It allows you to easily script an interaction (for a whole session or a single event) at the presentation layer level. I extended this class to add some DBUnit specific features:
+</p>
+
+<pre class="wikiPreformatted">
+/**
+ * Uses a JNDI datasource and JTA for DBUnit operations.
+ *
+ * @author christian.bauer@jboss.com
+ */
+public abstract class SeamDBUnitTest extends SeamTest {
+
+    private static Log log = LogFactory.getLog(SeamDBUnitTest.class);
+
+    private Context ctx;
+
+    private ReplacementDataSet dataSet;
+
+    @Configuration(beforeTestClass = true)
+    public void prepare() throws Exception {
+        log.debug("Preparing DBUnit setup for test class");
+
+        // Prepare JNDI context
+        ctx = new InitialContext();
+
+        // Load the base dataset file
+        URL input = Thread.currentThread()
+                        .getContextClassLoader().getResource(getDataSetLocation());
+        if (input == null)
+            throw new RuntimeException(
+                "Dataset '" + getDataSetLocation() + "' not found in classpath"
+            );
+        dataSet = new ReplacementDataSet(
+                        new FlatXmlDataSet(input.openStream())
+                      );
+        dataSet.addReplacementObject("[NULL]", null);
+    }
+
+    @Configuration(beforeTestMethod = true)
+    public void beforeTestMethod() throws Exception {
+        executeOperations(getBeforeTestMethodStack());
+    }
+
+    @Configuration(afterTestMethod = true)
+    public void afterTestMethod() throws Exception {
+        executeOperations(getAfterTestMethodStack());
+    }
+
+    private void executeOperations(DatabaseOperation[] operations) throws Exception {
+        log.debug("Executing database operations in JTA transaction");
+
+        UserTransaction tx = getUserTransaction();
+        tx.begin();
+
+        IDatabaseConnection con = new DatabaseConnection( getConnection() );
+
+        // TODO: Remove this once DBUnit works with HSQL DB
+        DatabaseConfig config = con.getConfig();
+        config.setProperty(DatabaseConfig.PROPERTY_DATATYPE_FACTORY, new FixDBUnit());
+
+        for (DatabaseOperation op : operations) {
+            op.execute(con, dataSet);
+        }
+        tx.commit();
+    }
+
+    // Subclasses can/have to override the following methods
+
+    /**
+     * Return a JDBC &lt;tt&gt;Connection&lt;/tt&gt; with disabled foreign key checking.
+     */
+    protected Connection getConnection() throws Exception {
+        log.debug("Getting database connection through JNDI lookup of DataSource");
+
+        // Lookup Datasource in JNDI
+        DataSource ds = (DataSource)ctx.lookup(getDataSourceJNDIName());
+        Connection con = ds.getConnection();
+
+        // Disable foreign key constraint checking
+        // This really depends on the DBMS product... here for HSQL DB
+        con.prepareStatement("set referential_integrity FALSE")
+            .execute();
+
+        return con;
+    }
+
+
+    /**
+     * Add &lt;tt&gt;DatabaseOperation&lt;/tt&gt; that run before every test method.
+     */
+    protected DatabaseOperation[] getBeforeTestMethodStack() {
+        return new DatabaseOperation[]{};
+    }
+
+    /**
+     * Add &lt;tt&gt;DatabaseOperation&lt;/tt&gt; that run after every test method.
+     */
+    protected DatabaseOperation[] getAfterTestMethodStack() {
+        return new DatabaseOperation[]{};
+    }
+
+    /**
+     * The relative location of the data set on the classpath.
+     */
+    protected abstract String getDataSetLocation();
+
+    /**
+     * The JNDI name of the datasource used by DBUnit.
+     */
+    protected abstract String getDataSourceJNDIName();
+
+}</pre>
+
+
+<p class="wikiPara">
+This is pretty simple stuff: For each test class in the test suite I load a configured DBUnit dataset from the classpath and replace all the NULL markers with real nulls (see DBUnit documentation). Before each test method, which in a Seam functional test has the scope of a session, I run a stack of DBUnit operations, and again after each test method for cleanup. So each session in my functional tests works with a defined dataset. A concrete test subclass has to provide some settings, such as the location of the DBUnit dataset file, and the name of the database connection that is used. A subclass can also override the <tt>getConnection()</tt> method if a custom routine is needed. (Also note the TODO for a DBUnit/HSQL issue, one day they might actually fix <a href="http://www.carbonfive.com/community/archives/2005/07/dbunit_hsql_and.html" target="" class="regularLink">this</a>.)
+</p>
+
+<p class="wikiPara">
+A DBUnit dataset might look like this:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0"?&gt;
+
+&lt;dataset&gt;
+    &lt;USERS      USER_ID             ="1"
+                OBJ_VERSION         ="0"
+                FIRSTNAME           ="Root"
+                LASTNAME            ="Toor"
+                USERNAME            ="root"
+                PASSWORD            ="secret"
+                EMAIL               ="root@toor.tld"
+                RANK                ="0"
+                IS_ADMIN            ="true"
+                CREATED             ="2006-06-26 13:45:00"
+                HOME_STREET         ="[NULL]"
+                HOME_ZIPCODE        ="[NULL]"
+                HOME_CITY           ="[NULL]"
+                DEFAULT_BILLINGDETAILS_ID ="[NULL]"
+            /&gt;
+&lt;/dataset&gt;</pre>
+
+
+<p class="wikiPara">
+Finally, this a concrete functional test class:
+</p>
+
+<pre class="wikiPreformatted">
+public class LoginLogoutFunction extends SeamDBUnitTest {
+
+    protected String getDataSetLocation() {
+        return "org/hibernate/ce/modules/user/test/basedata.xml";
+    }
+
+    protected String getDataSourceJNDIName() {
+        return "[=&gt;java:/caveatemptorDatasource]";
+    }
+
+    protected DatabaseOperation[] getBeforeTestMethodStack() {
+        return new DatabaseOperation[] {
+            DatabaseOperation.CLEAN_INSERT
+        };
+    }
+
+    @Test
+    public void testLoginLogout() throws Exception {
+
+        // Test logged out state
+        new Script() {
+
+            // Test a component that requires a logged in user
+            @Override
+            protected void invokeApplication() {
+                assert !isSessionInvalid();
+                ChangePassword changePw =
+                        (ChangePassword) Component.getInstance("changePassword", true);
+                String outcome = changePw.doChange();
+                assert "login".equals(outcome);
+            }
+
+            // Test if there is no loggedIn flag in the Session context
+            @Override
+            protected void renderResponse() {
+                assert !Manager.instance().isLongRunningConversation();
+                assert Contexts.getSessionContext().get("loggedIn") == null;
+            }
+
+        }.run();
+...</pre>
+
+
+<p class="wikiPara">
+The first three methods implement and override the settings for DBUnit operations, you can create a stack of DBUnit operations that are executed before and after each test method (only one in this example, running before). The test method <tt>testLoginLogout()</tt> is a single session in which I run several scripts (one for each event) to exercise the login and logout functionality of my application. As you can see, the methods in my script are simulating JSF presentation layer events. To see the full class without the DBUnit additions, browse the <a href="http://www.jboss.com/products/seam" target="" class="regularLink">Seam tutorials</a>, this is from the Hotel Booking application.
+</p>
+
+<p class="wikiPara">
+So one test class works with one dataset, I don't think this is too restrictive if you consider TestNG's ability to work with named groups of tests and wildcard matching. 
+</p>
+</div>
+

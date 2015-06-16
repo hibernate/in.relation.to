@@ -1,0 +1,67 @@
+---
+title: "Weld 2.0.0.Alpha1 released!"
+author: "Jozef Hartinger"
+blogger_name: "Jozef"
+creation_date: "19-01-2012"
+tags: []
+
+relative_url: /2012/01/19/weld-200-alpha-1-released
+slug: weld-200-alpha-1-released
+lace: http://in.relation.to/22773.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/01/19/weld-200-alpha-1-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I am very proud to announce the very first alpha release of Weld 2. Weld is the reference implementation of Contexts and Dependency Injection for Java EE (CDI). In the 2.x series of Weld releases, we will be focusing on JSR-346 which is the next version (1.1) of the CDI specification.
+</p>
+
+<p class="wikiPara">
+The Alpha1 release is a feature-complete implementation of the <a href="http://jcp.org/aboutJava/communityprocess/edr/jsr346/index.html" target="" class="regularLink">Early Draft</a> of CDI 1.1. Pete <a href="http://in.relation.to/Bloggers/ContextsAndDependencyInjection11EarlyDraftSubmitted" target="" class="regularLink">blogged</a> about the news in the early draft some time ago. The following list just highlights some of the new features I consider the most important:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-14" target="" class="regularLink">Ability to access the CDI container from anywhere simply by calling CDI.current()</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-80" target="" class="regularLink">Conversations in plain Servlet requests</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-86" target="" class="regularLink">Application lifecycle events in Java EE</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-127" target="" class="regularLink">Injection into enums</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-96" target="" class="regularLink">Ability to override attributes of a Bean via BeanAttributes</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-97" target="" class="regularLink">Ability to process modules and manipulate the content of the beans.xml file via ProcessModule</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-98" target="" class="regularLink">Ability to wrap the InjectionPoint</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-92" target="" class="regularLink">Injection of Bean metadata into bean instances</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CDI-95" target="" class="regularLink">Programmatic access to a container provided Producer, InjectionTarget, AnnotatedType</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+The main reason for building a reference implementation is to prove a specification and reveal potential problem early. While implementing the Early Draft of JSR-346, <a href="https://issues.jboss.org/secure/IssueNavigator.jspa?mode=hide&amp;requestId=12316476" target="" class="regularLink">several issues</a> emerged that were previously unseen. If you are interested in these issues or have an idea of how to address them, feel free to share you opinions in the issue comments or the <a href="https://lists.jboss.org/mailman/listinfo/cdi-dev" target="" class="regularLink">JSR-346 mailing list</a>. Also, if you want to contribute to Weld 2, now is the right time. Since we are <a href="https://github.com/weld/core" target="" class="regularLink">hosted on github</a> forking and playing with Weld is extremely easy.
+</p>
+
+<p class="wikiPara">
+In addition to our efforts on the Weld side, <a href="https://community.jboss.org/people/mkouba" target="" class="regularLink">Martin Kouba</a> has been working on the Technology Compatibility Kit (TCK) for JSR-346. The Alpha1 version of the CDI 1.1 TCK is released along with the Weld release. Martin did a great job and delivered a solid test coverage of the new features. He also migrated the entire testsuite to <a href="http://www.jboss.org/arquillian" target="" class="regularLink">Arquillian</a>, which enabled us to develop new tests faster while at the same time using more extensive scenarios (such as multiple web applications inside of an enterprise archive).
+</p>
+
+<p class="wikiPara">
+Weld and CDI TCK artifacts can be <a href="https://repository.jboss.org/nexus/content/groups/public/org/jboss/weld/weld-core" target="" class="regularLink">obtained from Maven</a> or from a distribution bundle (see the links below). We tried our best to make it easy for you to test-drive the new features. Therefore, we also provide a special build of JBoss AS 7.1.0.CR1 enhanced with Weld 2 :-)
+</p>
+
+<p class="wikiPara">
+For the next release (Alpha 2), our plan is to look into improving non-functional characteristics of Weld such as memory footprint and start-up time.
+</p>
+
+<p class="wikiPara">
+[ Distribution (<a href="https://sourceforge.net/projects/jboss/files/Weld/2.0.0.Alpha1" target="" class="regularLink">Weld</a>, <a href="https://sourceforge.net/projects/jboss/files/CDI-TCK/1.1.0.Alpha1" target="" class="regularLink">CDI TCK</a>) ] [ <a href="http://sourceforge.net/projects/jboss/files/Weld/2.0.0.Alpha1/jboss-as-7.1.0.CR1b-weld-2.0.0.Alpha1.zip/download" target="" class="regularLink">JBoss AS 7.1.0.CR1b with Weld 2.0.0.Alpha1</a> ] [ Issue tracker (<a href="http://jira.jboss.com/jira/browse/WELD" target="" class="regularLink">Weld</a>, <a href="http://jira.jboss.org/browse/CDITCK" target="" class="regularLink">CDI TCK</a>) ] [ <a href="http://docs.jboss.org/cdi/api/1.1.EDR1/" target="" class="regularLink">CDI 1.1 EDR1 Javadoc</a> ]</p>
+</div>
+

@@ -1,0 +1,246 @@
+---
+title: "JSF 2.0 CookBook by Anghel Leonard review"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+creation_date: "04-10-2010"
+tags: [Book,JSF,Review]
+
+relative_url: /2010/10/04/jsf-20-cook-book-by-anghel-leonard-review
+slug: jsf-20-cook-book-by-anghel-leonard-review
+lace: http://in.relation.to/17252.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<a target="_blank" href="http://www.packtpub.com/jsf-2-0-cookbook/book?utm_source=in.relation.to&amp;amp;utm_medium=link&amp;amp;utm_content=blog&amp;amp;utm_campaign=mdb_003953"><img src="http://mkblog.exadel.com/wp-content/uploads/2010/07/JSF_2.0-243x300.jpg" align="left" border="0" hspace="0" vspace="0"></a>
+<h2 class="wikiHeadline2" id="H-Overview"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-Overview">Overview</a></h2>
+
+<p class="wikiPara">
+Actually I’m  a fan of this kind of book, as in my opinion they are useful for beginner and  experienced developers. It’s always good to have it  to be able to review all the possible solutions for concrete case and start quickly with prototyping. So that’s why I accepted <a href="http://www.packtpub.com/" target="_blank">Packt Publishing</a> proposal to review <a href="https://www.packtpub.com/jsf-2-0-cookbook/book?utm_source=in.relation.to&amp;amp;utm_medium=link&amp;amp;utm_content=blog&amp;amp;utm_campaign=mdb_003953" target="_blank"><q>JSF 2.0 CookBook</q> by Anghel Leonard</a> with pleasure. 
+</p>
+
+<p class="wikiPara">
+Finally I’ve finished reading it and now wanting to share my opinion about its advantages and problematic parts. From the beginning I want to give quick overview of common points and then to go through the whole book to highlight recipes I really liked and propose some kind of errata for other ones.
+</p>
+
+
+<h3 class="wikiHeadline3" id="H-Positives"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-Positives">Positives</a></h3>
+
+<p class="wikiPara">
+It has a really good structure for recipes! I’m able to open any recipe without going through some overviews about conventions and environments info and just use the recipe! Every recipe contains description of technologies and tools used. Also it points us to the archive with complete application and has good explanations of key points for sure.
+Many of the JSF world FAQ’s are covered well in the book and most of them could be picked by just copying the sample code from book applications. 
+</p>
+
+<p class="wikiPara">
+Also need to highlight that in most cases – all the alternatives for implementation of the same use-case are covered. That allows the user to choose most convenient way for him!
+</p>
+
+<p class="wikiPara">
+And I believe that in general – that book really worth a place on your shelf because could answer at many common questions or at least provide some pointers about where to check for the answer.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SomeCriticism"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-SomeCriticism">Some criticism</a></h3>
+<p class="wikiPara">
+Well there is always some place for critical words. But let that criticism not to confuse the author and the guys who plans to read it.  I just want to highlight some points which I believe will be useful for author in future and will make the readers to go through some problems easier.
+</p>
+
+<p class="wikiPara">
+Most of the examples show clean and useful samples – but sometimes author uses just “hello world” style for complex cases and the developer could miss the points or underrate the feature importance. That the main problem of some recipes. And I’m not sure if recipes where there are no code samples at all (there are few present) should be in such book.
+</p>
+
+<p class="wikiPara">
+Author uses JSP through the entire book. However – it’s deprecated in 2.0 and was not really popular in 1.2 after facelets came to the scene. It’s not a big problem for sure – but in some cases some important info missed. For example – custom component recipes – says about TLD descriptors but has nothing about taglib’s needed for the component.
+</p>
+
+<p class="wikiPara">
+So let’s go through the book shortly. Again – critic words which could appears there – only pointer for the readers to pay their attention more and to the author – to consider in future.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-GoingThrough"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-GoingThrough">Going through</a></h2>
+<p class="wikiPara">
+Now let's look some closer to book content.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ConversionValidationChapters"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-ConversionValidationChapters">Conversion/Validation chapters</a></h3>
+<p class="wikiPara">
+Both chapters are described really well and will be useful for the developers who need to get a quick start with that JSF area. Most cool points which I like to see included into JSF CookBook, as they are asked much across the community – converters with passing parameters, validation using regular expressions with useful list of common expressions, JSR 303 recipes for validators groups and calling the validation from your java code.
+</p>
+
+<b>Some Problems</b>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> For better understanding - RichFaces bean validator recipe @NotEmpty case could be slightly extended with information that in general JSF 1.2 not validates the empty inputs at all. So need to mention that it will work only using RichFaces framework (which provides standard input renderers extensions to support null-values validation). Not just to  say how  cool it is to use RichFaces J but just to make sure that developer will realize where the problem is if will try the validation without RichFaces and it will stop working.</li>
+<li class="wikiOrderedListItem"> Author missed to highlight the difference between BeanValidator and AjaxValidator in RichFaces. They described as completely similar. Most important that should be mentioned that ajaxValidator – is a combination of Ajax Support and Bean Validator.</li>
+</ol>
+
+<h3 class="wikiHeadline3" id="H-FileManagement"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-FileManagement">File Management</a></h3>
+
+<p class="wikiPara">
+This provides a good overview of all the component libraries which provides solutions for that topic. All the samples covered well and could be just picked to real application from the samples. The only minor problems lack of samples for the solutions without usage any additional libraries (download, export).
+</p>
+
+<h3 class="wikiHeadline3" id="H-Security"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-Security">Security</a></h3>
+<p class="wikiPara">
+The recipe contains good overview of JSF security and Acegi. But in my opinion chapter lacks some basic information and could be slightly extended with the pure JSF solutions.
+</p>
+
+
+<h3 class="wikiHeadline3" id="H-CustomComponents"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-CustomComponents">Custom Components</a></h3>
+<p class="wikiPara">
+This chapter is one which caused most of my questions. It’s sad as custom components creation – one of the most important topics in JSF – so I paid much attention to that chapter. Overview is short and really clear and looks really good as an introduction for the beginner... However screenshot of the lifecycle contains basic mistake. The “encoding” and “decoding” labels was put to wrong phases opposite to the places where them should be.
+</p>
+
+<p class="wikiPara">
+“EmailInput” – not looks as a best example of custom component. As written at all the classical JSF books resources - “before creation of the new component – double-check that you can’t achieve the result via some composition”. Even considering that the author probably wanted to gave really simple overview – the question remains then - why he was need to override renderer methods of the input? Standard input renderer should be enough there and it’s a way to confuse developer as he could decide that extension of the components still requires from him to override base functionality every time.
+</p>
+
+<p class="wikiPara">
+“ImageViewer” – again maybe it was better to extend the graphicImage component instead of writing from scratch.. And the code not looks really clean especially in adding Ajax capabilities section where the new JS not listed normally but only included in renderer as escaped String.
+</p>
+
+<p class="wikiPara">
+“ProxyId library”. Need to admit that I never heard about this interesting extension. But that probably related to the facts that RichFaces already provides the rich:clientId, rich:element, rich:findComponent and other functions to perform different operations on components using their short id’s. And not a section problem but note for me to check - author not listed but interesting to know how that proxyId will works in iteration components.
+</p>
+
+<p class="wikiPara">
+“Accessing resources from custom component”. From my point of view – that is most useless recipe in that chapter... I believe that we should not believe that JSF beginner – could understand the difference of approaches using just brief descriptions. In order this section to become recipe – it should provide the code and explanations based on it.
+</p>
+
+<p class="wikiPara">
+“RichFaces CDK”. At first small notes:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">For those who will read the book only now – the settings for maven – has been changed after we switched to JBoss nexus repository.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">Author should explicitly define that this shows CDK from RF 3.3.3 in action. As in 4.x it is completely redesigned and not compatible with the old one.</li>
+</ul>
+
+<p class="wikiPara">
+“Getting Ready” in “RichFaces CDK” contains the info on manual folder and pom.xml creation. However it could be done by archetype as written in our CDK reference. “How to do it” – at first asking the user to type the command from the screenshot – looks not good.. At least for big 3-row command. J The rest of the recipe in general explained well. Minor note - project could be easily created by archetype instead of manual sample creation.
+</p>
+
+<p class="wikiPara">
+“Composite Components” section explains the process really well and provides short but good samples.
+</p>
+
+<p class="wikiPara">
+“Mixing dojo and JSF”. In general – the recipe will work well for somebody who needs to get the idea about how to use dojo widgets in JSF components. But I’m confused with the facts that author proposes just output attributes needed by dojo using component but include all the resources on the samples page. It looks like not very maintainable solution.
+</p>
+
+
+<h3 class="wikiHeadline3" id="H-AJAXInJSF"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-AJAXInJSF">AJAX in JSF</a></h3>
+<p class="wikiPara">
+“DynaFaces” – recipe which unfortunately is not described well in my opinion. Just “drag and drop some components and then add Ajax transaction” – is not enough to understand who could need those recipe and why he need dynaFaces. Why it’s still useful – self-descriptional application archive.
+</p>
+
+<p class="wikiPara">
+“Tomahawk suggestAjax” and “A4j Ajax” recipes are clean and well described.
+</p>
+
+<p class="wikiPara">
+“Writing reusable AJAX components” recipe contains really weird issue – there is no Ajax which is mentioned in section name J. Just common spinner component optimized for usage of multiple instances on the page.
+</p>
+
+<p class="wikiPara">
+Main issue of that chapter on my opinion – lack of really common tasks recipes... E.g. how to perform optimized Ajax editing of huge tables, how to organize wizards, how to lazy load data after page rendered and some more... Simple cases are useful for sure as shows basics... But the developers has to implement much more complex issue in real enterprise applications and that questions appears on different community forum continuously
+</p>
+
+<h3 class="wikiHeadline3" id="H-Localization"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-Localization">Localization</a></h3>
+<p class="wikiPara">
+The chapter covers all the main cases which could be needed by the developer and recipes look clean at most.
+</p>
+
+<p class="wikiPara">
+Let’s highlight some samples there. “Accessing message resources from a class” – pretty good recipe and looks clean while you looking for the most important Helper class which performs obtaining the localized String.  Minor problem there – it contains no result screenshots and actual properties listing – so not really easy to get what the user will see in the result. Need to start application from examples archive to check. Selection a timezone in JSF 2.0 – good pointer for the reader to possible problems. Even having no recipe author at least pointed the developer to the fact that he should pay attention and check for additional information. Displaying Arabic characters recipe – again uses JSP only.. But what about facelets? There are some other tricks existing and it’s knowledge needed by the developer more.
+</p>
+
+
+<h3 class="wikiHeadline3" id="H-JSFImagesCSSAndJS"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-JSFImagesCSSAndJS">JSF Images, CSS and JS</a></h3>
+
+<p class="wikiPara">
+“Injection of CSS“ recipe are we really talking about styling here? So why do I see only that dry source code and not at least a single image of the beautiful page created? :) It's could be not easy for the beginner to imagine what did the author achieved there (the beginner could not know the rules to apply those attributes for the component) without going again to examples archive.
+</p>
+
+<p class="wikiPara">
+“Dynamic CSS“ - I believed that there I will see how to use EL in CSS stylesheets :) B.t.w. frequently asked use-case which could be shown there - highlighting in the table cells/rows using styles which returned according to row model type, (e.g. Important or LowPriority). But the sample there unfortunately looks more static.
+</p>
+
+<p class="wikiPara">
+“Java Script injection“ well simple and clean example gives some ideas how I could apply my JS knowledge in JSF. Just working with JSF hidden fields section confuses me as there is nothing about hidden fields. (Actually I expected h:inputHidden usage)
+“Passing parameters“ could become also really useful section – but the examples miss some more real usage cases. 
+“Opening popups using JSF and JS“ - looks good and answers the initial question really fine.. 
+</p>
+
+<p class="wikiPara">
+“Rss4jsf“ – Thanks for the pointer :). I've missed that framework and plan to look though now. It looks clean and easy to use.
+“Resources in JSF 2.0“ – it would be good to have a few words about access from Java objects. But proposed descriptions and samples of usage in the views looks clean and self-explanatory.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JSFManagingAndTesting"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-JSFManagingAndTesting">JSF Managing and testing</a></h3>
+
+<p class="wikiPara">
+JSF Unit – want to highlight great overall descriptions, good samples and list of most used API. The only charts usage – not really related to testing, and in general contains no recipe but just pointer to library site… But that not really make the whole chapter less useful.
+</p>
+
+
+<h3 class="wikiHeadline3" id="H-Facelets"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-Facelets">Facelets</a></h3>
+<p class="wikiPara">
+Almost nothing to say – but that because the chapter has no problems in general and well written :)
+</p>
+
+<p class="wikiPara">
+Want only to highlight “composition component for JSF 2.0” section. It’s really good sample. But the main problem – for some reason (seems because a section name) I expected that it will be about composite component especially considering that the author mentions JSF 2.0. And it’s actually about custom tag from 1.2. But as far as I realized that that is just custom tag recipe and not actual composite component I re-read it and want to admit that it’s pretty good for that topic.
+</p>
+
+<p class="wikiPara">
+“Passing action” – really good to see there. It’s most weird issue in Facelets 1.x and most frequent question from the guys who creating custom facelets.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JSF20"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-JSF20">JSF 2.0</a></h3>
+<p class="wikiPara">
+Good and useful chapter again – so let’s just look to some concrete samples which I want to pay readers attention.
+</p>
+
+<p class="wikiPara">
+Why we need Pretty Faces to create bookmarkable URLs in 2.0? It’s JSF 2.0 core feature. This just seems placed in wrong chapter. It was good for 1.2 when GET requests were not supported out of the box. Later we will found section about JSF 2.0 navigation enhancements and view parameters usage. In general the overview of them written fine. Just already mentioned problem - it loses some real case to show its coolness (it could be greatly used in common case of product list – product details navigation).
+</p>
+
+<h3 class="wikiHeadline3" id="H-MixingJSFAndOtherTechnologies"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-MixingJSFAndOtherTechnologies">Mixing JSF and other technologies.</a></h3>
+<p class="wikiPara">
+“Seam”. Configuration overview contains all general pointers to set-up Seam.. However in my opinion to try Seam the reader need more information or real samples. And wow! It’s the first write-up (even considering that short one) about Seam which is not talks about Conversations at all! :)
+</p>
+
+<p class="wikiPara">
+“Mixing JSTL and JSF”. It’s unfortunately not about mixing but about replacement h:dataTable to c:forEach. And I do not see advantages – why should I use it?
+</p>
+
+<p class="wikiPara">
+“Integration with Hibernate and Mixing Spring and JSF”. I think that such kind of content is just not for cookbook. Being the guy who need to learn something new from the real kick start samples - I still not see how to do at list something simple with that.
+</p>
+
+<p class="wikiPara">
+“JPA”. Finally I’m seeing some sample and it’s cool that I finally could check how to actually reach the db in my JSF action.  It’s sad that login action not implemented but in general I understand how to proceed with that. So seems most useful recipe in that chapter.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ConfiguringJSFRelatedTechnologies"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-ConfiguringJSFRelatedTechnologies">Configuring JSF related technologies.</a></h3>
+<p class="wikiPara">
+Some lack of versioning information. E.g. only RichFaces 3.3 and older versions requires Filter. But in general such section could be useful in order to quickly check the settings required for libraries usage.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2010/10/04/jsf-20-cook-book-by-anghel-leonard-review#H-Conclusion">Conclusion</a></h2>
+<p class="wikiPara">
+Actually my conclusion was already written at the beginning. I believe that the book will find a place on your shelf and you will check it from time to time when needs to implement some concrete case quickly. All the problematic parts listed – just pointers for the author for future and I believe that he could successfully continue his works creating useful books for JSF community developers.
+</p>
+
+<p class="wikiPara">
+<a href="http://twitter.com/ilya_shaikovsky" target="" class="regularLink">Get updates of that blog in twitter</a></p>
+</div>
+

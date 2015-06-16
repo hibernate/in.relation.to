@@ -1,0 +1,146 @@
+---
+title: "Announcing IronJacamar 1.0.0"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+creation_date: "07-07-2011"
+tags: []
+
+relative_url: /2011/07/07/announcing-iron-jacamar-100
+slug: announcing-iron-jacamar-100
+lace: http://in.relation.to/20958.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/07/07/announcing-iron-jacamar-100
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The <a href="http://www.jboss.org/ironjacamar" target="" class="regularLink">IronJacamar</a> team is very happy to announce our first stable release of the project !
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatIsIronJacamar"><a href="/2011/07/07/announcing-iron-jacamar-100#H-WhatIsIronJacamar">What is IronJacamar ?</a></h2>
+
+<p class="wikiPara">
+IronJacamar is an implementation of the Java EE Connector Architecture 1.6 specification featured in the Java EE 6 Full Profile.
+</p>
+
+<p class="wikiPara">
+Java EE Connector Architecture (JCA) defines a standard architecture for connecting the Java EE platform to heterogeneous Enterprise Information Systems (EIS), like Enterprise Resource Planning (ERP), database and messaging systems.
+</p>
+
+<p class="wikiPara">
+The IronJacamar container comes in different flavors
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Inside JBoss Application Server 7</li>
+<li class="wikiUnorderedListItem"> Standalone environment (JCA 1.6 Chapter 3.5)</li>
+<li class="wikiUnorderedListItem"> Embedded environment (based on standalone)</li>
+</ul>
+
+<p class="wikiPara">
+and provides the possibility to use resource adapters in your applications. The IronJacamar project also provides the back-bone for datasource integration in the above environments to take advantage of IronJacamar's features.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatIsNewInJCA16"><a href="/2011/07/07/announcing-iron-jacamar-100#H-WhatIsNewInJCA16">What is new in JCA 1.6 ?</a></h2>
+
+<p class="wikiPara">
+The <a href="http://jcp.org/en/jsr/detail?id=322" target="" class="regularLink">Java Connector Architecture 1.6</a> specification adds the following major areas:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Ease of Development: The use of annotations reduces or completely eliminates the need to deal with a deployment descriptor in many cases. The use of annotations also reduces the need to keep the deployment descriptor synchronized with changes to source code.</li>
+<li class="wikiUnorderedListItem"> Generic work context contract: A generic contract that enables a resource adapter to control the execution context of a Work instance that it has submitted to the application server for execution.</li>
+<li class="wikiUnorderedListItem"> Security work context: A standard contract that enables a resource adapter to establish security information while submitting a Work instance for execution to a WorkManager and while delivering messages to message endpoints residing in the application server.</li>
+<li class="wikiUnorderedListItem"> Standalone Container Environment: A defined set of services that makes up a standalone execution environment for resource adapters. </li>
+</ul>
+
+<p class="wikiPara">
+which will allow developers to take advantage of more modern development methods and control their work instance environment to a higher degree.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatIsNewComparedToJBossApplicationServer6"><a href="/2011/07/07/announcing-iron-jacamar-100#H-WhatIsNewComparedToJBossApplicationServer6">What is new compared to JBoss Application Server 6 ?</a></h2>
+
+<p class="wikiPara">
+The IronJacamar project have replaced the JCA container found in JBoss Application Server 6 by focusing on a pure Plain Old Java Object (POJO) approach to keep services as light-weight as possible, and enabling simple wiring mechanisms.
+</p>
+
+<p class="wikiPara">
+Highlights
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Java EE Connector Architecture 1.6 certified</li>
+<li class="wikiUnorderedListItem"> POJO container environment</li>
+<li class="wikiUnorderedListItem"> New configuration schemas which focuses on usability</li>
+<li class="wikiUnorderedListItem"> Fast XML and annotation parsing for quick deployment</li>
+<li class="wikiUnorderedListItem"> Reauthentication support</li>
+<li class="wikiUnorderedListItem"> Prefill support for security backed domains</li>
+<li class="wikiUnorderedListItem"> Support for pool flushing strategies</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Crazy</i> fast embedded environment for ease of development</li>
+<li class="wikiUnorderedListItem"> New management layer for components</li>
+<li class="wikiUnorderedListItem"> New statistics integration including 3rd party extensions</li>
+<li class="wikiUnorderedListItem"> Numerous performance improvements</li>
+</ul>
+
+<p class="wikiPara">
+Furthermore IronJacamar have various tools that will help you in your development tasks, like
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/codegenerator.html" target="" class="regularLink">Code generator</a>: Powerful tool to generate a complete development environment for resource adapters based on the latest features of the specification</li>
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/validator.html" target="" class="regularLink">Validator</a>: Validates your resource adapter implementation against the specification and provides feedback about violations</li>
+<li class="wikiUnorderedListItem"> <a href="http://www.jboss.org/shrinkwrap" target="" class="regularLink">ShrinkWrap</a> / <a href="http://www.jboss.org/arquillian" target="" class="regularLink">Arquillian</a> integration: Resource adapter testing taken to the next level with in-memory assembly of resource adapters and using IronJacamar/Embedded and Arquillian to execute unit tests in milliseconds - yes, milliseconds !</li>
+</ul>
+
+<p class="wikiPara">
+A lot of new features, so download the distribution today, and try them out and send us your feedback :)
+</p>
+
+<h2 class="wikiHeadline2" id="H-JBossApplicationServer7"><a href="/2011/07/07/announcing-iron-jacamar-100#H-JBossApplicationServer7">JBoss Application Server 7</a></h2>
+
+<p class="wikiPara">
+You can upgrade the IronJacamar container in <a href="http://www.jboss.org/as7" target="" class="regularLink">JBoss Application Server 7</a> by
+</p>
+
+<pre class="wikiPreformatted">
+cd doc/as
+./as-upgrader.sh 1.0.0.Final /path/to/your/as7/installation
+</pre>
+
+
+<p class="wikiPara">
+That will give you the latest features and bug fixes.
+</p>
+
+<p class="wikiPara">
+And JBoss AS 7.0.0.Final will be out really soon now :)
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheRoadAhead"><a href="/2011/07/07/announcing-iron-jacamar-100#H-TheRoadAhead">The Road Ahead</a></h2>
+
+<p class="wikiPara">
+Planning and development on IronJacamar 1.1 have started, but first more importantly:
+</p>
+
+<b>Champagne !!</b>
+
+<p class="wikiPara">
+Please, raise your glass, and celebrate with us that the first part of the journey is complete.
+</p>
+
+<p class="wikiPara">
+Last, but not least - A <i class="wikiEmphasis">HUGE</i> shout-out to our community and developers who helped with this release. You know who you are !
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/ironjacamar" target="" class="regularLink">WebSite</a>] [<a href="http://www.jboss.org/ironjacamar/downloads.html" target="" class="regularLink">Download</a>] [<a href="http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/" target="" class="regularLink">Documentation</a>] [<a href="https://issues.jboss.org/browse/JBJCA" target="" class="regularLink">JIRA</a>] [<a href="http://community.jboss.org/en/ironjacamar/?view=discussions" target="" class="regularLink">Forum</a>]
+</p>
+</div>
+

@@ -1,0 +1,106 @@
+---
+title: "JSF 2.0. Test Drive PDL. Part 4a. Happy End"
+author: "Sergey Smirnov"
+blogger_name: "Sergey"
+creation_date: "31-01-2009"
+tags: [JavaServer Faces,RichFaces]
+
+relative_url: /2009/01/31/jsf-20-test-drive-pdl-part-4-a-happy-end
+slug: jsf-20-test-drive-pdl-part-4-a-happy-end
+lace: http://in.relation.to/10595.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/01/31/jsf-20-test-drive-pdl-part-4-a-happy-end
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+In the previous article we spoke about annoying issue of the Mojarra 2.0.0 PR when the empty attributes are rendered to the final html code. The issue was  posted to the Mojarra project:
+<a href="https://javaserverfaces.dev.java.net/issues/show_bug.cgi?id=940" target="" class="regularLink">https://javaserverfaces.dev.java.net/issues/show_bug.cgi?id=940</a>
+</p>
+
+<p class="wikiPara">
+Now, it is fixed. Let's take a new version of Mojarra 2.0.0 . It is not a PR release, but the SNAPSHOT dated 01/27/08.
+</p>
+
+<p class="wikiPara">
+The SNAPSHOT has two more surprises.
+</p>
+
+<p class="wikiPara">
+First, we can use <tt>c:if</tt> to have a conditional insert now. We speak about it in the Part 2.
+</p>
+
+<p class="wikiPara">
+Second, there is no <tt>composite:insertChildren</tt> any more.  This tag was replaced with <tt>composite:renderUsingPageChildren</tt>. It is more correct semantically, but requires some time to memorize. 
+</p>
+
+<p class="wikiPara">
+Ok, this is code of the component that works:
+ 
+</p>
+
+<pre class="wikiPreformatted">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:c="http://java.sun.com/jsp/jstl/core"
+      xmlns:composite="http://java.sun.com/jsf/composite"&gt;
+ &lt;head&gt;
+  &lt;title&gt;panel&lt;/title&gt;
+ &lt;/head&gt;
+&lt;body&gt;
+ 
+&lt;composite:interface&gt;
+    &lt;composite:attribute name="style" required="false"/&gt;
+    &lt;composite:attribute name="styleClass" required="false"/&gt;
+    &lt;composite:attribute name="headerClass" required="false"/&gt;
+    &lt;composite:attribute name="bodyClass" required="true"/&gt;
+&lt;/composite:interface&gt;
+ 
+&lt;composite:implementation&gt;
+    &lt;h:outputStylesheet name="rich/css/panel.css" /&gt;
+ 
+ &lt;div class="rich-panel #{compositeComponent.attrs.styleClass}"
+   style="#{compositeComponent.attrs.style}"
+   onclick="#{compositeComponent.attrs.onclick}" 
+   ondblclick="#{compositeComponent.attrs.ondblclick}"
+   onkeydown="#{compositeComponent.attrs.onkeydown}"
+   onkeypress="#{compositeComponent.attrs.onkeypress}"
+   onkeyup="#{compositeComponent.attrs.onkeyup}"
+   onmousedown="#{compositeComponent.attrs.onmousedown}"
+   onmousemove="#{compositeComponent.attrs.onmousemove}"
+   onmouseout="#{compositeComponent.attrs.onmouseout}"
+   onmouseover="#{compositeComponent.attrs.onmouseover}"
+   onmouseup="#{compositeComponent.attrs.onmouseup}"&gt;
+  &lt;c:if test="#{! empty compositeComponent.facets.header}"&gt;
+   &lt;div class="rich-panel-header #{compositeComponent.attrs.headerClass}"&gt;
+    &lt;composite:insertFacet name="header"/&gt;
+   &lt;/div&gt;
+  &lt;/c:if&gt;
+ 
+  &lt;div class="rich-panel-body #{compositeComponent.attrs.bodyClass}" &gt; 
+   &lt;composite:renderUsingPageChildren /&gt;
+  &lt;/div&gt; 
+ 
+ &lt;/div&gt;
+&lt;/composite:implementation&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</pre>
+
+<p class="wikiPara">
+ 
+This is a deployed example:
+<a href="http://livedemo.exadel.com/richfaces4-panel-4a/home.jsf" target="" class="regularLink">http://livedemo.exadel.com/richfaces4-panel-4a/home.jsf</a>
+</p>
+
+<p class="wikiPara">
+ 
+If you look at the result html code, you can see what no more empty attributes inserted. </p>
+</div>
+

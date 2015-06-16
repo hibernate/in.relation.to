@@ -1,0 +1,284 @@
+---
+title: "A story about FreeMarker and Velocity"
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "03-02-2006"
+tags: []
+
+relative_url: /2006/02/03/a-story-about-free-marker-and-velocity
+slug: a-story-about-free-marker-and-velocity
+lace: http://in.relation.to/2110.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2006/02/03/a-story-about-free-marker-and-velocity
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I have been fed up with <a href="http://jakarta.apache.org/velocity/" target="" class="regularLink">Velocity </a>ís ability to ignore and even hide
+errors and exceptions occurring in the templates used in <a href="http://tools.hibernate.org" target="" class="regularLink">Hibernate Tools </a>.
+</p>
+
+<p class="wikiPara">
+This blog tells about why and how <a href="http://freemarker.org" target="" class="regularLink">FreeMarker </a> became my new interest. If you just want to see the results then go
+and fetch the code in the <a href="http://cvs.sourceforge.net/viewcvs.py/hibernate/HibernateExt/tools/?only_with_tag=TOOLS_FREEMARKER" target="" class="regularLink">TOOLS_FREEMARKER</a> branch...read on to get the full story.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheProblemsWithVelocity"><a href="/2006/02/03/a-story-about-free-marker-and-velocity#H-TheProblemsWithVelocity">The problems with Velocity</a></h2>
+
+<p class="wikiPara">
+I started to see more and more forum postings and bug reports about
+issues that were caused by typoís in users templates or even worse
+errors in the Hibernate Tools. Many of these issues would be
+solvable within seconds if Velocity would actually tell where in the
+templates the error occurred and unit tests would have failed if
+underlying exceptions were exposed; but Velocity simply does not.
+</p>
+
+<p class="wikiPara">
+I have added every safety-precaution I have been able to apply to
+Velocity error handling. I have created my own UberSpect and EventHandler
+implementation that will not allow you to invoke methods that does not
+exist and I have tweaked the logging settings to be more informative; 
+but it does not (hardly) solve all the problems that can occur.
+</p>
+
+<p class="wikiPara">
+Logging is excessive in Velocity even at WARN and INFO level, one
+good reason for this is most likely that the developers know that 
+Velocity is ignoring situations where it should actually fail, thus
+since there is no easy other way implemented in Velocity they put it
+in the log for users to discover by accident!
+</p>
+
+<p class="wikiPara">
+The choice originally fell on Velocity since it was the biggest player
+around, and I added it naively thinking that the error and log
+handling could not be that bad if so many people were using it and if
+there were an issue it would be fixed soon.
+</p>
+
+<p class="wikiPara">
+As time went by I learned that it was definitely not the case. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheBeautyOfFreeMarker"><a href="/2006/02/03/a-story-about-free-marker-and-velocity#H-TheBeautyOfFreeMarker">The beauty of FreeMarker</a></h2>
+
+<p class="wikiPara">
+Last week I decided to look around for alternatives, the only real
+alternative I found were FreeMarker; everything else looked either too
+simple or way to complex for the Hibernate Tools needs. Now that I
+have spent just 1,5 day converting the existing Velocity templates to
+FreeMarker Iím more than happy I did.
+</p>
+
+<p class="wikiPara">
+Here are some examples of the beauty of FreeMarker:
+</p>
+
+<p class="wikiPara">
+Assume we have the following bean:
+</p>
+
+<pre class="wikiPreformatted">
+public class Table {
+ String getName();
+}</pre>
+
+
+<p class="wikiPara">
+The bean is available via <q>table</q> in the following code:
+</p>
+
+<pre class="wikiPreformatted">
+${table.namee}</pre>
+
+
+<p class="wikiPara">
+That typo will just be ignored by default in Velocity, with a custom
+EventHandler it can be convinced to throw an exception which comes out like this:
+</p>
+
+<pre class="wikiPreformatted">
+Caused by: java.lang.IllegalArgumentException: $table.namee is not a valid reference.
+at org.hibernate.tool.hbm2x.HibernateEventHandler.referenceInsert([=&gt;HibernateEventHandler.java:11])
+        at org.apache.velocity.app.event.EventCartridge.referenceInsert([=&gt;EventCartridge.java:131])
+        ... 19 more
+</pre>
+
+
+<p class="wikiPara">
+No information about which template nor where in the temmplate it went wrong.
+</p>
+
+<p class="wikiPara">
+In FreeMarker I get the following with no special configuration and custom code:
+</p>
+
+<pre class="wikiPreformatted">
+Expression table.namee is undefined on line 15, column 14 in doc/tables/table.ftl.
+The problematic instruction:
+----------
+==&gt; ${table.namee} [on line 15, column 12 in doc/tables/table.ftl]
+----------
+
+Java backtrace for programmers:
+----------
+freemarker.core.InvalidReferenceException: 
+ Expression table.namee is undefined on line 15, column 14 in doc/tables/table.ftl.
+    at freemarker.core.TemplateObject.assertNonNull([=&gt;TemplateObject.java:124])
+    at freemarker.core.Expression.getStringValue([=&gt;Expression.java:118])
+    at freemarker.core.Expression.getStringValue([=&gt;Expression.java:93])
+    ...
+</pre>
+
+
+<p class="wikiPara">
+Nice! And even better, the <q>on line 15, ...</q> works like a link in
+e.g. Eclipse Console view. Clicking it brings you to the location of the error in the table.ftl. file.
+</p>
+
+<p class="wikiPara">
+Similar and precise error messages you get if you refer to non
+existing methods, Just brilliant! The great thing is that if I really
+wanted FreeMarker to ignore this I could do so by installing a
+different Exception handler. But that is my choice, not a hard to change behavior.
+</p>
+
+<p class="wikiPara">
+The built in primitives in FreeMarker is also great, e.g. &lt;#assign&gt;
+that allows me to store any generated output in a variable for later
+usage.
+</p>
+
+<pre class="wikiPreformatted">
+${pojo.getPackageDeclaration()}
+// Generated ${date} by Hibernate Tools ${version}
+&lt;#assign classbody&gt;
+ &lt;#include "PojoTypeDeclaration.ftl"/&gt; {
+  ..more template code..
+ }
+&lt;/#assign&gt;
+
+${pojo.generateImports()}
+${classbody}
+</pre>
+
+
+<p class="wikiPara">
+This allows me to remove the need to have a magically second-pass
+which I did with Velocity. There are more gems like these to be found
+in the excellent FreeMarker <a href="http://freemarker.org/docs/" target="" class="regularLink">documentation </a>.
+</p>
+
+<p class="wikiPara">
+Another big plus in FreeMarker's favor is the <a href="http://freemarker.org/docs/api/index.html" target="" class="regularLink">Configuration API </a>.
+Let us compare, here is our Velocity setup:
+</p>
+
+<pre class="wikiPreformatted">
+engine = new VelocityEngine();
+context = new VelocityContext();
+
+EventCartridge ec = new EventCartridge();
+ec.addEventHandler(new HibernateEventHandler()); // stricter evaluation
+ec.attachToContext( context );
+            
+Properties p = new Properties();
+p.setProperty(RuntimeConstants.RUNTIME_LOG_LOGSYSTEM_CLASS, 
+              "org.apache.velocity.tools.generic.log.CommonsLogLogSystem");
+p.setProperty(CommonsLogLogSystem.LOGSYSTEM_COMMONS_LOG_NAME, 
+              "org.hibernate.tool.hbm2x.template");
+
+p.setProperty( RuntimeConstants.UBERSPECT_CLASSNAME, HibernateUberspect.class.getName() ); // stricter evaluation
+
+p.setProperty("velocimacro.library",""); // make it shut up about VM_global_library blah
+      
+p.setProperty("resource.loader", "file, class");
+p.setProperty("file.resource.loader.path", directory );
+p.setProperty("class.resource.loader.class", ClasspathResourceLoader.class.getName() );
+
+engine.init(p);
+</pre>
+
+
+<p class="wikiPara">
+Here is the corresponding FreeMarker config:
+</p>
+
+<pre class="wikiPreformatted">
+engine = new Configuration();
+context = new SimpleHash(ObjectWrapper.BEANS_WRAPPER);
+
+//Logger.setCategoryPrefix("org.hibernate.tool.hbm2x.template"); 
+// Not really needed since the logging is much more sensible.
+
+freeMarkerEngine.setTemplateLoader(new MultiTemplateLoader( 
+                                    new FileTemplateLoader(directory), 
+                                    new ClassTemplateLoader(this.getClass(),"/"));
+</pre>
+
+
+<p class="wikiPara">
+Notice the difference? FreeMarker has good practice defaults and
+actually allows me to use java code to configure it; what a neat
+concept.
+</p>
+
+<p class="wikiPara">
+The only two <q>bad</q> things I have found yet with FreeMarker is that
+itís syntax is based on <tt>&lt;#..&gt;</tt> which does not compute very well when
+trying to show it in an XML editor. This has been <q>fixed</q> in the
+latest release by also allowing <tt>[#...]</tt> syntax.
+</p>
+
+<p class="wikiPara">
+Another bigger issue is that <tt>${}</tt> and <tt>#{}</tt> is not escapable. This syntax
+collides in templates that generates ant build and jsp files. 
+</p>
+
+<p class="wikiPara">
+In Velocity they were just ignored (the only place were it were useful
+to ignore them). FreeMarker complains because the values are
+undefined and unfortunately there is no easy-on-the-eyes method to
+escape these characters. The following show the methods that I found to allow the me to output ${..}:
+</p>
+
+<pre class="wikiPreformatted">
+${r"${build.dir}"}  
+${'$í}{build.dir} 
+&lt;#noescape&gt;${build.dir}&lt;/noescape&gt;</pre>
+
+
+<p class="wikiPara">
+Still the brilliant exception handling, powerful template language and
+configuration API makes FreeMarker a much better choice for Hibernate
+Tools.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatNow"><a href="/2006/02/03/a-story-about-free-marker-and-velocity#H-WhatNow">What now ?</a></h2>
+
+<p class="wikiPara">
+Velocity served me well and is probably serving many projects well; it
+just did not cut it well for Hibernate Tools. Today I am convinced
+that I could have saved myself and the Hibernate world from a lot of
+trouble if I had decided to use FreeMarker from the beginning.
+</p>
+
+<p class="wikiPara">
+Come and see for your self in the <a href="http://cvs.sourceforge.net/viewcvs.py/hibernate/HibernateExt/tools/?only_with_tag=TOOLS_FREEMARKER" target="" class="regularLink">TOOLS_FREEMARKER </a>
+branch. The code in there will be merged into the main development in
+the near future unless someone steps up with a very good reason for
+not doing so ;)
+</p>
+
+<p class="wikiPara">
+To be fair, I must tell you that Velocity 1.5 is being worked on right
+now, and it does seem to solve some of these issues, but not
+completely and Velocity has some external dependencies I would rather not
+add to the tools project. 
+</p>
+</div>
+

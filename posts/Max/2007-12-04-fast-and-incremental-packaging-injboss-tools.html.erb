@@ -1,0 +1,161 @@
+---
+title: "Fast and incremental packaging in JBoss Tools"
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "04-12-2007"
+tags: [JBoss Tools Eclipse]
+
+relative_url: /2007/12/04/fast-and-incremental-packaging-injboss-tools
+slug: fast-and-incremental-packaging-injboss-tools
+lace: http://in.relation.to/3169.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/12/04/fast-and-incremental-packaging-injboss-tools
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+One of my favorite feature in JBoss Tools is the <q>Project Archives</q> which provides automatic and incremental archiving of arbitrary directories into a zipped archive (jar,zip,war,etc) or into an exploded directory. Usable for any development that wants hot and/or exploded deployment. 
+</p>
+
+<p class="wikiPara">
+A <a href="http://docs.jboss.org/tools/movies/archiving.htm" target="" class="regularLink">screen cast</a> is available at <a href="http://docs.jboss.org/tools/movies/archiving.htm" target="" class="regularLink">docs.jboss.org</a>, but if you want the details read the following...
+
+</p>
+
+<h1 class="wikiHeadline1" id="H-ProjectArchivesView"><a href="/2007/12/04/fast-and-incremental-packaging-injboss-tools#H-ProjectArchivesView">Project Archives View</a></h1>
+
+<p class="wikiPara">
+To start using it you open the <q>Project archives</q> view, select a project and right click in the view to add the type of jar you want (each project can have multiple archives defined).
+</p>
+
+<p class="wikiPara">
+In the dialog that comes up you specify what the name of the archive should be, where it should be located and whether the folder should be archived/compressed or exploded.
+</p>
+
+<p class="wikiPara">
+<a href="/service/File/3174" target="" class="regularLink"><img src="/images/3174.png"></a>
+</p>
+
+<p class="wikiPara">
+The tools will dependent on the archive type and project files give a <q>best-guess</q> on which files you would like to include in the
+archive. You can of course customize this freely afterwards.
+</p>
+
+<p class="wikiPara">
+<a href="/service/File/3172" target="" class="regularLink"><img src="/images/3172.png"></a>
+</p>
+
+<p class="wikiPara">
+When you have pressed Ok, you will be able to see the resulting
+archive or folder in Eclipse or if you configured it to go the
+file system use your favorite file browser to see the result.
+</p>
+
+<h1 class="wikiHeadline1" id="H-AutomaticIncrementalPackaging"><a href="/2007/12/04/fast-and-incremental-packaging-injboss-tools#H-AutomaticIncrementalPackaging">Automatic Incremental packaging</a></h1>
+
+<p class="wikiPara">
+When first defined through the <q>Project archives</q> view JBoss Tools
+will automatically monitor changes and keep the archive or folder in
+sync. Since the changes and archiving is done incrementally there are
+no need to wait for Ant or Maven to collect the various artifacts and
+do a full archiving. 
+</p>
+
+<p class="wikiPara">
+I suggest watching the <a href="http://docs.jboss.org/tools/movies/archiving.htm" target="" class="regularLink">screen cast</a> to get a sense of how easy and fast this works.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ExplodedJars"><a href="/2007/12/04/fast-and-incremental-packaging-injboss-tools#H-ExplodedJars">Exploded jars</a></h1>
+
+<p class="wikiPara">
+<img src="/images/3170.png" width="300" height="300">
+</p>
+
+<p class="wikiPara">
+The exploded archive support allows you to use this with any server
+that supports what is called <q>exploded deployment</q> (commonly used with
+many Java and non-java servers) - thus this is in no way limited to
+JBoss servers or even Java technology; any technology that needs to
+copy a set of files to a directory or archive will be able to benefit
+from this feature.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatAboutJBossIDEPackaging"><a href="/2007/12/04/fast-and-incremental-packaging-injboss-tools#H-WhatAboutJBossIDEPackaging">What about JBossIDE packaging ?</a></h1>
+
+<p class="wikiPara">
+JBossIDE 1.x had a similar feature which relied on generating an ant script and execute Ant to do the actual packaging. 
+</p>
+
+<p class="wikiPara">
+The advantages of the new Project Archives is that it does not wait for a launch of Ant and instead of doing a full build/repackaging of a compressed archive every time, we can now do it incrementally and with the option of exploded form.
+</p>
+
+<p class="wikiPara">
+To migrate from JBossIDE packaging to JBoss Tools archiving you can use the conversion tool which we made available at <a href="http://download.jboss.org/jbosstools/extras/packaging-convert.zip" target="" class="regularLink">download.jboss.org</a>.
+</p>
+
+<p class="wikiPara">
+The conversion is as simple as:
+</p>
+
+<pre class="wikiPreformatted">java -jar packaging-converter.jar /path/to/.packaging</pre>
+
+
+<h1 class="wikiHeadline1" id="H-AntAndMaven"><a href="/2007/12/04/fast-and-incremental-packaging-injboss-tools#H-AntAndMaven">Ant and Maven</a></h1>
+
+<p class="wikiPara">
+To avoid specifying how packaging works twice, once in JBoss Tools and once in your favorite build system we added an ant task to allow you to use it externally from Eclipse.
+</p>
+
+<p class="wikiPara">
+The following is an example of how that is used:
+</p>
+
+<pre class="wikiPreformatted">&lt;property name="studio.home" location="${eclipse.home}/../studio/eclipse"/&gt;
+
+ &lt;path id="generate-archives-classpath"&gt;
+  &lt;fileset dir="${eclipse.home}/plugins"&gt;
+   &lt;include name="org.eclipse.equinox.common_*.jar"/&gt;                                    
+  &lt;/fileset&gt;
+  &lt;fileset dir="${studio.home}"&gt;
+   &lt;include name="plugins/org.jboss.ide.eclipse.archives.core**/archivescore.jar"/&gt;
+   &lt;include name="plugins/org.jboss.ide.eclipse.archives.core**/lib/*.jar"/&gt;         
+  &lt;/fileset&gt;
+&lt;/path&gt;
+                 
+ &lt;taskdef name="generate-archives" classpathref="generate-archives-classpath"       
+classname="org.jboss.ide.eclipse.archives.core.ant.GenerateArchivesTask"/&gt;
+         
+&lt;target name="run-packaging"&gt;
+ &lt;!-- each project needs to have their root dir defined when running outside eclipse --&gt;
+ &lt;property name="pojp.dir" value="C:/Users/max/workspace/pojp"/&gt;
+ &lt;generate-archives projectPath="C:/Users/max/workspace/pojp"/&gt;
+&lt;/target&gt;</pre>
+
+
+<h1 class="wikiHeadline1" id="H-FinalWords"><a href="/2007/12/04/fast-and-incremental-packaging-injboss-tools#H-FinalWords">Final words</a></h1>
+
+<p class="wikiPara">
+Thanks goes out to Rob for showing me how the Ant task works and for Marshall to get the conversion script ready. We hope to integrate that more directly into JBoss Tools in an upcoming release.
+</p>
+
+<p class="wikiPara">
+If you want to see this in live action look me up at <a href="http://www.javapolis.com" target="" class="regularLink">JavaPolis</a> next week (in the JBoss/Red Hat booth).
+</p>
+
+
+
+<p class="wikiPara">
+ 
+</p>
+
+
+
+
+
+
+</div>
+

@@ -1,0 +1,63 @@
+---
+title: "Hibernate Validator 4.0.0 Alpha3"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "20-03-2009"
+tags: []
+
+relative_url: /2009/03/20/hibernate-validator-400-alpha-3
+slug: hibernate-validator-400-alpha-3
+lace: http://in.relation.to/10928.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/03/20/hibernate-validator-400-alpha-3
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate Validator version <a href="https://sourceforge.net/project/showfiles.php?group_id=40712&amp;package_id=225206" target="" class="regularLink">4.0.0 Alpha3</a> is of now available. This implementation is based on <a href="#hibernate-validator-400-alpha-3_attachment1" target="" class="regularLink">JSR 303 Specification 1.0.CR1[1]</a>. The distribution packages contain everything you need to get started. 
+</p>
+
+<p class="wikiPara">
+As promised in the last post implicit grouping is now available. On top of this the metadata API is now in sync with the current spec and there is a JPA 2 aware <i class="wikiEmphasis">TraversableResolver</i>. <i class="wikiEmphasis">@Valid</i> supports now <i class="wikiEmphasis">Iterable</i>s and the cascading algorithm follows the new graph navigation rules. In the previous releases an object instance would only be validated once per group. Now this instance can be validated once per group AND validation path. Lets look at the object graph below to illustrate the change:
+</p>
+
+<p class="wikiPara">
+<a href="/service/File/10927" target="" class="regularLink"><img src="/images/10927.png"></a>
+</p>
+
+<p class="wikiPara">
+Assuming a <i class="wikiEmphasis">@NotNull</i> constraint on <i class="wikiEmphasis">Address.addressLine</i> validating the shown <i class="wikiEmphasis">Order</i> instance against the default group will now result in three <i class="wikiEmphasis">ConstraintViolation</i>s differing only in the property path. The paths are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> shippingAddress.addressline1 </li>
+<li class="wikiUnorderedListItem"> customer.addresses[0].addressline1</li>
+<li class="wikiUnorderedListItem"> billingAddress.inhabitant.addresses[0].addressline1</li>
+</ul>
+
+<p class="wikiPara">
+Previously only one <i class="wikiEmphasis">ConstraintViolation</i> would have returned and it was not defined which property path it would contain. Last but not least the <i class="wikiEmphasis">ConstraintValidator</i> resolution algorithm got revamped and works now with generics. This allows support for constructs like:
+</p>
+
+<pre class="wikiPreformatted">@MyConstraint
+Collection&lt;? extends Number&gt; element;
+</pre>
+
+
+<p class="wikiPara">
+For further information about this release refer to the Jira <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV?report=com.atlassian.jira.plugin.system.project:changelog-panel" target="" class="regularLink">change log</a> and please provide us with some feedback.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>
+
+<div class="attachments">
+<h4>Attachments</h4>
+<ol class="wikiOrderedList"><li class="wikiOrderedListItem"><a name="hibernate-validator-400-alpha-3_attachment1" href="/assets/JSR-303-Specification-1.0.CR1.pdf">JSR-303-Specification-1.0.CR1.pdf</a></li>
+</ol>
+</div>
+

@@ -1,0 +1,237 @@
+---
+title: "Anonymous functions or Smalltalk-style arguments?"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "23-05-2011"
+tags: [Ceylon]
+
+relative_url: /2011/05/23/anonymous-functions-or-smalltalkstyle-arguments
+slug: anonymous-functions-or-smalltalkstyle-arguments
+lace: http://in.relation.to/20227.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/23/anonymous-functions-or-smalltalkstyle-arguments
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+In <a href="/Bloggers/IntroductionToCeylonPart8" target="" class="regularLink">Introduction to Ceylon Part 8</a> we discussed Ceylon's support for defining higher order functions, in particular the two different ways to represent the type of a parameter which accepts a reference to a function. The following declarations are essentially equivalent:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">X[] filter&lt;X&gt;(X[] sequence, Callable&lt;Boolean,X&gt; by) { ... }</pre>
+
+
+<pre class="wikiPreformatted brush: ceylon">X[] filter&lt;X&gt;(X[] sequence, Boolean by(X x)) { ... }</pre>
+
+
+<p class="wikiPara">
+We've even seen how we can pass a reference to a method to such a higher-order function:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Boolean stringNonempty(String string) {
+    return !string.empty;
+}
+String[] nonemptyStrings = filter(strings, stringNonempty);</pre>
+
+
+<p class="wikiPara">
+Of course, almost all of the convenience of general-purpose higher order functions like <tt>filter()</tt> is lost if we have to declare a whole method every time we want to use the higher order function. Indeed, much of the appeal of higher order functions is the ability to eliminate verbosity by having more specialized versions of traditional control structures like <tt>for</tt>.
+</p>
+
+<p class="wikiPara">
+Most languages with higher order functions support <i class="wikiEmphasis">anonymous functions</i> (often called <i class="wikiEmphasis">lambda expressions</i>), where a function may be defined inline as part of the expression. My favored syntax for this in a C-like language would be the following:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">(String string) { return !string.empty; }</pre>
+
+
+<p class="wikiPara">
+This is an ordinary method declaration with the return type and name eliminated. Then we could call <tt>filter()</tt> as follows:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">String[] nonemptyStrings = filter( strings, (String string) { return !string.empty; } );</pre>
+
+
+<p class="wikiPara">
+Since it's <i class="wikiEmphasis">extremely</i> common for anonymous functions to consist of a single expression, I favor allowing the following abbreviation:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">(String string) (!string.empty)</pre>
+
+
+<p class="wikiPara">
+The parenthesized expression is understood to be the return value of the method. Then the invocation of <tt>filter()</tt> is a bit less noisy:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">String[] nonemptyStrings = filter(strings, (String string) (!string.empty));</pre>
+
+
+<p class="wikiPara">
+This works, and we <i class="wikiEmphasis">could</i> support this syntax in the Ceylon language.
+</p>
+
+<p class="wikiPara">
+Let's look at some more examples of how we would use anonymous functions:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Assertion: <pre class="wikiPreformatted brush: ceylon">assert ("x must be positive", () (x&gt;0.0))</pre>
+</li>
+<li class="wikiUnorderedListItem"> Conditionals: <pre class="wikiPreformatted brush: ceylon">when (x&gt;100.0, () (100.0), () (x))</pre>
+</li>
+<li class="wikiUnorderedListItem"> Repetition: <pre class="wikiPreformatted brush: ceylon">repeat(n, () { writeLine("Hello"); })</pre>
+</li>
+<li class="wikiUnorderedListItem"> Tabulation: <pre class="wikiPreformatted brush: ceylon">tabulateList(20, (Natural i) (i**3))</pre>
+</li>
+<li class="wikiUnorderedListItem"> Comprehension: <pre class="wikiPreformatted brush: ceylon">from (people, (Person p) (p.name), (Person p) (p.age&gt;18))</pre>
+</li>
+<li class="wikiUnorderedListItem"> Quantification: <pre class="wikiPreformatted brush: ceylon">forAll (people, (Person p) (p.age&gt;18))</pre>
+</li>
+<li class="wikiUnorderedListItem"> Accumulation (folds): <pre class="wikiPreformatted brush: ceylon">accumulate (items, 0.0, (Float sum, Item item) (sum+item.quantity*item.product.price))</pre>
+</li>
+</ul>
+
+<p class="wikiPara">
+The problem is that I don't find these code snippets especially readable. Too much nested punctuation. They certainly fall short of the readability of built-in control structures like <tt>for</tt> and <tt>if</tt>. And the problem gets worse for multi-line anonymous functions. Consider:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">repeat (n, () {
+    String greeting;
+    if (exists name) {
+        greeting = "Hello, " name "!";
+    }
+    else {
+        greeting = "Hello, World!";
+    }
+    writeLine(greeting);
+});</pre>
+
+
+<p class="wikiPara">
+Definitely much uglier than a <tt>for</tt> loop!
+</p>
+
+<p class="wikiPara">
+One language where anonymous functions really work is Smalltalk - to the extent that Smalltalk doesn't need any built-in control structures at all. What is unique about Smalltalk is its funny method invocation protocol. Method arguments are listed positionally, like in C or Java, but they must be preceded by the parameter name, and aren't delimited by parentheses. Let's transliterate this idea to Ceylon.
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">String[] nonemptyStrings = filter(strings) by (String string) (!string.empty);</pre>
+
+
+<p class="wikiPara">
+Note that we have not changed the syntax of the anonymous function here, we've just moved it outside the parentheses. If we were to adopt this syntax, we could make empty parameter lists optional, without introducing any syntactic ambiguity, allowing the following:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">repeat (n) 
+perform {
+    String greeting;
+    if (exists name) {
+        greeting = "Hello, " name "!";
+    }
+    else {
+        greeting = "Hello, World!";
+    }
+    writeLine(greeting);
+};</pre>
+
+
+<p class="wikiPara">
+This looks <i class="wikiEmphasis">much</i> more like a built-in control structure. Now let's see some of our other examples:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Assertion: <pre class="wikiPreformatted brush: ceylon">assert ("x must be positive") that (x&gt;0.0)</pre>
+</li>
+<li class="wikiUnorderedListItem"> Conditionals: <pre class="wikiPreformatted brush: ceylon">when (x&gt;100.0) then (100.0) otherwise (x)</pre>
+</li>
+<li class="wikiUnorderedListItem"> Repetition: <pre class="wikiPreformatted brush: ceylon">repeat(n) perform { writeLine("Hello"); }</pre>
+</li>
+<li class="wikiUnorderedListItem"> Tabulation: <pre class="wikiPreformatted brush: ceylon">tabulateList(20) containing (Natural i) (i**3)</pre>
+</li>
+<li class="wikiUnorderedListItem"> Comprehension: <pre class="wikiPreformatted brush: ceylon">from (people) select (Person p) (p.name) where (Person p) (p.age&gt;18)</pre>
+</li>
+<li class="wikiUnorderedListItem"> Quantification: <pre class="wikiPreformatted brush: ceylon">forAll (people) every (Person p) (p.age&gt;18)</pre>
+</li>
+<li class="wikiUnorderedListItem"> Accumulation (folds): <pre class="wikiPreformatted brush: ceylon">accumulate (items, 0.0) using (Float sum, Item item) (sum+item.quantity*item.product.price)</pre>
+</li>
+</ul>
+
+<p class="wikiPara">
+Well, I'm not sure about you, but I find <i class="wikiEmphasis">all</i> these examples more readable than what we had before. In fact, I like them so much better, that it makes me not want to support the more traditional <q>lambda expression</q> style.
+</p>
+
+<p class="wikiPara">
+On the other hand, this syntax is pretty <q>exotic</q>, and I'm sure lots of people will find it difficult to read at first.
+</p>
+
+<p class="wikiPara">
+Now, in theory, there's no reason why we can't support both variations, except that we've worked really hard to create a language with a consistent <i class="wikiEmphasis">style</i>, where there is usually one obvious way to write something (obviously the choice between named and positional arguments is a big exception to this, but we have Good Reasons in that case). The trouble is that supporting many <q>harmless</q> syntactic variations has the potential to make a language overall harder to read, and results in annoying things like:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> coding standards</li>
+<li class="wikiUnorderedListItem"> arguments over coding standards</li>
+<li class="wikiUnorderedListItem"> shitty tooling to enforce coding standards</li>
+<li class="wikiUnorderedListItem"> arguments over which shitty tooling to use to enforce coding standards</li>
+<li class="wikiUnorderedListItem"> empowerment of people who are more interesting in arguing over coding standards and shitty tools that enforce coding standards over people who want to get work done</li>
+</ul>
+
+<p class="wikiPara">
+So this is definitely an issue we need lots of feedback on. Should we support:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> traditional anonymous functions?</li>
+<li class="wikiUnorderedListItem"> anonymous functions only as Smalltalk-style arguments?</li>
+<li class="wikiUnorderedListItem"> both?</li>
+</ul>
+
+<p class="wikiPara">
+The answer just isn't crystal clear to us.
+</p>
+
+<p class="wikiPara">
+UPDATE: I realize that this post is an invitation for everyone to suggest their own favorite syntax for anonymous functions. I expect to see all these kinds of things: </p>
+<pre class="wikiPreformatted">#{String string -&gt; !string.empty}</pre>
+ <pre class="wikiPreformatted">function (String string) { return !string.empty; }</pre>
+ <pre class="wikiPreformatted">\String string -&gt; !string.empty</pre>
+ That's fine, but please keep in mind that I'm looking for something which:
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> is very regular with a normal C-style function declaration, and</li>
+<li class="wikiUnorderedListItem"> is not impossible to parse in the context of the rest of the language.</li>
+</ul>
+
+<p class="wikiPara">
+Almost anything you can invent yourself or copy from some other language will fail one or both of these two requirements.
+</p>
+
+<p class="wikiPara">
+UPDATE 2: For completeness, I should mention that using a <a href="/Bloggers/IntroductionToCeylonPart9" target="" class="regularLink">named argument invocation</a> you can write the following:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">String[] nonemptyStrings = filter {
+    sequence = strings;
+    local by(String string) {
+        return !string.empty;
+    }
+};</pre>
+
+
+<p class="wikiPara">
+Or even:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">String[] nonemptyStrings = filter {
+    sequence = strings;
+    by = compose(not,String.empty);  //compose()() is a higher order function that composes two functions
+};</pre>
+
+
+<p class="wikiPara">
+I think this syntax makes sense in some places (for example, callbacks in a user interface definition), but isn't ideal for the problems we've been discussing here.</p>
+</div>
+

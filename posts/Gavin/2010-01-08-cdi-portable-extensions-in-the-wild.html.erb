@@ -1,0 +1,34 @@
+---
+title: "CDI portable extensions in the wild"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "08-01-2010"
+tags: [Contexts and Dependency Injection,Portable Extensions,Seam News,Weld]
+
+relative_url: /2010/01/08/cdi-portable-extensions-in-the-wild
+slug: cdi-portable-extensions-in-the-wild
+lace: http://in.relation.to/13778.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/01/08/cdi-portable-extensions-in-the-wild
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Since the release of <a href="http://seamframework.org/Weld" target="" class="regularLink">Weld</a> and Java EE 6, there's been a heap of activity in the <a href="http://seamframework.org/Community/WeldUsersForum" target="" class="regularLink">Weld user forum</a>, and especially a lot of questions about problems related to framework development. You can do some kinds of generic programming in CDI just using managed beans, <a href="http://docs.jboss.org/cdi/api/1.0/javax/enterprise/inject/Produces.html" target="" class="regularLink">producer methods</a> and <a href="http://docs.jboss.org/cdi/api/1.0/javax/enterprise/inject/spi/InjectionPoint.html" target="" class="regularLink">InjectionPoint</a>. But if you want to get serious, you're eventually going to have to embrace the <a href="http://docs.jboss.org/cdi/api/1.0/javax/enterprise/inject/spi/package-summary.html" target="" class="regularLink">portable extension SPI</a>. Here's a couple of examples of how people are using this SPI.
+</p>
+
+<p class="wikiPara">
+Steven Verborgh has written a nice tutorial showing how to <a href="http://www.verborgh.be/articles/2010/01/06/porting-the-viewscoped-jsf-annotation-to-cdi/" target="" class="regularLink">implement a custom JSF view scope</a> for CDI. Henri Chen has <a href="http://blog.zkoss.org/index.php/2010/01/07/integrate-zk-and-jsr-299weld/" target="" class="regularLink">integrated the ZK framework with CDI</a> (hopefully other web frameworks won't be far behind). Matt Corey has been <a href="http://smokeandice.blogspot.com/2009/12/external-cdi-configuration-with.html" target="" class="regularLink">experimenting</a> with <a href="http://smokeandice.blogspot.com/2009/12/say-hello-to-seam-3-environment.html" target="" class="regularLink">environment configuration via JNDI</a>.
+</p>
+
+<p class="wikiPara">
+Meanwhile, I've been working on compiling user feedback into a <a href="http://www.seamframework.org/Weld/PortableExtensionWishlist" target="" class="regularLink">list of enhancements to the SPI</a>. We plan to roll the most important items into the first CDI maintenance release.
+</p>
+
+<p class="wikiPara">
+UPDATE: for completeness, I should also link Pete Royle's <a href="http://screamingcoder.com/life/2009/07/23/scheduling-in-web-beans-and-jsr-299-apps/" target="" class="regularLink">Quartz scheduling extension</a>.</p>
+</div>
+

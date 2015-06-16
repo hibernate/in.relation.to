@@ -1,0 +1,54 @@
+---
+title: "Persistent collections are a feature!"
+author: "Christian Bauer"
+blogger_name: "Christian"
+creation_date: "26-01-2006"
+tags: []
+
+relative_url: /2006/01/26/persistent-collections-are-a-feature
+slug: persistent-collections-are-a-feature
+lace: http://in.relation.to/1395.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2006/01/26/persistent-collections-are-a-feature
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+In the past few months I got the impression that something in our explanation of object/relational mapping has gone a little wrong. I'm still not sure that this is the fault of any documentation or presentation slide, it's just something that naturally happened...
+</p>
+
+<p class="wikiPara">
+It seems to me that many many users of Hibernate (and very likely other similar tools) think that they absolutely have to map a collection. Basically, many developers, especially if they have not been exposed to some data management basics and have survived with a purely <q>object-oriented</q> view of the world, seem to think that persistent collections are an absolute must-have. Sometimes it's quite a surprise when I explain how you can write a sophisticated and complete Hibernate application without ever mapping a single collection!
+</p>
+
+<p class="wikiPara">
+This is even more important if you are only starting to learn Hibernate; mapping a collection right is definitely the biggest step in the learning curve. I want to clear up some of the confusion around collection mappings (the actual reason is a guy who wants us to declare <q>unusable</q> on the Hibernate Annotations website because the current beta doesn't allow you to map a <tt>Map</tt> of entities across a join table...)
+</p>
+
+<p class="wikiPara">
+Every time you think you have to map a collection you have to ask yourself /Why/. A mapped persistent collection is a /feature/, not a requirement. What does this feature give you:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> You no longer have to retrieve the data you are looking for with a query, you can just iterate through a collection. Naturally, this iteration can always, no exception, be replaced with a query.</li>
+</ul>
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> You no longer have to maintain a relationship (please, stop calling it <q>relation</q>) between two pieces of data manually. For example, you can just put a <q>child</q> object into a collection of a <q>parent</q> object (I really hate this explanation but it's a convenient lie) and have it saved automatically. Naturally, this cascading persistence can always, no exception, be replaced with an explicit call of the persistence manager.</li>
+</ul>
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> An object/relational mapping software can make optimizations when you access the collection, such as batch fetching or /extra/ lazy behavior if you just call <tt>size()</tt> on it. These are goodies that might make your life easier, but they can always, no exception, be replaced with a query. (Actually, this is conceptually true, but doesn't work for batch and subselect collection fetching in Hibernate 3.1 - addition of these features to the query API is on the list.)</li>
+</ul>
+
+
+<p class="wikiPara">
+So, you map a collection if you want one of these features. You don't map it if these features are of no advantage to you! In other words: a relational database has foreign keys (copies of keys and constraints to hold it together) and nothing else. All foreign key relationships can be represented in Java with many-to-one associations. Everything else is sugar, features, convenience. Yes, you often want this convenience and you are right to expect it from an object/relational mapping software. But you don't have to force a collection mapping, especially if you don't know how to do it right or what you really get from it.
+</p>
+</div>
+

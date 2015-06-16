@@ -1,0 +1,50 @@
+---
+title: "Query Objects vs Query Languages"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "04-12-2003"
+tags: []
+
+relative_url: /2003/12/04/query-objects-vs-query-languages
+slug: query-objects-vs-query-languages
+lace: http://in.relation.to/1473.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2003/12/04/query-objects-vs-query-languages
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+<a href="http://www.cwinters.com/News/show/?news_id=1106" target="" class="regularLink">Chris Winters </a> doesn't like object-oriented query APIs. Since Hibernate emphasizes the query /language/ approach, I'm not the best person to disagree with him here. Criteria queries are usually noisier, no doubt about that. And the query languages I've seen tend to be more expressive. Writing arithmetic and even logical expressions is a breeze in a query lanugage, but certainly not in an object-oriented Criteria API.
+</p>
+
+<p class="wikiPara">
+However, there are a couple of advantages of the Criteria approach. First, some folks like the fact that more can be done to validate the query at compile time. This is no big deal to me because I'm very unit test oriented. Much more importantly, object-oriented query APIs are much better for building queries programmatically. String manipulations suck! Getting your parentheses and whitespace right for all combinations of criteria is a pain. I've seen some truly ugly code that builds HQL strings and it could be rewritten /much/ more neatly using the Criteria API.
+</p>
+
+<p class="wikiPara">
+Especially, the new query by example stuff could potentially reduce 20 lines of code that builds a query containing the needed properties of Person to:
+</p>
+
+<pre class="wikiPreformatted">
+session.createCriteria(Person.class)
+    .add( Example.create(elvis) )
+    .list();
+    </pre>
+
+
+<p class="wikiPara">
+Well, I suppose query by example is a bit of an extreme case, and you could perhaps implement a similar feature in a query language.
+</p>
+
+<p class="wikiPara">
+Finally, object oriented query APIs can be more user-extensible. This is what I like best.
+</p>
+
+<p class="wikiPara">
+P.S. The code example Chris gives is a bit unfair to object APIs. Hibernate's Criteria API is much less verbose than that, partly due to the support for method chaining (which is barely used in Java, so I betray the time I spent with SmallTalk).
+</p>
+</div>
+

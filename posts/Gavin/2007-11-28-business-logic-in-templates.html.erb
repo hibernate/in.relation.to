@@ -1,0 +1,112 @@
+---
+title: "Business logic in templates"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "28-11-2007"
+tags: []
+
+relative_url: /2007/11/28/business-logic-in-templates
+slug: business-logic-in-templates
+lace: http://in.relation.to/3116.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/11/28/business-logic-in-templates
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Stephan Schmidt says that <a href="http://stephan.reposita.org/archives/2007/11/27/people-dont-get-the-difference-between-business-and-ui-logic/" target="" class="regularLink">people don’t get the difference between business and UI logic</a>:
+</p>
+
+<blockquote class="wikiBlockquote">
+People most of the time use business logic in their templates, be them JSP, Velocity or Rails. They confuse business logic and UI logic. Those are two different things.
+</blockquote>
+
+<p class="wikiPara">
+As an example of something that should be avoided, Stephan gives the following code:
+</p>
+
+<pre class="wikiPreformatted">&lt;c:if test="${user.loggedIn &amp;&amp; user.bookedProducts}"&gt;  
+ // show menu  
+&lt;/c:if&gt;</pre>
+
+
+<p class="wikiPara">
+Well, you can count me among those who don't <q>get</q> the difference. I don't see how it is clear that the expression in the code above is implementing <q>business</q> rather than <q>user interface</q> logic. In fact, it seems to me that distinguishing the exact boundaries of what constitutes the /user interface/ is in general more art than science.
+</p>
+
+<p class="wikiPara">
+In this particular example, it seems to be the <tt>&amp;&amp;</tt> that Stephan objects to. If I'm reading him correctly, he would not have a problem with this:
+</p>
+
+<pre class="wikiPreformatted">&lt;c:if test="${user.loggedIn}"&gt;  
+ // show menu  
+&lt;/c:if&gt;</pre>
+
+
+<p class="wikiPara">
+or this:
+</p>
+
+<pre class="wikiPreformatted">&lt;c:if test="${user.bookedProducts}"&gt;  
+ // show menu  
+&lt;/c:if&gt;</pre>
+
+
+<p class="wikiPara">
+However, I don't see that the use of conjunction, a priori, is enough to turn something into business logic.
+</p>
+
+<p class="wikiPara">
+Any user interface depends upon attributes and operations of model objects. Sure, we /could/ introduce some intermediating layer to shield our user interface from a direct dependency upon our model, but this merely moves the dependency around; it does not eliminate the dependency, nor solve the question of exactly which logic belongs in which layer. What is unclear is the criteria for determining which logic must be implemented by the model, and which may be safely implemented in the user interface (or intermediating layer) code that uses the model.
+</p>
+
+<p class="wikiPara">
+We talk about <q>business logic</q> all the time, so you might think that this is some kind of well-defined notion, but as even Wikipedia <a href="http://en.wikipedia.org/wiki/Business_logic" target="" class="regularLink">admits</a>,
+</p>
+
+<blockquote class="wikiBlockquote">
+Business logic is a non-technical term ... there exists no definition of business logic in any programming language specification or API, nor in any academic research ... it should be noted that business logic is a poorly-defined term which is used in several different ways by several different groups of people.
+</blockquote>
+
+<p class="wikiPara">
+Nevertheless, Wikipedia goes ahead and defines the following <q>scope</q> for the term:
+</p>
+
+<blockquote class="wikiBlockquote">
+Business logic:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> models real life business objects (such as accounts, loans, itineraries, and inventories)</li>
+<li class="wikiUnorderedListItem"> prescribes how business objects interact with one another</li>
+<li class="wikiUnorderedListItem"> enforces the routes and the methods by which business objects are accessed and updated</li>
+</ul>
+
+
+</blockquote>
+
+<p class="wikiPara">
+Stephan's code example is not defining a business object, nor an interaction between business objects, nor does it seem to me that it is <q>enforc[ing] the routes and the methods by which business objects are accessed and updated</q>.
+</p>
+
+
+<p class="wikiPara">
+So, assuming that this expression does not occur in multiple places in my templates, I would be inclined to leave the original code alone. It seems to me that the cost in complexity of introducing a new method (possibly a new object) to encapsulate this expression is simply not worth the effort, unless there is some additional concrete benefit.
+</p>
+
+<p class="wikiPara">
+On the other hand, if this same expression does pop up in multiple places, I would almost certainly encapsulate it in a method of some model object:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> in order to satisfy DRY, and</li>
+<li class="wikiOrderedListItem"> to allow me to document (via the method name, or even JavaDoc) exactly what the expression represents; what is so /special/ about this expression that causes it to occur repeatedly.</li>
+</ol>
+
+<p class="wikiPara">
+So does that make me a defender of the use of (short) scriptlets in JSP, PHP or RHTML? Well, no. But my objection to the use of scriptlets has a different basis. What I find objectionable is the mixing of highly dissimilar languages and language paradigms in the same source file. I remain a fan of <a href="/Bloggers/DesignersVsDevelopersDeclarationVsProcedure" target="" class="regularLink">declarative user interface definition</a>.
+</p>
+</div>
+

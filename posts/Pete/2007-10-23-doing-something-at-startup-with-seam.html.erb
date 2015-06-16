@@ -1,0 +1,65 @@
+---
+title: "Doing something at startup with Seam"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "23-10-2007"
+tags: []
+
+relative_url: /2007/10/23/doing-something-at-startup-with-seam
+slug: doing-something-at-startup-with-seam
+lace: http://in.relation.to/2640.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/10/23/doing-something-at-startup-with-seam
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+One of the most common forum questions is <q>How do I make Seam call an action method at startup?</q>.
+</p>
+
+<p class="wikiPara">
+The easiest way is to <i class="wikiEmphasis">observe</i> the <tt>org.jboss.seam.postInitialization</tt> event (which occurs right after Seam finishes initializing):
+</p>
+
+<pre class="wikiPreformatted">@Name("observeInitialization")
+public class ObserveInitialization {
+
+   @In EntityManager entityManager;
+
+   @Observer("org.jboss.seam.postInitialization")
+   public void observe() {
+      // Do your initialization here
+   }
+}</pre>
+
+
+<p class="wikiPara">
+However, as this event occurs /before/ JSF finishes initializing, if you want to use Seam Mail at startup, you should schedule it to happen a short time after initialization:
+</p>
+
+<pre class="wikiPreformatted">@Name("asynchronousMailProcessor")
+public class AsynchronousMailProcessor {
+
+   @Asynchronous
+   public void sendMail(@Duration long duration) {
+      Renderer.instance().render("/mail.xhtml");
+   }
+}</pre>
+
+
+<pre class="wikiPreformatted">@Name("observeInitialization")
+public class ObserveInitialization {
+
+   @In AsynchronousMailProcessor asynchronousMailProcessor;
+
+   @Observer("org.jboss.seam.postInitialization")
+   public void observe() {
+      // Schedule a send for 30s time, by which time JSF will be initialized
+      asynchronousMailProcessor.sendMail(30 * 1000l);
+   }
+}</pre>
+</div>
+

@@ -1,0 +1,73 @@
+---
+title: "Hibernate ORM 4.3.0.Beta4 release"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "12-09-2013"
+tags: [Core Release,News,ORM,jpa21]
+
+relative_url: /2013/09/12/hibernate-orm-430-beta-4-release
+slug: hibernate-orm-430-beta-4-release
+lace: http://in.relation.to/24363.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/09/12/hibernate-orm-430-beta-4-release
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Back to work after summer fun :)
+</p>
+
+<p class="wikiPara">
+This release has a lot of work, quite a bit in the form of pull requests.  Thanks again!
+</p>
+
+<p class="wikiPara">
+A lot of the focus here has been on JPA 2.1 support.  At this point:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> AttributeConverter support should be complete; just about- there is still one <a href="https://hibernate.atlassian.net/browse/HHH-8478" target="" class="regularLink">minor issue</a> which will be addressed in the next release </li>
+<li class="wikiUnorderedListItem"> StoredProcedureQuery support should be complete; just about - there is still an <a href="https://hibernate.atlassian.net/browse/HHH-8445" target="" class="regularLink">issue</a> here too which will be addressed in the next release </li>
+<li class="wikiUnorderedListItem"> @ConstructorResult support is mostly done, though you currently can only use one ConstructorResult result per query which will be followed up by <a href="https://hibernate.atlassian.net/browse/HHH-8498" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH-8498</a>
+</li>
+<li class="wikiUnorderedListItem"> JPA schema generation support should be fully done at this point.</li>
+<li class="wikiUnorderedListItem"> EntityGraph support is still not in place, though support for loading entities using LoadPlans (which is the internal fulfillment of entity graphs) is done and support for collections is under way.</li>
+<li class="wikiUnorderedListItem"> Applications using JPA native (native SQL) query support should be aware of a potentially significant change to better align with the JPA spec. Essentially Hibernate will now flush the EntityManager before running the native query (as long as we are within a transaction).  Note that this is a <i class="wikiEmphasis">full</i> flush, unlike HQL/JPQL or Criteria queries which perform a partial flush.  In Hibernate native SQL query support, partial flush is achievable which is available to JPA native queries by unwrapping.  For details see <a href="https://hibernate.atlassian.net/browse/HHH-8487" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH-8487</a>.</li>
+</ul>
+
+
+<p class="wikiPara">
+Non-JPA-related changes to highlight include:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Addressing a potential memory leak - <a href="https://hibernate.atlassian.net/browse/HHH-8363" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH-8363</a>
+</li>
+<li class="wikiUnorderedListItem"> Hibernate OSGi support has been greatly improved within the confines of Hibernate's current bootstrap architecture (see <a href="https://hibernate.atlassian.net/browse/HHH-8501" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH-8501</a> for details on plans for improving OSGi support as we re-design that bootstrap architecture for 5.0).  For details on the 4.3 improvements, see <a href="https://hibernate.atlassian.net/browse/HHH--7527" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH--7527</a> or the newly-completed OSGi documentation chapter in the Developer Guide.</li>
+<li class="wikiUnorderedListItem"> Support for SQL hints in HQL/Criteria queries - <a href="https://hibernate.atlassian.net/browse/HHH-2736" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH-2736</a>
+</li>
+<li class="wikiUnorderedListItem"> Added PostgreSQL9Dialect (for PostgreSQL 9+) - <a href="https://hibernate.atlassian.net/browse/HHH-8331" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH-8331</a>
+</li>
+<li class="wikiUnorderedListItem"> Added SQLServer2012Dialect (for SQL Server 2012) - <a href="https://hibernate.atlassian.net/browse/HHH-8440" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH-8440</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+The full changelog can be found in Jira at <a href="https://hibernate.atlassian.net/browse/HHH/fixforversion/13652" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH/fixforversion/13652</a>.  Artifacts can be found in the usual places.
+</p>
+
+<p class="wikiPara">
+Also, along with this release came a new release (4.0.4.Final) of the hibernate-commons-annotations support library.  For the 2 of you out there who care ;)
+</p>
+
+<p class="wikiPara">
+Anyway, we will now be back at a 4-week timebox.  So the next release (Beta5, or CR if we get to that point by then) will be in 4 weeks from now.  
+</p>
+
+<p class="wikiPara">
+Toodles.</p>
+</div>
+

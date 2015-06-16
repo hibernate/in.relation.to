@@ -1,0 +1,356 @@
+---
+title: "Weblogic 10, Seam, and EJB3"
+author: "Jay Balunas"
+blogger_name: "Jay"
+creation_date: "31-05-2008"
+tags: [Interoperability,Seam,Seam News]
+
+relative_url: /2008/05/31/weblogic-10-seam-and-ejb-3
+slug: weblogic-10-seam-and-ejb-3
+lace: http://in.relation.to/9033.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/05/31/weblogic-10-seam-and-ejb-3
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The latest release of Seam <a href="https://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=163777&amp;release_id=602455" target="" class="regularLink">2.0.2.SP1</a> includes a completely updated reference guide chapter for deploying <a href="http://docs.jboss.com/seam/2.0.2.GA/reference/en-US/html/weblogic.html" target="" class="regularLink">Seam on BEA's Weblogic </a>.  The primary focus was on working around several issues with Weblogic and EJB3 support.
+</p>
+
+<p class="wikiPara">
+We will explain and demonstrate how to get the Seam <tt>jee5/booking</tt> example installed and running on Weblogic 10.0.MP1.  This example demonstrates the use of Seam in a Java EE 5 environment using EJB3 with transaction and persistence context management handled by Weblogic.
+</p>
+
+<h3 class="wikiHeadline3" id="H-WhatYouNeed"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-WhatYouNeed">What you need</a></h3>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=163777&amp;release_id=602455" target="" class="regularLink">Seam 2.0.2.SP1 </a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://commerce.bea.com/showproduct.jsp?family=WLS&amp;major=10&amp;minor=1" target="" class="regularLink">Weblogic 10.0.MP1 </a>
+</li>
+</ul>
+
+<p class="wikiPara">
+First step we need to install Weblogic 10.0.MP1, and create a domain in <tt>Development Mode</tt>.  You can use either the Sun JDK or the JRockit JDK it does not matter to this example.
+</p>
+
+<p class="wikiPara">
+For this example we'll refer to the seam distribution directory as <tt>$SEAM_DIST</tt>, BEA home as <tt>$BEA_HOME</tt>, and the domain home as <tt>$DOMAIN_HOME</tt>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TheWeblogicTtvarargsttIssue"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TheWeblogicTtvarargsttIssue">The Weblogic <tt>varargs</tt> issue</a></h3>
+
+<p class="wikiPara">
+For several release of Weblogic you could not deploy an EJB that used variable arguments in its methods.  Weblogic's internal EJB compiler confuses variable arguments as if it was a <tt>transient</tt> modifier.  Seam uses variable arguments in one of its internal EJB's <tt>TimerServiceDispatcher</tt>, so when deployed this produces an error like this:
+</p>
+
+<pre class="wikiPreformatted">java.io.IOException: Compiler failed executable.exec: /jboss/apps/bea/wlserver_10.0/user_projects/domains/seam_examples/servers/AdminServer/cache/EJBCompilerCache/5yo5dk9ti3yo/org/jboss/seam/async/
+TimerServiceDispatcher_qzt5w2_LocalTimerServiceDispatcherImpl.java:194: modifier transient not allowed here
+  public transient javax.ejb.Timer scheduleAsynchronousEvent(java.lang.String arg0,java.lang.Object[] arg1)</pre>
+
+
+<p class="wikiPara">
+To work around this issue there are 2 options:
+</p>
+
+<h4 class="wikiHeadline4" id="H-Option1ApplyTheTtCR327275ttPatchBut"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-Option1ApplyTheTtCR327275ttPatchBut">Option 1) Apply the <tt>CR327275</tt> patch, but...</a></h4>
+<p class="wikiPara">
+BEA has released a patch that addresses the variable arguments issue.  It is named <tt>CR327275</tt> and can be requested from BEA through their support organization.
+</p>
+
+<p class="wikiPara">
+Unfortunately an additional issue that this patch either causes, or exposes has been reported and verified by BEA (<tt>CR363182</tt>). This issue has to do with certain EJB methods incorrectly left out of Weblogic's generated internal stub classes. Some users have reported that this does not effect them - see this <a href="http://in.relation.to/Bloggers/Seam202GAIsOut#comment8970" target="" class="regularLink">2.0.2.GA release comment</a> for details.
+</p>
+
+<h4 class="wikiHeadline4" id="H-Option2DontDeployTtTimerServiceDispatcherttEJB"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-Option2DontDeployTtTimerServiceDispatcherttEJB">Option 2) Don't deploy <tt>TimerServiceDispatcher</tt> EJB</a></h4>
+<p class="wikiPara">
+Starting with Seam 2.0.2.CR2 a special Weblogic specific jar has been packaged that does not contain the TimerServiceDispatcher . This is the only Seam EJB that uses variable arguments.   
+</p>
+
+<pre class="wikiPreformatted">$SEAM_DIST/lib/interop/jboss-seam-wls-compatible.jar</pre>
+
+
+<p class="wikiPara">
+To use this jar simply rename <tt>jboss-seam-wls-compatible.jar</tt> to <tt>jboss-seam.jar</tt> and replace the original in your applications EAR file.  
+</p>
+
+<p class="wikiPara">
+We will be using this approach for the <tt>jee5/booking</tt> example here.
+</p>
+
+<h3 class="wikiHeadline3" id="H-WeblogicsJSFSupport"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-WeblogicsJSFSupport">Weblogic's JSF support</a></h3>
+<p class="wikiPara">
+Weblogic requires its own JSF 1.2 libraries be deployed when using an <tt>EAR</tt> based application.  I suspect this has to do with classloader visibility while processing <tt>EARs</tt> and deploying <tt>EJBs</tt>.
+</p>
+
+<p class="wikiPara">
+Out of the box Weblogic does not come with its JSF libraries deployed, an like other parts of Weblogic it <i class="wikiEmphasis">almost</i> worked as expected.  
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Start the Server and launch the Weblogic administration console.</li>
+<li class="wikiOrderedListItem"> Deploy <tt>$BEA_HOME/wlserver_10.0/common/deployable-libraries/jsf-1.2.war</tt>
+</li>
+<li class="wikiOrderedListItem"> Make sure <q>Install this deployment as a library</q> is selected</li>
+<li class="wikiOrderedListItem"> On the <tt>Settings for jsf(1.2,1.2.3.1)</tt> page set the <tt>Deployment Order</tt> to <tt>99</tt> so that it is deployed before autodeployed applications.</li>
+<li class="wikiOrderedListItem"> Don't forget to activate your changes</li>
+</ol>
+
+<p class="wikiPara">
+Later you will see how to get your application to reference this shared library.
+</p>
+
+<p class="wikiPara">
+That should be it <i class="wikiEmphasis">but</i> you will get errors like the one below when deploying your application.
+</p>
+
+<pre class="wikiPreformatted">User defined listener com.sun.faces.config.ConfigureListener failed: java.lang.NullPointerException</pre>
+
+
+<p class="wikiPara">
+Again this is most likely due to classloader visibility issues..  To work around this you need to have the <tt>jsf-api.jar</tt> from inside the <tt>jsf-1.2.war</tt> in the <tt>$DOMAIN_HOME/lib</tt> directory.  While you are there you might as well copy in the <tt>$SEAM_DIST/lib/hsqldb.jar</tt> for the next section.  You will need to stop and start your server for these to take effect.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SettingUpTheExampleDataSource"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-SettingUpTheExampleDataSource">Setting up the example data source</a></h3>
+<p class="wikiPara">
+Configuring the <tt>seam-jee5-ds</tt> is pretty straight forward, and we can do it all through the admin console.
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> If you have not already, you will need to copy the <tt>$SEAM_DIST/lib/hsqldb.jar</tt> into the <tt>$DOMAIN_HOME/lib</tt> directory and restart the server.</li>
+<li class="wikiOrderedListItem"> Launch the admin console and navigate to <tt>$DOMAIN_NAME -&gt; Services -&gt; JDBC -&gt; Data Sources</tt>
+</li>
+<li class="wikiOrderedListItem"> Create a new data source with the values below.</li>
+</ol>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Name = <tt>seam-jee5-ds</tt>
+</li>
+<li class="wikiUnorderedListItem"> JNDI Name = <tt>seam-jee5-ds</tt>
+</li>
+<li class="wikiUnorderedListItem"> Set database type to <tt>other</tt>
+</li>
+<li class="wikiUnorderedListItem"> Database name = <tt>hsqldb</tt>
+</li>
+<li class="wikiUnorderedListItem"> Host Name = <tt>127.0.0.1</tt>
+</li>
+<li class="wikiUnorderedListItem"> Port = <tt>9001</tt>
+</li>
+<li class="wikiUnorderedListItem"> Username = <tt>sa</tt>
+</li>
+<li class="wikiUnorderedListItem"> Driver class = <tt>org.hsqldb.jdbc.Driver</tt>
+</li>
+<li class="wikiUnorderedListItem"> URL = <tt>jdbc:hsqldb:.</tt>
+</li>
+</ul>
+
+<p class="wikiPara">
+Then just choose your domain for the data source and activate your changes.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheTtexamplejee5bookingttExample"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TheTtexamplejee5bookingttExample">The <tt>example/jee5/booking</tt> example</a></h2>
+<p class="wikiPara">
+Now Weblogic is all set up we need to make some adjustments to the <tt>jee5/booking</tt> example.  These are mainly configuration file and build script changes.  
+</p>
+
+<h3 class="wikiHeadline3" id="H-ConfigurationFileChanges"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-ConfigurationFileChanges">Configuration File changes</a></h3>
+<p class="wikiPara">
+Paths are assumed from the <tt>$SEAM_DIST/examples/jee5/booking</tt> directory
+</p>
+
+<h4 class="wikiHeadline4" id="H-TtresourcesMETAINFpersistencexmltt"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TtresourcesMETAINFpersistencexmltt"><tt>resources/META-INF/persistence.xml</tt></a></h4>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Comment out glassfish properties</li>
+<li class="wikiUnorderedListItem"> Set <tt>&lt;jta-data-source&gt;seam-jee5-ds&lt;/jta-data-source&gt;</tt>
+</li>
+<li class="wikiUnorderedListItem"> Add the following properties:</li>
+</ul>
+
+<pre class="wikiPreformatted">&lt;property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/&gt;
+&lt;property name="hibernate.transaction.manager_lookup_class" value="org.hibernate.transaction.WeblogicTransactionManagerLookup"/&gt;</pre>
+
+
+<h4 class="wikiHeadline4" id="H-TtresourcesWEBINFwebxmltt"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TtresourcesWEBINFwebxmltt"><tt>resources/WEB-INF/web.xml</tt></a></h4>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Because the <tt>JSF</tt> jars are not going to be packaged in the <tt>WAR</tt> we need to add:</li>
+</ul>
+
+<pre class="wikiPreformatted">&lt;listener&gt;
+    &lt;listener-class&gt;com.sun.faces.config.ConfigureListener&lt;/listener-class&gt;
+&lt;/listener&gt;</pre>
+
+
+<h4 class="wikiHeadline4" id="H-TtresourcesMETAINFweblogicapplicationxmltt"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TtresourcesMETAINFweblogicapplicationxmltt"><tt>resources/META-INF/weblogic-application.xml</tt></a></h4>
+<p class="wikiPara">
+You must create this file:
+</p>
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+
+&lt;weblogic-application&gt;
+    &lt;library-ref&gt;
+        &lt;library-name&gt;jsf&lt;/library-name&gt;
+        &lt;specification-version&gt;1.2&lt;/specification-version&gt;
+        &lt;implementation-version&gt;1.2&lt;/implementation-version&gt;
+        &lt;exact-match&gt;false&lt;/exact-match&gt;
+    &lt;/library-ref&gt;
+    &lt;prefer-application-packages&gt;
+        &lt;package-name&gt;antlr.*&lt;/package-name&gt;
+    &lt;/prefer-application-packages&gt;
+&lt;/weblogic-application&gt;</pre>
+
+<p class="wikiPara">
+This allows the <tt>EAR</tt> to reference the JSF libraries installed above, and also manages a dependency conflict with <tt>antlr</tt>.
+</p>
+
+<h4 class="wikiHeadline4" id="H-TtresourcesWEBINFweblogicxmltt"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TtresourcesWEBINFweblogicxmltt"><tt>resources/WEB-INF/weblogic.xml</tt></a></h4>
+<p class="wikiPara">
+You must create this file:
+</p>
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+
+&lt;weblogic-web-app&gt; 
+&lt;library-ref&gt;
+    &lt;library-name&gt;jsf&lt;/library-name&gt;
+    &lt;specification-version&gt;1.2&lt;/specification-version&gt;
+    &lt;implementation-version&gt;1.2&lt;/implementation-version&gt;
+    &lt;exact-match&gt;false&lt;/exact-match&gt;
+  &lt;/library-ref&gt;
+&lt;/weblogic-web-app&gt;</pre>
+
+<p class="wikiPara">
+This allows the <tt>WAR</tt> to reference the JSF libraries installed above and <i class="wikiEmphasis">yes</i>, it is needed in both places ;-)
+</p>
+
+<h4 class="wikiHeadline4" id="H-TtresourcesMETAINFejbjarxmltt"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TtresourcesMETAINFejbjarxmltt"><tt>resources/META-INF/ejb-jar.xml</tt></a></h4>
+<p class="wikiPara">
+Update the <tt>&lt;assembly-descriptor&gt;</tt> to look like the following:
+</p>
+
+<pre class="wikiPreformatted">&lt;assembly-descriptor&gt;
+   &lt;interceptor-binding&gt; 
+      &lt;ejb-name&gt;AuthenticatorAction&lt;/ejb-name&gt;
+      &lt;interceptor-class &gt;org.jboss.seam.ejb.SeamInterceptor&lt;/interceptor-class&gt;
+   &lt;/interceptor-binding&gt;
+   &lt;interceptor-binding&gt; 
+      &lt;ejb-name&gt;BookingListAction&lt;/ejb-name&gt;
+      &lt;interceptor-class &gt;org.jboss.seam.ejb.SeamInterceptor&lt;/interceptor-class&gt;
+   &lt;/interceptor-binding&gt;
+   &lt;interceptor-binding&gt; 
+      &lt;ejb-name&gt;RegisterAction&lt;/ejb-name&gt;
+      &lt;interceptor-class &gt;org.jboss.seam.ejb.SeamInterceptor&lt;/interceptor-class&gt;
+   &lt;/interceptor-binding&gt;
+   &lt;interceptor-binding&gt; 
+      &lt;ejb-name&gt;ChangePasswordAction&lt;/ejb-name&gt;
+      &lt;interceptor-class &gt;org.jboss.seam.ejb.SeamInterceptor&lt;/interceptor-class&gt;
+   &lt;/interceptor-binding&gt;
+   &lt;interceptor-binding&gt; 
+      &lt;ejb-name&gt;HotelBookingAction&lt;/ejb-name&gt;
+      &lt;interceptor-class &gt;org.jboss.seam.ejb.SeamInterceptor&lt;/interceptor-class&gt;
+   &lt;/interceptor-binding&gt;
+   &lt;interceptor-binding&gt; 
+      &lt;ejb-name&gt;HotelSearchingAction&lt;/ejb-name&gt;
+      &lt;interceptor-class &gt;org.jboss.seam.ejb.SeamInterceptor&lt;/interceptor-class&gt;
+   &lt;/interceptor-binding&gt;
+   &lt;interceptor-binding&gt; 
+      &lt;ejb-name&gt;EjbSynchronizations&lt;/ejb-name&gt;
+      &lt;interceptor-class &gt;org.jboss.seam.ejb.SeamInterceptor&lt;/interceptor-class&gt;
+   &lt;/interceptor-binding&gt;
+&lt;/assembly-descriptor&gt;</pre>
+
+
+<p class="wikiPara">
+The changes to this file were the real challenge with Weblogic (<i class="wikiEmphasis">to be polite about it</i>).  Unlike the other application servers tested Weblogic is only using a single instance of the <tt>sessionBeanInterceptor</tt> for all session beans if <tt>&lt;ejb-name&gt;*&lt;/ejb-name&gt;</tt> is used.  By defining a separate interceptor for each bean we force Weblogic to create a distinct instance for each session bean.
+</p>
+
+<p class="wikiPara">
+Note: There was a deployment descriptor that should have changed this behavior, but it did not have any effect.    
+</p>
+
+<h3 class="wikiHeadline3" id="H-DependenciesAndGettingThemPackaged"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-DependenciesAndGettingThemPackaged">Dependencies and getting them packaged</a></h3>
+<p class="wikiPara">
+There are just a couple of changes needed the build file so that the new files above are packaged, and some extra jars are included.
+</p>
+
+<h4 class="wikiHeadline4" id="H-Ttbuildxmltt"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-Ttbuildxmltt"><tt>build.xml</tt></a></h4>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Add the bits below:</li>
+</ul>
+
+<pre class="wikiPreformatted">&lt;!-- jars to go in the war's lib --&gt;
+&lt;fileset id="war.lib.extras" dir="${seam.dir}"&gt; 
+   &lt;include name="lib/richfaces-api.jar" /&gt;
+&lt;/fileset&gt;
+
+&lt;!-- Resources to go in the ear --&gt;
+&lt;fileset id="ear.resources" dir="${resources.dir}"&gt;
+   &lt;include name="META-INF/application.xml" /&gt;
+   &lt;include name="META-INF/weblogic-application.xml" /&gt;
+   &lt;include name="META-INF/*-service.xml" /&gt;
+   &lt;include name="META-INF/*-xmbean.xml" /&gt;
+   &lt;include name="treecache.xml" /&gt;
+   &lt;include name="*.jpdl.xml" /&gt;
+   &lt;exclude name=".gpd.*" /&gt;
+   &lt;include name="*.cfg.xml" /&gt;
+   &lt;include name="*.xsd" /&gt;
+&lt;/fileset&gt;</pre>
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Search for <tt>ear.lib.extras</tt> fileset and add these:</li>
+</ul>
+
+<pre class="wikiPreformatted">&lt;include name="examples/wiki/lib/jboss-archive-browsing.jar" /&gt;
+&lt;include name="lib/concurrent.jar" /&gt;</pre>
+
+
+<h4 class="wikiHeadline4" id="H-TtSEAMDISTlibinteropjbossseamwlscompatiblejartt"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TtSEAMDISTlibinteropjbossseamwlscompatiblejartt"><tt>$SEAM_DIST/lib/interop/jboss-seam-wls-compatible.jar</tt></a></h4>
+<p class="wikiPara">
+The last item to deal with is to replace the <tt>jboss-seam.jar</tt> with the <tt>jboss-seam-wls-compatible.jar</tt>.  There are really two options.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Backup the original <tt>$SEAM_DIST/lib/jboss-seam.jar</tt> and rename and replace with <tt>jboss-seam-wls-compatible.jar</tt>
+</li>
+<li class="wikiUnorderedListItem"> Modify the <tt>jboss-seam-jee5.ear</tt> after the build and replace the jar there.</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-DeployingAndViewingYourApplication"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-DeployingAndViewingYourApplication">Deploying and viewing your application</a></h3>
+<p class="wikiPara">
+Now all we have to do build the application and deploy it.
+</p>
+
+<p class="wikiPara">
+If you chose the first option for handling the <tt>jboss-seam-wls-compatible.jar</tt> then all we need to do is execute:
+</p>
+
+<pre class="wikiPreformatted">$SEAM_DIST/examples/jee5/booking/ant</pre>
+
+
+<p class="wikiPara">
+Then because we created our Weblogic domain in development mode we deploy it to the autodeploy directory.
+</p>
+
+<pre class="wikiPreformatted">cp $SEAM_DIST/examples/jee5/booking/dist/jboss-seam-jee5.ear $DOMAIN_HOME/autodeploy</pre>
+
+
+<p class="wikiPara">
+Now point your browser at <tt>http://localhost:7001/seam-jee5/</tt>
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">If you see classdef or classloader issues during deployment or redeployment try removing the <tt>EAR</tt> from the <tt>autodeploy</tt> directory, restarting the server, and redeploying.  Weblogic sometimes has classloader issues when applications are redeployed.</i>
+</p>
+
+<h3 class="wikiHeadline3" id="H-TtWouldYouLikeToKnowMorett"><a href="/2008/05/31/weblogic-10-seam-and-ejb-3#H-TtWouldYouLikeToKnowMorett"><tt>Would you like to know more?</tt></a></h3>
+<p class="wikiPara">
+See the reference guide chapter: <a href="http://docs.jboss.com/seam/2.0.2.SP1/reference/en-US/html/weblogic.html" target="" class="regularLink">Seam on BEA's Weblogic</a> with details on this example and other Seam applications on Weblogic.
+</p>
+
+
+</div>
+

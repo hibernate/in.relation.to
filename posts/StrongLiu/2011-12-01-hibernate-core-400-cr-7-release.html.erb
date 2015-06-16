@@ -1,0 +1,51 @@
+---
+title: "Hibernate Core 4.0.0.CR7 Release"
+author: "Strong Liu"
+blogger_name: "StrongLiu"
+creation_date: "01-12-2011"
+tags: [Core Release,Development,Hibernate,News]
+
+relative_url: /2011/12/01/hibernate-core-400-cr-7-release
+slug: hibernate-core-400-cr-7-release
+lace: http://in.relation.to/22485.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/12/01/hibernate-core-400-cr-7-release
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate Core 4.0.0.CR7 has just been released. The complete list of changes can be found in the JIRA <a href="https://hibernate.onjira.com/browse/HHH/fixforversion/11653" target="" class="regularLink">release notes</a>.
+</p>
+
+<p class="wikiPara">
+In this release, we have some performance improvement issue resolved, for example:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-5945" target="" class="regularLink">HHH-5945 </a> - Race condition in building query cache</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-6845" target="" class="regularLink">HHH-6845 </a> - Avoid repeated invocations of ReflectHelper.overridesEquals in proxy initializers</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-6858" target="" class="regularLink">HHH-6858 </a> - Minor performance improvements after hotspots analysis</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-6862" target="" class="regularLink">HHH-6862 </a> - Reuse cached entryArray of IdentityMap in StatefulPersistenceContext as much as possible</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-6868" target="" class="regularLink">HHH-6868 </a> - Lazily initialize HashMap in LockOptions</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-6286" target="" class="regularLink">HHH-6286 </a> - UpdateTimestampsCache should try to avoid acquiring lock if possible</li>
+</ul>
+
+<p class="wikiPara">
+And in this release, we also fixed lots of bugs found with running hibernate tests on supported DB matrix (the matrix is not complicated, we only runs on a small subset of hibernate supported DBs), we're working hard to resolve all failures we found, and keep the CI job clean (the CI job can be accessed <a href="http://ci.jboss.org/jenkins/job/hibernate-core-master-matrix" target="" class="regularLink">here </a>).
+</p>
+
+<p class="wikiPara">
+The release is available from SourceForge in <a href="https://sourceforge.net/projects/hibernate/files/hibernate4/4.0.0.CR7" target="" class="regularLink">bundle form</a> as well as from the JBoss Nexus repository under the <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate/" target="" class="regularLink">org.hibernate </a> groupId.
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+
+<p class="wikiPara">
+P.S. I really hope this is our last CR release. :D</p>
+</div>
+

@@ -1,0 +1,199 @@
+---
+title: "EE6 wishlist part III: Unified EL"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "09-07-2007"
+tags: [EE6 Wishlist]
+
+relative_url: /2007/07/09/ee-6-wishlist-part-iii-unified-el
+slug: ee-6-wishlist-part-iii-unified-el
+lace: http://in.relation.to/1995.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/07/09/ee-6-wishlist-part-iii-unified-el
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+This is the third installment of a series. Parts II is here:
+</p>
+
+<p class="wikiPara">
+<a href="http://blog.hibernate.org/cgi-bin/blosxom.cgi/2007/07/09#ee6part2" target="" class="regularLink">http://blog.hibernate.org/cgi-bin/blosxom.cgi/2007/07/09#ee6part2</a>
+</p>
+
+<p class="wikiPara">
+The new Unified EL API used by JSF and JSP is a really useful addition to the Java platform. Unfortunately, while a lot of effort was put into designing the Java-level APIs for working with Unified EL, the expression language itself hasn't changed much since the earliest days of JSP. It is now well past time for some new features. A more powerful EL lets us keep presentation logic in our page, and avoids polluting the business model with extra methods.
+</p>
+
+<p class="wikiPara">
+Here's some suggestions I have, though I'm not at all attached to the suggested syntaxes.
+</p>
+
+<h2 class="wikiHeadline2" id="H-MethodParameters"><a href="/2007/07/09/ee-6-wishlist-part-iii-unified-el#H-MethodParameters">Method parameters</a></h2>
+<p class="wikiPara">
+This is one of those <q>what were they thinking?!</q> moments. Unified EL does not support method expressions with parameters. Really. 
+</p>
+
+<p class="wikiPara">
+Suggested syntax:
+</p>
+
+<pre class="wikiPreformatted">
+customer.getOrder(ordernumber).product.name
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-SwitchStatement"><a href="/2007/07/09/ee-6-wishlist-part-iii-unified-el#H-SwitchStatement">Switch statement</a></h2>
+<p class="wikiPara">
+In JSP or JSF pages it's very useful to be able to handle multiple cases in a single expression. 
+</p>
+
+<p class="wikiPara">
+Suggested syntax:
+</p>
+
+<pre class="wikiPreformatted">
+switch (order.status) { case OPEN: 'Open' case CLOSED: 'Closed' else '' }
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-DatesAndTimes"><a href="/2007/07/09/ee-6-wishlist-part-iii-unified-el#H-DatesAndTimes">Dates and times</a></h2>
+<p class="wikiPara">
+Currently, there is no way to compare dates and times in EL. The <tt>&lt;</tt>, <tt>&gt;</tt>, <tt>&lt;=</tt> and <tt>&gt;=</tt> operators should be extended to support java.util.Date. It may also be worth introducing a syntax for date/time literals. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-CollectionSizeOperator"><a href="/2007/07/09/ee-6-wishlist-part-iii-unified-el#H-CollectionSizeOperator">Collection size operator</a></h2>
+<p class="wikiPara">
+Amazingly, there is no simple way to determine the size of a collection in EL! 
+</p>
+
+<p class="wikiPara">
+Suggested syntax:
+</p>
+
+<pre class="wikiPreformatted">
+size customer.orders 
+</pre>
+
+
+<p class="wikiPara">
+This operator should work for any Collection, Map, String or Iterable. Furthermore, the empty operator should be extended to support Map and Iterable. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-CollectionConstructors"><a href="/2007/07/09/ee-6-wishlist-part-iii-unified-el#H-CollectionConstructors">Collection constructors</a></h2>
+<p class="wikiPara">
+When defining pages, it is useful to be able to iterate over collection literals. 
+</p>
+
+<p class="wikiPara">
+Suggested syntax for creating a java.util.List instance:
+</p>
+
+<pre class="wikiPreformatted">
+{'foo', 'bar', 'baz'}
+</pre>
+
+
+<p class="wikiPara">
+Suggested syntax for creating a java.util.Map instance:
+</p>
+
+<pre class="wikiPreformatted">
+{'foo'-&gt;1, 'bar'-&gt;3}
+</pre>
+
+
+<p class="wikiPara">
+Suggested syntax for creating a java.util.List instance with for a specified range of integers:
+</p>
+
+<pre class="wikiPreformatted">
+{1...100}
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-CollectionIteration"><a href="/2007/07/09/ee-6-wishlist-part-iii-unified-el#H-CollectionIteration">Collection iteration</a></h2>
+<p class="wikiPara">
+This feature is a kind of poor-man's closure support. It should work for all instances of Iterable.
+</p>
+
+<p class="wikiPara">
+The following suggested syntax returns the list {2, 3, 4}:
+</p>
+
+<pre class="wikiPreformatted">
+{1, 2, 3} collect { x -&gt; x+1 }
+</pre>
+
+
+<p class="wikiPara">
+The following returns {2, 3}:
+</p>
+
+<pre class="wikiPreformatted">
+{1, 2, 3} select { x -&gt; x&gt;1 }
+</pre>
+
+
+<p class="wikiPara">
+The following returns the object 2:
+</p>
+
+<pre class="wikiPreformatted">
+{1, 2, 3} detect { x -&gt; x&gt;1 }
+</pre>
+
+
+<p class="wikiPara">
+The following returns the object 3:
+</p>
+
+<pre class="wikiPreformatted">
+{1, 2, 3} detect { max, x -&gt; max&gt;=x }
+</pre>
+
+
+<p class="wikiPara">
+The following returns {3, 2, 1}:
+</p>
+
+<pre class="wikiPreformatted">
+{1, 2, 3} desc
+</pre>
+
+
+<p class="wikiPara">
+The following sorts the customers by name:
+</p>
+
+<pre class="wikiPreformatted">
+customers asc { c -&gt; customer.name }
+</pre>
+
+
+<p class="wikiPara">
+An alternative approach might be to copy Python's list comprehensions:
+</p>
+
+<pre class="wikiPreformatted">
+[ x+1 for x in {1, 2, 3} where x&gt;1 ]
+</pre>
+
+
+<p class="wikiPara">
+which results in {3, 4}.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2007/07/09/ee-6-wishlist-part-iii-unified-el#H-Conclusion">Conclusion</a></h2>
+<p class="wikiPara">
+The point of this is not to turn Unified EL into a programming language. I actually prefer it to be relatively bare-boned compared to OGNL or MVEL. Rather, the point is to remove certainl pain-points where the only current solution is to fall back to writing presentation logic in Java code.
+</p>
+
+<p class="wikiPara">
+An alternative to improving the Unified EL would be to allow JSF/JSP expressions to be writting in JavaScript, Groovy, or some other scripting language. I'm openminding on that, it would certainly be possible to wrap the JavaScript interpreter behind a Unified EL ExpressionFactory. But I worry that it pushes people in the wrong direction of writing templates that contain procedural code. The last thing I want to see is JSF templates that look like .rhtml files ;-)
+</p>
+</div>
+

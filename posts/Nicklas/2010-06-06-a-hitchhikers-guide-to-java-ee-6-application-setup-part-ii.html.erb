@@ -1,0 +1,360 @@
+---
+title: "A Hitchhikers Guide to Java EE 6 application setup, Part II"
+author: "Nicklas Karlsson"
+blogger_name: "Nicklas"
+creation_date: "06-06-2010"
+tags: [ICEfaces ICEfaces2]
+
+relative_url: /2010/06/06/a-hitchhikers-guide-to-java-ee-6-application-setup-part-ii
+slug: a-hitchhikers-guide-to-java-ee-6-application-setup-part-ii
+lace: http://in.relation.to/15741.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/06/06/a-hitchhikers-guide-to-java-ee-6-application-setup-part-ii
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+This is part II of my series on how to set up a Java EE 6 application and stuff as many technologies into a 
+simple application that can ever fit. And then some.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ICEfaces"><a href="/2010/06/06/a-hitchhikers-guide-to-java-ee-6-application-setup-part-ii#H-ICEfaces">ICEfaces</a></h1>
+
+<p class="wikiPara">
+Now let's pull in <a href="http://www.icefaces.org" target="" class="regularLink">ICEfaces</a>. The guys at RedHat/JBoss have a RichFaces fetisch so it's only fair that the competition
+gets some attention, too. And it increases my chances of getting a t-shirt in the ICEfaces blogging competition. 
+Oh yeah, and it's a nice framework in general.
+</p>
+
+<p class="wikiPara">
+Now since we're living on the edge, lets pull in their 2.0 alpha3 version. Unfortunately, the new component set didn't
+make A3 so it's a bit vanilla at this stage. Anyway, let's add their snapshots repository to our pom.xml
+</p>
+
+<pre class="wikiPreformatted">
+&lt;repositories&gt;
+	&lt;repository&gt;
+		&lt;id&gt;ICEfaces snapshots&lt;/id&gt;
+		&lt;url&gt;http://anonsvn.icefaces.org/repo/maven2/snapshots/&lt;/url&gt;
+	&lt;/repository&gt;
+&lt;/repositories&gt;
+</pre>
+
+
+<p class="wikiPara">
+and add a version property
+</p>
+
+<pre class="wikiPreformatted">
+&lt;icefaces.version&gt;2.0-A3&lt;/icefaces.version&gt;
+</pre>
+
+
+<p class="wikiPara">
+and add the deps
+</p>
+
+<pre class="wikiPreformatted">
+&lt;dependency&gt;
+	&lt;groupId&gt;org.icefaces&lt;/groupId&gt;
+	&lt;artifactId&gt;icefaces&lt;/artifactId&gt;
+	&lt;version&gt;${icefaces.version}&lt;/version&gt;
+	&lt;exclusions&gt;
+		&lt;exclusion&gt;
+			&lt;groupId&gt;javax.faces&lt;/groupId&gt;
+			&lt;artifactId&gt;jsf-impl&lt;/artifactId&gt;
+		&lt;/exclusion&gt;
+	&lt;/exclusions&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+	&lt;groupId&gt;org.icefaces&lt;/groupId&gt;
+	&lt;artifactId&gt;icepush&lt;/artifactId&gt;
+	&lt;version&gt;${icefaces.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+
+<p class="wikiPara">
+Notice how we exclude the jsf-impl? We're using an appserver for crying out loud! No need to throw stuff like that in, it's already provided.
+</p>
+
+<p class="wikiPara">
+Next let's change out GreetingBean to actually do something more useful
+</p>
+
+<pre class="wikiPreformatted">
+package com.acme.greetings;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Named;
+
+import org.icefaces.application.PushRenderer;
+
+@ApplicationScoped
+@Named
+public class GreetingBean implements Serializable
+{
+   String greeting;
+   List&lt;String&gt; greetings = new ArrayList&lt;String&gt;();
+
+   public void addGreeting()
+   {
+      greetings.add(greeting);
+      greeting = "";
+      PushRenderer.render("greetings");
+   }
+
+   public String getGreeting()
+   {
+      return greeting;
+   }
+
+   public void setGreeting(String greeting)
+   {
+      this.greeting = greeting;
+   }
+
+   public List&lt;String&gt; getGreetings()
+   {
+      PushRenderer.addCurrentSession("greetings");
+      return greetings;
+   }
+
+   public void setGreetings(List&lt;String&gt; greetings)
+   {
+      this.greetings = greetings;
+   }
+
+}
+</pre>
+
+
+<p class="wikiPara">
+We've changed the GreetingBean to become @ApplicationScoped, that is, common for everyone so we have a sort of a chatroom.
+In getGreetings() we register the PushRenderer for our session and in addGreeting we trigged a render to all the currently active clients. This mechanism allows
+for DOM-changed to be pushed to the clients withoug need for active polling or browser refresh. Neat, huh? 
+</p>
+
+<p class="wikiPara">
+Registering the PushRenderer sessions in a getter like this is a bit of a hack that stems from the fact that we have this application-scoped Grand Unified Bean 
+that is initialized only once (for the first user triggering it) while the sessions need to be registered for each client on their FacesContext (I actually got 
+this wrong the first time). No worries, we will fix this in the next part where we refactor it into GreetingServer and GreetingClient which have more appropriate 
+scopes. Writing applications is a constant flow of refactorings and improvements, remember?
+</p>
+
+<p class="wikiPara">
+Let's for now forget about such trivialities as concurrent access to the list etc (we're moving it to a concurrency-controlled @Singleton later on). We're in a happy place...
+</p>
+
+<p class="wikiPara">
+Fixing the broken test is left as a exercise for the reader.
+</p>
+
+<p class="wikiPara">
+Now let's change our greetings.xhtml to use the new backing bean
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+	&lt;h:head&gt;
+		&lt;title&gt;
+			Greetings
+		&lt;/title&gt;
+	&lt;/h:head&gt;
+
+	&lt;h:body&gt;
+		&lt;h:form&gt;
+			&lt;h:dataTable value="#{greetingBean.greetings}" var="greeting"&gt;
+				&lt;h:column&gt;
+					&lt;h:outputText value="#{greeting}"/&gt;
+				&lt;/h:column&gt;
+			&lt;/h:dataTable&gt;
+			&lt;h:inputText value="#{greetingBean.greeting}"/&gt;
+			&lt;h:commandButton value="Add" action="#{greetingBean.addGreeting}" /&gt;
+		&lt;/h:form&gt;
+	&lt;/h:body&gt;
+&lt;/html&gt;
+</pre>
+
+
+<p class="wikiPara">
+Repack. Redploy. Re...what...the...$CURSE$ is a ZipException and what does it want from me? Oops. Known bug in M3, let's work around it
+</p>
+
+<p class="wikiPara">
+When the going gets tough, the tough get going. Locate icefaces-2.0-A3.jar from your local repository. Extract it's faces-config.xml,
+replace your own faces-config.xml with it (it was empty, anyways) and finally rip out the entire faces-config.xml from the icefaces jar
+(picture the heart scene from Indiana Jones and the Temple of Doom). 
+</p>
+
+<p class="wikiPara">
+I could have said <q>move faces-config.xml from the icefaces jar to the application WEB-INF</q> but that sounded a lot more cool.
+</p>
+
+<p class="wikiPara">
+Repack. Redeploy. Rejoyce. Business as usual.
+</p>
+
+<p class="wikiPara">
+Point your browser at http://localhost:8080/Greetings-1.0.0-SNAPSHOT/faces/greetings.xhtml and add some text. Now comes the nice part - 
+open another browser (another brand) or use the incognito mode (you know the mode where we can surf... gifts to our loved ones without
+leaving traces in the browsing history) or the IE <q>new session</q> to open another session to the application. This is important because 
+browsers commonly share session and cookies between tabs so we want to make sure there's no cheating involved here. Tap in some comment 
+in the other application and they should become visible immediately. Ta-daa...
+</p>
+
+<h1 class="wikiHeadline1" id="H-ICEfaces2"><a href="/2010/06/06/a-hitchhikers-guide-to-java-ee-6-application-setup-part-ii#H-ICEfaces2">ICEfaces 2</a></h1>
+
+<p class="wikiPara">
+Now lets bring in some ice components. Wait, didn't you just say they were slipped from alpha3? Yes, the new ones but you are still able to
+use the components from the 1.8-series by adding some compatibility lib. Let's add the deps to pom.xml
+</p>
+
+<pre class="wikiPreformatted">
+&lt;dependency&gt;
+	&lt;groupId&gt;org.icefaces&lt;/groupId&gt;
+	&lt;artifactId&gt;icefaces-compat&lt;/artifactId&gt;
+	&lt;version&gt;${icefaces.version}&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+	&lt;groupId&gt;org.icefaces&lt;/groupId&gt;
+	&lt;artifactId&gt;icefaces-comps-compat&lt;/artifactId&gt;
+	&lt;version&gt;${icefaces.version}&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+
+<p class="wikiPara">
+And yes, to avoid the dreaded ZipException when deploying the application, you have to move the contents from the faces-config.xml files in the jars in your
+local repository into your applications own faces-config.xml before assembling and deploying the application.
+</p>
+
+<p class="wikiPara">
+Next, lets' modify the greetings.xml to add the namespace 
+</p>
+
+<pre class="wikiPreformatted">
+&lt;html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ice="http://www.icesoft.com/icefaces/component"
+	xmlns:ui="http://java.sun.com/jsf/facelets"&gt;
+</pre>
+
+
+<p class="wikiPara">
+and let's change the input field to the iced version that supports effects
+</p>
+
+<pre class="wikiPreformatted">
+&lt;ice:inputText value="#{greetingBean.greeting.text}" effect="#{greetingBean.appear}"/&gt;
+</pre>
+
+
+<p class="wikiPara">
+and finally we add an effect-producer to GreetingBean
+</p>
+
+<pre class="wikiPreformatted">
+@Produces
+@RequestScoped
+public Effect getAppear()
+{
+     return new Appear();
+}
+</pre>
+
+
+<p class="wikiPara">
+Bling-bling!
+</p>
+
+<h1 class="wikiHeadline1" id="H-SomeURLCleaning"><a href="/2010/06/06/a-hitchhikers-guide-to-java-ee-6-application-setup-part-ii#H-SomeURLCleaning">Some URL cleaning</a></h1>
+
+<p class="wikiPara">
+As I mentioned before, the URL isn't that user-friendly, let's see what we can do about that. Let's start with the http listener port.
+We have two options - read the documentation or search all xml files that contain the string <q>8080</q>. Let's go with the second option
+as I know that's how you do stuff usually anyway. bindings-jboss-beans.xml in server\default\conf\bindingservice.beans\META-INF sounds
+promising. s/8080/80.
+</p>
+
+<p class="wikiPara">
+Next - the welcome file. Edit web.xml and add
+</p>
+
+<pre class="wikiPreformatted">
+&lt;welcome-file-list&gt;
+	&lt;welcome-file&gt;faces/welcome.xhtml&lt;/welcome-file&gt;
+&lt;/welcome-file-list&gt;
+</pre>
+
+
+<p class="wikiPara">
+(Hey! It's actually working! I was just getting to the part where I would complain about having to add a redirecting index.html)
+</p>
+
+<p class="wikiPara">
+Next - the web context root. Sure, it could be fixed by changing the name of the war as they are in synch if not otherwise stated but
+let's state otherwise. There is no standard way of doing this(?) so let's do the vendor specific thingie instead. Add jboss-web.xml next
+to web.xml containing
+</p>
+
+<pre class="wikiPreformatted">
+&lt;jboss-web&gt;
+    &lt;context-root&gt;Greetings&lt;/context-root&gt;
+&lt;/jboss-web&gt;
+</pre>
+
+
+<p class="wikiPara">
+Now we have gone from 
+</p>
+
+<pre class="wikiPreformatted">
+http://localhost:8080/Greetings-1.0.0-SNAPSHOT/faces/greetings.xhtml
+</pre>
+
+
+<p class="wikiPara">
+to 
+</p>
+
+<pre class="wikiPreformatted">
+http://localhost/Greetings
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-ANoteOnTesting"><a href="/2010/06/06/a-hitchhikers-guide-to-java-ee-6-application-setup-part-ii#H-ANoteOnTesting">A note on testing</a></h1>
+
+<p class="wikiPara">
+As you expand your application to bring in new dependencies (such as ICEfaces) always keep in mind that testing those classes also means you have to provide
+the dependencies in the Arquillian deployment. So be sure to add the dependent jars, the view of the world the Arquillian testing archives have is what you pack in them manually (apart from what the appserver already provides).
+</p>
+
+<p class="wikiPara">
+This concludes part II, in the next part I'll get to JPA 2 and the static metamodel generator conf.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartI" target="" class="regularLink">part I </a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIII" target="" class="regularLink">part III </a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartIV" target="" class="regularLink">part IV </a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/AHitchhikersGuideToJavaEE6ApplicationSetupPartV" target="" class="regularLink">part V </a>
+</li>
+</ul>
+</div>
+

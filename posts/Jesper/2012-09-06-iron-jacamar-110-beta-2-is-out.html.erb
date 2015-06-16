@@ -1,0 +1,128 @@
+---
+title: "IronJacamar 1.1.0.Beta2 is out"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+creation_date: "06-09-2012"
+tags: []
+
+relative_url: /2012/09/06/iron-jacamar-110-beta-2-is-out
+slug: iron-jacamar-110-beta-2-is-out
+lace: http://in.relation.to/23513.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/09/06/iron-jacamar-110-beta-2-is-out
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm happy to announce the 2nd beta release of the IronJacamar 1.1 series.
+</p>
+
+<p class="wikiPara">
+The full release notes are <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12310691&amp;version=12319562" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DeveloperProductivity"><a href="/2012/09/06/iron-jacamar-110-beta-2-is-out#H-DeveloperProductivity">Developer productivity</a></h2>
+
+<p class="wikiPara">
+In this release we took a hard look at how resource adapter development is done, and what it would take to be more productive. The previous releases of IronJacamar have featured an embedded environment, and various tools to help you get started. But more was needed in our view.
+</p>
+
+<p class="wikiPara">
+First we got rid of the requirement to have an on-disk representation of the IronJacamar deployment descriptors. So now you are able to deploy a ShrinkWrap/Descriptor instead for all these XSDs.
+</p>
+
+<p class="wikiPara">
+Next was the ability to test your resource adapter in error scenarios such that you are sure that it'll behave correctly. For this we integrated the <a href="http://www.jboss.org/byteman" target="" class="regularLink">Byteman</a> tool in the embedded environment.
+</p>
+
+<p class="wikiPara">
+Then, the biggest problem in resource adapter development: Access to the Enterprise Information System (EIS). An EIS can be large installation, and in many cases it isn't really suited to run as part of a developer test suite run, since they don't really integrate well with embedded unit testing. So we have included an <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/eis.html" target="" class="regularLink">EIS test server</a> in our distribution where you can implement a <q>Handler</q> interface that mocks the communication protocol of the EIS in order to make your smoke tests pass without an actual EIS installation. The EIS test server can run in Apache Ant, Apache Maven and standalone environments, so you should be covered in most cases. Otherwise let us know. Our code generator of course knows how to handle the integration, so you can check it out that way. And I'm not saying that using the EIS test server is enough for your resource adapter to go into a real test or production environment; it is a help for resource adapter developers, not a golden bullet.
+</p>
+
+<p class="wikiPara">
+Finally we upgraded the libraries used for our embedded platform in order to get the latest fixes.
+</p>
+
+<p class="wikiPara">
+You can find more information here:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/ironjacamar/api/embedded/1.1/" target="" class="regularLink">Embedded API</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/embedded.html" target="" class="regularLink">Embedded Userguide </a>
+</li>
+</ul>
+
+<p class="wikiPara">
+And our <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/eclipse.html" target="" class="regularLink">Eclipse plugin</a> have been verified on Eclipse 4.2 (Juno) to top it off :)
+</p>
+
+<h2 class="wikiHeadline2" id="H-DistributedWorkManagerOnSteroids"><a href="/2012/09/06/iron-jacamar-110-beta-2-is-out#H-DistributedWorkManagerOnSteroids">DistributedWorkManager on steroids</a></h2>
+
+<p class="wikiPara">
+The DistributedWorkManager saw a big update in this release.
+</p>
+
+<p class="wikiPara">
+Our policy module was updated with a <q>WaterMark</q> implementation, which will look at how many free threads are available to the local WorkManager. The default setup is a value of 0, which will start to distribute Work instances once there are no free threads locally.
+</p>
+
+<p class="wikiPara">
+Our selector module got a <q>MaxFreeThreads</q> implementation, which will select the DistributedWorkManager in the cluster with the most free threads available for execution.
+</p>
+
+<p class="wikiPara">
+The real kicker was the addition of a <a href="http://www.jgroups.org" target="" class="regularLink">JGroups</a> based transport, which will allow you to configure the cluster parameters in much more detail taking IronJacamar into NFL. No more college football here.
+</p>
+
+<p class="wikiPara">
+Now that we have all the core modules, we will focus on implementation details that will tackle more advanced scenarios of distribution and thread management.
+</p>
+
+<p class="wikiPara">
+And the core WorkManager implementation also saw numerous fixes to align it more against the specification text.
+</p>
+
+<h2 class="wikiHeadline2" id="H-OtherImprovements"><a href="/2012/09/06/iron-jacamar-110-beta-2-is-out#H-OtherImprovements">Other improvements</a></h2>
+
+<p class="wikiPara">
+There were other improvements in this release:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Updates to our validator tool</li>
+<li class="wikiUnorderedListItem"> Major updates to our resource adapter information tool</li>
+<li class="wikiUnorderedListItem"> Updates to the JDBC resource adapter, especially in the reauth area</li>
+<li class="wikiUnorderedListItem"> Added support for deploying to a remote IronJacamar installation</li>
+</ul>
+
+<p class="wikiPara">
+Good stuff.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheRoadAhead"><a href="/2012/09/06/iron-jacamar-110-beta-2-is-out#H-TheRoadAhead">The Road Ahead</a></h2>
+
+<p class="wikiPara">
+In short - it is full speed ahead !! We now got <b>THE</b> best platform for resource adapter development - prove us wrong ! This will enable us to get our new features tested and verify your reports about potential bugs at a quicker speed.
+</p>
+
+<p class="wikiPara">
+With <a href="https://blogs.oracle.com/theaquarium/entry/java_ee_7_roadmap" target="" class="regularLink">EE7</a> getting closer we will focus in a higher degree on getting IronJacamar 1.1 ready for certification, and making sure that all of the specification is covered.
+</p>
+
+<p class="wikiPara">
+IronJacamar 1.1.0.Beta2 will be our last release on Java SE 6 - the time has come to move to Java SE 7.
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/ironjacamar/%5C" target="" class="regularLink">WebSite</a> [<a href="http://www.jboss.org/ironjacamar/downloads.html" target="" class="regularLink">Download</a>] [<a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/" target="" class="regularLink">Documentation</a>] [<a href="http://issues.jboss.org/browse/JBJCA" target="" class="regularLink">JIRA</a>] [<a href="http://community.jboss.org/en/ironjacamar/?view=discussions" target="" class="regularLink">Forum</a>] </p>
+</div>
+

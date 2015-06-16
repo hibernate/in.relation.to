@@ -1,0 +1,63 @@
+---
+title: "Hibernate Search 3.2.0 Beta1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "01-12-2009"
+tags: [Hibernate Search]
+
+relative_url: /2009/12/01/hibernate-search-320-beta-1
+slug: hibernate-search-320-beta-1
+lace: http://in.relation.to/13197.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/12/01/hibernate-search-320-beta-1
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+It has been quite some time since the latest Hibernate Search release, but we are happy to announce the first beta release of version <a href="https://www.hibernate.org/30.html" target="" class="regularLink">3.2.0</a> with tons of bug fixes and exciting new features. In fact there are so many new features that we are planning to write a whole series of blog entries covering the following topics: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The new API for programmatic configuration of Hibernate Search via <tt>org.hibernate.search.cfg.SearchMapping</tt>.</li>
+<li class="wikiUnorderedListItem"> Ability to rebuild the index in parallel threads using the MassIndexer API. This can be as simple as <tt>fullTextSession.createIndexer().startAndWait()</tt>, but of course there are plenty of options to fine-tune the behavior.</li>
+<li class="wikiUnorderedListItem"> Clustering via JGroups as an alternative to the existing JMS solution. The values for the <tt>hibernate.search.worker.backend</tt> option are <tt>jgroupsSlave</tt> and <tt>jgroupsMaster</tt> in this case.</li>
+<li class="wikiUnorderedListItem"> Dynamic boosting via the new <tt>@DynamicBoost</tt> annotation.</li>
+</ul>
+
+<p class="wikiPara">
+Most of these new features are already documented in the Hibernate Search documentation available in the <a href="http://sourceforge.net/projects/hibernate/files/hibernate-search/3.2.0.Beta1" target="" class="regularLink">distribution packages</a>. However, there might be still some gaps in the documentation. If you find any let us know via the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Forum</a> or <a href="http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH" target="" class="regularLink">Jira</a>. 
+Smaller new features are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> New built-in field bridges for the <tt>java.util.Calendar</tt> and <tt>java.lang.Character</tt>
+</li>
+<li class="wikiUnorderedListItem"> Ability to configure Lucene's <tt>LockFactory</tt> using <tt>hibernate.search.&lt;index&gt;.locking_strategy</tt> with the values <tt>simple</tt>, <tt>native</tt>, <tt>single</tt> or <tt>none</tt>. </li>
+<li class="wikiUnorderedListItem"> Ability to share IndexWriter instances across transactions. This can be activated via the <tt>hibernate.search.&lt;indexname&gt;.exclusive_index_use</tt> flag.</li>
+</ul>
+
+<p class="wikiPara">
+Of course we also fixed several bugs of which the following are worth mentioning explicitly:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH-391" target="" class="regularLink">HSEARCH-391</a> Multi level embedded objects don't get an index update</li>
+<li class="wikiUnorderedListItem"> <a href="http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH-353" target="" class="regularLink">HSEARCH-353</a> Removing an entity and adding another with same PK (in same TX) will not add second entity to index</li>
+</ul>
+
+<p class="wikiPara">
+For a full changelog see the <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10061&amp;version=10803" target="" class="regularLink">Jira release notes</a>.
+Last but not least, Hibernate Search depends now on Hibernate Core 3.5 beta2 and Lucene 2.4.1 and is aligned with JPA 2.0 CR1.
+</p>
+
+<p class="wikiPara">
+Special thanks to our contributors Sanne Grinovero and Amin Mohammed-Coleman who put a lot of effort into this release. 
+</p>
+
+<p class="wikiPara">
+enjoy!</p>
+</div>
+

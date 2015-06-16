@@ -1,0 +1,93 @@
+---
+title: "Pace of change"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "12-11-2009"
+tags: [Java EE 6]
+
+relative_url: /2009/11/12/pace-of-change
+slug: pace-of-change
+lace: http://in.relation.to/12901.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/11/12/pace-of-change
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The question of backward compatibility is something that all framework developers wrestle with. The term means different things to different people:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> For some folks, it means that JAbstractFactoryBeans 2.0 is allowed to add new features to JAbstractFactoryBeans 1.0, but shouldn't change the way we do anything that 1.0 already does.</li>
+<li class="wikiUnorderedListItem"> For others, it means that JAbstractFactoryBeans 2.0 should continue to support all the APIs and metadata formats that JAbstractFactoryBeans 1.0 supported, but that it is allowed to provide new, improved approaches to the old problems.</li>
+</ul>
+
+<p class="wikiPara">
+I'm often of the opinion that both of these require too much; that as long as there is a reasonable migration strategy from JAbstractFactoryBeans 1.0 to JAbstractFactoryBeans 2.0, together, possibly, with some kind of interoperability between the two framework versions, then you're doing your users a favor by <q>encouraging</q> them to migrate their code to the new, better approach.
+</p>
+
+<p class="wikiPara">
+But this kind of thinking definitely doesn't wash in the JCP. Within the JCP, Red Hat represents one extreme. We're always pushing for changes, for replacing the old broken stuff with something better. At the other extreme, however, are the folks who believe that evolving things slowly is an excellent goal in and of itself, that almost anything which disrupts existing users is to be treated with extreme skepticism, and, perhaps, that admitting mistakes makes us look bad. (Yeah, sure, you're right, I guess that's a <i class="wikiEmphasis">somewhat</i> unfair characterization.)
+</p>
+
+<p class="wikiPara">
+What's really interesting about EE 6 is that Sun found a new trick to balance the competing interests. Rather than drop support for a bunch of broken stuff (entity beans, web services, and a couple of other embarrassments), Sun came up with the notion of <q>profiles</q>. All the good, useful stuff gets called the <q>web profile</q>. All the other stuff is still supported, but it's only required in the <q>full profile</q>. (<q>Full of ... ?</q>, I hear you ask.)
+</p>
+
+<p class="wikiPara">
+I'm exaggerating slightly. There are a few useful things (for example: JMS, timers, async methods) in the full profile that are not in the web profile. But vendors are allowed to provide those things if they like.
+</p>
+
+<p class="wikiPara">
+If you've been living under a rock, here's what's required:
+</p>
+
+<blockquote class="wikiBlockquote">
+The following technologies are required components of the Web Profile:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Servlet 3.0</li>
+<li class="wikiUnorderedListItem"> JavaServer Pages (JSP) 2.2</li>
+<li class="wikiUnorderedListItem"> Expression Language (EL) 2.2 </li>
+<li class="wikiUnorderedListItem"> Debugging Support for Other Languages (JSR-45) 1.0 </li>
+<li class="wikiUnorderedListItem"> Standard Tag Library for JavaServer Pages (JSTL) 1.2 </li>
+<li class="wikiUnorderedListItem"> JavaServer Faces (JSF) 2.0 </li>
+<li class="wikiUnorderedListItem"> Common Annotations for Java Platform (JSR-250) 1.1 </li>
+<li class="wikiUnorderedListItem"> Enterprise JavaBeans (EJB) 3.1 Lite </li>
+<li class="wikiUnorderedListItem"> Java Transaction API (JTA) 1.1 </li>
+<li class="wikiUnorderedListItem"> Java Persistence API (JPA) 2.0 </li>
+<li class="wikiUnorderedListItem"> Bean Validation 1.0 </li>
+<li class="wikiUnorderedListItem"> Managed Beans 1.0 </li>
+<li class="wikiUnorderedListItem"> Interceptors 1.1 </li>
+<li class="wikiUnorderedListItem"> JSR-299 1.0 </li>
+<li class="wikiUnorderedListItem"> JSR-330 1.0</li>
+</ul>
+
+
+</blockquote>
+
+<p class="wikiPara">
+Actually, there were some folks in the EE EG who argued very hard that the web profile should be even smaller than this. They thought (think?) that the EE web profile should be basically servlets, JSP, and then whatever proprietary frameworks tickle your fancy. We made the case very strongly that this was a step too far, and that the web profile should contain everything you need to be able to build a web application. That the platform should be the basis for an ecosystem, not a way to bless totally proprietary stacks.
+</p>
+
+<p class="wikiPara">
+The concrete benefits of this new web profile include:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> a smaller set of technologies for folks who found the <q>full</q> EE overwhelming (and folks like me, who find some of it <i class="wikiEmphasis">underwhelming</i>)</li>
+<li class="wikiUnorderedListItem"> a lower barrier to entry for implementors (watch out for guys like Caucho, who should be able to build out Resin into a compliant Web Profile)</li>
+</ul>
+
+<p class="wikiPara">
+The truth is, the pace of change of a platform is one of the hardest things to get right. Go too fast, and your users waste time having to constantly adapt to semi-arbitrary changes. I've seen some frameworks alienate their communities that way. Go too slow, and you get behind the curve, encourage the growth of competing alternatives, and divide the ecosystem.
+</p>
+
+<p class="wikiPara">
+Modernizing Java EE has been a long, hard struggle. I'm sure most users think we erred on the side of <q>too slow</q>. But I think the new Web Profile is the first EE release that gets it right.
+</p>
+</div>
+

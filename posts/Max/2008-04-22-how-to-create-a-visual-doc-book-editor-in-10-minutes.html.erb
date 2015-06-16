@@ -1,0 +1,209 @@
+---
+title: "How to create a visual DocBook editor in 10 minutes"
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "22-04-2008"
+tags: [JBoss Tools]
+
+relative_url: /2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes
+slug: how-to-create-a-visual-doc-book-editor-in-10-minutes
+lace: http://in.relation.to/8895.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Ever wanted to see how DocBook documents look like rendered without leaving your IDE ? This blog will explain how you can come from this:
+</p>
+
+<p class="wikiPara">
+<img src="/images/8899.png" width="640" height="501">
+</p>
+
+<p class="wikiPara">
+to this:
+</p>
+
+<p class="wikiPara">
+<img src="/images/8898.png" width="640" height="501">
+</p>
+
+<p class="wikiPara">
+Yes, that is a two-way visual editor for a DocBook document.
+</p>
+
+<blockquote class="wikiBlockquote">
+<b>Warning:</b> Before you go on please note that this is a work in progress and the API and file format used in this blog might change in future releases until we get it stabilized.
+</blockquote>
+
+<h1 class="wikiHeadline1" id="H-TheEasyWay"><a href="/2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes#H-TheEasyWay">The easy way</a></h1>
+
+<p class="wikiPara">
+Go to <a href="http://jira.jboss.com/jira/browse/JBIDE-1304" target="" class="regularLink">JBIDE-1304</a> and download the attachment which is a plugin you can unzip into your Eclipse plugins directory with JBoss Tools or JBDS pre-installed.
+</p>
+
+<p class="wikiPara">
+Run Eclipse with JBoss Tools installed and open your DocBook .xml file with the editor by using <q>Open with &gt; Other &gt; JBoss Tools HTML Editor</q>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheHarderWay"><a href="/2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes#H-TheHarderWay">The harder way</a></h1>
+
+<p class="wikiPara">
+The following describes the parts in play and how to write the plugin. First we need to understand how the Visual Page Editor works.
+</p>
+
+<h2 class="wikiHeadline2" id="H-MechanicsOfTheVisualPageEditor"><a href="/2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes#H-MechanicsOfTheVisualPageEditor">Mechanics of the Visual Page Editor</a></h2>
+
+<p class="wikiPara">
+The Visual Page Editor (VPE) in JBoss Tools is actually more than <q>just</q> an editor for html-like languages like (X)HTML, JSP and JSF/Facelets, it is a general editor that can be adapted to edit (almost) any kind of XML based document in a visual editor. As long as you can define a set of transformation rules that gives you a good approximation of the rendering in HTML then using VPE is an option for you. 
+</p>
+
+<p class="wikiPara">
+The VPE consists of two editor panes, a source part which can be any type of XML document and a visual part which is an embedded Mozilla browser which shows an approximation of how the XML source would look like when rendered to HTML.
+</p>
+
+<p class="wikiPara">
+The transformation works by running the the input tags through a set of templates and output the result which then will be viewed in the visual part.
+</p>
+
+<p class="wikiPara">
+An example of these templates is:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;vpe:template tag='section'&gt;
+  &lt;h3&gt;@text&lt;/h3&gt;
+&lt;/vpe&gt;
+</pre>
+
+
+<p class="wikiPara">
+This template says if a 'section' tag is found transform it into a 'h3' tag with the text of the section as the title.
+</p>
+
+<h2 class="wikiHeadline2" id="H-CreateADocBookVPEExtension"><a href="/2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes#H-CreateADocBookVPEExtension">Create a DocBook VPE extension</a></h2>
+
+<p class="wikiPara">
+You either create a fresh new plugin or add the following to your existing plugin.
+</p>
+
+<p class="wikiPara">
+The plugin need to implement one extension point:  <code>org.jboss.tools.vpe.templates</code>. You can use the plugin wizard if you want or you can add the following to your plugin.xml file:
+</p>
+
+<pre class="wikiPreformatted"> &lt;extension
+         point="org.jboss.tools.vpe.templates"&gt;
+      &lt;templates
+            name="DocBook"
+            path="templates/docbook.xml"&gt;&lt;/templates&gt;
+   &lt;/extension&gt;</pre>
+
+
+<p class="wikiPara">
+This tells VPE to read templates/docbook.vpe and use it for its transformation.
+</p>
+
+<p class="wikiPara">
+The template file contains the transformation <q>rules</q> and a basic implementation for DocBook would be:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;vpe:templates&gt;
+ &lt;vpe:tag name="chapter" case-sensitive="yes"&gt;
+  &lt;vpe:template children="yes" modify="yes"&gt;
+   &lt;div/&gt;
+  &lt;/vpe:template&gt;
+ &lt;/vpe:tag&gt;
+
+ &lt;vpe:tag name="title" case-sensitive="yes"&gt;
+  &lt;vpe:template children="no" modify="yes"&gt;
+   &lt;h1&gt;
+    &lt;vpe:value expr="{tagtext()}" /&gt;
+   &lt;/h1&gt;
+  &lt;/vpe:template&gt;
+ &lt;/vpe:tag&gt;
+	
+ &lt;vpe:tag name="para" case-sensitive="yes"&gt;
+  &lt;vpe:template children="yes" modify="yes"&gt;
+   &lt;p/&gt;
+  &lt;/vpe:template&gt;
+ &lt;/vpe:tag&gt;
+	
+ &lt;vpe:tag name="section" case-sensitive="yes"&gt;
+  &lt;vpe:template children="yes" modify="yes"&gt;
+    &lt;div /&gt;
+   &lt;/vpe:template&gt;
+  &lt;/vpe:tag&gt;
+
+ &lt;vpe:tag name="imagedata" case-sensitive="yes"&gt;
+  &lt;vpe:template children="yes" modify="yes"&gt;
+   &lt;img src="{src(@fileref)}" /&gt;
+  &lt;/vpe:template&gt;
+ &lt;/vpe:tag&gt;
+&lt;/vpe:templates&gt;
+</pre>
+
+
+<p class="wikiPara">
+A more complete version can be found in <a href="http://jira.jboss.com/jira/browse/JBIDE-1304" target="" class="regularLink">JBIDE-1304</a>.
+</p>
+
+<p class="wikiPara">
+Notice how the transformations are just simple mappings from DocBook tags to HTML tags and how we use normal xpath expressions to refer to attributes like <code>fileref</code>.
+</p>
+
+<p class="wikiPara">
+Some tags might require more than just basic transformation, but that must wait for another blog :)
+</p>
+
+<p class="wikiPara">
+But otherwise that it is it! It is that simple.
+</p>
+
+<h1 class="wikiHeadline1" id="H-RunEclipseWithThePlugin"><a href="/2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes#H-RunEclipseWithThePlugin">Run Eclipse with the plugin</a></h1>
+
+<p class="wikiPara">
+You should now be able to run your Eclipse directly from PDE or standalone with the plugin installed and open any DocBook .xml file with the editor by using <q>Open with &gt; Other &gt; JBoss Tools HTML Editor</q>
+</p>
+
+<h1 class="wikiHeadline1" id="H-Future"><a href="/2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes#H-Future">Future</a></h1>
+
+<p class="wikiPara">
+The current version is just a prototype and still has some quirks but it functional for most editing of DocBook files. 
+</p>
+
+<p class="wikiPara">
+We plan on putting this into JBoss Tools when we fix some of quirks described at <a href="http://jira.jboss.com/jira/browse/JBIDE-1304" target="" class="regularLink">JBIDE-1304</a>.
+</p>
+
+<p class="wikiPara">
+Let us know what you think about this feature and consider contributing any enhancements you do back to us. If you want to see more example of possible transformations go look for .vpe files in JBoss Tools or JBDS distribution.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Thanks"><a href="/2008/04/22/how-to-create-a-visual-doc-book-editor-in-10-minutes#H-Thanks">Thanks</a></h1>
+
+<p class="wikiPara">
+This is a write up of the 10 minutes short talk I did at EclipseCon 2008 called <q>How to extend the Visual Page Editor in JBoss tools</q> inspired from what Max Katz, Alexey Kazakov and Sergey Vasilyev taught me about the extensions point in VPE.
+</p>
+
+<p class="wikiPara">
+The DocBook implementation was done by Denis Golovin.
+</p>
+
+<p class="wikiPara">
+Thanks Guys!
+</p>
+
+
+
+<p class="wikiPara">
+ 
+</p>
+
+</div>
+

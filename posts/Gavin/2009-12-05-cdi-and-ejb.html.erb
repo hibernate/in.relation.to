@@ -1,0 +1,86 @@
+---
+title: "CDI and EJB"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "05-12-2009"
+tags: [Contexts and Dependency Injection,EJB,Java EE 6]
+
+relative_url: /2009/12/05/cdi-and-ejb
+slug: cdi-and-ejb
+lace: http://in.relation.to/13355.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/12/05/cdi-and-ejb
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Matt Corey <a href="http://smokeandice.blogspot.com/2009/12/cdijsr-299-preparing-to-marginalize-ejb.html?utm_source=feedburner&amp;utm_medium=feed&amp;utm_campaign=Feed%3A+SmokeAndIce+%28Smoke+and+Ice%29" target="" class="regularLink">writes</a>:
+</p>
+
+<blockquote class="wikiBlockquote">
+Whew, it's been a while since I've started looking at what's new in Java EE 6, partially because I've been fiddling with the newest addition to the Java EE portfolio -- JSR-299, aka CDI, f/k/a Web Beans, and this one could be big... Let's start with a bang -- CDI will eventually push EJB to obscurity...
+</blockquote>
+
+<p class="wikiPara">
+The good news is that Matt seems to like CDI. The bad news is that for now there are questions out there about how CDI and the new managed beans spec affect the future of EJB.
+</p>
+
+<p class="wikiPara">
+Matt goes on to say:
+</p>
+
+<blockquote class="wikiBlockquote">
+CDI has the potential, I believe, to provide all of the most commonly used services that the EJB spec provides, and let's face it, this mean transactions, timers, asynchronous process with MDB's, and now Singleton Startup beans.
+</blockquote>
+
+<p class="wikiPara">
+My take on this is a bit different. First of all, it's important to understand that there is no such thing as a <q>CDI bean</q>. CDI applies to any managed bean. Some managed beans are EJBs. When we need to use the EJB services in a managed bean, we just add a <tt>@Stateless</tt>, <tt>@Stateful</tt> or <tt>@Singleton</tt> annotation, and away we go. Nevertheless, it doesn't seem necessary to require this lifecycle annotation if all we want to do is add declarative security or transaction management to a bean.
+</p>
+
+<p class="wikiPara">
+My view, for now, is that we can divide the functionality defined by the EJB spec into two categories:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> functionality which makes most sense for components which are entrypoints to the application - endpoints for remote invocations delivered via RMI, HTTP or message-oriented middleware, and</li>
+<li class="wikiOrderedListItem"> functionality which should be available to beans which are part of the internal implementation of the application.</li>
+</ol>
+
+<p class="wikiPara">
+In the first category I include things like:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the basic stateless/stateful/singleton lifecycle model, which has always made most sense for entrypoints,</li>
+<li class="wikiUnorderedListItem"> remote and web service endpoint interfaces, and</li>
+<li class="wikiUnorderedListItem"> message-driven beans.</li>
+</ul>
+
+<p class="wikiPara">
+In the second category, I would put:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> declarative concurrency management, </li>
+<li class="wikiUnorderedListItem"> declarative transaction management, and</li>
+<li class="wikiUnorderedListItem"> declarative security.</li>
+</ul>
+
+<p class="wikiPara">
+Even though these things are <i class="wikiEmphasis">most</i> useful at system entrypoints, they are also needed at a finer grain. And they're also needed for entrypoints which are not EJBs - for example, Servlets. So I think it's very likely that Java EE 7 will generalize these features to work for all Java EE components. That's certainly what we'll be arguing for.
+</p>
+
+<p class="wikiPara">
+If EE 7 does move in this direction, you'll be able to use plain managed beans in many cases which currently require EJB, and EJB itself will take on a clearer role in the EE architecture. EJB will be the spec with defines the programming model for remote and asynchronous invocation endpoints. It's likely that with this more focused identity, EJB will be a more manageable technology.
+</p>
+
+<p class="wikiPara">
+Of course, there's going to be couple of things which don't fit clearly in either category. The ones I'm most doubtful about are timers and asynchronous methods. These could, perhaps, be generalized to all managed beans, but it's not clear to me that there's a real need. 
+</p>
+
+
+</div>
+

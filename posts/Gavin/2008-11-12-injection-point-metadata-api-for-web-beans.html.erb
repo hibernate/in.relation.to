@@ -1,0 +1,149 @@
+---
+title: "Injection point metadata API for Web Beans"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "12-11-2008"
+tags: [Web Beans]
+
+relative_url: /2008/11/12/injection-point-metadata-api-for-web-beans
+slug: injection-point-metadata-api-for-web-beans
+lace: http://in.relation.to/9859.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/11/12/injection-point-metadata-api-for-web-beans
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+In the comments thread for <a href="/Bloggers/WebBeansAndTheEEPlatform" target="" class="regularLink">this post</a>,
+Bill got me thinking again about a problem that's been bugging me for 
+a while.
+</p>
+
+<p class="wikiPara">
+The problem is that there are certain kinds of <q>dependent objects</q>
+(in the sense of the Web Beans <tt>@Dependent</tt> scope) that need to know
+something about the object or injection point into which they are
+injected in order to be able to do what they do. For example:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the log category for a <tt>Logger</tt> depends upon the class of the object that owns it</li>
+<li class="wikiUnorderedListItem"> injection of a HTTP parameter or header value depends upon what parameter or header name was specified at the injection point</li>
+<li class="wikiUnorderedListItem"> injection of the result of an EL expression evaluation depends upon the expression that was specified at the injection point</li>
+</ul>
+
+<p class="wikiPara">
+The solution I've come up with is to allow injection of a special metadata 
+object into any injected dependent object.
+</p>
+
+<p class="wikiPara">
+(Note that this functionality is specifically for <tt>@Dependent</tt> scope Web 
+Beans - objects with normal scopes are shared between many clients and
+many injection points, so their behavior cannot depend upon anything
+relating to the client.)
+</p>
+
+<p class="wikiPara">
+Let's look at an example:
+</p>
+
+<pre class="wikiPreformatted">class LogFactory {
+
+   @Produces Logger createLogger(InjectionPoint injectionPoint) { 
+      return Logger.getLogger(injectionPoint.getMember().getDeclaringClass().getName()); 
+   }
+
+}</pre>
+
+
+<p class="wikiPara">
+This clever little producer method lets you inject a JDK <tt>Logger</tt> with
+the right log category. Instead of typing:
+</p>
+
+<pre class="wikiPreformatted">Logger log = Logger.getLogger(MyClass.class.getName());</pre>
+
+
+<p class="wikiPara">
+You can write:
+</p>
+
+<pre class="wikiPreformatted">@Current Logger log;</pre>
+
+
+<p class="wikiPara">
+which is shorter, and less vulnerable to refactoring problems.
+</p>
+
+<p class="wikiPara">
+Not convinced? OK then, let's see a second example...
+</p>
+
+<p class="wikiPara">
+To inject HTTP parameters, we need to define a binding type:
+</p>
+
+<pre class="wikiPreformatted">@BindingType
+@Retention(RUNTIME)
+@Target({TYPE, METHOD, FIELD, PARAMETER})
+public @annotation HttpParam {
+   @NonBinding public String value();
+}</pre>
+
+
+<p class="wikiPara">
+We would use this binding type at injection points as follows:
+</p>
+
+<pre class="wikiPreformatted">@HttpParam("username") String username;
+@HttpParam("password") String password;</pre>
+
+
+<p class="wikiPara">
+The following producer method does the work:
+</p>
+
+<pre class="wikiPreformatted">class HttpParams
+
+   @Produces @HttpParam("")
+   String getParamValue(ServletRequest request, InjectionPoint ip) {
+      return request.getParameter(ip.getAnnotation(HttpParam.class).value());
+   }
+
+}</pre>
+
+
+<p class="wikiPara">
+I suppose this stuff is mainly useful for framework-type development, 
+but it might also have other applications.
+</p>
+
+<p class="wikiPara">
+So how hard is it to add this feature to Web Beans? Not hard at all! 
+The Web Beans specification would define the following API:
+</p>
+
+<pre class="wikiPreformatted">public interface InjectionPoint { 
+   public Type getType();
+   public Set&lt;Annotation&gt; getBindingTypes();
+   public Object getInstance(); 
+   public Bean&lt;?&gt; getBean(); 
+   public Member getMember(): 
+   public &lt;T extends Annotation&gt; T getAnnotation(Class&lt;T&gt; annotation); 
+   public Set&lt;T extends Annotation&gt; getAnnotations(); 
+}</pre>
+
+
+<p class="wikiPara">
+And the Web Bean manager would be required to provide a built-in Web Bean 
+that implements this interface. 
+</p>
+
+<p class="wikiPara">
+What do you think?</p>
+</div>
+

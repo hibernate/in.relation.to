@@ -1,0 +1,87 @@
+---
+title: "Why we need a real Web Profile"
+author: "Jason Greene"
+blogger_name: "Jason"
+creation_date: "01-03-2008"
+tags: [EE6 Wishlist,Web Beans]
+
+relative_url: /2008/03/01/why-we-need-a-real-web-profile
+slug: why-we-need-a-real-web-profile
+lace: http://in.relation.to/8661.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/03/01/why-we-need-a-real-web-profile
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Recently the EE6 co-lead, Roberto Chinnici, <a href="http://weblogs.java.net/blog/robc/archive/2008/02/profiles_in_the_1.html" target="" class="regularLink">blogged about the state of profiles in EE6</a>, and requested feedback on which direction the group should take. This was also posted to <a href="http://www.infoq.com/news/2008/02/java-ee-6-web-profiles" target="" class="regularLink">InfoQ</a> and <a href="http://www.theserverside.com/news/thread.tss?thread_id=48522" target="" class="regularLink">TSS</a>.
+Essentially we have a choice between two options:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Rubberstamp Tomcat</li>
+<li class="wikiOrderedListItem"> Provide a complete framework for web development.</li>
+</ol>
+
+<p class="wikiPara">
+The first option <i class="wikiEmphasis">offers nothing new that doesn't already exist today.</i> Right now you can download Tomcat and, unless you are still developing with just Servlets and JSPs, install the many different frameworks you need to build a modern web application. You are then left to discover the magic version combination that doesn't have dependency conflicts or integration issues.
+</p>
+
+<p class="wikiPara">
+What we really need is a standardized solution which addresses the three most common needs of modern web applications:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A data persistence framework</li>
+<li class="wikiUnorderedListItem"> A component framework</li>
+<li class="wikiUnorderedListItem"> A rich presentation framework</li>
+</ul>
+
+<p class="wikiPara">
+The full Java EE platform has good solutions for all of these aspects today, and more work is being done to improve them (e.g Web Beans, ability to deploy EJBs in a war, etc). However, the full EE platform also contains many other standards, most of which are focused towards EIS (like CORBA, RMI, JMS, JCA, etc). EIS is, of course, not necessary for a significant portion of web applications. So, the central idea behind option 2, is to deliver a version of the platform that <i class="wikiEmphasis">is truly focused towards web development</i>. 
+</p>
+
+<p class="wikiPara">
+Not only can we omit specifications that don't serve the above goals, we can also improve the ones that do to better meet our new-found focus. A good example of this, is EJB-Lite, which only requires support for local session components and JPA.
+</p>
+
+<p class="wikiPara">
+Taking all of this into account we end up with what I view is the ideal combination, which I have strongly advocated on the EG:
+</p>
+
+<br>
+
+<h3 class="wikiHeadline3" id="H-DataPersistence"><a href="/2008/03/01/why-we-need-a-real-web-profile#H-DataPersistence">Data Persistence</a></h3>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> JPA 2.0</li>
+<li class="wikiUnorderedListItem"> JTA 1.1</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-ComponentFramework"><a href="/2008/03/01/why-we-need-a-real-web-profile#H-ComponentFramework">Component Framework</a></h3>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> EJB Lite 3.1</li>
+<li class="wikiUnorderedListItem"> Web Beans 1.0</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-RichPresentation"><a href="/2008/03/01/why-we-need-a-real-web-profile#H-RichPresentation">Rich Presentation</a></h3>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> JSF 2.0</li>
+<li class="wikiUnorderedListItem"> Servlet 3.0 (and friends, jsp, el, jstl etc)</li>
+</ul>
+
+<br>
+<p class="wikiPara">
+I should also mention that non-standard frameworks would of course still be usable on this profile. As an example, Web Beans will offer an SPI so that any web framework can take advantage of the improved/simplified component integration layer, should it choose to.
+</p>
+
+<p class="wikiPara">
+However, I think the goal should be to provide a good out-of-the-box solution for web development, and a <q>tomcat profile</q> definitely falls short.
+</p>
+</div>
+

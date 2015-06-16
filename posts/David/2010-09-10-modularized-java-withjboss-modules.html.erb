@@ -1,0 +1,136 @@
+---
+title: "Modularized Java with JBoss Modules"
+author: "David Lloyd"
+blogger_name: "David"
+creation_date: "10-09-2010"
+tags: [Modules]
+
+relative_url: /2010/09/10/modularized-java-withjboss-modules
+slug: modularized-java-withjboss-modules
+lace: http://in.relation.to/16904.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/09/10/modularized-java-withjboss-modules
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+It was almost a year ago that Mark Reinhold (one of the top Java engineers over at Sun/Oracle) announced <q>The classpath is dead!</q> at JavaONE, accompanied by a series of blog posts like <a href="http://blogs.sun.com/mr/entry/packaging_java_code" target="" class="regularLink">this one</a>, proclaiming that the future of Java is a modular one.  In the mean time, the JDK 7 <a href="http://blogs.sun.com/mr/entry/rethinking_jdk7" target="" class="regularLink">timeline has slipped dramatically</a> and we may not see modules in Java proper until 2012 or later.  All the while, the folks on JSR 294 have stalled, started, and stalled again, slowly inching their way towards a tightly-Java-integrated modularization standard, possibly requiring significant language, bytecode, and packaging changes to support it.
+</p>
+
+<p class="wikiPara">
+I've <a href="http://dmlloyd.blogspot.com/2009/12/jsr-294277-why-dont-we-have-standard.html" target="" class="regularLink">long maintained</a> that it would take far less than this to introduce a solid, usable modularity standard.  And as part of our <a href="http://community.jboss.org/community/jbossas/dev/jboss_as7_development" target="" class="regularLink">JBoss AS 7 proof-of-concept work</a>, we've proven it with the creation of JBoss Modules.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatIsInAModule"><a href="/2010/09/10/modularized-java-withjboss-modules#H-WhatIsInAModule">What is in a module?</a></h1>
+
+<p class="wikiPara">
+If you haven't been following the developments around JDK 7, you may not even be aware of what you're missing.
+</p>
+
+<p class="wikiPara">
+A <i class="wikiEmphasis">module</i> is any collection of classes and resources, associated with a single class loader.  Modules may express a <i class="wikiEmphasis">dependency</i> on other modules.  The <i class="wikiEmphasis">exported</i> classes and resources from these dependencies are <i class="wikiEmphasis">visible</i> to classes in the dependent module.  <i class="wikiEmphasis">Visibility</i> is the ability of a class from one class loader to <q>see</q> a class from another class loader.  To <i class="wikiEmphasis">export</i> a class or resource means to make such a class or resource visible to dependents.
+</p>
+
+<p class="wikiPara">
+So what a module system provides is a way to package up classes and resources into modules, and establish a graph, at run time, of class loaders such that all the expressed dependencies are satisfied.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsSoGreatAboutModules"><a href="/2010/09/10/modularized-java-withjboss-modules#H-WhatsSoGreatAboutModules">What's so great about modules?</a></h1>
+
+<p class="wikiPara">
+The traditional method of running an application in Java uses the well-known <q>classpath</q> mechanism.  This basically creates a single application class loader with all those JARs' resources concatenated together in one big blob.
+</p>
+
+<p class="wikiPara">
+Now imagine you have a very, very large and complex application with dozens of JARs.  Imagine that some of those JARs are not used all the time, or that some of those JARs represent multiple, conflicting versions of the same classes and packages due to conflicting dependencies.  This problem, and other issues along these lines, are known popularly as <a href="http://en.wikipedia.org/wiki/Java_Classloader#JAR_hell" target="" class="regularLink">Jar Hell</a>.
+</p>
+
+<p class="wikiPara">
+Modules can greatly alleviate this problem.  When all JARs are bundled as modules, a JAR will never <q>see</q> a conflicting version of a dependency class, or pick up resources from other JARs inadvertently.  Also, a module which is never used will never be loaded which can improve startup time of large applications.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhyWait"><a href="/2010/09/10/modularized-java-withjboss-modules#H-WhyWait">Why wait?</a></h1>
+
+<p class="wikiPara">
+JBoss Modules is a standalone module system for Java 6 and up.  It supports the following features (and more):
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> An memory-efficient, high-performance, concurrent/thread-safe delegating class loader implementation, capable of loading any class or resource in O(1) time</li>
+<li class="wikiOrderedListItem"> An extensible module loader system which allows users to plug in alternative module definition/loading strategies</li>
+<li class="wikiOrderedListItem"> An easy-to-use bundled local module loader, which loads modules (packaged as standard JARs or as exploded directories) from the filesystem in a simple, predictable structure (think Maven, but simpler)</li>
+<li class="wikiOrderedListItem"> An easy bootstrap process (see below)</li>
+<li class="wikiOrderedListItem"> A useful <a href="http://docs.jboss.org/jbossmodules/latest/api/" target="" class="regularLink">runtime API</a> for loading modules, getting a class loader for modules, creating modules at run-time, extending the <a href="http://download.oracle.com/javase/6/docs/api/index.html?java/util/ServiceLoader.html" target="" class="regularLink">JDK service loader mechanism</a> to be module-aware, and more</li>
+<li class="wikiOrderedListItem"> Management of platform-specific native code</li>
+</ol>
+
+<p class="wikiPara">
+A modularized program is started like this:
+</p>
+
+<pre class="wikiPreformatted">java -jar jboss-modules.jar -mp path/to/modules my.main.module.name</pre>
+
+
+<p class="wikiPara">
+In your module path (<q>-mp</q>) you specify the root directory (or directories) which will be searched by the default module loader for module definitions.  A module is defined using a simple XML descriptor, like this:
+</p>
+
+<pre class="wikiPreformatted">&lt;module xmlns="urn:jboss:module:1.0" name="org.jboss.msc"&gt;
+
+    &lt;main-class name="org.jboss.msc.Version"/&gt;
+
+    &lt;resources&gt;
+        &lt;resource-root path="jboss-msc-1.0.0.Beta3.jar"/&gt;
+    &lt;/resources&gt;
+
+    &lt;dependencies&gt;
+        &lt;module name="org.jboss.logging"/&gt;
+
+        &lt;!-- Optional deps --&gt;
+
+        &lt;module name="javax.inject.api" optional="true"/&gt;
+        &lt;module name="org.jboss.threads" optional="true"/&gt;
+        &lt;module name="org.jboss.vfs" optional="true"/&gt;
+    &lt;/dependencies&gt;
+&lt;/module&gt;
+</pre>
+
+
+<p class="wikiPara">
+There is a full schema bundled in jboss-modules.jar for this descriptor format, so integration with your favorite IDE is easy.  There are also many extended capabilities available which allow tight control over what packages are exported or imported, and you can also selectively exclude content from your resource JARs (making it even easier to use prepackaged JARs).
+</p>
+
+<h1 class="wikiHeadline1" id="H-HowDoesThisCompareWithJSR294"><a href="/2010/09/10/modularized-java-withjboss-modules#H-HowDoesThisCompareWithJSR294">How does this compare with JSR 294?</a></h1>
+
+<p class="wikiPara">
+This simple module system has several advantages over JSR 294 as it stands today.
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> It's available <u>now</u>.  There is no telling when JDK modules will become available - maybe in Java 7 in 2012, maybe in Java 8 or later.  This is a project you can use - and contribute to - today.</li>
+<li class="wikiOrderedListItem"> No invasive language, bytecode, or compiler changes are needed, and no JCP approval is necessary.</li>
+<li class="wikiOrderedListItem"> As things stand today, JBoss Modules <i class="wikiEmphasis">should</i> be compatible with JSR 294, and we will strive to maintain compatibility if and when Jigsaw solidifies and becomes part of OpenJDK.</li>
+</ol>
+
+<h1 class="wikiHeadline1" id="H-HowDoesThisCompareWithOSGi"><a href="/2010/09/10/modularized-java-withjboss-modules#H-HowDoesThisCompareWithOSGi">How does this compare with OSGi?</a></h1>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> It is much simpler; one JAR is all that is needed to get your modular application off the ground.</li>
+<li class="wikiOrderedListItem"> It is minimal: there is no services layer, or any other higher level functions that OSGi provides.  It does exactly one thing, and it does it well.</li>
+<li class="wikiOrderedListItem"> At the same time, it is very powerful, and could form the basis of a class loading framework which an OSGi implementation could use (more on this in the future, stay tuned!).</li>
+</ol>
+
+<h1 class="wikiHeadline1" id="H-WhatIsTheCurrentStatus"><a href="/2010/09/10/modularized-java-withjboss-modules#H-WhatIsTheCurrentStatus">What is the current status?</a></h1>
+
+<p class="wikiPara">
+JBoss Modules is available now <a href="https://repository.jboss.org/nexus/content/repositories/releases/org/jboss/modules/jboss-modules" target="" class="regularLink">via Maven</a> as <q>org.jboss.modules:jboss-modules</q>.  There is also a <a href="http://jira.jboss.org/browse/MODULES" target="" class="regularLink">JIRA Instance</a> available for reporting problems.  Discussion relating to Modules in AS 7 happens <a href="http://community.jboss.org/en/jbossas/dev/jboss_as7_development?view=discussions" target="" class="regularLink">here</a> or on #jboss-msc on FreeNode IRC (join <a href="http://webchat.freenode.net/?channels=jboss-msc" target="" class="regularLink">via webchat</a> with your <a href="http://freenode.net/faq.shtml#userregistration" target="" class="regularLink">registered nickname</a>).  The source code is hosted <a href="http://github.com/jbossas/jboss-modules" target="" class="regularLink">on GitHub</a>.
+</p>
+
+<p class="wikiPara">
+So... what are you waiting for?
+</p>
+</div>
+

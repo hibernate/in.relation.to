@@ -1,0 +1,192 @@
+---
+title: "Road to final: Bean Validation PFD2 and its implementation Hibernate Validator 4 beta2"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "20-07-2009"
+tags: [Bean Validation,Hibernate Validator]
+
+relative_url: /2009/07/20/road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2
+slug: road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2
+lace: http://in.relation.to/12026.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/07/20/road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Here is the latest draft before sending Bean Validation (JSR 303) to final stage (<a href="#road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2_attachment1" target="" class="regularLink">in pdf[1]</a>).
+For the few who don't know yet ( ;) ), Bean Validation standardizes constraint declaration, definition, validation and metadata for the Java platform. Said otherwise, add an annotation to a property and hop it's validated.
+</p>
+
+<pre class="wikiPreformatted">
+class User {
+   @NotEmpty @Size(max=50)
+   String getName() { ... }
+
+   @Email
+   String getEmail() { ... }
+}
+</pre>
+
+
+<p class="wikiPara">
+Please give us last minute feedbacks <a href="https://forum.hibernate.org/viewforum.php?f=26" target="" class="regularLink">in our forums</a>
+</p>
+
+<p class="wikiPara">
+You can already use the spec as <a href="http://validator.hibernate.org" target="" class="regularLink">Hibernate Validator 4</a> implements it.
+Overall <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?version=10898&amp;styleName=Text&amp;projectId=10060&amp;Create=Create" target="" class="regularLink">38 coarse grained bugs and tasks</a> got fixed or implemented respectively in this beta. Hibernate Validator artifacts can be downloaded on <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/hibernate-validator-4.0.0.Beta2-dist.zip/download" target="" class="regularLink">Sourceforge</a> or in the <a href="http://repository.jboss.com/maven2/org/hibernate/hibernate-validator/4.0.0.Beta2/" target="" class="regularLink">JBoss Maven repository</a>.
+</p>
+
+<p class="wikiPara">
+Back to the spec, let's discuss some of the enhancements.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ATypesafePathRepresentation"><a href="/2009/07/20/road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2#H-ATypesafePathRepresentation">A type-safe Path representation</a></h1>
+
+<p class="wikiPara">
+A typesafe way to express navigation paths to the failing property has been added. Before, paths were expressed as strings like <tt>"addresses[0].street1"</tt> and libraries were forced to parse this string <q>by hand</q>. The Path object now exposes all individual nodes via the <tt>Iterable</tt> interface. 
+</p>
+
+<p class="wikiPara">
+Here is the routine to build the old String based form.
+</p>
+
+<pre class="wikiPreformatted">
+StringBuilder stringPath = new StringBuilder();
+Path path = constraintViolation.getPropertyPath();
+boolean isRoot = true;
+for(Node node : path) {
+    // node with name
+    if ( node.getName() != null ) {
+        // likely a collection, add []
+        if ( node.isInIterable() ) {
+            stringPath.append("[");
+            // list or array
+            if ( node.getIndex() != null ) {
+                stringPath.append( node.getIndex() );
+            }
+            // a Map
+            else if ( node.getKey() ) {
+                stringPath.append( node.getKey() );
+            }
+            stringPath.append("]");
+        }
+
+        //dot between properties
+        if (isRoot) {
+            isRoot = false;
+        else {
+            stringPath.append(".");
+        }
+        stringPath.append( node.getName() );
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+Most usages are much much more simple and only involve using the node name.
+</p>
+
+<p class="wikiPara">
+The <tt>ConstraintValidatorContext</tt> used to customize error messages inside validators has a nice fluent API to add subnodes.
+</p>
+
+<pre class="wikiPreformatted">context.buildErrorWithMessageTemplate( "this detail is wrong" )
+            .addSubNode( "addresses" )
+            .addSubNode( "country" )
+                .inIterable().atKey( "home" )
+            .addSubNode( "name" )
+            .addError();
+</pre>
+
+
+
+<h1 class="wikiHeadline1" id="H-BootstrapAPIForProviderSpecificUsages"><a href="/2009/07/20/road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2#H-BootstrapAPIForProviderSpecificUsages">Bootstrap API for provider specific usages</a></h1>
+
+<p class="wikiPara">
+The bootstrap API now takes a Bean Validation provider class rather than the <tt>Configuration</tt> class to select a specific provider:
+</p>
+
+<pre class="wikiPreformatted">
+Validation.byProvider(HibernateValidatorProvider.class).buildValidatorFactory();
+</pre>
+
+
+<h1 class="wikiHeadline1" id="H-OpeningDoorsForTheFuture"><a href="/2009/07/20/road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2#H-OpeningDoorsForTheFuture">Opening doors for the future</a></h1>
+
+<p class="wikiPara">
+While we unfortunately could not include method and parameter validations in this release, we have open the doors for provider specific extensions and potential standardization for the next revision of Bean Validation.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Built-in Constraint annotations can be hosted on parameters and constructors</li>
+<li class="wikiUnorderedListItem"> unwrap allows access to provider specific extensions</li>
+</ul>
+
+<p class="wikiPara">
+Here is a possible implementation for Hibernate Validator (to be implemented ;) )
+</p>
+
+<pre class="wikiPreformatted">
+class AtYourService {
+   doMeAFavor(@Valid Favor favor, @NotEmpty owner) { ... }
+}
+
+HibernateValidator hVal = validator.unwrap(HibernateValidator.class);
+Set&lt;ConstraintViolation&gt; failures = hVal.validateMethod(doMeAFavor);
+</pre>
+
+
+<p class="wikiPara">
+We have also added the notion of constraint payload. While ignored by Bean Validation and most Bean Validation providers, payloads can be used by validation clients to associate metadata to particular constraints. The use case driving this inclusion was to define a severity level to error messages. 
+</p>
+
+<pre class="wikiPreformatted">
+class User {
+   @NotEmpty(payload=Severity.ERROR) 
+   @Size(max=50, payload=Severity.ERROR)
+   String getName() { ... }
+
+   @Email(payload=Severity.INFO)
+   String getEmail() { ... }
+}
+</pre>
+
+
+<p class="wikiPara">
+This information can then be read by the presentation framework to display error messages differently. If you define constraints, don't forget the new mandatory <tt>payload</tt> parameter!
+</p>
+
+<h1 class="wikiHeadline1" id="H-Various"><a href="/2009/07/20/road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2#H-Various">Various</a></h1>
+
+<p class="wikiPara">
+We have also done various enhancements:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> rethink java (sub)packages and move interfaces around</li>
+<li class="wikiUnorderedListItem"> add support for unbound wildcards for <tt>ConstraintValidator</tt>s</li>
+<li class="wikiUnorderedListItem"> add support to return the list of <tt>ConstraintDescriptor</tt>s matching a given set of groups</li>
+<li class="wikiUnorderedListItem"> enhanced the <tt>TraversableResolver</tt> contract</li>
+<li class="wikiUnorderedListItem"> rename message template keys to match <tt>f.q.c.NameOfTheConstraint.message</tt> (ie <tt>javax.validation.NotNull.message</tt>)</li>
+</ul>
+
+<p class="wikiPara">
+Many thanks to all the feedback received whether it be from within and outside the JCP. Feel free to drop more last minute feedbacks <a href="https://forum.hibernate.org/viewforum.php?f=26" target="" class="regularLink">in our forums</a>, and try Hibernate Validator 4!
+</p>
+
+<p class="wikiPara">
+PS: this draft was supposed to go through the regular JCP process but due to legal dirty work at play, this is not currently possible (I might expand on the subject in a different post depending on how frustrated I end up being). Our legal team is at work but in the mean time, I wanted to give you the premium (<a href="#road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2_attachment1" target="" class="regularLink">download the spec here[1]</a>).</p>
+</div>
+
+<div class="attachments">
+<h4>Attachments</h4>
+<ol class="wikiOrderedList"><li class="wikiOrderedListItem"><a name="road-to-final-bean-validation-pfd-2-and-its-implementation-hibernate-validator-4-beta-2_attachment1" href="/assets/JSR-303-Specification-1.0.CR3-proposedfinaldraft2.pdf">JSR-303-Specification-1.0.CR3-proposedfinaldraft2.pdf</a></li>
+</ol>
+</div>
+

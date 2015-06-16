@@ -1,0 +1,108 @@
+---
+title: "Hibernate Search 4 Final is here"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "15-12-2011"
+tags: [Hibernate,Hibernate Search]
+
+relative_url: /2011/12/15/hibernate-search-4-final-is-here
+slug: hibernate-search-4-final-is-here
+lace: http://in.relation.to/22580.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/12/15/hibernate-search-4-final-is-here
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The Hibernate Search team is very happy to release Hibernate Search 4. This has been a long and huge effort from our side and
+we can't wait for you to get your hands on it.  This release is coming right in sync with 
+<a href="http://in.relation.to/Bloggers/HibernateCore40IsFinal" target="" class="regularLink">Hibernate Core 4 Final</a>. We made sure
+both work perfectly together.
+</p>
+
+<p class="wikiPara">
+There are too many new features to list them all. Let me give you the executive summary:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> support for <b>Hibernate Core 4</b>
+</li>
+<li class="wikiUnorderedListItem"> support for source of data/events other than Hibernate Core (which is now an optional dependency)</li>
+<li class="wikiUnorderedListItem"> clearer split between <b>APIs, SPIs and implementation</b> classes</li>
+<li class="wikiUnorderedListItem"> better log and error reporting</li>
+<li class="wikiUnorderedListItem"> better underlying architecture - index managers allow now for <b>one backend per index</b> and even non directory based indexes</li>
+<li class="wikiUnorderedListItem"> <b>near real time search</b>
+</li>
+<li class="wikiUnorderedListItem"> optimized and <b>cross-version compatible wire format</b> for communications between master and slaves</li>
+<li class="wikiUnorderedListItem"> performance improvements (more analyzer parallelization, fine-grained masters etc)</li>
+<li class="wikiUnorderedListItem"> support for projections on custom bridges fields</li>
+<li class="wikiUnorderedListItem"> support for <tt>@IndexedEmbedded</tt> on collections of basic types</li>
+<li class="wikiUnorderedListItem"> easier way to work on documentation translation</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-GroundWork"><a href="/2011/12/15/hibernate-search-4-final-is-here#H-GroundWork">Ground work</a></h2>
+
+<p class="wikiPara">
+We have done a lot of ground work. Hibernate Search 4 targets Hibernate Core 4 and uses its nice integrator concept.
+Our code is now properly split into APIs, SPIs and implementation classes. If you import a class contained in a <tt>impl</tt> package,
+you know that this code is not guaranteed to work between micro versions.
+</p>
+
+<p class="wikiPara">
+To help our work in Infinispan, Hibernate Search is now truely independent of Hibernate Core - it's an optional dependency.
+We have also improved error messages and logs which now come with a unique identifier like <tt>HSEARCH00024</tt>. The idea is to
+support internationalization and let you easily Google for an error and find posts describing the same problem.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ArchitectureAndIndexingWork"><a href="/2011/12/15/hibernate-search-4-final-is-here#H-ArchitectureAndIndexingWork">Architecture and indexing work</a></h2>
+
+<p class="wikiPara">
+We have reworked our underlying architecture to give you more flexibility and prepare for our work in Hibernate OGM.
+Each index now has its own backend configuration (using JMS or direct Lucene directories, syn/async etc). This also
+helps us index things more efficiently and in parallel. Another nice consequence is that you technically can have one master
+per index (in the master/slaves model) instead of one master for all indexed. This will help scalability in high
+pressure scenarios.
+</p>
+
+<p class="wikiPara">
+We now also support non-directory based index managers which enabled us to implement near real time search 
+(sometimes called NRT search). Near real time search comes with a few gotchas, but can be very useful. Read more about 
+<a href="http://in.relation.to/Bloggers/HibernateSearch400Alpha2IsOut" target="" class="regularLink">near real time search</a>.
+</p>
+
+<p class="wikiPara">
+To help support clusters of heterogeneous versions, we have rewritten the wire protocol used to communicate between slaves 
+and masters. We use <a href="http://avro.apache.org/" target="" class="regularLink">Avro</a> as the serialization library which gives us the required abstraction. A nice side effect 
+is a much smaller payload and speed improvements over the old java serialization approach.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Others"><a href="/2011/12/15/hibernate-search-4-final-is-here#H-Others">Others</a></h2>
+
+<p class="wikiPara">
+We have worked on many other things. Check out the release notes in the distribution for the full list of changes. Oh and of course it works in <a href="http://www.jboss.org/jbossas" target="" class="regularLink">JBoss AS 7</a>.
+</p>
+
+<p class="wikiPara">
+Another one I'd like to mention is the much easier process to translate the documentation to foreign languages.
+It's all on the web :) If you feel like translating the doc, read more about the 
+<a href="http://in.relation.to/Bloggers/HibernateSearch40Beta2HibernateCoreNoLongerMandatory" target="" class="regularLink">translation process</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-GetTheRelease"><a href="/2011/12/15/hibernate-search-4-final-is-here#H-GetTheRelease">Get the release</a></h2>
+
+<p class="wikiPara">
+Make sure to read the <a href="http://community.jboss.org/wiki/HibernateSearchMigrationGuide" target="" class="regularLink">migration guide</a> if you
+convert an existing application. And go <a href="http://hibernate.org/subprojects/search/download" target="" class="regularLink">download Hibernate Search 4</a>.
+</p>
+
+<p class="wikiPara">
+Many thanks to all the contributors that made this release possible whether it be via pull requests, bug reports or feedback on the forum.
+</p>
+
+<p class="wikiPara">
+Enjoy and happy holidays to everyone.</p>
+</div>
+

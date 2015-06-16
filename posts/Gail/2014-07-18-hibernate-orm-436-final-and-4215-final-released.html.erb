@@ -1,0 +1,68 @@
+---
+title: "Hibernate ORM 4.3.6.Final and 4.2.15.Final Released"
+author: "Gail Badner"
+blogger_name: "Gail"
+creation_date: "18-07-2014"
+tags: [Core Release,Hibernate,News]
+
+relative_url: /2014/07/18/hibernate-orm-436-final-and-4215-final-released
+slug: hibernate-orm-436-final-and-4215-final-released
+lace: http://in.relation.to/28352.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/07/18/hibernate-orm-436-final-and-4215-final-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+For more information, please see:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> 4.3.6.Final change log: <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&amp;version=16550" target="" class="regularLink">https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&amp;version=16550</a>
+</li>
+<li class="wikiUnorderedListItem"> 4.2.15.Final change log: <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&amp;version=17451" target="" class="regularLink">https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&amp;version=17451</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+Changes to 4.3.6.Final were mainly bugfixes with some performance improvements. A new Hibernate module was added to provide support for HikariCP connection pool (<a href="https://hibernate.atlassian.net/browse/HHH-8869" target="" class="regularLink">HHH-8869</a>).
+</p>
+
+<p class="wikiPara">
+The following bugfixes applied only to 4.3.6.Final:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8818" target="" class="regularLink">HHH-8818</a> fixed a regression introduced in 4.3.0.Final causing Hibernate to not be able to find the JNDI DataSource.</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-4700" target="" class="regularLink">HHH-4700</a> fixed a bug using an HQL CASE expression containing a parameter in the THEN clause, and <a href="https://hibernate.atlassian.net/browse/HHH-6747" target="" class="regularLink">HHH-6747</a> fixed a bug rendering a SimpleCase using CriteriaBuilder.selectCase( arg ). Both caused ClassCastException to be thrown.</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8885" target="" class="regularLink">HHH-8885</a> fixed a bug causing a NullPointerException when MapJoin.key() is used.</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8980" target="" class="regularLink">HHH-8980</a> fixed a bug where an entity was not found if a joined subclass had a non-nullable many-to-one or one-to-one association.</li>
+</ul>
+
+<p class="wikiPara">
+The following bugfixes applied to both 4.3.6.Final and 4.2.15.Final:  
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-9280" target="" class="regularLink">HHH-9280</a> - caused the table name computed for an @ElementCollection to use the entity class name instead of the specified entity name.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8310" target="" class="regularLink">HHH-8310</a> caused class loading problems due to a Spring bug that changed the context classloader to one that could not locate Hibernate Lob proxy classes (BlobProxy, ClobProxy, NClobProxy, SerializableBlobProxy, SerializableClobProxy).</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-9106" target="" class="regularLink">HHH-9106</a> (for 4.3.6.Final) and <a href="https://hibernate.atlassian.net/browse/HHH-9261" target="" class="regularLink">HHH-9261</a> (for 4.2.15.Final) optionally allows multiple representations of the same entity to be merged (e.g., loaded from different sessions).</li>
+</ul>
+
+<p class="wikiPara">
+JBoss Nexus: <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate" target="" class="regularLink">https://repository.jboss.org/nexus/content/groups/public/org/hibernate</a><br>
+Maven Central: <a href="http://repo1.maven.org/maven2/org/hibernate/hibernate-core" target="" class="regularLink">http://repo1.maven.org/maven2/org/hibernate/hibernate-core</a> (should update in a couple of days)<br>
+SourceForge: <a href="https://sourceforge.net/projects/hibernate/files/hibernate4" target="" class="regularLink">https://sourceforge.net/projects/hibernate/files/hibernate4</a><br>
+4.3.6.Final Downloads: <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.3.6.Final/hibernate-release-4.3.6.Final.zip/download" target="" class="regularLink">4.3.6.Final ZIP</a>, <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.3.6.Final/hibernate-release-4.3.6.Final.tgz/download" target="" class="regularLink">4.3.6.Final TGZ</a><br>
+4.2.15.Final Downloads: <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.2.15.Final/hibernate-release-4.2.15.Final.zip/download" target="" class="regularLink">4.2.15.Final ZIP</a>, <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.2.15.Final/hibernate-release-4.2.15.Final.tgz/download" target="" class="regularLink">4.2.15.Final TGZ</a></p>
+</div>
+

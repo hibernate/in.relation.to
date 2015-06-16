@@ -1,0 +1,244 @@
+---
+title: "Seam Security 3.0.0.Alpha1 release"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+creation_date: "02-12-2010"
+tags: [PicketLink,Seam,Seam 3,Seam News,Security]
+
+relative_url: /2010/12/02/seam-security-300-alpha-1-release
+slug: seam-security-300-alpha-1-release
+lace: http://in.relation.to/17833.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/12/02/seam-security-300-alpha-1-release
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm pleased to announce the availability of <a href="http://seamframework.org/Seam3/SecurityModule" target="" class="regularLink">Seam Security</a> 3.0.0 Alpha1. This release is a major rework of the
+security features from Seam 2.x, so I apologise in advance for the epic release notes.  First the important stuff:
+</p>
+
+<h4 class="wikiHeadline4" id="H-DistributionDownload"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-DistributionDownload">Distribution download:</a></h4>
+
+<p class="wikiPara">
+<a href="https://sourceforge.net/projects/jboss/files/Seam/Security/3.0.0.Alpha1/seam-security-3.0.0.Alpha1.zip/download" target="" class="regularLink">https://sourceforge.net/projects/jboss/files/Seam/Security/3.0.0.Alpha1/seam-security-3.0.0.Alpha1.zip/download</a>
+</p>
+
+<h4 class="wikiHeadline4" id="H-MavenDependency"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-MavenDependency">Maven dependency:</a></h4>
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+   &lt;groupId&gt;org.jboss.seam.security&lt;/groupId&gt;
+   &lt;artifactId&gt;seam-security-impl&lt;/artifactId&gt;
+   &lt;version&gt;3.0.0.Alpha1&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p class="wikiPara">
+Alternatively, you can use the API at compile time and only include the implementation at runtime.
+</p>
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+   &lt;groupId&gt;org.jboss.seam.security&lt;/groupId&gt;
+   &lt;artifactId&gt;seam-security-api&lt;/artifactId&gt;
+   &lt;version&gt;3.0.0.Alpha1&lt;/version&gt;
+   &lt;scope&gt;compile&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+   &lt;groupId&gt;org.jboss.seam.security&lt;/groupId&gt;
+   &lt;artifactId&gt;seam-security-impl&lt;/artifactId&gt;
+   &lt;version&gt;3.0.0.Alpha1&lt;/version&gt;
+   &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p class="wikiPara">
+Note: You must configure the <a href="http://www.seamframework.org/Seam3/MavenArtifacts" target="" class="regularLink">JBoss Community Repository</a> in your <tt>settings.xml</tt> or project POM.
+</p>
+
+<h4 class="wikiHeadline4" id="H-JIRA"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-JIRA">JIRA:</a></h4>
+
+<p class="wikiPara">
+<a href="http://jira.jboss.org/jira/browse/SEAMSECURITY" target="" class="regularLink">http://jira.jboss.org/jira/browse/SEAMSECURITY</a>
+</p>
+
+<p class="wikiPara">
+I need to stress that this is an alpha release, and as such some features might be missing or incomplete, and there are sure to be some bugs.  I'd like to invite everyone to make ample use of JIRA to report anything and everything that you find out of place or missing, this will greatly help us to prepare for the subsequent releases.
+</p>
+
+<p class="wikiPara">
+With that out of the way, it's time to buckle up and see what's changed.
+</p>
+
+<h4 class="wikiHeadline4" id="H-SplitBetweenAPIAndImplementation"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-SplitBetweenAPIAndImplementation">Split between API and Implementation</a></h4>
+
+<p class="wikiPara">
+Like many of the other Seam 3 modules, we have split the security module into API and IMPL sub-modules.  This was a much requested feature for Seam Security to allow for alternate implementations to be used within unit tests, etc.  Core components such as Identity, Credentials and others are now based on interfaces.
+</p>
+
+<h4 class="wikiHeadline4" id="H-BasicAuthentication"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-BasicAuthentication">Basic Authentication</a></h4>
+
+<p class="wikiPara">
+Authentication via a simple authentication method ala Seam 2 is quite similar in principle.  Instead of having to configure an authenticator method in <tt>components.xml</tt> (which doesn't exist any more), you simply need to provide an implementation of the <tt>org.jboss.seam.security.Authenticator</tt> interface in your application.  When calling <tt>Identity.login()</tt>, the security module will search for a bean implementing the <tt>Authenticator</tt> interface and if found use it to perform authentication.  This interface declares a single method, <tt>authenticate()</tt>:
+</p>
+
+<pre class="wikiPreformatted">public interface Authenticator
+{
+   boolean authenticate();
+}</pre>
+
+
+<p class="wikiPara">
+Implementations may perform whatever logic necessary to authenticate the user, whether that be querying a database or reading user account info from a file.  Credentials (containing the user's username and password) may be obtained by injecting the <tt>org.jboss.seam.security.Credentials</tt> bean directly into your <tt>Authenticator</tt>.
+</p>
+
+<pre class="wikiPreformatted">public class SimpleAuthenticator
+{
+   @Inject Credentials credentials;
+   
+   public boolean authenticate()
+   {
+      // authentication logic here
+      
+      return true; // if authentication successful
+   }
+}</pre>
+
+
+<h4 class="wikiHeadline4" id="H-PicketLink"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-PicketLink">PicketLink</a></h4>
+
+<p class="wikiPara">
+One of the major changes in Seam Security is integration with PicketLink.  Early on in the planning phase for Seam 3 we decided to look at ways we could unify our security efforts with the JBoss Security team.  Seam already had identity management features, however it did not make sense to continue developing these features in parallel (and therefore competing) with the PicketLink IDM project, which had similar goals.  With that in mind, we decided to drop the identity management features from Seam and adopt PicketLink IDM as our identity management provider.  
+</p>
+
+<p class="wikiPara">
+PicketLink provides identity store implementations for storing identity-related information using either Hibernate or LDAP, however lacks a JPA implementation.  Seam 3 bridges this gap by providing a JPA implementation called <tt>JpaIdentityStore</tt>, which was inspired by the <tt>JpaIdentityStore</tt> implementation in Seam 2.  This is a total rewrite, and offers much more configuration flexibility when it comes to integrating with legacy db schemas which contain identity-related data.  This identity store implementation <i class="wikiEmphasis">may</i> eventually make its way into the PicketLink project's code base.
+</p>
+
+<p class="wikiPara">
+To use <tt>JpaIdentityStore</tt> to provide identity management features for your own project, you need to configure it in your <tt>beans.xml</tt> (or <tt>seam-beans.xml</tt>) file (Seam-XML module is required).  First you need to configure a namespace within the root element:
+</p>
+
+<pre class="wikiPreformatted">   xmlns:plidm="urn:java:org.jboss.seam.security.management.picketlink"</pre>
+
+
+<p class="wikiPara">
+Then you need to configure the entity classes which contain things such as your user accounts, credentials, roles, and relationships:   
+</p>
+
+<pre class="wikiPreformatted">   &lt;plidm:JpaIdentityStoreConfiguration&gt;
+      &lt;s:replaces/&gt;
+      &lt;plidm:identityClass&gt;org.jboss.seam.security.examples.idmconsole.model.IdentityObject&lt;/plidm:identityClass&gt;
+      &lt;plidm:credentialClass&gt;org.jboss.seam.security.examples.idmconsole.model.IdentityObjectCredential&lt;/plidm:credentialClass&gt;
+      &lt;plidm:relationshipClass&gt;org.jboss.seam.security.examples.idmconsole.model.IdentityObjectRelationship&lt;/plidm:relationshipClass&gt;
+      &lt;plidm:roleTypeClass&gt;org.jboss.seam.security.examples.idmconsole.model.IdentityRoleName&lt;/plidm:roleTypeClass&gt;
+   &lt;/plidm:JpaIdentityStoreConfiguration&gt;</pre>
+
+
+<p class="wikiPara">
+The above example is from the idmconsole demo application that is included within the Seam Security distribution.  It is a simple but concise example that demonstrates how you might build an interface for managing users, roles and groups within your application.
+</p>
+
+<p class="wikiPara">
+Another important change to note is that the <tt>IdentityManager</tt> component is no longer part of Seam 3.  Replacing it is a set of action beans, found in the <tt>org.jboss.seam.security.management.action</tt> package.  These beans are designed to be used directly by the view layer (such as, but not limited to, JSF) to simplify the interaction between your application and the PicketLink IDM management API.  If you want direct access to the API yourself, you can directly inject <tt>org.picketlink.idm.api.IdentitySession</tt> into your bean:
+</p>
+
+<pre class="wikiPreformatted">@Inject IdentitySession identitySession;</pre>
+
+
+<p class="wikiPara">
+From the <tt>IdentitySession</tt> you can gain access to the <tt>PersistenceManager</tt>, <tt>RelationshipManager</tt>, <tt>RoleManager</tt>, etc for fine-grained control over all aspects of the identity management API.  For more information, you can refer to the PicketLink documentation here:
+</p>
+
+<p class="wikiPara">
+<a href="http://anonsvn.jboss.org/repos/picketlink/idm/downloads/docs/1.0.0.GA/ReferenceGuide/en-US/html_single/index.html" target="" class="regularLink">http://anonsvn.jboss.org/repos/picketlink/idm/downloads/docs/1.0.0.GA/ReferenceGuide/en-US/html_single/index.html</a>
+</p>
+
+<h4 class="wikiHeadline4" id="H-APIChangesJAASDeprecation"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-APIChangesJAASDeprecation">API Changes, JAAS deprecation</a></h4>
+
+<p class="wikiPara">
+With the move to PicketLink we have also adopted their Identity API, making use of the base PicketLink classes for User, Role and Group.  As a result, we are no longer using the JAAS API within the <tt>Identity</tt> bean, and the original authentication mechanism (also based on JAAS) has been removed too.  This has given us the advantage of first class support for Groups (previously in Seam 2.x, the concept of a <i class="wikiEmphasis">group</i> was to allow a grouping of roles).  In Seam 3, a role is now a typed mapping between a user and a group.  For example, "bob" (a user) may be a "manager" (role type) in "head office" (a group).  This gives us more fine-grained control over privileges for groups of users.
+</p>
+
+<h4 class="wikiHeadline4" id="H-RulebasedPermissions"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-RulebasedPermissions">Rule-based permissions</a></h4>
+
+<p class="wikiPara">
+There have been a few minor changes to rule-based permissions in Seam 3.  First of all, it's no longer required that you configure the rule file, as long as it's named <tt>security.drl</tt> and located in one of the standard locations for resources according to the Weld Extensions resource loader.  Secondly, instead of asserting the <tt>Principal</tt> obtained from the <tt>Identity</tt> bean into the working memory, it now asserts a <tt>User</tt> object, and injects each of the <tt>Role</tt> and <tt>Group</tt> memberships assigned to the current user.  As a result, you will need to modify the imports for your security rules file, here's an example:
+</p>
+
+<pre class="wikiPreformatted">import org.jboss.seam.security.permission.PermissionCheck;
+import org.picketlink.idm.api.Role;
+import org.picketlink.idm.api.Group;</pre>
+
+
+<p class="wikiPara">
+Role checks performed in rules are slightly different also. Here's an example from the idmconsole demo:
+</p>
+
+<pre class="wikiPreformatted">rule CreateAccount
+  no-loop
+  activation-group "permissions"
+when
+  check: PermissionCheck(resource == "seam.account", permission == "create", granted == false)
+  Role(roleType.name == "admin")
+then
+  check.grant();
+end</pre>
+
+
+<h4 class="wikiHeadline4" id="H-ProgrammaticAuthorization"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-ProgrammaticAuthorization">Programmatic authorization</a></h4>
+
+<p class="wikiPara">
+We have removed the <tt>@Restrict</tt> annotation from Seam 3, as this EL-based security mechanism didn't offer the kind of type safety that is encouraged by the CDI programming model.  At this stage we don't have a typesafe annnotation-based replacement, however we may introduce one before the final release.  For now, authorization can be performed programmatically by injecting the Identity bean into your application bean:
+</p>
+
+<pre class="wikiPreformatted">@Inject Identity identity;</pre>
+
+
+<p class="wikiPara">
+Role checks can then be performed like this:
+</p>
+
+<pre class="wikiPreformatted">identity.checkRole("superuser", "Head Office", "GROUP");</pre>
+
+
+<p class="wikiPara">
+If the user doesn't possess the required role, an <tt>AuthorizationException</tt> will be thrown.  Simple group membership checks can be performed in a similar way:
+</p>
+
+<pre class="wikiPreformatted">identity.checkGroup("Head Office", "GROUP");</pre>
+
+
+<p class="wikiPara">
+Permission checks are very similar to how they were in Seam 2.x, with a slight change in terminology.  To align with PicketLink, we've renamed <q>target</q> to <q>resource</q>, and <q>action</q> to <q>permission</q>.  The API for checking user permissions now looks like this:
+</p>
+
+<pre class="wikiPreformatted">void checkPermission(Object resource, String permission);</pre>
+
+
+<p class="wikiPara">
+Once again, the resource parameter is used to specify the object upon which you wish to test if the current user has the necessary privileges to interact with, and the permission parameter is the name of the specific action that the user wishes to invoke on the resource.  So for example, let's say we have an Account object which the current user wishes to delete.  To check whether they have the necessary privileges to do this, we perform a permission check like so:
+</p>
+
+<pre class="wikiPreformatted">identity.checkPermission(account, "delete");</pre>
+
+
+<h4 class="wikiHeadline4" id="H-SoWhatsNext"><a href="/2010/12/02/seam-security-300-alpha-1-release#H-SoWhatsNext">So what's next?</a></h4>
+
+<p class="wikiPara">
+Here's a list of the things that didn't quite make it into the alpha, but are planned for the final release:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> External authentication module (due shortly in Alpha2)</li>
+<li class="wikiUnorderedListItem"> Persistent permissions (i.e. ACLs)</li>
+<li class="wikiUnorderedListItem"> Remember Me</li>
+<li class="wikiUnorderedListItem"> Unit Tests</li>
+<li class="wikiUnorderedListItem"> Documentation</li>
+<li class="wikiUnorderedListItem"> More examples</li>
+</ul>
+</div>
+

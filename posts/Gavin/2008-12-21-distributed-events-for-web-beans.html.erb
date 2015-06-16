@@ -1,0 +1,222 @@
+---
+title: "Distributed events for Web Beans"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "21-12-2008"
+tags: [Web Beans]
+
+relative_url: /2008/12/21/distributed-events-for-web-beans
+slug: distributed-events-for-web-beans
+lace: http://in.relation.to/10250.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/12/21/distributed-events-for-web-beans
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The <a href="http://docs.jboss.org/webbeans/spec/PDR/html/events.html" target="" class="regularLink">Web Beans event bus</a>
+provides a 
+<a href="http://docs.jboss.org/webbeans/reference/1.0/en-US/html/events.html" target="" class="regularLink">very nice way</a> 
+for stateful components to synchronize their state with changes 
+that take place in the application. 
+</p>
+
+<p class="wikiPara">
+Suppose we have a Web Bean that updates the <tt>Product</tt> catalog.
+The following method is responsible for creating new <tt>Product</tt>s.
+</p>
+
+<pre class="wikiPreformatted">public class ProductManager {
+
+   @PersistenceContext EntityManager entityManager;
+   @Fires @Created Event&lt;Product&gt; productCreated;
+
+   public void create(Product prod) {
+      entityManager.persist(prod);
+      productCreated.fire(prod);
+   }
+
+   ...
+
+}</pre>
+
+
+<p class="wikiPara">
+When a <tt>Product</tt> is created, the Web Bean fires an event of type
+<tt>Product</tt>, with binding type <tt>@Created</tt>. 
+</p>
+
+<p class="wikiPara">
+Suppose a second Web Bean caches the <tt>Product</tt> catalog in memory,
+to minimize database access:
+</p>
+
+<pre class="wikiPreformatted">@ApplicationScoped
+public class Catalog {
+   List&lt;Product&gt; products;
+   
+   ...
+   
+   @Produces List&lt;Product&gt; getProducts() {
+      if (products==null) {
+         products = getProductsFromDatabase();
+      }
+      return products;
+   }
+   
+   void productCreated(@Observes @AfterTransactionCompletion @Created Product prod) {
+      products.add(prod);
+   }
+   
+}</pre>
+
+
+<p class="wikiPara">
+When a new <tt>Product</tt> is successfully created in the database, the 
+<tt>Catalog</tt> receives an event notification and adds the new <tt>Product</tt>
+to its cache.
+</p>
+
+<p class="wikiPara">
+Event processing is <i class="wikiEmphasis">much</i> more important in an environment with 
+stateful objects like <tt>Catalog</tt> than it is in an environment with 
+only stateless objects like stateful session beans. Therefore, I 
+believe that event processing is a truly essential feature of Web Beans.
+</p>
+
+<p class="wikiPara">
+However, the eventing functionality defined by the Web Beans Public 
+Draft is a purely local construct and does not help when the application 
+is distributed across multiple cluster nodes or multiple physical tiers.
+We've identified this problem as one that must be solved for the revised
+Public Draft.
+</p>
+
+<p class="wikiPara">
+Designing a distributed event bus would potentially be a very
+difficult undertaking, with so many issues to think about: QoS,
+asynchronicity, transactionality, routing, etc. Fortunately, JMS
+already has the features we need, and is what is sometimes used today
+to solve the problems we're talking about. JMS features:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> asynchronous, distributed semantics</li>
+<li class="wikiUnorderedListItem"> a notion of both 1-of-N and N-of-N receivers (queues and topics)</li>
+<li class="wikiUnorderedListItem"> a notion of logical channels (to support routing between tiers and applications)</li>
+<li class="wikiUnorderedListItem"> support for a range of QoS semantics, including</li>
+<li class="wikiUnorderedListItem"> transactionality</li>
+</ul>
+
+<p class="wikiPara">
+Furthermore, JMS is well-understood and well-supported in the EE environment.
+</p>
+
+<p class="wikiPara">
+So I've proposed that the specification simply define that events may be 
+distributed via JMS. 
+</p>
+
+<p class="wikiPara">
+The application developer would not be exposed to the JMS APIs. The
+actual interaction with JMS would be handled by the container. All the
+developer would need to do is specify that events with a specific type
+and binding types would be distributed by a certain queue or topic.
+</p>
+
+<p class="wikiPara">
+Of course, absolutely nothing would stop a vendor from also supporting an
+alternative distribution mechanism as a proprietary extensions (for example, in
+JBoss we could provide support for JGroups).
+</p>
+
+<p class="wikiPara">
+What I'm thinking is the following:
+</p>
+
+<h3 class="wikiHeadline3" id="H-AsynchronousEventObservers"><a href="/2008/12/21/distributed-events-for-web-beans#H-AsynchronousEventObservers">Asynchronous event observers</a></h3>
+
+<p class="wikiPara">
+Event observers may specify that they receive events asynchronously:
+</p>
+
+<pre class="wikiPreformatted">void productCreated(@Observes @Asynchronously @Created Product product) { ... }</pre>
+
+
+<p class="wikiPara">
+By default, an asynchronous observer is a purely local construct.
+However, unlike synchronous observers, an asynchronous observer is
+called in a different set of web beans contexts to the contexts in
+which the event was fired.
+</p>
+
+<h3 class="wikiHeadline3" id="H-MappingAnEventTypeToAJMSChannel"><a href="/2008/12/21/distributed-events-for-web-beans#H-MappingAnEventTypeToAJMSChannel">Mapping an event type to a JMS channel</a></h3>
+
+<p class="wikiPara">
+A JMS topic or queue declaration may specify a set of events which are
+distributed via that queue/topic:
+</p>
+
+<pre class="wikiPreformatted">&lt;Topic&gt;
+   &lt;destination&gt;java:comp/env/jms/CacheInvalidationEvents&lt;/destination&gt;
+   &lt;connectionFactory&gt;java:comp/env/jms/TopicConnectionFactory&lt;/connectionFactory&gt;
+   &lt;events&gt;
+      &lt;myapp:Product&gt;
+         &lt;myapp:Created/&gt;
+      &lt;/myapp:Product&gt;
+   &lt;/events&gt;
+&lt;/Topic&gt;</pre>
+
+
+<p class="wikiPara">
+This declaration means that any event that is assignable to the
+specified type and binding types is a distributed event, distributed
+by the named JMS topic.
+</p>
+
+<p class="wikiPara">
+Since JMS is a transactional medium, we could support a
+further setting which writes the event transactionally to the queue/topic.
+However, this setting needs to be a global setting for the event type.
+Perhaps a <tt>@Transactional</tt> annotation for the event type?
+</p>
+
+<h3 class="wikiHeadline3" id="H-ObserversOfDistributedEvents"><a href="/2008/12/21/distributed-events-for-web-beans#H-ObserversOfDistributedEvents">Observers of distributed events</a></h3>
+
+<p class="wikiPara">
+The container would validate that all observers for any
+event distributed via JMS are declared to be asynchronous observers,
+and throw an exception if there are any synchronous observers for the
+event.
+</p>
+
+<p class="wikiPara">
+We need to think carefully about the concept of an asynchronous
+transaction completion event observer. The following combinations are
+semantically correct, and need to be supported, even for the distributed
+case:
+</p>
+
+<pre class="wikiPreformatted">@Observes @Asynchronously @AfterTransactionCompletion</pre>
+
+<pre class="wikiPreformatted">@Observes @Asynchronously @AfterTransactionSuccess</pre>
+
+<pre class="wikiPreformatted">@Observes @Asynchronously @AfterTransactionFailue</pre>
+
+
+<p class="wikiPara">
+However, this combination is not meaningful:
+</p>
+
+<pre class="wikiPreformatted">@Observes @Asynchronously @BeforeTransactionCompletion</pre>
+
+
+<p class="wikiPara">
+Of course, this is all a work in progress, and I'm interested in hearing 
+feedback on this proposal :-)
+</p>
+</div>
+

@@ -1,0 +1,233 @@
+---
+title: "Testing Java doclets"
+author: "Christian Bauer"
+blogger_name: "Christian"
+creation_date: "15-11-2009"
+tags: [AuthorDoclet]
+
+relative_url: /2009/11/15/testing-java-doclets
+slug: testing-java-doclets
+lace: http://in.relation.to/12969.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/11/15/testing-java-doclets
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Following up on my <a href="/Bloggers/AreBooksTutorials" target="" class="regularLink">last blog entry</a> about the next edition of the <a href="http://www.manning.com/bauer2/" target="" class="regularLink">Hibernate bible</a>, in the comments, <a href="http://www.linkedin.com/in/wiverson" target="" class="regularLink">Will Iverson</a> (sorry Will, I hope that is really you, first Google hit) said that he would <q>write ALL the code examples as JUnit test cases</q>. Well, AFAIR that is what Will was trying with <a href="http://www.amazon.co.uk/Hibernate-Developers-Guide-Will-Iverson/dp/0321268199" target="" class="regularLink">his Hibernate book</a> a few years ago.
+</p>
+
+<p class="wikiPara">
+For my own writing, from the first day, I wasn't sure how to treat code examples. It doesn't really matter if you are writing a tutorial or a reference book with 1000 pages, the question simply is: Did you verify that all code examples really work?
+</p>
+
+<p class="wikiPara">
+On the other side of the equation is your publisher and their procedures and formats. The publisher I worked with, for example, required that authors submit their text in some MSFT Word template. I've heard from other authors that some publishers are happy with a Docbook XML or SGML file. Well, the only advice I can give you is that you best ignore what the publisher wants and you use what works best for you. (Seriously, you are doing all the work, all they do is import it into Framemaker and pay a typesetter by the hour. If they can't import what you produce, find another publisher.)
+</p>
+
+<p class="wikiPara">
+So what you have to do is find a toolset that delivers what the publisher wants, but also allows you to verify code examples automatically.
+</p>
+
+<p class="wikiPara">
+For the first two Hibernate books I had my own toolset based on Docbook XML, with XML, PDF, and HTML output. This toolchain has been re-used by a few open source projects for documentation. I wrote all of the text in XML in IntelliJ IDEA. Unfortunately, all the code examples were copy/pasted lines from real working code. So when the code had to be changed because it had a bug, the book text wasn't updated automatically. 
+</p>
+
+<p class="wikiPara">
+For the next edition of <q>Java Persistence with Hibernate</q> I do not want to bother with this and I want most of the code examples to be verified automatically, I want to reference the executable source that has been tested from within the text, without duplicating it. 
+</p>
+
+<p class="wikiPara">
+I've been prototyping my new toolchain for a few weeks now and it's almost ready for a wider audience. It's based on Javadoc and XHTML and I'm going to blog about it soon.
+</p>
+
+<p class="wikiPara">
+Well, all I really wanted to show you today is a single class that helped me with unit testing and running my prototype. If you have ever written a Javadoc doclet you'll probably understand why this is useful:
+</p>
+
+<pre class="wikiPreformatted brush:java">import com.sun.javadoc.RootDoc;
+import com.sun.javadoc.ClassDoc;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.ListBuffer;
+import com.sun.tools.javac.util.Options;
+import com.sun.tools.javadoc.JavadocTool;
+import com.sun.tools.javadoc.ModifierFilter;
+import com.sun.tools.javadoc.PublicMessager;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class EasyDoclet {
+
+    final private Logger log = Logger.getLogger(EasyDoclet.class.getName());
+
+    final private File sourceDirectory;
+    final private String[] packageNames;
+    final private File[] fileNames;
+    final private RootDoc rootDoc;
+
+    public EasyDoclet(File sourceDirectory, String... packageNames) {
+        this(sourceDirectory, packageNames, new File[0]);
+    }
+
+    public EasyDoclet(File sourceDirectory, File... fileNames) {
+        this(sourceDirectory, new String[0], fileNames);
+    }
+
+    protected EasyDoclet(File sourceDirectory, String[] packageNames, File[] fileNames) {
+        this.sourceDirectory = sourceDirectory;
+        this.packageNames = packageNames;
+        this.fileNames = fileNames;
+
+        Context context = new Context();
+        Options compOpts = Options.instance(context);
+
+        if (getSourceDirectory().exists()) {
+            log.fine("Using source path: " + getSourceDirectory().getAbsolutePath());
+            compOpts.put("-sourcepath", getSourceDirectory().getAbsolutePath());
+        } else {
+            log.info("Ignoring non-existant source path, check your source directory argument");
+        }
+
+        ListBuffer&lt;String&gt; javaNames = new ListBuffer&lt;String&gt;();
+        for (File fileName : fileNames) {
+            log.fine("Adding file to documentation path: " + fileName.getAbsolutePath());
+            javaNames.append(fileName.getPath());
+        }
+
+        ListBuffer&lt;String&gt; subPackages = new ListBuffer&lt;String&gt;();
+        for (String packageName : packageNames) {
+            log.fine("Adding sub-packages to documentation path: " + packageName);
+            subPackages.append(packageName);
+        }
+
+        new PublicMessager(
+                context,
+                getApplicationName(),
+                new PrintWriter(new LogWriter(Level.SEVERE), true),
+                new PrintWriter(new LogWriter(Level.WARNING), true),
+                new PrintWriter(new LogWriter(Level.FINE), true)
+        );
+
+        JavadocTool javadocTool = JavadocTool.make0(context);
+
+        try {
+            rootDoc = javadocTool.getRootDocImpl(
+                    "",
+                    null,
+                    new ModifierFilter(ModifierFilter.ALL_ACCESS),
+                    javaNames.toList(),
+                    new ListBuffer&lt;String[]&gt;().toList(),
+                    false,
+                    subPackages.toList(),
+                    new ListBuffer&lt;String&gt;().toList(),
+                    false,
+                    false,
+                    false);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
+
+        if (log.isLoggable(Level.FINEST)) {
+            for (ClassDoc classDoc : getRootDoc().classes()) {
+                log.finest("Parsed Javadoc class source: " + classDoc.position() + " with inline tags: " + classDoc.inlineTags().length );
+            }
+        }
+    }
+
+    public File getSourceDirectory() {
+        return sourceDirectory;
+    }
+
+    public String[] getPackageNames() {
+        return packageNames;
+    }
+
+    public File[] getFileNames() {
+        return fileNames;
+    }
+
+    public RootDoc getRootDoc() {
+        return rootDoc;
+    }
+
+    protected class LogWriter extends Writer {
+
+        Level level;
+
+        public LogWriter(Level level) {
+            this.level = level;
+        }
+
+        public void write(char[] chars, int offset, int length) throws IOException {
+            String s = new String(Arrays.copyOf(chars, length));
+            if (!s.equals("\n"))
+                log.log(level, s);
+        }
+
+        public void flush() throws IOException {}
+        public void close() throws IOException {}
+    }
+
+    protected String getApplicationName() {
+        return getClass().getSimpleName() + " Application";
+    }
+
+}
+</pre>
+
+
+<p class="wikiPara">
+If you want to test your doclet or run it programmatically you have to use the <tt>javadoc</tt> command line tool or the evil <tt>Main</tt> class provided with <tt>tools.jar</tt> - it's evil because it calls <tt>System.exit()</tt> when it is done, not usable in unit tests. So what I did here is dig through the JDK source code to figure out how to start a <q>Doclet</q> programmatically without all the baggage. (Again, you most likely won't understand what this is about until you try to write your own Doclet. The API is very old and very bad.) 
+</p>
+
+<p class="wikiPara">
+Oh, and you also need this:
+</p>
+
+<pre class="wikiPreformatted brush:java">package com.sun.tools.javadoc;
+
+import com.sun.tools.javac.util.Context;
+
+import java.io.PrintWriter;
+
+/**
+ * Protected constructors prevent the world from exploding!
+ */
+public class PublicMessager extends Messager {
+
+    public PublicMessager(Context context, String s) {
+        super(context, s);
+    }
+
+    public PublicMessager(Context context, String s, PrintWriter printWriter, PrintWriter printWriter1, PrintWriter printWriter2) {
+        super(context, s, printWriter, printWriter1, printWriter2);
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+This is how you use it in your unit test (or whatever code):
+</p>
+
+<pre class="wikiPreformatted brush:java">EasyDoclet doclet = new EasyDoclet(new File("/my/source"), "some.package", "another.package");
+RootDoc doc = doclet.getRootDoc();
+...
+
+</pre>
+
+
+<p class="wikiPara">
+I'm going to write more about my prototype toolset next week and I hope that it's going to be useful not only for myself and the next book but also for other projects, like the last toolset.
+</p>
+</div>
+

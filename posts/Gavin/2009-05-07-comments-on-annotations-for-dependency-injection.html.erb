@@ -1,0 +1,85 @@
+---
+title: "Comments on \"Annotations for Dependency Injection\""
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "07-05-2009"
+tags: []
+
+relative_url: /2009/05/07/comments-on-annotations-for-dependency-injection
+slug: comments-on-annotations-for-dependency-injection
+lace: http://in.relation.to/11211.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/05/07/comments-on-annotations-for-dependency-injection
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Google and Spring <a href="http://google-code-updates.blogspot.com/2009/05/javaxinjectinject.html" target="" class="regularLink">are proposing a JSR to standardize a set of dependency injection related annotations</a>. I've been asked by several people to comment on this and how it relates to <a href="http://jcp.org/en/jsr/detail?id=299" target="" class="regularLink">JSR-299</a>. 
+</p>
+
+<p class="wikiPara">
+First, the proposed JSR would define a strict subset of the functionality that already exists in 299, so there would be no difficulty in having 299 containers support the proposed annotations. And, of course, any implementation of 299 has functionality that goes well beyond what is being proposed here. So this new JSR proposal is not in competition with 299.
+</p>
+
+<p class="wikiPara">
+Second, the annotations proposed in this JSR proposal are more or less equivalent to a subset of the annotations defined in 299, modulo naming: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>@Qualifier</tt> is equivalent to <tt>@BindingType</tt>,</li>
+<li class="wikiUnorderedListItem"> <tt>@Scope</tt> is equivalent to <tt>@ScopeType</tt>, </li>
+<li class="wikiUnorderedListItem"> <tt>@Singleton</tt> is equivalent to <tt>@ApplicationScoped</tt>,</li>
+<li class="wikiUnorderedListItem"> <tt>@Named</tt> is just a built-in binding type, and</li>
+<li class="wikiUnorderedListItem"> the <tt>Provider&lt;X&gt;</tt> interface is equivalent to <tt>Instance&lt;X&gt;</tt>.</li>
+</ul>
+
+<p class="wikiPara">
+Furthermore, 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>@Inject</tt> is more or less similar to <tt>@Initializer</tt>.</li>
+</ul>
+
+<p class="wikiPara">
+Now, I think it would be a huge mistake to introduce a second set of annotations which are semantically identical to those in 299 and address the exactly the same problem. So I interpret this JSR proposal as saying: let's take a subset of the annotations that are already defined in 299, split them out into a different package, and make them consumable to other containers that do dependency injection. This is certainly doable, and quite appealing on some level, but I'm still waiting to be convinced that it's really worth doing.
+</p>
+
+<p class="wikiPara">
+The problem is that the new JSR proposal has been carefully scoped so that it includes only the things that the folks proposing the JSR (i.e. Spring and Guice) already agree on, and leaves out all possible areas of divergence between existing dependency injection solutions. It's as if the folks proposing the JSR recognize that they're simply unable to reach agreement on all the hard stuff, and want to keep doing that stuff in their own incompatible, proprietary ways.
+</p>
+
+<p class="wikiPara">
+For example, the proposal leaves out of scope the following interesting issues:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> how do I interact with the dependency injection container?</li>
+<li class="wikiUnorderedListItem"> what kinds of objects are injectable?</li>
+<li class="wikiUnorderedListItem"> how do I indicate to the container that something is injectable, and declare its qualifiers?</li>
+<li class="wikiUnorderedListItem"> what is the lifecycle of the injected objects?</li>
+<li class="wikiUnorderedListItem"> how do I define different deployment scenarios, with different implementations of injected types?</li>
+<li class="wikiUnorderedListItem"> what restrictions exist when I have circular dependencies, serialized scopes, etc?</li>
+<li class="wikiUnorderedListItem"> what SPIs exist to allow third-party frameworks to integrate with the container?</li>
+<li class="wikiUnorderedListItem"> what are the standard set of scopes that exist in a web environment?</li>
+</ul>
+
+<p class="wikiPara">
+(This is by no means an exhaustive list.)
+</p>
+
+<p class="wikiPara">
+But from the point of view of the application developer, without a specification that addresses all these questions, there's just no possibility to build portable applications using these annotations. And portability is the usual goal of a JSR, right? 
+</p>
+
+<p class="wikiPara">
+By contrast, JSR-299 <i class="wikiEmphasis">does</i> nail down all this stuff, and more: it's a complete specification for containers that do dependency injection, and for portable applications that run on those containers. To my mind, that's much more useful.
+</p>
+
+<p class="wikiPara">
+(UPDATED to correct interpretation of <tt>Provider</tt> interface.)</p>
+</div>
+

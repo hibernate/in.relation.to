@@ -1,0 +1,65 @@
+---
+title: "Three arguments for reified generics"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "01-08-2011"
+tags: [Ceylon]
+
+relative_url: /2011/08/01/three-arguments-for-reified-generics
+slug: three-arguments-for-reified-generics
+lace: http://in.relation.to/21406.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/08/01/three-arguments-for-reified-generics
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Cedric recently <a href="http://beust.com/weblog/2011/07/29/erasure-vs-reification/" target="" class="regularLink">brought up the topic of type erasure</a>, concluding:
+</p>
+
+<blockquote class="wikiBlockquote">
+All in all, I am pretty happy with erasure and I’m hoping that the future versions of Java will choose to prioritize different features that are more urgently needed
+</blockquote>
+
+<p class="wikiPara">
+Well, I suppose erasure isn't the thing I hate <i class="wikiEmphasis">most</i> about Java, but it's certainly up there. Java's system of partially reified types actually adds a surprising amount of complexity and unintuitive behavior to the type system.
+</p>
+
+<p class="wikiPara">
+From a pure language-design point of view, I think a partially reified type system is one of the worst decisions you could possibly make. Either reify all types, like C#, or reify none of them, like ML. And look, there's certain language features that simply don't play nicely with type erasure. A case in point: overloading. You can have type erasure, <i class="wikiEmphasis">or</i> you can have overloading (or, like Ceylon, you can have neither). You can't have both type erasure <i class="wikiEmphasis">and</i> overloading. No, Java is <i class="wikiEmphasis">not</i> a counter-example to this! In terms of language design, Java's approach to reification is almost impossible to justify except as a totally half-baked and misconceived workaround for simply not having time to Do It Right.
+</p>
+
+<p class="wikiPara">
+But Cedric's coming from a purely practical point of view, saying the problems don't actually bite him much when he's doing real work. Well, OK, I can see that. So here's the practical reasons why I think reified generics <i class="wikiEmphasis">are</i> needed, and why they should be added to Java if that could be done without messing up Java's type system even further.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Frameworks"><a href="/2011/08/01/three-arguments-for-reified-generics#H-Frameworks">Frameworks</a></h3>
+
+<p class="wikiPara">
+Many frameworks depend upon having reified types. Type argument erasure cripples frameworks that work with generic types, and results in horrid workarounds like <a href="http://download.oracle.com/javaee/6/api/javax/enterprise/util/TypeLiteral.html" target="" class="regularLink">this one in CDI</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TypesafeNarrowing"><a href="/2011/08/01/three-arguments-for-reified-generics#H-TypesafeNarrowing">Typesafe narrowing</a></h3>
+
+<p class="wikiPara">
+Instead of a Java-style <tt>instanceof</tt> operator, and C-style typecasts, Ceylon provides a <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-NarrowingTheTypeOfAnObjectReference" target="" class="regularLink">construct for narrowing the type of a reference in a totally statically typesafe way</a>. You just can't get <tt>ClassCastException</tt>s in Ceylon.
+</p>
+
+<p class="wikiPara">
+But this functionality depends upon having reified generics. Until we implement reified type arguments, we can't provide any mechanism to narrow to a parameterized type. Right now, you simply can't narrow an <tt>Object</tt> to a <tt>List&lt;String&gt;</tt>.
+</p>
+
+<p class="wikiPara">
+You might think that this is a problem with Ceylon, but really, the situation isn't much better in Java. The <tt>instanceof</tt> operator doesn't support types with type arguments, and casting to a type with type arguments is a totally unsafe operation! I just don't think that's acceptable behavior in a language with static typing.
+</p>
+
+<h3 class="wikiHeadline3" id="H-InterlanguageInteroperability"><a href="/2011/08/01/three-arguments-for-reified-generics#H-InterlanguageInteroperability">Inter-language interoperability</a></h3>
+
+<p class="wikiPara">
+Interoperability between statically-typed JVM languages is going to get really messy when some of the languages support reified generics and some don't. Especially since it's easy to imagine that those languages which <i class="wikiEmphasis">do</i> support reified generics won't support them in an interoperable way. This could turn out to be a real problem for the vision of a multi-language JVM.
+</p>
+</div>
+

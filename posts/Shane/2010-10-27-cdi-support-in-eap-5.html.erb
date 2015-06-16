@@ -1,0 +1,165 @@
+---
+title: "CDI support in EAP 5"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+creation_date: "27-10-2010"
+tags: []
+
+relative_url: /2010/10/27/cdi-support-in-eap-5
+slug: cdi-support-in-eap-5
+lace: http://in.relation.to/17571.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/10/27/cdi-support-in-eap-5
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Quite a few people have asked me recently if they have to wait until EAP 6 before they can use CDI in a supported JBoss application server.  The good news is, no they don't!  While there isn't currently any productised offering for CDI itself (i.e. it's unsupported), it is still possible to use it as the component framework for your EAP-based application thanks to the Weld-servlet library.  What's even better is that it requires absolutely no configuration changes to the default EAP installation - CDI based applications can be deployed straight to it and will work out of the box.
+</p>
+
+<p class="wikiPara">
+The easiest way to get started with a new EAP 5.x based CDI project is to use a Maven archetype.  Dan has prepared one for us already, so let's go through the steps required to get up and running.
+</p>
+
+<p class="wikiPara">
+Pre-requisites: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> SVN client</li>
+<li class="wikiUnorderedListItem"> Maven</li>
+<li class="wikiUnorderedListItem"> EAP 5.1</li>
+<li class="wikiUnorderedListItem"> OS that can run shell scripts (Linux/OSX/Cygwin)</li>
+</ul>
+
+<p class="wikiPara">
+1. Check out the archetype source from SVN (this step requires an SVN client):
+</p>
+
+
+
+<pre class="wikiPreformatted">  svn co http://anonsvn.jboss.org/repos/weld/archetypes/eap51-weld-jsf-webapp/trunk/ eap51-weld-jsf-webapp</pre>
+
+
+
+<p class="wikiPara">
+  
+2. Change into the archetype project directory:
+</p>
+
+
+
+<pre class="wikiPreformatted">  cd eap51-weld-jsf-webapp</pre>
+
+
+
+<p class="wikiPara">
+  
+3. Install the archetype using the provided shell script:
+</p>
+
+
+
+<pre class="wikiPreformatted">  ./create-archetype.sh install</pre>
+
+
+
+<p class="wikiPara">
+  
+The last step will create the archetype and install it in your local Maven repository. Once the archetype is installed, we can use it to create a new project.
+</p>
+
+<p class="wikiPara">
+4. Use the archetype to create a new project.  Generally you'd run this command from the directory where you keep all your projects.
+</p>
+
+
+
+<pre class="wikiPreformatted">   mvn archetype:generate -B -DarchetypeCatalog=local 
+        -DarchetypeArtifactId=eap51-weld-jsf-webapp 
+        -DarchetypeGroupId=org.jboss.weld.archetypes 
+        -DarchetypeVersion=1.0.0-SNAPSHOT         
+        -DartifactId=test-project 
+        -DgroupId=com.acme 
+        -Dpackage=com.acme.test 
+        -Dversion=1.0.0-SNAPSHOT 
+        -Dname="JSF 1.2 and CDI webapp project"</pre>
+
+
+
+<p class="wikiPara">
+        
+You will need to replace the following parameter values:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">   <tt>-DartifactId</tt> - the Maven artifact ID you wish to use for your application</li>
+<li class="wikiUnorderedListItem">   <tt>-DgroupId</tt> - the Maven group ID you wish to use for your application</li>
+<li class="wikiUnorderedListItem">   <tt>-Dpackage</tt> - the base package name for your project.  The archetype will generate some sub-packages within this package.</li>
+<li class="wikiUnorderedListItem">   <tt>-Dname</tt> - a descriptive name for your project</li>
+</ul>
+
+<p class="wikiPara">
+5. Change into your new project directory.  It will have the same name as the artifactId parameter you specified in the last step.
+</p>
+
+
+
+<pre class="wikiPreformatted">  cd test-project</pre>
+
+
+
+<p class="wikiPara">
+ 
+6. Take a look around! The archetype has created a complete project, along with a default datasource and Arquillian support for your unit tests.  Check out the <tt>src</tt> directory, and take note of the source packages that have been created for you.  Of course you're free to go ahead and modify these packages if you like.
+</p>
+
+<p class="wikiPara">
+7. Configure the <tt>JBOSS_EAP_HOME</tt> environment variable.  This is so Maven will know where to deploy your project.  Alternatively, set a property value for <tt>jboss-eap.home</tt> in Maven's <tt>.m2/settings.xml</tt> file.  The <tt>readme.txt</tt> file included in the root directory of the project explains the specifics for how to do this.
+</p>
+
+
+<p class="wikiPara">
+8. Build and deploy the project.  Make sure your EAP server is already running for this step:
+</p>
+
+
+
+<pre class="wikiPreformatted">  mvn clean package jboss:hard-deploy</pre>
+
+
+
+<p class="wikiPara">
+  
+9. Check the EAP log to confirm the project has deployed successfully, then using a web browser open the project's home page:
+</p>
+
+
+
+<pre class="wikiPreformatted">  http://localhost:8080/test-project</pre>
+
+
+
+<p class="wikiPara">
+  
+You will of course need to modify the above URL based on the artifactId you entered for your project.
+</p>
+
+<p class="wikiPara">
+We're done! From this point onward you have a fully working project which you can modify at will.  If you'd like to see a more comprehensive example that will run in EAP, then check out the Ticket-Monster example.  This is an EAP 5.1-based demo which we're currently developing (i.e. not all features are working yet) to show off Seam's features within a cloud environment (hosted at github.com):
+</p>
+
+
+
+<pre class="wikiPreformatted">  http://github.com/pmuir/ticket-monster</pre>
+
+
+
+
+<p class="wikiPara">
+In this example we make use of the Seam Persistence module, Seam Remoting, and Errai to provide a GWT-based interface for the example's administration console.  On a side note, Ticket-Monster also uses the Seam-Cloud module, which we're currently developing to provide jClouds support and Infinispan integration.  Other Seam 3 modules would most likely work out of the box with EAP 5 also, but I'm not going to provide a definitive list here (it's up to you to experiment ;).</p>
+</div>
+

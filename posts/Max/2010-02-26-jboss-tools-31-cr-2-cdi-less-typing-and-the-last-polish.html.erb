@@ -1,0 +1,116 @@
+---
+title: "JBoss Tools 3.1 CR2 (CDI, Less typing and the last polish...)"
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "26-02-2010"
+tags: [Eclipse,JBoss Tools,JBoss Tools Eclipse]
+
+relative_url: /2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish
+slug: jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish
+lace: http://in.relation.to/14483.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+JBoss Tools 3.1 CR2 is now available for download.
+</p>
+
+<div align="center">
+<img src="/images/10824.png" width="600" height="145">
+<h2>3.1 Milestone CR2: CDI, Less typing and the last polish...</h2>
+</div>
+
+<div align="center">
+[<a href="http://www.jboss.org/tools/download" target="" class="regularLink">Download</a>]
+[<a href="http://download.jboss.org/jbosstools/updates/development" target="" class="regularLink">Update Site</a>] 
+[<a href="http://docs.jboss.org/tools/whatsnew" target="" class="regularLink">What's New</a>]
+[<a href="http://docs.jboss.org/tools/movies/" target="" class="regularLink">Movies</a>]
+[<a href="http://docs.jboss.org/tools/3.1.0.CR2/" target="" class="regularLink">Documentation</a>] 
+[<a href="http://www.jboss.com/index.html?module=bb&amp;op=viewforum&amp;f=201" target="" class="regularLink">Forums</a>] 
+[<a href="http://jira.jboss.com/jira/browse/JBIDE" target="" class="regularLink">JIRA</a>]
+[<a href="http://twitter.com/jbosstools" target="" class="regularLink">Twitter</a>]
+</div>
+
+<h2 class="wikiHeadline2" id="H-AlmostThere"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-AlmostThere">Almost there</a></h2>
+
+<p class="wikiPara">
+The CR1 release kicked a nerve and we saw a spike in feedback and this CR2 is our answer.
+A lot of bug fixes and even some requested features made it in via the <a href="https://jira.jboss.org/jira/secure/IssueNavigator.jspa?sorter/field=issuetype&amp;sorter/order=DESC" target="" class="regularLink">450+</a> issues fixed for this release.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Installation"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-Installation">Installation</a></h2>
+
+<p class="wikiPara">
+As the previous 3.1 releases we are targeting Eclipse 3.5.x, but this time we are highly recommending using Eclipse 3.5.1 and if possible the almost to be released Eclipse 3.5.2 because of important bugfixes in core Eclipse and WTP.
+</p>
+
+<p class="wikiPara">
+Also if you use the Maven integration then we are now working with the just m2eclipse 0.10 and this require you to uninstall m2eclipse 0.9.x to make it work. You can see more about m2eclipse and installation requirements on <a href="http://www.sonatype.com/people/2010/02/now-available-m2eclipse-0-10-0/" target="" class="regularLink">m2eclipse team blog</a>. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-Improvements"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-Improvements">Improvements</a></h2>
+
+<p class="wikiPara">
+My favorite improvements this time around are below. To see the full details and screen shots read <a href="http://docs.jboss.org/tools/whatsnew" target="" class="regularLink">What's New</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ContextsAndDependencyInjection"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-ContextsAndDependencyInjection">Contexts and Dependency Injection</a></h3>
+
+<p class="wikiPara">
+We now support Contexts and Dependency Injection (CDI/JSR-299) annotations and it works on any Eclipse Java project, you simply need to go to the Configure menu and enable CDI.
+</p>
+
+<p class="wikiPara">
+When enabled this gives you nice code completion in EL for @Named beans, allows you to <a href="http://screencast.com/t/ODRkZDliMWI" target="" class="regularLink">easily navigate</a> to @Injection points via Ctrl+Click or use search for references <a href="http://screencast.com/t/NGUxOTA5YmQt" target="" class="regularLink">finds all occurrences</a> where a named bean are used and if you have validation enabled on the project the project will be checked for certain errors in your CDI constructs giving you instant feedback. Refactoring of methods on CDI beans will be reflected in EL expressions.
+</p>
+
+<h3 class="wikiHeadline3" id="H-JSFEditing"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-JSFEditing">JSF Editing</a></h3>
+
+<p class="wikiPara">
+You no longer need to type the namespace (i.e. <code>f:</code>) to get code completion to complete within a namespace. For example, code completing on <code>&lt;out</code> will now show you all the <code>&lt;h:output*</code> tags. Couple that together with also no longer having to type <code>#{</code> to get EL code completions in attributes editing of XHTML documents are now much simpler and faster.
+</p>
+
+<p class="wikiPara">
+If you had problems in CR1 with code completion not working for your tag libraries these issues should now be gone.
+In CR1 we added JSF 2 support and we also moved to use dynamic scanning of the project classpath for taglib information, ensuring the code completion will be guaranteed to match what your project actually uses. This change occurred in CR1 but caused problems for users that were not used to include taglib information on their classpath at build time. In CR2 we now provide a fallback for static taglib information if we do not find it on the classpath. 
+</p>
+
+<h3 class="wikiHeadline3" id="H-Hibernate"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-Hibernate">Hibernate</a></h3>
+
+<p class="wikiPara">
+Both the hbm.xml wizard and JPA Annotation Generation functionality now shares the same UI and allows you to specify the depth for the class graph to generate mappings for and any changes can easily be previewed before finishing the wizard.
+</p>
+
+<h3 class="wikiHeadline3" id="H-M2eclipse010"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-M2eclipse010">m2eclipse 0.10</a></h3>
+
+<p class="wikiPara">
+The JBoss Tools Maven integration have been updated to use m2eclipse 0.10. Remember to remove your m2eclipse 0.9 installation first!
+</p>
+
+<h3 class="wikiHeadline3" id="H-Portal"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-Portal">Portal</a></h3>
+
+<p class="wikiPara">
+Portal now identifies GateIn as a portal container allowing you to use the existing Portal wizards with GateIn and EPP.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SOA"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-SOA">SOA</a></h3>
+
+<p class="wikiPara">
+Creation of ESB actions are now easily done via the New ESB Action Wizard and the ESB Editor now has direct links for creation of actions making it trivial to write custom actions.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Feedback"><a href="/2010/02/26/jboss-tools-31-cr-2-cdi-less-typing-and-the-last-polish#H-Feedback">Feedback</a></h2>
+
+<p class="wikiPara">
+As always leave a comment, enter our <a href="http://www.jboss.com/index.html?module=bb&amp;op=viewforum&amp;f=201" target="" class="regularLink">forums</a>, use our <a href="http://jira.jboss.com/jira/browse/JBIDE" target="" class="regularLink">JIRA</a> or visit us on <a href="irc://irc.freenode.org/jbosstools">IRC</a> to learn about JBoss Tools and give feedback.
+</p>
+
+<p class="wikiPara">
+Have fun!</p>
+</div>
+

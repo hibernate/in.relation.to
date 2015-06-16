@@ -1,0 +1,156 @@
+---
+title: "Javassist now provides data-flow analysis API"
+author: "Jason Greene"
+blogger_name: "Jason"
+creation_date: "18-06-2008"
+tags: [Geeky Java Stuff]
+
+relative_url: /2008/06/18/javassist-now-provides-dataflow-analysis-api
+slug: javassist-now-provides-dataflow-analysis-api
+lace: http://in.relation.to/9098.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/06/18/javassist-now-provides-dataflow-analysis-api
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Out of need, I recently contributed a data-flow analysis framework to javassist. The framework allows an application to determine, by inference, the type-state of the local variable table and stack frame at the start of every bytecode instruction. For those unfamiliar with the java bytecode format, a lot of information is lost once a java program is compiled, since it is not really needed when the program is executed, and leaving it out helps keep class files small. 
+</p>
+
+<p class="wikiPara">
+To illustrate this loss, take a look at the following simple Java method:
+</p>
+
+<pre class="wikiPreformatted">public static class Base {}
+public static class A extends Base{}
+public static class B extends Base{}
+public static class C extends B{}
+
+private void foo(int x) {
+   Base b;
+   if (x &gt; 4) {
+       b = new A();
+   } else {
+       b = new C();
+   }
+
+   b.toString();
+}
+</pre>
+
+
+<p class="wikiPara">
+While it is quite clear in the Java code that <q>b</q> is of type <q>Base</q>, this information is missing from the output of a compiler:
+</p>
+
+<pre class="wikiPreformatted">private void foo(int);
+  Code:
+   Stack=2, Locals=3, Args_size=2
+   0:   iload_1
+   1:   iconst_4
+   2:   if_icmple       16
+   5:   new     #68; //class example/Example$A
+   8:   dup
+   9:   invokespecial   #70; //Method example/Example$A."&lt;init&gt;":()V
+   12:  astore_2
+   13:  goto    24
+   16:  new     #71; //class example/Example$C
+   19:  dup
+   20:  invokespecial   #73; //Method example/Example$C."&lt;init&gt;":()V
+   23:  astore_2
+   24:  aload_2
+   25:  invokevirtual   #74; //Method java/lang/Object.toString:()Ljava/lang/String;
+   28:  pop
+   29:  return
+</pre>
+
+
+<p class="wikiPara">
+Since <q>toString()</q> is declared by Object, all that line 25 tells us is that the type is an Object, which is obviously not very specific. If the class was compiled with debugging, you would be able to learn that local #2 was of type <q>Base</q>, but even if you did have this information, you would not necessarily know that the object invoked on by invokevirtual is the value stored in local variable 2. The only way to determine that is to know the state of the stack frame immediately before the instruction executes.
+</p>
+
+<p class="wikiPara">
+The analysis framework provides this by modeling the effect of every instruction, until it can eventually infer the type information.  This process does not use any debugging information, since there is no guarantee it is available. Instead, it extrapolates it by tracking all possible type states, as every branch is evaluated, until the type information is reduced to the most specific type state available.
+</p>
+
+<p class="wikiPara">
+The following code, which uses the framework, is able to tell us that the type invoked on line 25 is in fact <q>Base</q>:
+</p>
+
+<pre class="wikiPreformatted">Analyzer a = new Analyzer();
+CtClass clazz = ClassPool.getDefault().get("example.Example");
+Frame[] frames = a.analyze(clazz.getDeclaredMethod("foo"));
+System.out.println(frames[25].peek()); // Prints "example.Example$Base"
+</pre>
+
+
+<p class="wikiPara">
+There is also a nice little tool I added, called framedump, that dumps the entire state at every instruction in human readable format, and yes I know that's debatable :)
+</p>
+
+<pre class="wikiPreformatted">$ framedump example.Example
+private void foo(int);
+0: iload_1
+     stack []
+     locals [example.Example, int, empty]
+
+... snipped for brevity ...
+
+24: aload_2
+     stack []
+     locals [example.Example, int, example.Example$Base]
+25: invokevirtual #85 = Method java.lang.Object.toString(()Ljava/lang/String;)
+     stack [example.Example$Base]
+     locals [example.Example, int, example.Example$Base]
+28: pop
+     stack [java.lang.String]
+     locals [example.Example, int, example.Example$Base]
+29: return
+     stack []
+     locals [example.Example, int, example.Example$Base]
+</pre>
+
+
+<p class="wikiPara">
+Some of you are probably thinking:
+</p>
+
+<blockquote class="wikiBlockquote">
+That sounds nice and all, but why in the world would I ever need to use this?
+</blockquote>
+
+<p class="wikiPara">
+It is definitely not something useful to everyone, however it is very useful for certain applications:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Bytecode Enhancers</li>
+<li class="wikiUnorderedListItem"> Verifiers</li>
+<li class="wikiUnorderedListItem"> Optimizers</li>
+<li class="wikiUnorderedListItem"> Debugging/Profiling Tools</li>
+<li class="wikiUnorderedListItem"> Decompilers</li>
+</ul>
+
+<p class="wikiPara">
+To expand on the enhancer example,  for security reasons, the JVM actually does its own data-flow analysis to verify that a class does not violate type rules before it can be ran. This poses an interesting challenge to any application that manipulates bytecode, since any change that affects the possible type-state can lead to a verify error and the JVM throwing out the class.  Frameworks such as this can be used to prevent this problem, since they reveal the same (in the javassist analyzer case, actually more detailed) information available to the JVM's verifier.
+</p>
+
+<p class="wikiPara">
+If you want to play with this new feature, download the recently released 3.8.0 <a href="https://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=80766" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+The javadoc is <a href="http://www.csg.is.titech.ac.jp/~chiba/javassist/html/javassist/bytecode/analysis/package-summary.html" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+Note, I should also mention that the ASM project has had a similar framework for quite some time, however, it wasn't usable in my case since I needed the ability to handle reduction of multi-interface and array types. Also, I was already using javassist and switching just wasn't possible, mainly due to other features I rely on.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>
+

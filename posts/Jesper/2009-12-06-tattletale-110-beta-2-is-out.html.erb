@@ -1,0 +1,114 @@
+---
+title: "Tattletale 1.1.0.Beta2 is out"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+creation_date: "06-12-2009"
+tags: []
+
+relative_url: /2009/12/06/tattletale-110-beta-2-is-out
+slug: tattletale-110-beta-2-is-out
+lace: http://in.relation.to/13371.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/12/06/tattletale-110-beta-2-is-out
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The second beta for the Tattletale, the Java dependency analyzer, 1.1 release is out.
+</p>
+
+<p class="wikiPara">
+All users should upgrade to this release.
+</p>
+
+<p class="wikiPara">
+Full release notes are <a href="https://jira.jboss.org/jira/secure/ReleaseNote.jspa?version=12314220&amp;styleName=Html&amp;projectId=12310784&amp;Create=Create" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-BuildEnvironment"><a href="/2009/12/06/tattletale-110-beta-2-is-out#H-BuildEnvironment">Build environment</a></h2>
+
+<p class="wikiPara">
+The major focus of this release was to fully support the <a href="http://ant.apache.org" target="" class="regularLink">Apache Ant</a> and <a href="http://maven.apache.org" target="" class="regularLink">Apache Maven</a> build environments. Furthermore it is now possible to specify all configuration parameters directly in the plugins instead of using the configuration file.
+</p>
+
+<p class="wikiPara">
+See the <a href="http://docs.jboss.org/tattletale/userguide/en/html/" target="" class="regularLink">user guide</a> for further information about how to integrate Tatteltale into your build environment.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Apache Ant</i>
+</p>
+
+<p class="wikiPara">
+Use the <q>report</q> task, like
+</p>
+
+<pre class="wikiPreformatted">
+&lt;tattletale:report source="${jar.dir]" destination="${report.dir}"/&gt;
+</pre>
+
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Apache Maven</i>
+</p>
+
+<p class="wikiPara">
+Use the <q>report</q> mojo, like
+</p>
+
+<pre class="wikiPreformatted">
+&lt;plugin&gt;
+  &lt;groupId&gt;org.jboss.tattletale&lt;/groupId&gt;
+  &lt;artifactId&gt;tattletale-maven&lt;/artifactId&gt;
+  &lt;!-- The version of the plugin you want to use --&gt;
+  &lt;version&gt;1.1.0.Beta2&lt;/version&gt;
+  &lt;executions&gt;
+    &lt;execution&gt;
+     &lt;goals&gt;
+       &lt;goal&gt;report&lt;/goal&gt;
+     &lt;/goals&gt;
+    &lt;/execution&gt;
+  &lt;/executions&gt;
+  &lt;configuration&gt;
+    &lt;!-- This is the location which will be scanned for generating tattletale reports --&gt; 
+    &lt;source&gt;/absolutepath/to/source/dir&lt;/source&gt;
+    &lt;!-- This is where the reports will be generated --&gt;
+    &lt;destination&gt;/absolute/path/to/reports/dir&lt;/destination&gt;
+  &lt;/configuration&gt;
+&lt;/plugin&gt;
+</pre>
+
+
+
+<h2 class="wikiHeadline2" id="H-NewReport"><a href="/2009/12/06/tattletale-110-beta-2-is-out#H-NewReport">New report</a></h2>
+
+<p class="wikiPara">
+This release add the
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Circular Dependency</li>
+</ul>
+
+<p class="wikiPara">
+report, which will let you find circular dependencies within your project. The time has come to split those archives into a proper structure !
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheRoadAhead"><a href="/2009/12/06/tattletale-110-beta-2-is-out#H-TheRoadAhead">The Road Ahead</a></h2>
+
+<p class="wikiPara">
+The next development cycle will focus on integration with a Hudson environment, so if you want to help drop by our forum.
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/tattletale" target="" class="regularLink">WebSite</a>] [<a href="http://sourceforge.net/projects/jboss/files/JBoss%20Tattletale/" target="" class="regularLink">Download</a>] [<a href="https://jira.jboss.org/jira/browse/TTALE" target="" class="regularLink">JIRA</a>] [<a href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=306" target="" class="regularLink">Forum</a>] 
+</p>
+</div>
+

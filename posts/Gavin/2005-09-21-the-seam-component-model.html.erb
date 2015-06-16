@@ -1,0 +1,205 @@
+---
+title: "The Seam Component Model"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "21-09-2005"
+tags: [Seam]
+
+relative_url: /2005/09/21/the-seam-component-model
+slug: the-seam-component-model
+lace: http://in.relation.to/1866.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2005/09/21/the-seam-component-model
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+One of the distinctive features of Seam is that a lot more things are treated as <q>components</q>
+than what you might be used to from other architectures. In fact, pretty much every object
+you write will be treated as a Seam component. 
+</p>
+
+<p class="wikiPara">
+For example, it is not normal in other frameworks to think of entity objects as components. 
+But in Seam, we would typically treat User as a session-scope component (to model the 
+currently logged in user) and entities like Order and Document as conversation-scope 
+components (most conversations are centric to some entity instance). 
+</p>
+
+<p class="wikiPara">
+Objects that listen for events are also components. Just like JSF, Seam does not have any 
+notion of an <q>Action</q> class. Rather, it lets events be bound to methods of any Seam 
+component. This means, in particular, that one Seam component can model a whole conversation,
+with the attributes of the component holding conversational state, and the methods of the 
+component defining the functionality that occurs for each step in the conversation. (Note
+that this would be possible in plain JSF, except for the fact that JSF does not define a
+conversation context.)
+</p>
+
+<p class="wikiPara">
+The vision for Seam is that the notion of <q>event</q> will also be a unifying one. An event might
+be a UI event, it might be Web Services request, a transition event for the long-running 
+business process, a JMS message, or something else we havn't thought of yet.
+</p>
+
+<p class="wikiPara">
+Again like JSF, an event listener method never takes any argument. This is quite in contrast to
+GUI frameworks like Swing, or Action based web frameworks like Struts where there is some
+Event object passed as a paremeter to the action method (a Servlet HttpRequest is an
+example of this pattern). Alternatively, some other frameworks will expose some thread-bound 
+context object to the action listener. Both JSF and Seam offer thread-bound contexts as
+a secondary mechanism, but in the case of Seam, this mechanism is for exceptional cases only.
+</p>
+
+<p class="wikiPara">
+JSF has the right idea here. Ideally, the whole state of the system can be represented by 
+components, that are assembled together automatically by the container. This eliminates 
+the event object or context object from the view of the application, resulting in tidier and 
+more naturally object-oriented code. Under the covers, the JSF implementation locates 
+dependent beans of a managed bean using named context variables, and automagically 
+instantiates a new instance of the needed managed bean if the context variable is empty.
+</p>
+
+<p class="wikiPara">
+Unfortunately, JSF is limited in three ways.
+</p>
+
+<p class="wikiPara">
+First, initilizing or modifying the value of a context variable requires direct access to 
+the context object, FacesContext, breaking the abstraction. Seam fixes this problem by 
+introducing <q>outjection</q>.
+</p>
+
+<pre class="wikiPreformatted">
+@In @Out Document document;
+
+public void updateDocument() {
+    document = entityManager.merge(document);
+}
+
+@Out User user;
+
+public void login() {
+    user = entityManager.createQuery("from User user ....")
+           .setParameter("username", username)
+           .setParameter("password", password)
+           .getSingleResult();
+}
+</pre>
+
+
+<p class="wikiPara">
+Second, assembly (dependency injection) is performed when a managed bean is instantiated, 
+which means that, (a) a component in a wide scope (the session, say) cannot have a reference 
+to a component in a narrow scope (the request, for example) and (b) if we modify the value
+of a context variable, components which were already assembled will not see the new value,
+and will keep working with the obsolete object. Seam fixes this problem by making assembly
+(injection/outjection) a process that occurs at component invocation time.
+</p>
+
+<pre class="wikiPreformatted">
+@Entity @Scope(REQUEST)
+public class OrderLine { ... }
+
+@Stateful @Scope(CONVERSATION)
+public class CreateOrderConversation {
+   @In OrderLine orderLine;
+
+   public addOrderLine()
+   {
+       order.addOrderLine(orderLine);
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+At this time, most other IoC frameworks have the same two limitations, and this is perfectly
+defensible in the case of something like Spring where the components being injected are
+understood to be stateless, and hence any two instances of a component are interchangeable.
+It's not so good if components are stateful, as they are in JSF.
+</p>
+
+<p class="wikiPara">
+Third, JSF has just three contexts (request, session, application). So, if I want to hold
+state relating to a particular user across several requests, I have to put it in a session 
+scoped component. This makes it effectively impossible to use JSF managed beans to create
+an application where the user can be doing two different things, concurrently, working in 
+two windows at once! It also leaves it up to you to clean up state when you're finished
+with it, by manually removing session context variables via the context object (FacesContext).
+</p>
+
+<p class="wikiPara">
+Seam is the first attempt to create a truly uniform and unifying model of contexts which
+are meaningful to the /application/. The five basic contexts are event, conversation,
+session, business process and application. There is also the <q>stateless</q> psuedo-context.
+</p>
+
+<p class="wikiPara">
+The conversation context is a logical (application demarcated) context scoped to a particular 
+view (browser window). For example, in an insurance claims application, where user input is 
+collected over several screens, the Claim object might be a conversation scoped component. 
+</p>
+
+<p class="wikiPara">
+The business process context holds state associated with the long running business process being
+orchestrated by jBPM. If review and approval of the insurance claim involves interaction with 
+several different users, the Claim could be a business process scoped component, and would be 
+available for injection during each user interaction.
+</p>
+
+<p class="wikiPara">
+You might object that an object might have one scope some of the time, and another scope
+at other times. Actually, I think this happens /much/ less frequently than you might expect,
+and if it does occur, Seam will support the idea of the same class having multiple <q>roles</q>
+in the system.
+</p>
+
+<p class="wikiPara">
+For applications with /extremely/ complex workflows, nested conversations and nested business
+processes are almost certainly needed, which opens the possibility for an /arbitrary/ set of 
+scopes. Seam does not currently implement this, but the context model of Seam is designed for 
+eventual extension to cover this kind of thing.
+</p>
+
+<p class="wikiPara">
+We've even discussed introducing more exotic contexts. Do transaction scoped components make 
+sense? Probably not for application components, but possibly for infrastructural components.
+(Yes, the Seam component model has uses beyond application component management.) For now
+I'd prefer not to add things like this until we see a very clear need.
+</p>
+
+<p class="wikiPara">
+So, by this stage you're probably asking what this idea of contextual components actually
+/buys/ you? Well, for me there are three key things.
+</p>
+
+<p class="wikiPara">
+First, it allows us to bind stateful components, expecially entity beans, directly to the
+webpage. (Note that if you are going to bind your entities directly to JSF forms, you will 
+also need some nice way to do validation, which is where Seam's integration with Hibernate 
+Validator comes into the picture.) So, you can build a whole application from just
+pages, session-beans bound to events produced by the page, and entity beans bound to 
+the page. It is this possibility for an <q>unlayered</q> architecture which makes Seam such
+a potentially productive environment. (Of course, if you want to introduce extra layers
+yourself, you can certainly do that, but it is not forced upon you.)
+</p>
+
+<p class="wikiPara">
+Second, it means that the container (Seam) can guarantee cleanup of state from ended or
+abandoned conversations. In the case of abandoned conversations, Seam gives you a choice:
+for server-side conversations, there is a conversation timeout that is independent of
+the session timeout. Alternatively, you can use client-side conversations.
+</p>
+
+<p class="wikiPara">
+Finally, the model allows stateful components to interact in a relatively loosly coupled
+way. Clients of a component need not to be aware of its lifecycle, or of its relationships to
+other components. All they need to know is what /kind/ of thing it is, and what are its
+operations.
+</p>
+</div>
+

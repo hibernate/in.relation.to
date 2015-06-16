@@ -1,0 +1,109 @@
+---
+title: "Draggable RichFaces panel or non-Modal Panel"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+creation_date: "13-05-2009"
+tags: [JavaServer Faces,RichFaces,Seam]
+
+relative_url: /2009/05/13/draggable-rich-faces-panel-or-non-modal-panel
+slug: draggable-rich-faces-panel-or-non-modal-panel
+lace: http://in.relation.to/11401.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/05/13/draggable-rich-faces-panel-or-non-modal-panel
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+ <a href="http://labs.jboss.com/jbossrichfaces" target="blank"> 
+ <img src="http://www.jroller.com/a4j/resource/richfaces_logo_200px.gif" alt="">
+ </a>
+</p>
+
+<p class="wikiPara">
+Today I'd like to post a really simple solution which is frequently asked at <a href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=261" target="" class="regularLink">RichFaces Users forum</a> threads.
+Two questions which can be solved by using this solution:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Can the RichFaces popup component be non-modal?</i>
+</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Can the rich:panel component be draggable/resizable?</i>
+</li>
+</ul>
+
+<p class="wikiPara">
+As you can guess I'll use the <b>rich:modalPanel</b> component in order to answer both questions, and the solution is really simple and relies on RichFaces special <q>rich</q> css classes.
+</p>
+
+<p class="wikiPara">
+ <b>Standard Modal Panel look and feel</b>
+</p>
+
+<p class="wikiPara">
+ <img src="http://www.jroller.com/a4j/resource/modal.jpg" alt="">
+</p>
+
+<p class="wikiPara">
+At first we should open <a href="http://www.jboss.org/file-access/default/members/jbossrichfaces/freezone/docs/devguide/en/html/index.html" target="" class="regularLink">RichFaces developer guide</a> and look to the modal panel <b>skinability section</b>. There we could find the <b><i>rich-mpnl-mask-div</i></b> style class which is applied to the page blocking div element for all the modal panels.
+</p>
+
+<p class="wikiPara">
+Now we can just to add </p>
+<pre class="wikiPreformatted">styleClass="noMaskClass"</pre>
+ to the <b>rich:modalPanel</b> component that we want to be <b>non-modal</b>.  And then add the next simple css selector to the stylesheet used by the page:<pre class="wikiPreformatted">.noMaskClass .rich-mpnl-mask-div{
+    display:none;
+}</pre>
+
+So the <a href="http://livedemo.exadel.com/richfaces-demo/richfaces/modalPanel.jsf?c=modalPanel" target="" class="regularLink">richfaces-demo Modal Panel sample</a> (second one) code changed to:<pre class="wikiPreformatted">&lt;style&gt;
+    .noMaskClass .rich-mpnl-mask-div{
+        display:none;
+    }
+&lt;/style&gt;
+&lt;rich:modalPanel  id="mp" minHeight="200" minWidth="450" styleClass="noMaskClass"
+    height="200" width="500"&gt;
+        //Panel Content
+&lt;/rich:modalPanel&gt;</pre>
+
+ <b>Modal Panel with removed page blocking div</b>
+
+
+<p class="wikiPara">
+ <img src="http://www.jroller.com/a4j/resource/nonmodal.jpg" alt="">
+</p>
+
+<p class="wikiPara">
+And if as a result panel in first sample opens as modal, and panel in second sample opens as non modal. So we have the panel with the resizability, autosize, moving, show/hide API and so on features..
+</p>
+
+<p class="wikiPara">
+So far so good.. But after simple tests we could see that this code works fine in all browsers in Windows environment <b>except IE</b> (Js error appears) and <b>typing restricted</b> in the parent page inputs in FF <b>at linux environment</b>.
+</p>
+
+<p class="wikiPara">
+After short investigation I found that that forgot about the modal panel client side methods which gets invoked in order to <i>control the focus and tabbing</i>. (accessing the parent page controls using tab control gets restricted using the methods.) But we not need these methods to be invoked at all if our panel is non-modal. So we should just override the methods with empty ones in order to get it working fine.
+</p>
+
+<p class="wikiPara">
+This is code of the function which will get the modal panel JS object and override needed methods:</p>
+<pre class="wikiPreformatted">function removeTabHandlingFromPanel(modalPanelComponent){
+     modalPanelComponent.lastOnfocus = function(event){};
+     modalPanelComponent.firstOnfocus = function(event){};
+     modalPanelComponent.processAllFocusElements = function(event){};
+     modalPanelComponent.processTabindexes = function(event){};
+     modalPanelComponent.restoreTabindexes = function(event){};
+     modalPanelComponent.preventFocus = function(event){};
+     modalPanelComponent.restoreFocus = function(event){};
+}</pre>
+
+ And now we will call this function for the panel which marked as non modal with noMask styleClass<pre class="wikiPreformatted">removeTabHandlingFromPanel(#{rich:component('mp')});</pre>
+
+ 
+So, finally solution is done and works fine within all the browsers supported with RichFaces.
+</div>
+

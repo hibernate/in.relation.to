@@ -1,0 +1,107 @@
+---
+title: "So what's happening with Seam?"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+creation_date: "27-09-2011"
+tags: [Contexts and Dependency Injection,Seam,Seam News]
+
+relative_url: /2011/09/27/so-whats-happening-with-seam
+slug: so-whats-happening-with-seam
+lace: http://in.relation.to/21972.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/09/27/so-whats-happening-with-seam
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<b>28 Sept 2011: Update</b>
+
+<p class="wikiPara">
+We'd like to thank everyone for their comments - on twitter, on IRC and in the comments section. There have been some excellent concerns raised, and, believe it or not, those same reasons are at the heart of why we want to make the changes we discussed here. We have exactly the same concerns the community has raised.
+</p>
+
+<p class="wikiPara">
+We would like to reassure everyone on a few points:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> We are convinced that one of things that drove people to adopt Seam 1 and Seam 2 was <i class="wikiEmphasis">strong focus</i> on how to build <i class="wikiEmphasis">real</i> applications. We are well aware that Seam 3 hasn't offered that and we want to focus on providing that</li>
+<li class="wikiUnorderedListItem"> We <i class="wikiEmphasis">still believe</i> in portability and standards, and we want to take the knowledge we have about building portable standards and applications out of the Seam silo, and to the rest of the Java EE ecosystem. We will continue to standardise APIs and ideas that we believe are necessary</li>
+<li class="wikiUnorderedListItem"> That we love the Seam community and their passion and that we want bring this community into the heart of the Java EE community, where it belongs</li>
+<li class="wikiUnorderedListItem"> We <i class="wikiEmphasis">will ensure</i> that apps built using Seam 3.x will continue to run. We will continue to support anyone who wants to build a CDI extension</li>
+</ul>
+
+<p class="wikiPara">
+However we made a mistake. We told you about the outcome we think is the right way to address this. We didn't tell you why we want to do it, or how it supports these goals. We don't want to jump right in with a half-baked position right now, and make that mistake again. So we ask that you give us the benefit of the doubt, and trust that we do have the community's best interests at heart, and watch this space for the whole picture over the next couple of days.
+</p>
+
+<hr>
+
+<p class="wikiPara">
+I'd like to take a few moments to update everyone on what is happening within the Seam project, and to clear up a few rumours that have started to float around before they start to balloon out of control (how do these things start up anyway???).  As some of you might know, we recently held a JBoss face to face meeting in Toronto, Canada where besides consuming vast amounts of alcohol and staying up into the wee hours of the night coding and talking about important stuff like politics and humorous YouTube videos, we actually made a number of important decisions about the direction and focus of the Seam project as a whole.  
+</p>
+
+<p class="wikiPara">
+Over the years, Seam has evolved by quite a substantial amount - if you were to ask the core team members for an executive summary of what Seam was, then the answer would have changed every year.  In the very beginning, Seam was intended to solve some of the shortcomings of developing applications with JSF and EJB (and unfortunately this is the impression that has stuck with many people, even until now).  It quickly grew into a powerful DI component framework, and more and more features have been added over time.  It has spawned quite a number of innovations and sister projects - CDI, Weld and Arquillian to name a few.  I'm also pleased to say that Seam is successfully powering many, many production web sites and rich internet applications today.
+</p>
+
+<p class="wikiPara">
+So, that brings us to the present.  In the latter part of 2011, what is Seam's focus, and what goals does it set out to achieve?  Well, let's start by looking at the goals it has already achieved.  The core features of Seam -  dependency injection, contextual component model, event bus, interceptors, i.e. the <q>frameworky</q> stuff has all been standardised as JSR-299 (CDI).  Since this is now all part of the Java EE specification, and comes as standard in any compliant Java EE6 container, we now have a fantastic foundation to build on.  However, it is just a foundation - as an experienced home renovator I know that the foundation is the most important part of building a structure, however having a foundation alone doesn't give you a place to live - you still need to build a house on top of it.
+</p>
+
+<p class="wikiPara">
+That's where Seam comes in.  It helps you, the developer, by providing the tools and materials necessary to build a house on top of the CDI-based foundation.  It does this by integrating various useful libraries - libraries that are important for everyday application development - with the CDI component model so that you can write <q>one kind of stuff</q>, to coin a phrase that Gavin came up with quite some time ago.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ButWasntThisAlreadyTheGoalOfSeam3"><a href="/2011/09/27/so-whats-happening-with-seam#H-ButWasntThisAlreadyTheGoalOfSeam3">But wasn't this already the goal of Seam 3?</a></h2>
+
+<p class="wikiPara">
+Well yes, yes it was.  But we've recently come to the conclusion that the Seam project shouldn't be a destination, it should be a journey.  Ooh, so Zen!!...but what does this mean?  Well, let me explain - Seam's goal is all about supporting the CDI ecosystem, and promoting <q>CDI Everywhere</q>.  Why? Because, if we're all building our tools and libraries on the same standards-based component model, then we're all going to be much more productive when it comes to developing our rich internet applications.  So, in light of this goal it doesn't make sense for Seam to be <i class="wikiEmphasis">gathering crops</i> - rather it should be <i class="wikiEmphasis">planting seeds</i>.  In other words, there are many modules currently in Seam that we think would make better sense if they were situated somewhere more <q>closer to home</q>, so to speak.  
+</p>
+
+<p class="wikiPara">
+Let's take a look at a concrete example - the Seam Persistence module.  This module provides an <i class="wikiEmphasis">extension-managed</i> persistence context, useful for when your project needs to inject an EntityManager into a POJO bean, or if your persistence context needs to last longer than a single request.  These are features that we consider to be essential for day to day application development.  But in light of the goal of strengthening the CDI ecosystem, do these features really belong in Seam?  At JBoss we have another well known project which deals with EntityManagers and persistence contexts and other databasey-related stuff - perhaps you've even heard of it (I'll give you a clue, it starts with <q>H</q>).
+</p>
+
+<p class="wikiPara">
+So instead of Seam trying to <q>capture</q> all of the CDI extensions in one place, like Pokemon, we should be trying to propagate them throughout the greater developer community instead.  To that end, our focus is going to shift somewhat, and we've already made some concrete plans towards achieving that goal.  Here's a few of the changes that we're proposing:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Seam Persistence</i> - Move into the Hibernate core project, re-brand as <q>Hibernate CDI</q>
+</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Seam Validation</i> - Move into Hibernate Validator, make CDI support part of the core offering</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Seam Wicket</i> - Moving into the Wicket project itself, this is already in motion</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Seam REST</i> - Moving into the RESTEasy project</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Seam Faces</i> - Moving into RichFaces as a standalone <q>Faces CDI</q> integration library</li>
+</ul>
+
+<p class="wikiPara">
+As a part of the Seam community, you may have concerns that these changes might <i class="wikiEmphasis">fracture</i> the Seam project, or the community itself.  I'd like to address this concern up front, and say that what we want to achieve is the exact opposite of this.  Our aim is to broaden the existing community, by working closer with other projects to achieve a common goal.  The current module leads will stay the same, however they will be working together with the other project leads to deliver native CDI support directly from their project.  The end of result of this can only be a positive gain, as projects take more ownership of their own CDI integration, and work more closely with the Seam developer community to leverage the experience we have at building CDI extensions.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeamsRoleInThisNewWorld"><a href="/2011/09/27/so-whats-happening-with-seam#H-SeamsRoleInThisNewWorld">Seam's role in this new world</a></h2>
+
+<p class="wikiPara">
+So while some modules may <i class="wikiEmphasis">graduate</i> from Seam to become part of the broader CDI ecosystem, there are still many features that are unique to Seam itself.  These modules will remain within the Seam project for the foreseeable future, and Seam will continue to be an incubator for innovative development solutions and ideas.  We still have much work to do, and many ideas on how we can provide new value-added features to Seam for our users.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SoWillThereStillBeSeamReleases"><a href="/2011/09/27/so-whats-happening-with-seam#H-SoWillThereStillBeSeamReleases">So will there still be Seam releases?</a></h2>
+
+<p class="wikiPara">
+We are planning on our next <i class="wikiEmphasis">bundled</i> release (3.1) to be our last.  Note I said <q>bundled</q> - this release is basically a big zip file that contains the latest versions of all our modules.  With our new focus, the bundled release just doesn't make a whole lot of sense any more.  What we will continue to do however, is release each Seam module whenever it has received enough bug fixes and feature updates to warrant a brand new release.  
+</p>
+
+<p class="wikiPara">
+From what I have heard personally, most of our developers are using Maven for dependency management anyway and so this change isn't going to make an iota of difference to them.
+</p>
+
+<h2 class="wikiHeadline2" id="H-InSummary"><a href="/2011/09/27/so-whats-happening-with-seam#H-InSummary">In Summary</a></h2>
+
+<p class="wikiPara">
+So to sum up, Seam is not going away, rather its new goal is to unite the CDI developer community, and it will continue to foster innovation and encourage new ideas and improvements.  If you have any questions or concerns about this, I look forward to addressing them in the comment section below.
+</p>
+</div>
+

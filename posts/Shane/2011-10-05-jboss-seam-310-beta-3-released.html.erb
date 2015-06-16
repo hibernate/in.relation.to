@@ -1,0 +1,180 @@
+---
+title: "JBoss Seam 3.1.0.Beta3 Released"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+creation_date: "05-10-2011"
+tags: [Seam,Seam News]
+
+relative_url: /2011/10/05/jboss-seam-310-beta-3-released
+slug: jboss-seam-310-beta-3-released
+lace: http://in.relation.to/22105.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/10/05/jboss-seam-310-beta-3-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm very pleased to announce the release of Seam 3.1.0.Beta3.  Let's get all the links out of the way first before we get into the details of the release:
+</p>
+
+<p class="wikiPara">
+<a href="https://sourceforge.net/projects/jboss/files/Seam/3/3.1.0.Beta3/" target="" class="regularLink">Download Seam 3.1.0.Beta3 bundled distribution</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/seam/3/latest/reference/en-US/html/" target="" class="regularLink">Reference Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/seam/3/latest/api/" target="" class="regularLink">API Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://issues.jboss.org/browse/SEAM" target="" class="regularLink">Report issues</a>
+</p>
+
+<p class="wikiPara">
+Maven users - please update your <tt>seam-bom</tt> version:
+</p>
+
+
+
+<pre class="wikiPreformatted">   &lt;dependency&gt;
+      &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+      &lt;artifactId&gt;seam-bom&lt;/artifactId&gt;
+      &lt;version&gt;3.1.0.Beta3&lt;/version&gt;
+      &lt;type&gt;pom&lt;/type&gt;
+      &lt;scope&gt;import&lt;/scope&gt;
+   &lt;/dependency&gt;</pre>
+
+
+
+
+
+<h1 class="wikiHeadline1" id="H-WhatsChanged"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-WhatsChanged">What's changed?</a></h1>
+
+<p class="wikiPara">
+ 
+</p>
+
+<h2 class="wikiHeadline2" id="H-Solder"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-Solder">Solder</a></h2>
+
+<p class="wikiPara">
+The biggest changes we have made are around the Solder module.  Since this library is so integral to CDI extension development we've decided to make it a top level project at JBoss.  Besides a package name change though (from <tt>org.jboss.seam.solder</tt> to just <tt>org.jboss.solder</tt>), this change doesn't affect how Solder will be used within Seam -it will still be distributed as part of the Seam project and continue to be a responsibility of the Seam team.
+</p>
+
+<p class="wikiPara">
+We also reviewed our existing modules and decided that the Seam Catch, Config and Servlet modules were integral to nearly all application development and so have merged their features with the Solder module.  This move is a win-win for everyone, because it means that you the developer have a few less dependencies to worry about (just add Solder to your project and you get all these additional features for free), and it's also good for Seam development team because we have 3 less modules that we need to maintain infrastructure for.
+</p>
+
+<b>IMPORTANT!  Please remember to remove the Seam Catch, Seam Config and Seam Servlet modules from your project before upgrading to 3.1.0.Beta3.</b>
+
+<h2 class="wikiHeadline2" id="H-Logging"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-Logging">Logging</a></h2>
+
+<p class="wikiPara">
+The logging API has also undergone some substantial improvements, thanks to Ken Finnigan.  Since it is part of the Solder module you will need to update your imports if you want to use typesafe logging in your application.  To use it in your own project, simply import the <tt>Logger</tt> class:
+</p>
+
+
+
+<pre class="wikiPreformatted">import org.jboss.solder.logging.Logger;</pre>
+
+
+
+
+<p class="wikiPara">
+Then inject the logger into your bean:
+</p>
+
+
+
+<pre class="wikiPreformatted">@Inject Logger log;</pre>
+
+
+
+
+<p class="wikiPara">
+It's as easy as that!
+</p>
+
+<h2 class="wikiHeadline2" id="H-CombinedJars"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-CombinedJars">Combined jars</a></h2>
+
+<p class="wikiPara">
+One of the things we delivered in the Seam 3.0 release was combined jars - jar library files that bundled both the API and implementation jars of a module into a single jar file.  We've come to realise that while the API/implementation split was a good idea, the combined/shaded jars were causing problems for some people.  We've since removed the combined jars from all of the modules, and now simply provide separate API and implementation jars.  To maintain backwards compatibility, we've renamed the implementation jars to correspond with the previous naming of the combined jars.  A little confused about this?  Let's look at an example to make it clearer; in the 3.0 release we provided the following jar files for Seam Persistence:
+</p>
+
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> seam-persistence-api.jar</li>
+<li class="wikiUnorderedListItem"> seam-persistence-impl.jar</li>
+<li class="wikiUnorderedListItem"> seam-persistence.jar</li>
+</ul>
+
+<p class="wikiPara">
+The first two jars listed here contained the interfaces and classes for the API and implementation for the Seam Persistence module.  The third jar is simply a repackaging of the first two jars - seam-persistence.jar just contains everything that's packaged in seam-persistence-api.jar and seam-persistence-impl.jar.  This was done for convenience, so that you would only need to add a single dependency for your project if you wanted to use Seam Persistence - here's what it would look like in your Maven pom.xml:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+   &lt;groupId&gt;org.jboss.seam.persistence&lt;/groupId&gt;
+   &lt;artifactId&gt;seam-persistence&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+
+
+<p class="wikiPara">
+Contrast that to what we have in the latest release:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> seam-persistence-api.jar</li>
+<li class="wikiUnorderedListItem"> seam-persistence.jar</li>
+</ul>
+
+<p class="wikiPara">
+The first jar file, seam-persistence-api.jar remains unchanged.  The second jar file, seam-persistence.jar is actually now the implementation (which was previously called seam-persistence-impl), and the third jar file (which was called seam-persistence.jar) has now gone away.  This means that if you have an existing dependency on <tt>seam-persistence</tt>, it will now be a dependency on the implementation itself, not on the (previously) combined jar.  Since the implementation has a transitive dependency on the API, it gets pulled in automatically.  I hope that makes sense, if you're still confused please let us know in the comments!
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsNew"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-WhatsNew">What's new?</a></h1>
+
+<p class="wikiPara">
+I'm very excited to announce the addition of a number of new modules for this release.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeamJCR"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-SeamJCR">Seam JCR</a></h2>
+
+<p class="wikiPara">
+Seam JCR is a portable extension for CDI that allows you to work more easily with JCR (Java Content Repository) repositories.  It currently supports Modeshape and Apache Jackrabbit.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeamJMS"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-SeamJMS">Seam JMS</a></h2>
+
+<p class="wikiPara">
+Seam JMS makes JMS (Java Messaging Service) much easier to use in a CDI environment, and allows bridging between JMS endpoints (such as topics and queues) and the CDI event bus.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeamSocial"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-SeamSocial">Seam Social</a></h2>
+
+<p class="wikiPara">
+Social networking comes to Seam!  Seam Social provides a number of integrations with Facebook, Twitter and LinkedIn to allow you to easily interact with these services directly from your CDI-based application.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeamMail"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-SeamMail">Seam Mail</a></h2>
+
+<p class="wikiPara">
+The long awaited Seam Mail module is making a comeback from Seam 2.  This module allows you to generate and send e-mail from your CDI application, and unlike in Seam 2 the mail templating is no longer based on JSF but on Freemarker or Velocity instead, meaning you can use it in your non-JSF application.  We're still working on the docs for this module, so we ask that you're patient while we get them ready in time for the CR1 release.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsNext"><a href="/2011/10/05/jboss-seam-310-beta-3-released#H-WhatsNext">What's next?</a></h1>
+
+<p class="wikiPara">
+We're going to have a relatively short cycle between Beta3 and the CR1 release, with a release date of 18 October as the target for CR1.  We welcome any feedback from our users and we encourage you to try out Beta3 and let us know of any issues you find.
+</p>
+</div>
+

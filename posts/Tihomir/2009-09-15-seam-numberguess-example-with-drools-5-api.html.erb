@@ -1,0 +1,107 @@
+---
+title: "Seam Numberguess example with Drools5 API"
+author: "Tihomir Surdilovic"
+blogger_name: "Tihomir"
+creation_date: "15-09-2009"
+tags: []
+
+relative_url: /2009/09/15/seam-numberguess-example-with-drools-5-api
+slug: seam-numberguess-example-with-drools-5-api
+lace: http://in.relation.to/12321.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/09/15/seam-numberguess-example-with-drools-5-api
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/" target="" class="regularLink">Seam Drools5 Branch</a> contains additions to Seam for interactions with the Drools5 API. 
+Here I will show how the existing <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/" target="" class="regularLink">numberguess example</a> was changed to use Drools5:
+</p>
+
+<p class="wikiPara">
+1) <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/WEB-INF/components.xml" target="" class="regularLink">components.xml</a>
+</p>
+
+<p class="wikiPara">
+We first define the org.drools.KnowledgeBase and add a single rule resource of type DRL (.drl). This new style of adding resources allows us to add any type of rule resources to the KnowledgeBase (which was not previously possible) and also follows the Drools5 API style (<tt>kbuilder.add(ResourceFactory.newClassPathResource("numberguess.drl"), ResourceType.DRL);</tt>)  
+</p>
+
+<pre class="wikiPreformatted">&lt;drools:knowledge-base name="kbase" knowledge-builder-config="kbuilderconfig.properties" knowledge-base-config="kbaseconfig.properties"&gt;
+    	&lt;drools:rule-resources&gt;
+    		&lt;value&gt;classpath;numberguess.drl;DRL&lt;/value&gt;
+    	&lt;/drools:rule-resources&gt;	
+    	&lt;drools:event-listeners&gt;
+    		&lt;value&gt;org.drools.event.knowledgebase.DefaultKnowledgeBaseEventListener&lt;/value&gt;
+    	&lt;/drools:event-listeners&gt;
+
+ &lt;/drools:knowledge-base&gt;</pre>
+
+
+<p class="wikiPara">
+We then create the org.drools.runtime.StatefulKnowledgeSession passing in the reference to our <q>kbase</q>:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;drools:stateful-knowledge-session name="ksession" knowledge-base="#{kbase}" knowledge-session-config="ksessionconfig.properties"
+    audit-log="/home/tsurdilo/Desktop/ksession"&gt;
+    	&lt;drools:event-listeners&gt;
+    		&lt;value&gt;org.drools.event.rule.DebugAgendaEventListener&lt;/value&gt;
+    		&lt;value&gt;org.drools.event.rule.DebugWorkingMemoryEventListener&lt;/value&gt;
+    	&lt;/drools:event-listeners&gt;
+ &lt;/drools:stateful-knowledge-session&gt;</pre>
+
+
+<p class="wikiPara">
+The pageflow definition stays the same:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;bpm:jbpm&gt;
+        &lt;bpm:pageflow-definitions&gt;
+            &lt;value&gt;pageflow.jpdl.xml&lt;/value&gt;
+        &lt;/bpm:pageflow-definitions&gt;
+  &lt;/bpm:jbpm&gt;
+</pre>
+
+
+<p class="wikiPara">
+2) <a href="http://anonsvn.jboss.org/repos/seam/branches/community/Seam_2_2_Drools5/examples/drools/resources/pageflow.jpdl.xml" target="" class="regularLink">pageflow.jpdl.xml</a>
+</p>
+
+<p class="wikiPara">
+We have to change the handler here to a handler which knows how to work with org.drools.runtime.StatefulKnowledgeSession:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;handler class="org.jboss.seam.drools.KnowledgeDecisionHandler"&gt;</pre>
+
+
+
+<p class="wikiPara">
+And that's it, the numberguess example works as before. It is important to mention one more change made:
+</p>
+
+<p class="wikiPara">
+the Drools5 API no longer exposes the setGlobalResolver method on org.drools.runtime.StatefulKnowledgeSession and org.drools.runtime.StatelessKnowledgeSession. This is mainly so that other APIs would not abuse this. Instead we now have to add a delegate, for example:
+</p>
+
+
+
+<pre class="wikiPreformatted">ksession = knowledgeBase.getValue().newStatefulKnowledgeSession(ksessionconfig, null);
+ksession.getGlobals().setDelegate(new SeamDelegate());</pre>
+
+
+
+<p class="wikiPara">
+         
+Next I will show an example using <a href="http://downloads.jboss.com/drools/docs/5.0.1.26597.FINAL/drools-fusion/html_single/index.html" target="" class="regularLink">Drools Fusion</a>
+</p>
+
+</div>
+

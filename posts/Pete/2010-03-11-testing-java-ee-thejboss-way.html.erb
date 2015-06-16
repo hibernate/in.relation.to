@@ -1,0 +1,75 @@
+---
+title: "Testing Java EE the JBoss way"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "11-03-2010"
+tags: [Arquillian,Seam,Seam News,Testing,Weld]
+
+relative_url: /2010/03/11/testing-java-ee-thejboss-way
+slug: testing-java-ee-thejboss-way
+lace: http://in.relation.to/14771.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/03/11/testing-java-ee-thejboss-way
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Recently, we've been working hard on a solution to improve the testability of <a href="/Bloggers/YouShouldUpgradeToJavaEE6" target="" class="regularLink">Java EE</a>, and particularly <a href="http://www.jboss.org/jbossas/" target="" class="regularLink">JBoss AS</a>. I'm pleased to say that a critical piece of puzzle, Arqullian, is now available. Congratulations to <a href="http://in.relation.to/Bloggers/Aslak" target="" class="regularLink">Aslak</a> and the Arquillian team for releasing the first alpha of <a href="http://community.jboss.org/en/arquillian" target="" class="regularLink">Arquillian</a>! You can read more about Arquillian's mission, and our plans for Java EE testing below; alternatively, there are some quick links at the bottom if you want to dive right in.
+</p>
+
+<blockquote>
+The mission of the Arquillian project is to provide a simple test harness that developers can use to produce a broad range of integration tests for their Java applications (most likely enterprise applications). A test case may be executed within the container, deployed alongside the code under test, or by coordinating with the container, acting as a client to the deployed code.
+
+Arquillian defines two styles of container, remote and embedded. A remote container resides in a separate JVM from the test runner. Its lifecycle may be managed by Arquillian, or Arquillian may bind to a container that is already started. An embedded container resides in the same JVM and is mostly likely managed by Arquillian. Containers can be further classified by their capabilities. Examples include a fully compliant Java EE application server (e.g., GlassFish, <a href="http://www.jboss.org/jbossas/" target="" class="regularLink">JBoss AS</a>, <a href="http://glassfish.dev.java.net/" target="" class="regularLink">Embedded GlassFish</a>), a Servlet container (e.g., <a href="http://tomcat.apache.org/" target="" class="regularLink">Tomcat</a>, <a href="http://jetty.mortbay.org/" target="" class="regularLink">Jetty</a>) and a bean container (e.g., <a href="https://docs.jboss.org/weld/reference/1.0.0/en-US/html/environments.html#d0e5064" target="" class="regularLink">Weld SE</a>). Arquillian ensures that the container used for testing is pluggable, so the developer is not locked into a proprietary testing environment.
+
+Arquillian seeks to minimize the burden on the developer to carry out integration testing by handling all aspects of test execution, including:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> managing the lifecycle of the container (start/stop),</li>
+<li class="wikiUnorderedListItem"> bundling the test class with dependent classes and resources into a deployable archive,</li>
+<li class="wikiUnorderedListItem"> enhancing the test class (e.g., resolving @Inject, @EJB and @Resource injections),</li>
+<li class="wikiUnorderedListItem"> deploying the archive to test (deploy/undeploy) and</li>
+<li class="wikiUnorderedListItem"> capturing results and failures.</li>
+</ul>
+
+To avoid introducing unnecessary complexity into the developer's build environment, Arquillian integrates transparently with familiar testing frameworks (e.g., <a href="http://junit.sourceforge.net/" target="" class="regularLink">JUnit 4</a>, <a href="http://testng.org/" target="" class="regularLink">TestNG 5</a>), allowing tests to be launched using existing <a href="http://jboss.org/tools" target="" class="regularLink">IDE</a>, <a href="http://ant.apache.org/" target="" class="regularLink">Ant</a> and <a href="http://maven.apache.org/" target="" class="regularLink">Maven</a> test plugins without any add-ons. 
+
+<p align="right"><b><i>The Arquillian Mission Statement</i></b></p>
+
+</blockquote>
+
+<p class="wikiPara">
+The first alpha release of Arquillian gives us support for <a href="http://www.jboss.org/jbossas/" target="" class="regularLink">JBoss AS</a> (remote deployments), <a href="http://glassfish.dev.java.net/" target="" class="regularLink">GlassFish</a> (embedded deployments), <a href="https://docs.jboss.org/weld/reference/1.0.0/en-US/html/environments.html#d0e5064" target="" class="regularLink">Weld SE</a> (embedded deployments) and <a href="http://openejb.apache.org/" target="" class="regularLink">OpenEJB</a> (embedded deployments). You can also inject beans and component (using <tt>@Resource</tt> or <tt>@Inject</tt>) into test cases. 
+</p>
+
+<p class="wikiPara">
+We'll be adding supported containers in future releases - if you want to see your favorite container on the list, <a href="http://community.jboss.org/en/arquillian" target="" class="regularLink">join our community</a> and we can show you how to add support for it. We also plan to add more convention over configuration, meaning you'll only need to specify a single deployment and reuse it in all your test cases. Aslak <a href="/Bloggers/Arquillian100Alpha1Released" target="" class="regularLink">has written more</a> about future ideas in a <a href="/Bloggers/Arquillian100Alpha1Released" target="" class="regularLink">follow-up blog entry</a>. He also provides some examples of how to use Arquillian.
+</p>
+
+<p class="wikiPara">
+We're strong believers in writing tests, and writing tests which actually test your business logic in the environment it will finally run in, rather than introducing mocked out objects (which may behave differently). While unit testing is important to ensure the correctness of your logic, it does not ensure the correctness of two objects which interact with each other.
+</p>
+
+<p class="wikiPara">
+With the help of the <a href="http://jboss.org/shrinkwrap" target="" class="regularLink">ShrinkWrap</a> project, Arquillian gives you the ability to create <q>micro deployments</q> around your tests. Micro-deployments are contained sub-sections of your application logic. This gives you the ability to do lower level integration testing on a lower level then normal integration. It is up to you at what level you want to test!
+</p>
+
+<p class="wikiPara">
+We also know you need a convenient way to run your test quickly, and that is why we are getting <a href="http://community.jboss.org/wiki/JBossEmbeddedAS" target="" class="regularLink">JBoss Embedded AS</a> in shape. Embedded AS offers the potential to bootstrap JBoss AS inside the same JVM when you run your test, making it super easy to debug the test. Unfortunately, Embedded AS support didn't make this release (we made a decision to release what we have now, rather than delay), but we will push this out to you as soon as it's ready.
+</p>
+
+<p class="wikiPara">
+Testing your components and services gets you a long way, but you'll nearly always want to test your presentation tier as well. And that's where frameworks like <a href="http://www.jboss.org/jsfunit" target="" class="regularLink">JSFUnit</a> and <a href="http://seleniumhq.org/" target="" class="regularLink">Selenium</a> come in - they allow you to exercise the work flows your user will use. Support for both these frameworks is planned, as well as for <q><a href="http://community.jboss.org/wiki/MockObjectsforTestDrivenJSFDevelopmentorgjbosstest-jsfjsf-mockproject" target="" class="regularLink">Mock JSF Objects</a></q>.
+</p>
+
+<p class="wikiPara">
+If you like what you've heard so far, but are worried that Arquillian requires build script wizardry to use, let us surprise you again! Being able to run any of these tests from within the IDE is a key goal of Arquillian -- and the key to a rapid development cycle. Arquillian requires no build wizardry! So check out the <a href="http://docs.jboss.org/arquillian/reference/1.0.0.Alpha1/en-US/html_single" target="" class="regularLink">documentation</a> and give it a try today!
+</p>
+
+<p class="wikiPara">
+[ <a href="http://jira.jboss.com/jira/browse/ARQ" target="" class="regularLink">JIRA</a> ] | [ <a href="http://docs.jboss.org/arquillian/spi/1.0.0.Alpha1/" target="" class="regularLink">SPI Javadoc</a>, <a href="http://docs.jboss.org/arquillian/api/1.0.0.Alpha1/" target="" class="regularLink">API Javadoc</a> ] | [ <a href="http://docs.jboss.org/arquillian/reference/1.0.0.Alpha1/en-US/html_single" target="" class="regularLink">Reference Guide</a> ] | [ <a href="https://jira.jboss.org/jira/secure/ReleaseNote.jspa?projectId=12310885&amp;styleName=Html&amp;version=12313950" target="" class="regularLink">Release Notes</a> ] </p>
+</div>
+

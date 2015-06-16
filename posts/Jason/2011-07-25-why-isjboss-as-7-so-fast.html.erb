@@ -1,0 +1,54 @@
+---
+title: "Why is JBoss AS 7 so fast?"
+author: "Jason Greene"
+blogger_name: "Jason"
+creation_date: "25-07-2011"
+tags: [as7,jbossas7]
+
+relative_url: /2011/07/25/why-isjboss-as-7-so-fast
+slug: why-isjboss-as-7-so-fast
+lace: http://in.relation.to/21328.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/07/25/why-isjboss-as-7-so-fast
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The short answer is that it is designed around Ahmdahl's law (effective parallelization of work) as opposed to Moore's law (waiting for hardware with a faster clock rate). Almost every CPU powering desktops, laptops, and servers is now at least dual core, and the trend is rapidly expanding.  The days of the frequency race are essentially over.  So, now software must adapt to tap into the power of the hardware of today and tomorrow. 
+</p>
+
+<p class="wikiPara">
+JBoss AS underwent an aggressive transformation to achieve this critical evolution.  With AS 7 we started from scratch and built an entirely new, highly performant, and manageable core architecture from the ground up.  With some truly amazing engineering effort we were able to go from a tiny prototype on github, to the full blown Java EE Web Profile compliant container of today in a little over a year (not to mention that during all of this we also delivered AS 6 which allowed JBoss users early access EE6 technology).
+</p>
+
+<p class="wikiPara">
+Before explaining, allow me to provide some background.  The core problem an application server is tasked with is managing services.  Nearly all components in a modern application have some kind of life-cycle, meaning that there is some point at which it must be started, and some later point at which it must be stopped.  We label anything that has a life-cycle a service.  Another important property of a service is that they typically have relationships that impact their respective life-cycles.  As an example, we might say that a servlet's service <i class="wikiEmphasis">depends</i> on a web server. In addition we would probably say that if that servlet uses some other resource like a database connection or an EJB that it depends on those being being available as well.  When an application server starts or deploys it must make sure that it starts all of the various services in the correct order. Further if any of these services are somehow stopped, it must stop all dependents first (essentially reverse order).  This is a fairly simple problem when this is done in a single thread.
+</p>
+
+<p class="wikiPara">
+JBoss AS 7 on the other hand starts and deploys all services in parallel.  This complex problem is solved by our new service container, the JBoss Modular Service Container.  MSC is essentially an advanced concurrent state machine.  It analyzes the dependencies between all services on the fly and attempts to start as many as it can at the same time, while still adhering to the relationship requirements.  This means that not only is startup blazing fast, but you also now can deploy multiple deployments in parallel. 
+</p>
+
+<p class="wikiPara">
+In addition to parallel services, JBoss AS 7 also has modularity and concurrent class loading.  By segmenting classes into proper modules, the app server can naturally optimize access patterns, and only look in the spot that truly owns the classes.  Also, since the visibility between modules is intentionally limited, searching is cheap.  In the case of JBoss Modules, module resolution and class lookup are O(1).  All of this has a very high degree of concurrency, even a significant portion of class definition.
+</p>
+
+<p class="wikiPara">
+Deployment processing is also very efficient.  One major optimization is that we index annotation information by quickly scanning a subset of the class file data.  For even greater efficiency we allow modules the ability to pregenerate a space efficient index which is designed to be loaded very quickly.  Yet another deployment optimization is that we carefully cache and reuse reflection data, since the JVM is not very efficient at doing so.
+</p>
+
+<p class="wikiPara">
+Finally the last major reason I wanted to highlight is that we have and will continue to be very militant about our CPU and memory usage on the start and deploy path.  <i class="wikiEmphasis">This is all about making good choices starting at the design phase</i>. An interesting example is our moratorium on using JAXB (or any other introspection driven binder) to parse configuration that is only read once.  It ends up spending the same or more time figuring out how to parse than it does doing the actual parsing.  This adds up. In fact, just the XML processing in AS 5 and 6 took longer than the entire 7 boot time.
+</p>
+
+<p class="wikiPara">
+Hopefully this provides a better picture as to how we made the efficiency gains, and why some things are very different in 7 than in the past.  This, however, is just the beginning. Stay tuned for my next blog which will talk about the overall 7 roadmap.
+</p>
+
+<p class="wikiPara">
+Thanks!</p>
+</div>
+

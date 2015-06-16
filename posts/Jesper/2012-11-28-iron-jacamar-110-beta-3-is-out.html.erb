@@ -1,0 +1,101 @@
+---
+title: "IronJacamar 1.1.0.Beta3 is out"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+creation_date: "28-11-2012"
+tags: []
+
+relative_url: /2012/11/28/iron-jacamar-110-beta-3-is-out
+slug: iron-jacamar-110-beta-3-is-out
+lace: http://in.relation.to/23702.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/11/28/iron-jacamar-110-beta-3-is-out
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm happy to announce the 3rd beta release of the IronJacamar 1.1 series.
+</p>
+
+<p class="wikiPara">
+The full release notes are <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12310691&amp;version=12320050" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DistributedWorkManager"><a href="/2012/11/28/iron-jacamar-110-beta-3-is-out#H-DistributedWorkManager">DistributedWorkManager</a></h2>
+
+<p class="wikiPara">
+Our <a href="http://docs.jboss.org/ironjacamar/api/spec/1.6/javax/resource/spi/work/DistributableWorkManager.html" target="" class="regularLink">DistributedWorkManager</a> implementation got a huge update in this release.
+</p>
+
+<p class="wikiPara">
+The distributed work manager is now unique per resource adapter activation - the same goes for the <a href="http://docs.jboss.org/ironjacamar/api/spec/1.6/javax/resource/spi/BootstrapContext.html" target="" class="regularLink">BootstrapContext</a>. This means that these components acts like singletons, if multiple resource adapter activations uses the same configuration. This allows us to uniquely identify each instance within the JVM, and more importantly across the entire network, which allows us to optimize traffic and state between all the nodes in the cluster.
+</p>
+
+<p class="wikiPara">
+We now have a distributed statistics implementation across the network which will allow you see the status of all your <a href="http://docs.jboss.org/ironjacamar/api/spec/1.6/javax/resource/spi/work/Work.html" target="" class="regularLink">Work</a> instances in addition to the local statistics instance.
+</p>
+
+<p class="wikiPara">
+Since the WorkManager is now unique within the JVM we had to eliminate our InVM transport implementation. However, we have added Apache Ant and Apache Maven support for our standalone distribution in order to quickly start, stop, deploy, undeploy and ping local or remote instances of the IronJacamar container to ease testing and control of JCA clustering features.
+</p>
+
+<p class="wikiPara">
+We will continue to work on the implementation, and hope that we can consider the implementation stable in our next beta release. The JGroups transport have some caveats in this release, but give the Socket one a spin.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Arquillian"><a href="/2012/11/28/iron-jacamar-110-beta-3-is-out#H-Arquillian">Arquillian</a></h2>
+
+<p class="wikiPara">
+Our Arquillian support got an update as well. We now support the @ArquillianResource annotation in order to allow access to internally used resources, like the embedded instance, as well as the JNDI context.
+</p>
+
+<p class="wikiPara">
+However, since we have an increased focus on having IronJacamar running on a local machine as well as in a cluster we decided to split the Arquillian support in its own component to allow for multiple implementations (embedded and remote) in the future. This meant that we had to change the package name from 'org.jboss.jca.embedded.arquillian' to 'org.jboss.jca.arquillian.embedded'. Now, we can just wait for the mob with pitchforks...
+</p>
+
+<h2 class="wikiHeadline2" id="H-EclipsePluginAndTooling"><a href="/2012/11/28/iron-jacamar-110-beta-3-is-out#H-EclipsePluginAndTooling">Eclipse plugin and tooling</a></h2>
+
+<p class="wikiPara">
+Our Eclipse plugin got a major update in this release, as did our general tooling for code generation.
+</p>
+
+<p class="wikiPara">
+The Eclipse plugin will now allow you to validate and deploy your resource adapters and their activation configuration to a local or remote IronJacamar instance.
+</p>
+
+<p class="wikiPara">
+Our code generator now allows you to integrate our <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/eis.html" target="" class="regularLink">EIS test server</a> instance in your development environment easily, so you don't have to depend on having a full EIS installation.
+</p>
+
+<p class="wikiPara">
+You will be able to see it all in action this week at <a href="http://www.jboss.org/events/JUDCon/2012/china/agenda" target="" class="regularLink">JUDCon/Beijing</a> !
+</p>
+
+<h2 class="wikiHeadline2" id="H-OtherStuff"><a href="/2012/11/28/iron-jacamar-110-beta-3-is-out#H-OtherStuff">Other stuff</a></h2>
+
+<p class="wikiPara">
+The usual bug fixes, and improvements in other area of the release, so all in all a good reason to upgrade your development environments.
+</p>
+
+<p class="wikiPara">
+Remember to switch to a JDK7 profile !
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheRoadAhead"><a href="/2012/11/28/iron-jacamar-110-beta-3-is-out#H-TheRoadAhead">The road ahead</a></h2>
+
+<p class="wikiPara">
+We still have a way to go for our 1.1 goals, but we are getting closer with each step. We are still aiming for certification once EE 7 is released.
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/ironjacamar/" target="" class="regularLink">WebSite</a>] [<a href="http://www.jboss.org/ironjacamar/downloads.html" target="" class="regularLink">Download</a>] [<a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/" target="" class="regularLink">Documentation</a>] [<a href="https://issues.jboss.org/browse/JBJCA" target="" class="regularLink">JIRA</a>] [<a href="https://community.jboss.org/en/ironjacamar/?view=discussions" target="" class="regularLink">Forum</a>] 
+</p>
+</div>
+

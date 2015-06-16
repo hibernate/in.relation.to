@@ -1,0 +1,66 @@
+---
+title: "Hibernate Validator 5.0.1 and the story behind the \"missing\" 5.0.0.Final"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "02-05-2013"
+tags: [Hibernate Validator]
+
+relative_url: /2013/05/02/hibernate-validator-501-and-the-story-behind-the-missing-500-final
+slug: hibernate-validator-501-and-the-story-behind-the-missing-500-final
+lace: http://in.relation.to/24167.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/05/02/hibernate-validator-501-and-the-story-behind-the-missing-500-final
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Today we are happy to announce the 5.0.1.Final release of Hibernate Validator. In case you are wondering what happened with 5.0.0.Final - it has not gone missing. In fact it was released on the <a href="https://hibernate.atlassian.net/browse/HV/fixforversion/12856" target="" class="regularLink">11th of April</a>.
+</p>
+
+<p class="wikiPara">
+The long story is, that we had to release 5.0.0.Final to meet the <a href="https://blogs.oracle.com/theaquarium/entry/jms_2_bean_validation_1" target="" class="regularLink">Java EE 7 release schedule</a>. At the time the functionality was complete, but documentation was not.
+Given the amount of changes introduced by <a href="http://beanvalidation.org/1.1/spec/1.1.0.cr3/" target="" class="regularLink">Bean Validation 1.1</a>, we felt it was important 
+to wait with the announcement of Hibernate Validator 5 until the documentation is up to scratch. That's the case with 
+5.0.1.Final. Not only does this release offer a complete Bean Validation 1.1 implementation it also
+includes an updated online <a href="http://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html_single/" target="" class="regularLink">documentation</a>.
+</p>
+
+<p class="wikiPara">
+The highlights of Hibernate Validator 5 are (with pointers into the freshly baked documentation):
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Standardized <a href="http://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html_single/#chapter-method-constraints" target="" class="regularLink">method validation</a> of parameters and return values. This has been a Hibernate Validator 4 specific functionality, but got now standardized as part of Bean Validation 1.1.</li>
+<li class="wikiUnorderedListItem"> Integration with Context and Dependency Injection (CDI). There are <a href="http://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html_single/#d0e5117" target="" class="regularLink">default ValidatorFactory and Validator</a> instances available and you can now use @Inject in ConstraintValidator implementations out of the box. Requested custom implementations (via validation.xml) of resources like ConstraintValidatorFactory, MessageInterpolator, ParameterNameProvider or TraversableResolver are also provided as managed beans. Last but not least, the CDI integration offers transparent <a href="http://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html_single/#d0e5195" target="" class="regularLink">method validation for CDI beans</a>.</li>
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html_single/#section-group-conversion" target="" class="regularLink">Group conversion</a>
+</li>
+<li class="wikiUnorderedListItem"> Error message interpolation using <a href="http://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html_single/#section-interpolation-with-message-expressions" target="" class="regularLink">EL expressions</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+We are also planning to create a little blog series introducing these new features in more detail. Stay tuned!
+</p>
+
+<p class="wikiPara">
+For now have a look at the <a href="http://docs.jboss.org/hibernate/validator/5.0/reference/en-US/html_single/#validator-gettingstarted-createproject" target="" class="regularLink">Getting Started</a> section of the documentation to see what you need to use Hibernate Validator 5. Naturally you will need the new Bean Validation 1.1 dependency, but you will also need an EL implementation - either provided by a container or added to your Java SE environment. Additional migration
+pointers can also be found in the Hibernate Validator <a href="https://community.jboss.org/wiki/HibernateValidatorMigrationGuide" target="" class="regularLink">migration guide</a>.
+</p>
+
+<p class="wikiPara">
+You find the full <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10060&amp;version=12855" target="" class="regularLink">release notes</a> as usual on Jira.
+Maven artefacts are on the JBoss Maven repository under the GAV <a href="https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate~hibernate-validator~5.0.1.Final~~" target="" class="regularLink">org.hibernate:hibernate-validator:5.0.1.Final</a> and <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/5.0.1.Final/" target="" class="regularLink">distribution bundles</a> are available on SourceForge.
+</p>
+
+<p class="wikiPara">
+We are looking forward to get some feedback either on the Hibernate Validator <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a> or 
+on stackoverflow using the <a href="http://stackoverflow.com/questions/tagged/hibernate-validator" target="" class="regularLink">hibernate-validator</a> tag.
+</p>
+
+<p class="wikiPara">
+Enjoy! </p>
+</div>
+

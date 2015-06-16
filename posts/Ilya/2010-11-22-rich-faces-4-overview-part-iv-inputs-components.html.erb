@@ -1,0 +1,267 @@
+---
+title: "RichFaces 4 Overview. Part IV – Inputs Components."
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+creation_date: "22-11-2010"
+tags: []
+
+relative_url: /2010/11/22/rich-faces-4-overview-part-iv-inputs-components
+slug: rich-faces-4-overview-part-iv-inputs-components
+lace: http://in.relation.to/17788.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/11/22/rich-faces-4-overview-part-iv-inputs-components
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<div style="float: right; margin-left: 20px; margin-bottom: 20px;">
+     <a href="http://labs.jboss.com/richfaces" target="blank"> 
+         <img src="http://design.jboss.org/richfaces/logo/final_logo/richfaces_logo_200px.png">
+     </a>
+</div>
+<p class="wikiPara">
+We're done with two more milestones [<a href="http://in.relation.to/17325.lace" target="" class="regularLink">M3</a>] [<a href="http://in.relation.to/17739.lace" target="" class="regularLink">M4</a>], introduced <a href="http://in.relation.to/17465.lace" target="" class="regularLink">GAE support</a>, visited great <a href="http://in.relation.to/17214.lace" target="" class="regularLink">JavaOne event</a> and finally I'm ready to continue this series in order to guide you through RichFaces 4 migration!! In this write-up I will review the migrated input components.
+</p>
+
+<h2 class="wikiHeadline2" id="H-InplaceComponents"><a href="/2010/11/22/rich-faces-4-overview-part-iv-inputs-components#H-InplaceComponents">Inplace Components</a></h2>
+
+<p class="wikiPara">
+ <b>rich:inplaceInput</b> and <b>rich:inplaceSelect</b> components are almost unchanged from a usage point of view (<i class="wikiEmphasis">we want your migration to be smooth :) </i>). However, the markup and client-side code, which was the cause of number of issues raised by the community, were completely reviewed and rewritten. 
+</p>
+
+<p class="wikiPara">
+So, meet the well-known inplace components in RichFaces 4:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:panel style="width:220px;"&gt;
+	&lt;f:facet name="header"&gt;
+		&lt;h:outputText value="Form built with inplaces"&gt;&lt;/h:outputText&gt;
+	&lt;/f:facet&gt;
+	&lt;h:panelGrid columns="1"&gt;
+		&lt;rich:inplaceInput defaultLabel="click to enter your name" /&gt;
+		&lt;rich:inplaceSelect defaultLabel="click to choose your country"
+showControls="true"&gt;
+			&lt;f:selectItem itemLabel="USA" itemValue="0"/&gt;
+			&lt;f:selectItem itemLabel="Canada" itemValue="0"/&gt;
+			&lt;f:selectItem itemLabel="UK" itemValue="0"/&gt;
+		&lt;/rich:inplaceSelect&gt;
+	&lt;/h:panelGrid&gt;
+&lt;/rich:panel&gt;</pre>
+
+
+<p class="wikiPara">
+And the result:
+</p>
+
+<img src="/images/17784.png" alt="">
+
+<p class="wikiPara">
+You can choose the events which will activate the editing and storing, configure advanced settings like storing on blur, add disablement conditions, add UI controls for applying values, and so on. Also, the components support navigation and control using the keyboard.
+</p>
+
+<h2 class="wikiHeadline2" id="H-InputNumberComponents"><a href="/2010/11/22/rich-faces-4-overview-part-iv-inputs-components#H-InputNumberComponents">Input Number components</a></h2>
+
+<p class="wikiPara">
+Let’s check one more pair of components which have also been migrated with minimal changes to RichFaces 4.x. It’s the also well-known <b>rich:inputNumberSlider</b> and <b>rich:inputNumberSpinner</b> components. The most noticeable change (except markup optimization) is that keyboard navigation is greatly improved from the 3.3.x version. We removed some unnecessary cases of getting focus from internal controls (the buttons in the spinner), and made some of the parts additionally focus-able (the slider element in slider). The first change was done because you already could change the value with the up and down keys directly. The second was done because the text input is, in general, not required, and could be hidden for the component, using the horizontal slider for input. The usage of left and right arrow keys in the text input could not be processed in the same manner as they should work for cursor change.
+</p>
+
+<p class="wikiPara">
+So let’s check the code which you used in 3.3.x:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:inputNumberSlider value="50" /&gt;
+
+&lt;rich:inputNumberSpinner value="50" step="10"/&gt;
+</pre>
+
+<p class="wikiPara">
+And the result:
+</p>
+
+<img src="/images/17785.png" alt="">
+
+<h2 class="wikiHeadline2" id="H-ComboVsSuggestionBoxUnifiedRichautocompleteComponent"><a href="/2010/11/22/rich-faces-4-overview-part-iv-inputs-components#H-ComboVsSuggestionBoxUnifiedRichautocompleteComponent">Combo vs SuggestionBox – unified rich:autocomplete component</a></h2>
+
+<p class="wikiPara">
+In 3.3.x we had two separate components (<i class="wikiEmphasis">rich:suggestionBox and rich:comboBox</i>) for simplified input with autocomplete support.  Both of them provided similar functionality but worked in different modes (<i class="wikiEmphasis">one used Ajax and the other worked completely on the client</i>). The second difference was that suggestionBox was able to be attached to any input and comboBox had the input and button built-in. So, after pre-migration redesign, we decided to create single <b>rich:autocomplete</b> component with all the features combined. The only feature it lost was the ability to be attached to any input, but we are planning the introduction of using behaviors for such components after the final release.
+</p>
+
+<p class="wikiPara">
+The most important attributes to define the usage are as follows:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <b>mode</b> attribute. The <b>client</b> and <b>ajax</b> values are well known to 3.3.x combo and suggestion component users.  Also in 4.x, we are introducing the new <b>cachedAjax</b> mode! It is used when you prefer to load suggestions using Ajax when the component is actually activated, but do not perform any reloads after further input clarifications.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <b>autocompleteMethod</b> and <b>autocompleteList</b> attributes. Both of these attributes define the endpoints for data-fetching by the component. A method attribute should be used if you want to generate suggestions dynamically according to the prefix entered (<i class="wikiEmphasis">suggestionBox variant</i>), and list should be used to point the component to static list of strings. Both attributes work in any mode. For client and cachedAjax mode, further suggestion-filtering is done at the client-side by the built-in component or a custom filter function.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <b>layout</b> and <b>fetchValue</b> attributes. Instead of the default built-in list of strings and a simple div-based layout, you could choose to use custom objects and a table or list layout for presentation by using the <b>layout</b> attribute. For example, you could show the suggestions list in a more convenient and informative way with a few columns of details. In that case, the <b>fetchValue</b> attribute should be defined in order to determine what to insert during selection from the table.</li>
+</ul>
+
+<p class="wikiPara">
+All the other attributes came from the suggestionBox and comboBox components, and are well known to those who used the components in 3.3.x: <i class="wikiEmphasis">fetchValue, tokens, autofill, minChars, selectFirst (previously selectFirstOnUpdate) and so on</i>.
+</p>
+
+<p class="wikiPara">
+Let check some samples. The first is a simple autocomplete in cached Ajax mode which requests suggestions after the first character is entered. It supports the entering of comma-separated strings.
+</p>
+
+<p class="wikiPara">
+Code:
+</p>
+
+<pre class="wikiPreformatted">&lt;h:form&gt;
+	&lt;rich:autocomplete mode="cachedAjax" minChars="1" tokens=","
+		autocompleteMethod="#{autocompleteBean.autocomplete}" /&gt;
+&lt;/h:form&gt;</pre>
+
+
+<p class="wikiPara">
+And the result:
+</p>
+
+<img src="/images/17780.png" alt="">
+
+<p class="wikiPara">
+And the second sample. Here you can see custom objects and table layout usage. Pure client-side suggestions are taken from the list objects used.  Also there is an additional button on the input to show the suggestions.
+</p>
+
+<p class="wikiPara">
+Code:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:autocomplete mode="client" showButton="true" layout="table"
+	autocompleteList="#{capitalsBean.capitals}" fetchValue="#{cap.name}" var="cap"&gt;
+		&lt;rich:column&gt;
+			&lt;h:graphicImage value="#{cap.stateFlag}"/&gt; 
+		&lt;/rich:column&gt;
+		&lt;rich:column&gt;
+			&lt;h:outputText value="#{cap.name}"/&gt;
+		&lt;/rich:column&gt;
+		&lt;rich:column&gt;
+			&lt;h:outputText value="#{cap.state}"/&gt;
+		&lt;/rich:column&gt;
+&lt;/rich:autocomplete&gt;</pre>
+
+
+<p class="wikiPara">
+And the result:
+</p>
+
+<img src="/images/17781.png" alt="">
+
+<h2 class="wikiHeadline2" id="H-SelectComponent"><a href="/2010/11/22/rich-faces-4-overview-part-iv-inputs-components#H-SelectComponent">Select component</a></h2>
+
+<p class="wikiPara">
+Great news! You no longer need to use suggestionBox suggestObjects feature, which has limitations and is not native for input in 3.3.x). And you are no longer required to create more complex converters, as with the 3.3.x comboBox, in order to transform the label (which was only supported in selectItem) to an actual object value. In 4.0 Milestone 5 we are introducing the <b>rich:select</b> component! 
+</p>
+
+<p class="wikiPara">
+The select component has a direct keyboard-input feature and unified skinning for any browser, unlike the standard selectOne component, yet it works completely the same as the standard component under the hood!
+</p>
+
+<p class="wikiPara">
+It’s pretty simple from a functional point of view. You can type directly into the text input and it will suggest one of the selectItems which suits the current input. Also, you can just choose from the list, restricting direct input as for a normal select. For incorrect input, the current value will not be validated successfully as for the normal select component.
+</p>
+
+<p class="wikiPara">
+Let’s check in the code:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:select&gt;
+	&lt;f:selectItem itemValue="0" itemLabel="Option 1" /&gt;
+	&lt;f:selectItem itemValue="1" itemLabel="Option 2" /&gt;
+	&lt;f:selectItem itemValue="2" itemLabel="Option 3" /&gt;
+	&lt;f:selectItem itemValue="3" itemLabel="Option 4" /&gt;
+	&lt;f:selectItem itemValue="4" itemLabel="Option 5" /&gt;
+&lt;/rich:select&gt;</pre>
+
+
+<p class="wikiPara">
+Rendered as a standard select without direct typing support:
+</p>
+
+<img src="/images/17786.png" alt=""><p class="wikiPara">
+ 
+</p>
+
+<p class="wikiPara">
+And this one:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:select enableManualInput="true" defaultLabel="start typing for select"&gt;
+	&lt;f:selectItems value="#{inplaceSelectBean.capitalsOptions}" /&gt;
+&lt;/rich:select&gt;</pre>
+
+
+<p class="wikiPara">
+Accepts user input using keyboard:
+</p>
+
+<img src="/images/17787.png" alt="">
+
+<h2 class="wikiHeadline2" id="H-Calendar"><a href="/2010/11/22/rich-faces-4-overview-part-iv-inputs-components#H-Calendar">Calendar</a></h2>
+
+<p class="wikiPara">
+The <b>rich:calendar</b> component was also migrated with few changes from a functional point of view. It still has the following main features:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">Pop-up and inline modes</li>
+<li class="wikiUnorderedListItem">Ajax and client month scrolling</li>
+<li class="wikiUnorderedListItem">Client and server side dates disablement and styling</li>
+<li class="wikiUnorderedListItem">...</li>
+</ul>
+
+<p class="wikiPara">
+So let’s see some different states of calendars:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:calendar datePattern="dd/MM/yyyy hh:mm:ss"/&gt;
+&lt;rich:calendar popup="false"/&gt;</pre>
+
+
+<p class="wikiPara">
+Will look like:
+</p>
+
+<img src="/images/17782.png" alt="">
+
+<p class="wikiPara">
+And after some manipulation:
+</p>
+
+<img src="/images/17783.png" alt="">
+
+<p class="wikiPara">
+The most noticeable difference that should be considered during migration is that we are planning to redesign our macro-substitutions-based templating. So for now, day markup redefinition is not possible, but it will be available in future after the base templating feature is done. For that reason, the data model has no getData for now, because it can't be used without templating.
+</p>
+
+<p class="wikiPara">
+One more note related to organizer creation using that component: after templating for cells becomes available, it should still be possible to implement simple cases as in 3.3.x. But there is a separate component in our plans related to pure organizer creation. The main reason for this is that most common cases for the content of day definition uses some repeats, dataTables, or lists (<i class="wikiEmphasis">or any other iteration components</i>), and those components require server-side rendering support. As such they can’t be done just using client templating.
+</p>
+
+<b>To be continued...</b>
+
+<h1 class="wikiHeadline1" id="H-PSWhatOnMyWayBesidesThoseArticles"><a href="/2010/11/22/rich-faces-4-overview-part-iv-inputs-components#H-PSWhatOnMyWayBesidesThoseArticles">P.S. What on my way besides those articles</a></h1>
+
+<p class="wikiPara">
+I'm proud to announce that me and <a href="http://mkblog.exadel.com" target="" class="regularLink">Max Katz</a> are starting to work on new RichFaces 4 book (Apress) to be published in the first half of 2011. I’ll be posting outline and more details later.
+</p>
+
+<hr>
+
+<p class="wikiPara">
+[<a href="http://twitter.com/ilya_shaikovsky" target="" class="regularLink">Get updates of my blogs in twitter</a>]
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jroller.com/a4j/" target="" class="regularLink">My jroller.com blog</a>]</p>
+</div>
+

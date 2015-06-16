@@ -1,0 +1,73 @@
+---
+title: "Natural Conversations in Seam"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "14-12-2007"
+tags: [Seam]
+
+relative_url: /2007/12/14/natural-conversations-in-seam
+slug: natural-conversations-in-seam
+lace: http://in.relation.to/3294.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/12/14/natural-conversations-in-seam
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+One of the features I am most pleased to see in Seam 2.0.1 is Natural
+Conversations. Why?
+</p>
+
+<h3 class="wikiHeadline3" id="H-EasyRedirectToExistingConversations"><a href="/2007/12/14/natural-conversations-in-seam#H-EasyRedirectToExistingConversations">Easy redirect to existing conversations</a></h3>
+<p class="wikiPara">
+It can be useful to redirect to an existing conversation if the user requests the same operation twice.
+</p>
+
+<p class="wikiPara">
+Take this example:
+</p>
+
+<p style="margin-left: 25px; margin-right: 15px">You are on ebay, half way through paying for an item you just won as a Christmas present for your parents.  Lets say you're sending it straight to them - you enter your payment details but you can't remember their address. You accidentally reuse the same browser window finding out their address.  Now you need to return to the payment for the item.</p>
+
+<p class="wikiPara">
+With a natural conversation its really easy to have the user rejoin the existing conversation, and pick up where they left off - just  have them to rejoin the <tt>payForItem</tt> conversation with the <tt>itemId</tt> as the conversation id.
+</p>
+
+<h3 class="wikiHeadline3" id="H-UserFriendlyURLs"><a href="/2007/12/14/natural-conversations-in-seam#H-UserFriendlyURLs">User friendly URLs</a></h3>
+<p class="wikiPara">
+I've always been a strong believer in the use of user friendly, descriptive, URLs.  For some applications this is of less import, of course - the largest (pre Seam) application I wrote was <i class="wikiEmphasis">really</i> bad at this as it used frames ;-) . For me this consists of:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">a navigable hierarchy - I can navigate by editing the url</li>
+<li class="wikiUnorderedListItem">a meaningful URL (like this Wiki uses -- so don't identify things by random ids)</li>
+</ul>
+
+<p class="wikiPara">
+The first of these is certainly possible in Seam with the use of URLRewrite (I'm also looking forward to seeing stronger integration between URLRewrite and Seam's <tt>pages.xml</tt>), but the second was harder until now.
+</p>
+
+<p class="wikiPara">
+Now, with natural conversations, when you are building your hotel booking system (or, of course, whatever your app is) you can generate a URL like <tt>http://seam-hotels/book.seam?hotel=BestWesternAntwerpen</tt> (of course, whatever parameter hotel maps to on your domain model must be unique) and with URLRewrite easily transfor this to <tt>http://seam-hotels/book/BestWesternAntwerpen</tt>.
+</p>
+
+<p class="wikiPara">
+Much better!
+</p>
+
+<h3 class="wikiHeadline3" id="H-DeprecatesExplicitSyntheticConversationIds"><a href="/2007/12/14/natural-conversations-in-seam#H-DeprecatesExplicitSyntheticConversationIds">Deprecates explicit synthetic conversation ids</a></h3>
+<p class="wikiPara">
+I really didn't like the use of explicit synthetic conversation id - they just feel <i class="wikiEmphasis">really</i> ugly to me. You know that gut feeling you get about some things? Explicit synthetic conversaton ids are like that for me.
+</p>
+
+<p class="wikiPara">
+This is available in the <a href="http://in.relation.to/Bloggers/Seam201CR1" target="" class="regularLink">recently released 2.0.1.CR1</a>.
+</p>
+
+<p class="wikiPara">
+I hope this inspires you to go out and think about how you can incorporate natural conversations into your application.</p>
+</div>
+

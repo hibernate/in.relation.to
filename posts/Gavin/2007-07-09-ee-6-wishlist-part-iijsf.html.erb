@@ -1,0 +1,269 @@
+---
+title: "EE6 wishlist part II: JSF"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "09-07-2007"
+tags: [EE6 Wishlist]
+
+relative_url: /2007/07/09/ee-6-wishlist-part-iijsf
+slug: ee-6-wishlist-part-iijsf
+lace: http://in.relation.to/1994.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/07/09/ee-6-wishlist-part-iijsf
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+This is the second installment of a series. Part I is here:
+</p>
+
+<p class="wikiPara">
+<a href="http://blog.hibernate.org/cgi-bin/blosxom.cgi/2007/03/30#ee6part1" target="" class="regularLink">http://blog.hibernate.org/cgi-bin/blosxom.cgi/2007/03/30#ee6part1</a>
+</p>
+
+<p class="wikiPara">
+I'm a fan of JSF, not because JSF is by any means perfect, but because I like the overall 
+architecture, and judge it's warts and limitations to be more <q>fixable</q> than those of other 
+Web Framworks I've used. Of course, whatever my feelings about other other frameworks, I 
+would be idiotic to ignore JSF. JSF is easily the fastest growing web framework in the Java 
+space. It is already easily the most popular framework after Struts. By virtue of being an 
+open standard, JSF has fostered a fecund ecosystem of extensions and component libraries. 
+But in case you doubt that JSF provides any compelling technical advantages compared to other 
+approaches, here's why I find the model superior:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Application components are plain Java objects (JSF managed beans), bound to the user interface and orchestration logic via EL. It is possible to write <q>pure</q> business logic components, with no dependencies to JSF, and use them directly from your JSF pages, without the need for an intermediate <q>presentation layer</q> written in Java.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Managed beans are stateful and contextual. While the context model is extremely limited compared to Seam, this problem is fixable, as demonstrated by Seam.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The JSF lifecycle, which some people find complex, is perfect for use with an application framework like Seam where business logic is bound directly to the view. In particular, the phased processing of validation, followed by model update, followed by event processing and finally view rendering is exactly what you need if the model objects might be managed entities. Any other lifecycle simply won't work.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> User interfaces are usually defined using a markup language. Markup languages, being hierarchical, naturally map to the structure of a user interface. (I've never felt very comfortable defining my hierarchical user interface in procedural code, a la Swing, Wicket or GWT.) However, somewhat uniquely, if you do wish to create or manipulate your user interface using procedural code, this is also possible in JSF.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Even better, this markup language is not limited to the set of primitives provided by HTML. HTML is, I suppose, a reasonable language for defining hyperlinked textual documents. But it was never designed to be used for designing todays rich internet applications and is clearly inadequate for that task. JSF provides the means to extend HTML with new language elements for defining rich user interfaces. Some people have argued that the use of JSF-specific markup elements breaks the traditional designer/developer role separation. But in HTML, the correct separation of roles is that developers create semantic HTML, and designers create CSS. Furthermore, this argument presupposes that it is impossible for designers to learn what the JSF markup elements do - which in my opinion deeply underestimates the intelligence of a good web designer.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The JSF UI component model solves certain problems that affect plain HTML form processing and many other Web Frameworks. Multiple submit buttons on the same form can easily be bound to different server-side actions. Forms with repeating input elements (think of inputs laid out in a grid) are easily mapped back to server-side model objects.</li>
+</ul>
+
+
+<p class="wikiPara">
+Nevertheless, there are some things which JSF 1.2 doesn't get right, and this has required the development of non-standard extensions to JSF in products like Facelets, Seam, Shale, Ajax4JSF, ICEFaces, Avatar. Certain people have argued that if you need to use non-standardized extensions, you would be better to avoid the standard altogether. There are three problems with this line of reasoning:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The primary audience for the JSF standard is not application developers. The primary audience is developers of rich user interface component libraries. Here, JSF is a roaring success! There is an embarrassment of riches in open source (Richfaces, ICEFaces, Trinidad, Woodstock, RCFaces, etc) along with many commercial offerings. JSF provides the standard platform upon which component developers are building.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> If your choice is between (a) adhering to a standard in 80% of your code while using some open source extension to the standard in the remaining 20% and (b) using a totally non-standard framework for everything, you're not better off with the non-standard. You're 80% worse off.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The people who have developed the extensions to the standard are working hard to bring the extensions back into JSF 2.0.</li>
+</ul>
+
+
+<p class="wikiPara">
+And that's the reason for this wishlist. As JBoss rep on the JSF EG, these are the things I'll be pushing for JSF 2.0.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AsynchronousPartialSubmitsAndRenders"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-AsynchronousPartialSubmitsAndRenders">Asynchronous partial submits and renders</a></h2>
+<p class="wikiPara">
+This is a no-brainer and everyone already agrees that it is needed. While JSF 1.2 was being finallized,
+the Ajax craze happened. JSF is actually a great component model for rich internet applications and
+projects such as Ajax4JSF, Avatar and ICEFaces have clearly demonstrated this. Unfortunately, coexistence of Ajaxified JSF component libraries is currently a nightmare. This problem can only be conclusively addressed by defining how partial submits and renders work in the spec.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AnnotationbasedProgrammingModel"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-AnnotationbasedProgrammingModel">Annotation-based programming model</a></h2>
+<p class="wikiPara">
+Like the rest of the Java web tier, JSF is stuck in 2003. Definition of managed beans requires EJB2/Spring-like levels of XML tedium. There are two ways to solve this problem. One option would be to introduce annotations for defining managed bean names, scopes, and dependency injection. The second option would be to simply defer to the component model being defined by the Web Beans group. As the convener of JSR-299, I'm understandably sympathetic to the second option, but I'm not sure how the rest of the JSF EG will react to the suggestion.
+</p>
+
+<p class="wikiPara">
+Converters, Validators and UI components should also be definable via annotations.
+</p>
+
+<h2 class="wikiHeadline2" id="H-EnhancedLifecycleForNonfacesRequests"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-EnhancedLifecycleForNonfacesRequests">Enhanced lifecycle for non-faces requests</a></h2>
+<p class="wikiPara">
+JSF devotes much love and attention to the <q>faces request</q> lifecycle for JSF form submissions. It also talks briefly about something called a <q>non-faces request</q>. The most interesting kind of non-faces request
+is a HTTP GET request, which - when you think about it - is actually the most common kind of request. Here, the spec is a great disappointment. It's certainly possible to create bookmarkable JSF pages with request parameters, but you lose a level of abstraction, and end up writing servlet-like code. 
+</p>
+
+<p class="wikiPara">
+Seam solves this problem by providing <q>page actions</q> and <q>page parameters</q>, which are similar to the abstractions provided for faces requests. (They also look a lot like the functionality provided by an action-based web framework such as Struts or WebWork.)
+</p>
+
+<p class="wikiPara">
+JSF 2.0 should define a lifecycle for non-faces requests that includes:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> validation and model update for request parameters</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> some mechanism for handling validation failures</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> action invocation</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> some facility to redirect the request to a different URL</li>
+</ul>
+
+
+<p class="wikiPara">
+In other words, non-faces requests are going to need to provide all the things that faces requests currently provide. The only difference being that the submitted values are not coming from JSF input components, but rather from plain HTTP parameters (in a bookmarkable URL, for example).
+</p>
+
+<p class="wikiPara">
+The interesting question is exactly where should these actions, the mapping of request parameters to model attributes and validation be declared. The solution provided by Seam today is to declare this in an XML document along with the orchestration logic (navigation). But I'm increasingly favorable to the idea of embedding this in the page definition. For example:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;f:view&gt;
+   &lt;f:parameter name="customerName" value="#{customerFinder.name}" required="true"&gt;
+      &lt;f:validateLength max="100"/&gt;
+   &lt;/f:parameter&gt;
+   &lt;f:onRender action="#{customerFinder.findByName}"/&gt;
+   ...
+&lt;/f:view&gt;
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-ImprovedOrchestration"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-ImprovedOrchestration">Improved orchestration</a></h2>
+<p class="wikiPara">
+JSF navigation rules provide the basic functionality you expect if you've ever used something like Struts or WebWork. You can write an action method which returns a String-valued <q>outcome</q>, and define navigation rules in XML that determine the view to be rendered or redirected to. The following improvements are sorely needed:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Outcomes shouldn't need to be Strings - anything with a toString() method should work</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> It's much more transparent and elegant if the action method does not need to return an outcome at all - instead, the navigation rule could specify a value expression to be evaluated</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Navigation rules which perform redirects should be able to specify a list of request parameters to use in the redirect (where the parameter values are defined using value expressions)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Navigation rules should be able to specify a HTTP error code as the result</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> It should be possible to write exception handling rules that are triggered when a particula exception type propagates out of a JSF lifecycle phase</li>
+</ul>
+
+
+<p class="wikiPara">
+The following kind of thing would be possible:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;navigation-rule&gt;
+   &lt;from-action&gt;#{customerFinder.findByName}&lt;/from-action&gt;
+   &lt;navigation-case&gt;
+      &lt;if&gt;#{customerFinder.result!=null}&lt;/if&gt;
+      &lt;to-view-id&gt;/displayCustomer.xhtml&lt;/to-view-id&gt;
+      &lt;redirect&gt;
+         &lt;parameter-name&gt;customerId&lt;/parameter-name&gt;
+         &lt;parameter-value&gt;#{customerFinder.result.id}&lt;/parameter-value&gt;
+      &lt;/redirect&gt;
+   &lt;/navigation-case&gt;
+&lt;/navigation-rule&gt;
+</pre>
+
+
+<p class="wikiPara">
+(Seam provides all this functionality today by defining it's own XML-based language for navigation rules.)
+</p>
+
+<h2 class="wikiHeadline2" id="H-ErrorHandling"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-ErrorHandling">Error handling</a></h2>
+<p class="wikiPara">
+JSF's lack of facilities for exception handling is a major embarrasment, and totally ignorant of current best practices for exception handling in Java. It is impossible to do any centralized handling of exceptions without writing a servlet filter. Even worse, Unified EL has the totally pathalogical behavior of wrapping all exceptions (even runtime exceptions) that occur during invocation of the managed beans in a totally useless ELEvaluationException. Both of these problems should be fixed.
+</p>
+
+<p class="wikiPara">
+One very exciting and interesting solution to the first problem would be to redesign the JSF Lifecycle object using a chain-of-responsibility pattern. Each lifecycle phase would be an element of the chain and would be responsible for delegating to the next phase. The application would be able to add in new <q>phases</q> at any point in the chain, which would provide for the possibility of centralized exception handling via around-style interception. We could then deprecate the PhaseListener extension point which is useful but limited and inelegant. This approach would make JSF much more extensible.
+</p>
+
+<h2 class="wikiHeadline2" id="H-StandardizeFaceletsAndSimplifyDevelopmentOfJSFUIComponents"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-StandardizeFaceletsAndSimplifyDevelopmentOfJSFUIComponents">Standardize Facelets and simplify development of JSF UI components</a></h2>
+<p class="wikiPara">
+JSF needs its own templating language. Facelets is the perfect starting point. Support for JSP should be deprecated.
+</p>
+
+<p class="wikiPara">
+It's lucky that there are so many JSF component libraries out there, since developing controls yourself is a huge pain. The biggest problem is JSP, so introducing a standard JSF-specific template language should improve the situation dramatically and make JSF UI component development much more accessible to regular users. The template language could also make it easy to define components which are composed of other components, just like Facelets does today.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AlternativeStatelessUIComponentLifecycle"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-AlternativeStatelessUIComponentLifecycle">Alternative stateless UI component lifecycle</a></h2>
+<p class="wikiPara">
+JSF's UI component tree is stateful, meaning that the tree of components is maintained across faces requests (form submissions). This is a nice feature that lets JSF handle forms with conditionally rendered and repeated inputs, and forms with components that are manipulated programmatically. However, in the simple (and common) case, statefulness is overkill. Most forms don't have conditionally rendered controls or grids of controls. JSF needs an alternative stateless lifecycle to deal with the common case.
+</p>
+
+<p class="wikiPara">
+One possible option would be to copy Tapestry. Tapestry distinguishes between <q>simple</q> forms (which have no repeated or conditional controls) and <q>complex</q> forms (which do). For simple forms, Tapestry uses a stateless lifecycle. For complex forms, Tapestry serializes some information about the component tree to and from the client, and uses this when reconstructing the component tree during the <q>rewind</q> phase. (The handling of complex forms in Tapestry is very conceptually similar to the stateful model used in JSF.)
+</p>
+
+<h2 class="wikiHeadline2" id="H-Databinding"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-Databinding">Databinding</a></h2>
+<p class="wikiPara">
+Databinding is a problem that is currently under-specified and causes many problems for new users. The JSF DataModel class is kind of a sketch of a solution, but it falls far short of what is really needed. I have an inkling of what a better solution might look like, but a lot more work is needed on that before it becomes a concrete proposal.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ModelbasedValidation"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-ModelbasedValidation">Model-based validation</a></h2>
+<p class="wikiPara">
+JSR-303 is defining a standard facility for model-based validation for the Java platform. This new facility must be integrated with both JPA and JSF. In Seam, Hibernate Validator provides this functionality today, and the integration that Seam provides between JSF and Hibernate Validator is a possible model for JSF 2.0.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AllowUseOfELInMessages"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-AllowUseOfELInMessages">Allow use of EL in messages</a></h2>
+<p class="wikiPara">
+JSF's use of EL is a really strong point of the whole architecture. However, one minor thing is missing: messages defined in resource bundles and in FacesMessages should support interpolation of embedded value expressions. (Seam already supports this.)
+</p>
+
+<p class="wikiPara">
+For example, you could have the following text in your JSF page:
+</p>
+
+<pre class="wikiPreformatted">
+#{messages['myapp.welcome']}
+</pre>
+
+
+<p class="wikiPara">
+And this in messages_en.properties:
+</p>
+
+<pre class="wikiPreformatted">
+myapp.welcome=Welcome, #{user.firstName} #{user.lastName}!
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-SessionInvalidation"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-SessionInvalidation">Session invalidation</a></h2>
+<p class="wikiPara">
+Amazing as it seems, JSF provides no API for invalidating the HTTPSession.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Security"><a href="/2007/07/09/ee-6-wishlist-part-iijsf#H-Security">Security</a></h2>
+<p class="wikiPara">
+JSF doesn't provide any special functionality for authentication or authorization. I'm not sure what we should do here (if anything), but we need to at least discuss the problem.
+</p>
+</div>
+

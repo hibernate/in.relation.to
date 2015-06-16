@@ -1,0 +1,281 @@
+---
+title: "EE 6 wishlist part I: EJB Session Beans"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "31-03-2007"
+tags: [EE6 Wishlist]
+
+relative_url: /2007/03/31/ee-6-wishlist-part-iejb-session-beans
+slug: ee-6-wishlist-part-iejb-session-beans
+lace: http://in.relation.to/1990.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/03/31/ee-6-wishlist-part-iejb-session-beans
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Over the last year or so, we've been thinking hard about what kind of
+new functionality we want to see in the next rev of the EE platform,
+and feeding our ideas to Sun to incorporate into the JSR proposals
+for the next round of EE specifications. These JSRs should become
+public fairly soon now, but I wanted to give a rundown on the things
+that are important to me, and why I think they're important. A lot of
+these items have come out of our experience with Seam, others have 
+been things that have been missing from the platform for a long time.
+My wishlist is pretty long, so I'm going to spread it over several
+posts. First up, I'll talk about session beans.
+</p>
+
+<p class="wikiPara">
+The basic EJB component model - stateful/stateless session beans and
+message-driven beans - is pretty much spot-on. It's stood the test of 
+time, as a model that covers the overwhelming number of usecases.
+However, there are occasions when the model is too limiting, and the
+model is not really complete until we can handle those occasions.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ConcurrentSessionBeans"><a href="/2007/03/31/ee-6-wishlist-part-iejb-session-beans#H-ConcurrentSessionBeans">Concurrent session beans</a></h2>
+<p class="wikiPara">
+First, it should be possible to write a session bean that supports
+concurrent access by multiple clients. Of course, this should not be 
+the default concurrency model - as much as possible we would prefer 
+to guide people toward implementing their application so that
+resources are not shared between concurrent threads and concurrent
+clients - but there's no escaping that concurrency is occasionally 
+needed.
+</p>
+
+<p class="wikiPara">
+My suggestion is to allow three concurrency modes for a stateless
+or stateful session bean.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> No concurrency, the default, and currently supported behavior: the bean does not support concurrent clients. The container is permitted to throw a ConcurrentAccessException if two requests arrive simultaneously.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Bean-managed concurrency: the bean supports concurrent access by multiple threads, and is responsible for managing access to volatile data structures.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Container-managed concurrency: the bean supports concurrent clients, and the container is responsible for ensuring that concurrent threads are serialized before entering the bean implementation.</li>
+</ul>
+
+
+<p class="wikiPara">
+We could pick a concurrency model using an annotation like
+@ConcurrencyManagement(CONTAINER) or @ConcurrencyManagement(BEAN).
+For example:
+</p>
+
+<pre class="wikiPreformatted">
+@Stateful   
+@ConcurrencyManagement(CONTAINER)
+public class Counter {
+      private int count;
+      public void inc() { count== ; }
+      @ReadOnly public int value() { return count; }   
+}
+</pre>
+
+
+<p class="wikiPara">
+In this example, the @ReadOnly annotation indicates that the container
+should use a read/write locking model.
+</p>
+
+<p class="wikiPara">
+Alternatively, you could do it the Hard Way:
+</p>
+
+<pre class="wikiPreformatted">
+@Stateful
+@ConcurrencyManagement(BEAN)
+public class Counter { 
+   private int count;
+   public synchronized void inc() { count== ; }
+   public synchronized int value() { return count; }
+}
+</pre>
+
+
+<p class="wikiPara">
+One major reason why we need concurrent beans is to support the idea
+of singleton beans which share state between all threads on a single
+node. Singletons are useful as caches, or for holding application
+configuration data. (Think of something like servlet context attributes,
+but for the EJB container.) Actually, introducing singletons could
+help kill two birds with one stone: the @PostConstruct method of a
+singleton bean could be used as a container initialization hook, 
+just like startup servlets are used today in the web container.
+Likewise, the @PreDestroy method could be used to notify the application
+that the container is being shut down.
+</p>
+
+<h2 class="wikiHeadline2" id="H-LightweightAsynchronicity"><a href="/2007/03/31/ee-6-wishlist-part-iejb-session-beans#H-LightweightAsynchronicity">Lightweight asynchronicity</a></h2>
+<p class="wikiPara">
+The second item on my wishlist is lighweight asynchronicity. Currently,
+there are two approaches to asynchronous processing in EJB. The first
+is JMS. JMS is perfectly reasonable for cases where I have well-defined
+quality of service requirements, such as guaranteed delivery, etc.
+However, it's overkill for many cases. The second approach is the EJB
+timer service. I'm actually a great fan of the timer service, though
+I'm not a fan of the dodgy implementations that exist in most application
+servers today. But if the timer service is going to become generally
+useful, it's going to need some major enhancements.
+</p>
+
+<p class="wikiPara">
+To begin with, you should be allowed to have more than one @Timeout
+method per bean. (Duh!)
+</p>
+
+<p class="wikiPara">
+Next, we need to enhance the scheduling capabilities, I've a few ideas
+for this, from support for business calendars, to support for cron-style
+patterns, but nothing concrete enough to write down at this point.
+</p>
+
+<p class="wikiPara">
+Finally, Seam shows how to layer an asynchronous method invocation
+protocol on top of the timer service. This is a reasonably 
+straightforward addon to EJB3 (that demonstrates the extensibility of
+the EJB3 model), but I think we should consider defining @Asynchronous 
+methods in the specification.
+</p>
+
+<h2 class="wikiHeadline2" id="H-StatefulWebServiceEndpoints"><a href="/2007/03/31/ee-6-wishlist-part-iejb-session-beans#H-StatefulWebServiceEndpoints">Stateful web service endpoints</a></h2>
+<p class="wikiPara">
+The third item on my wishlist is for stateful web service endpoints.
+Currently, only stateless session beans may function as web service
+endpoints. With some integration with WS-Contexts or WS-Addessing (or 
+whatever WS-blahblah is appropriate), we would be able to support 
+a stateful session bean that acts as a web service endpoint. I don't
+know exactly what this would look like yet, but we are trialing some
+stuff in Seam/WS that is probably relevant.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ReplicationCallbacks"><a href="/2007/03/31/ee-6-wishlist-part-iejb-session-beans#H-ReplicationCallbacks">Replication callbacks</a></h2>
+<p class="wikiPara">
+The fourth item is @PreReplicate and @PostReplicate callback methods.
+Currently some containers overload the @PrePassivate and @PostActivate
+callbacks when replicating, while others don't. Passivation has
+distinctly different semantics to replication, so this is not really
+appropriate. But some kind of callback is needed.
+</p>
+
+<h2 class="wikiHeadline2" id="H-OptionalBusinessInterface"><a href="/2007/03/31/ee-6-wishlist-part-iejb-session-beans#H-OptionalBusinessInterface">Optional business interface</a></h2>
+<p class="wikiPara">
+The fifth item on my wishlist is a pure ease-of-use concern. Currently,
+EJB mandates that all session beans have some @Local or @Remote interface. 
+This was not an unreasonable requirement when session beans were understood
+to exist in a business tier, with a well-defined API sitting between the 
+business logic and the client. But now that we're using session beans 
+everywhere - even for presentation logic - it's clear that defining the 
+local interface for every bean is simply a PITA. Unfortunately,
+we realised this much too late in the process of writing the spec
+to do anything about it in EJB 3.0 (I've kicked myself many times over
+this, I should have known better). Especially in an environment like Seam,
+where the only client of a bean might be a JSF page with EL expressions,
+the interface looks totally redundant! 
+</p>
+
+<p class="wikiPara">
+The interface should be optional, and when it is missing, the public methods 
+of the bean class should be taken as the business methods of the session bean.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SimplifiedJMSJavaMailSending"><a href="/2007/03/31/ee-6-wishlist-part-iejb-session-beans#H-SimplifiedJMSJavaMailSending">Simplified JMS/JavaMail sending</a></h2>
+<p class="wikiPara">
+The sixth item, which we would also have done in 3.0, were it not for 
+time constraints, is to simplify JMS message and JavaMail sending. 
+Currently, it is possible to inject a Topic or Queue using @Resource,
+but of course what I'm really interested in is QueueSender or 
+TopicPublisher. This is easy to fix - indeed, we already fixed it in
+Seam.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Logging"><a href="/2007/03/31/ee-6-wishlist-part-iejb-session-beans#H-Logging">Logging</a></h2>
+<p class="wikiPara">
+Another (minor) ease-of-use concern is logging. I can't express how awful 
+this is in Java 5:
+</p>
+
+<pre class="wikiPreformatted">
+static Log log = LogFactory.getLog(MySelf.class);
+</pre>
+
+
+<p class="wikiPara">
+Of course, it should be:
+</p>
+
+<pre class="wikiPreformatted">
+@Logger Log log;
+</pre>
+
+
+<p class="wikiPara">
+(Just like it is in Seam.)
+</p>
+
+<h2 class="wikiHeadline2" id="H-EJBMetaannotations"><a href="/2007/03/31/ee-6-wishlist-part-iejb-session-beans#H-EJBMetaannotations">EJB meta-annotations</a></h2>
+<p class="wikiPara">
+My most favoritest wish is to support the use of EJB annotations
+as meta-annotations. Often, you'll find several EJB beans that share
+the same <q>pattern</q> of annotations. For example, you might have several
+Seam components with the following annotations:
+</p>
+
+<pre class="wikiPreformatted">
+@Stateful
+@TransactionAttribute(MANDATORY)
+@Scope(CONVERSATION)
+@RolesAllowed(USER)
+@ConcurrencyManagement(CONTAINER)
+@Name("createOrder")
+public class CreateOrderBean implements CreateOrder { .... }
+</pre>
+
+
+<p class="wikiPara">
+You could reduce code duplication and raise the semantic level of your 
+code by introducing an @AjaxConversation annotation:
+</p>
+
+<pre class="wikiPreformatted">
+@Stateful
+@TransactionAttribute(MANDATORY)
+@Scope(CONVERSATION)
+@RolesAllowed(USER)
+@ConcurrencyManagement(CONTAINER)
+public @interface AjaxConversation { .... }
+</pre>
+
+
+<p class="wikiPara">
+And the bean class would look like this:
+</p>
+
+<pre class="wikiPreformatted">
+@AjaxConversation
+@Name("createOrder")
+public class CreateOrderBean implements CreateOrder { .... }
+</pre>
+
+
+<p class="wikiPara">
+With some co-ordination betweem the EJB and Web Beans groups, I hope that
+this can become a reality.
+</p>
+
+<p class="wikiPara">
+In the next installment, I'll talk about enhancements we could make at the
+platform level (packaging, security, dependency injection, etc).
+</p>
+</div>
+

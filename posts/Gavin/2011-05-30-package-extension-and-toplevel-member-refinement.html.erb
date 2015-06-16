@@ -1,0 +1,106 @@
+---
+title: "Package extension and toplevel member refinement "
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "30-05-2011"
+tags: [Ceylon]
+
+relative_url: /2011/05/30/package-extension-and-toplevel-member-refinement
+slug: package-extension-and-toplevel-member-refinement
+lace: http://in.relation.to/20573.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/30/package-extension-and-toplevel-member-refinement
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Despite having spent several years designing <a href="http://seamframework.org/" target="" class="regularLink">frameworks</a> and <a href="http://www.jcp.org/en/jsr/detail?id=299" target="" class="regularLink">specifications</a> based around the notion of dependency injection, I've never especially considered myself a big fan of the whole thing. Dependency injection strikes me as more of a fashion within one particular programming community than as some enduring pattern that will be reproduced in future languages by future framework designers. 
+</p>
+
+<p class="wikiPara">
+Indeed, popular patterns sometimes point to some kind of inflexibility at the language level. So I've often asked myself precisely what missing language-level feature makes this particular pattern so appealing. The only answer I've ever really come up with is that dependency injection is a work around for the fact that instantiation, unlike method invocation, is not a polymorphic operation in most (all?) object-oriented languages. Instantiation operations hardcode the concrete class being instantiated, requiring the use of some kind of <i class="wikiEmphasis">factory method</i> in code that should be abstracted from the concrete type. Dependency injection frameworks exist to tame the profusion of factory methods.
+</p>
+
+<p class="wikiPara">
+In Ceylon, <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-MemberClassesAndMemberClassRefinement" target="" class="regularLink">member class refinement</a> makes instantiation a polymorphic operation at the language level, but it only works for member types. I think it's a very useful and interesting feature of the language, but it's hard to see it replacing dependency injection. Of course, in theory, you could define all your classes as members of some container class, but I just don't see that idiom catching on!
+</p>
+
+<p class="wikiPara">
+So an idea I have for a far-future version of the language is to allow refinement of <i class="wikiEmphasis">toplevel</i> declarations. This would all work out along the same lines as member class refinement. You could imagine a package which declares a <tt>default</tt> or <tt>formal</tt> toplevel class, for example:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">//in package my.stream
+shared formal class Buffer(Stream stream) {
+    shared formal Byte read();
+}</pre>
+
+
+<p class="wikiPara">
+(We would also allow <tt>formal</tt> and <tt>default</tt> toplevel methods and attributes, of course.)
+</p>
+
+<p class="wikiPara">
+Notice again the difference between <tt>formal</tt> and <tt>abstract</tt> in Ceylon: a <tt>formal</tt> class may be instantiated. An <tt>abstract</tt> class may not be instantiated. A <tt>formal</tt> toplevel member makes the containing package an <q>abstract package</q>. An <tt>abstract</tt> toplevel class does not. By now you should be seeing why we truly do need two different annotations here.
+</p>
+
+<p class="wikiPara">
+Anyway, the point here is that other code in our package would be able to create and use a <tt>Buffer</tt>, without depending upon any concrete subclass.
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">//also in package my.stream
+shared void open(Stream stream) {
+    Buffer buffer = Buffer(stream);
+    ...
+    Byte b = buffer.read();
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+Now, before we actually make use of this package we must <q>fill in</q> the definition of the <tt>formal</tt> member. I could imagine that one way to do this might be to use the <tt>import</tt> statement:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">//in package your.backend
+import my.stream { 
+
+    actual class Buffer(Stream stream) 
+            extends super.Buffer(stream) {
+        shared actual Byte read() {
+            ...
+        }
+    }
+
+    Stream, open
+
+}</pre>
+
+
+<p class="wikiPara">
+But I imagine a more common scenario would be reuse of a package via <i class="wikiEmphasis">package extension</i>. I'm not quite sure what the syntax for this would look like, probably something in the module descriptor declaring that one package extends a second package. Then an <tt>actual</tt> toplevel member would fill in the definition of <tt>Buffer</tt>:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">//in package my.stream.fileio
+actual class Buffer(Stream stream) 
+        extends super.Buffer(stream) {
+    shared actual Byte read() {
+        ...
+    }
+}</pre>
+
+
+<p class="wikiPara">
+I'm not completely certain, but I expect that one additional facility is needed: the ability to rewire inter-package references in the module descriptor. For example, in the package <tt>your.backend</tt>, you might <tt>import my.stream</tt>, but then the module descriptor would declare that references to the abstract package <tt>my.stream</tt> are actually fulfilled by the package <tt>my.stream.fileio</tt>.
+</p>
+
+<p class="wikiPara">
+Well, all this is really just speculation for now, and I haven't even really put any thought into how you could map all this to the JVM. But I think you can sort of see how this could be an alternative to dependency injection. What I especially like about it is how it makes the Ceylon language even more regular, while adding useful capabilities.
+</p>
+
+<p class="wikiPara">
+I have a gnawing feeling that this idea should be somehow related to how modules work in ML. But after a couple of attempts, I still don't feel like I really totally <i class="wikiEmphasis">get</i> ML's module system. It's something I definitely need to put more time into.
+</p>
+</div>
+

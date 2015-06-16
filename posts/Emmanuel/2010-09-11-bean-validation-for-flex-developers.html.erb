@@ -1,0 +1,61 @@
+---
+title: "Bean Validation for Flex developers"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "11-09-2010"
+tags: [Bean Validation,Flex]
+
+relative_url: /2010/09/11/bean-validation-for-flex-developers
+slug: bean-validation-for-flex-developers
+lace: http://in.relation.to/16938.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/09/11/bean-validation-for-flex-developers
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I have recently posted about the ability to use Bean Validation with various presentation technologies (<a href="http://in.relation.to/Bloggers/BeanValidationInWicket" target="" class="regularLink">here</a> and <a href="http://in.relation.to/Bloggers/MoreBeanValidationIntegrationWithThirdPartyFrameworks" target="" class="regularLink">there</a>). Now Flex is part of the family.
+The good guys at <a href="http://www.graniteds.org" target="" class="regularLink">GraniteDS</a> have added support for Bean Validation into their project and hence Bean Validation is usable by all Flex users.
+</p>
+
+<p class="wikiPara">
+The work was not as straightforward as for JSF, Wicket or other Java technologies. Because they do not run on the JVM, they basically have reimplemented the full specification in Flex:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> you can annotate your ActionScript3 objects with constraints: it supports all the standard constraints and you can write your own constraints</li>
+<li class="wikiUnorderedListItem"> you can execute the validation logic and retrieve the error report</li>
+<li class="wikiUnorderedListItem"> you can make use of most of the feature including advanced ones like groups, group sequence etc</li>
+</ul>
+
+<p class="wikiPara">
+And just like we did with JSF 2 and Bean Validation, the Flex forms do transparently call the constraints based on your domain model. What's also interesting for GraniteDS users keeping their Java domain model and ActionScript3 domain model in sync via Gas3, the constraints are kept in sync.
+</p>
+
+<p class="wikiPara">
+There are a couple of gotchas to be aware of. The port is not a one-to-one copy: some interfaces or design choice did not make sense due to how ActionScript3 works but overall this is a very close port
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the constraint implementation is in the same class as the constraint declaration (not a problem in a dynamic language)</li>
+<li class="wikiUnorderedListItem"> <tt>@Pattern</tt> has a sightly different semantic because the regexp engine in Flex is a bit different.</li>
+<li class="wikiUnorderedListItem"> instead of the features provided by <tt>ConstraintValidatorContext</tt>, you can define a <tt>properties</tt> attribute in your constraints to make it belong to several sub-properties. not as flexible but good enough in many cases.</li>
+<li class="wikiUnorderedListItem"> and maybe a few other things</li>
+</ul>
+
+<p class="wikiPara">
+Anyways, I won't talk to Franck until he has a 100% compliant implementation of the spec ;) Actually, I've got one real RFE: the documentation for this new validation module is part of the 'Advanced AS3 Features' chapter. I think this feature is simple enough and useful enough to warrant a better place.
+</p>
+
+<p class="wikiPara">
+To get the full documentation, check it out <a href="http://www.graniteds.org/confluence/display/DOC22/3.+Validation+Framework+(JSR-303+like)" target="" class="regularLink">here</a>. This is all part of the upcoming 2.2 version of GraniteDS.
+</p>
+
+
+<p class="wikiPara">
+PS: GraniteDS 2.2 also provides a full implementation of arbitrary-precision numbers, something that is surprisingly lacking from the Flex platform. So if you use Flex and are in banks or any other number crunching industry, check out their <a href="http://www.graniteds.org/confluence/display/DOC22/2.+Big+Number+Implementations" target="" class="regularLink">BigInteger and BigDecimal</a> implementation.</p>
+</div>
+

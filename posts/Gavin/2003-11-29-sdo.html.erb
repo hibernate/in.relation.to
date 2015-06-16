@@ -1,0 +1,35 @@
+---
+title: "SDO"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "29-11-2003"
+tags: []
+
+relative_url: /2003/11/29/sdo
+slug: sdo
+lace: http://in.relation.to/1453.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2003/11/29/sdo
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+We are taking a close look at SDO. It's an interesting spec that comes a bit out of left field. My reading is that it provides a mechanism for manipulating and especially for externalizing graphs of objects or things that look sufficiently close to objects to be meaningfully represented as a <q>graph</q>. For example, XML.
+</p>
+
+<p class="wikiPara">
+This is naturally very important to us, since one of the significant things we have tried to achieve with Hibernate is to get away from the notion of <q>location transparency</q>, and reinvent <q>distributed objects</q> as object graphs which may be moved between different processes. Especially, we are interested in the idea that a graph could be retrieved from the persistent store in one process, modified in another, and then have those modifications propagated back to the database in the first process, all with optimistic semantics.
+</p>
+
+<p class="wikiPara">
+So, our biggest problem in all this is that tracking modifications to typesafe objects precisely is extremely difficult in Java without significant bytecode tricks (which we have been so far unwilling to adopt). SDO bypasses this problem by representing objects in a nontypesafe way (contrary to our notion of transparency). I'm not yet convinced that this is worth dropping the advantages of typesafeness for, though I recognize that the authors of the SDO spec are looking for an approach that abstracts away from POJOs, EJBs, DOMs, whatever.
+</p>
+
+<p class="wikiPara">
+It has been suggested that Jakarta DynaBeans are a useful analogy when looking at this stuff, but I don't find this very useful at all. We are trying to figure out some kind of relationship to CarrierWave, which is also all about working with object graphs (Christian got excited about CarrierWave a while ago). Our biggest stumbling block so far is that SDO doesn't seem to address one of the main problems solved by CarrierWave: namely specifying where the object graph /ends/. My understanding is that this is left as an exercise for the reader, and for whatever native query language is in use, eg. HQL, XPath, etc. Anyway, whereas DynaBeans are a workaround for a specific limitation in the design of Struts, this is an approach to solving some of the more difficult problems in building distributed systems using domain models.
+</p>
+</div>
+

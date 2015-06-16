@@ -1,0 +1,100 @@
+---
+title: "Inside CapeDwarf: How we implemented the Datastore API"
+author: "Marko Lukša"
+blogger_name: "Marko"
+creation_date: "11-12-2012"
+tags: []
+
+relative_url: /2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api
+slug: inside-cape-dwarf-how-we-implemented-the-datastore-api
+lace: http://in.relation.to/23786.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Inside CapeDwarf is a series of blog posts about the internals of the CapeDwarf project. CapeDwarf is an open-source implementation of Google AppEngine APIs on top of various JBoss technologies. You'll find more info on CapeDwarf at the project's page at <a href="http://www.jboss.org/capedwarf" target="" class="regularLink">http://www.jboss.org/capedwarf</a>
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-AppEngineDatastoreAPI"><a href="/2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api#H-AppEngineDatastoreAPI">AppEngine Datastore API</a></h2>
+
+<p class="wikiPara">
+The single most important AppEngine API is probably the Datastore API, which (as evident from the name itself) provides an API for storing, retrieving and querying data. This was the first API we set out to implement in CapeDwarf. It basically served as proof-of-concept for the whole project.
+</p>
+
+<p class="wikiPara">
+Those familiar with JBoss technologies will know that JBoss already has an existing project that would offer most of the things needed to implement the Datastore API - <a href="http://www.jboss.org/infinispan" target="" class="regularLink">Infinispan</a>. Infinispan is an extremely scalable, highly available key/value NoSQL datastore and distributed data grid platform. So basically Infinispan offers everything we need - all we needed to do is implement an adapter between Infinispan and the Datastore API.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-HackingIntoGooglesFactories"><a href="/2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api#H-HackingIntoGooglesFactories">Hacking into Google's factories</a></h2>
+
+<p class="wikiPara">
+No, of course I'm not talking about breaking into Google's real-world facilities. What I am talking about are all the XYServiceFactory classes in the AppEngine API. They represent the entry point into the API and have methods like getXYService(), which you use to obtain references to all the various services the API has to offer. One of those factories is the DatastoreServiceFactory, which we needed to force into returning our own custom implementation of DatastoreService, so that every time anyone would call DatastoreServiceFactory.getDatastoreService(), they would get the reference to CapeDwarf's implementation of the service.
+</p>
+
+<p class="wikiPara">
+Since the factory itself is not configurable and always returns Google's own implementation of DatastoreService, we needed to resort to bytecode manipulation of the factory. Javassist made this pretty simple - we simply replaced the whole body of the getDatastoreService method, so it would create a new CapedwarfDatastoreService instance and return it.
+</p>
+
+<p class="wikiPara">
+We used the same technique with all the other XYFactory.getXYService() methods.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-MakingSureWereActuallyImplementingTheAPICorrectly"><a href="/2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api#H-MakingSureWereActuallyImplementingTheAPICorrectly">Making sure we're actually implementing the API correctly</a></h2>
+
+<p class="wikiPara">
+Much of the coding was done TDD style. We used JUnit and Arquillian, which enables you to programatically create micro-deployments, automatically deploy them to a running application server and run tests inside the deployment. Initially, we only ran the tests against CapeDwarf and JBossAS7.1, but later also added the option of running the same tests against Google's own development app-server and even the production system (appspot). This ability to run our tests against the real Google AppEngine proved to be extremely valuable, as it allowed us to validate our tests and to see if our implementation of the GAE API was aligned with that of GAE itself.
+</p>
+
+<p class="wikiPara">
+Of course, it's hard to write perfect tests based only on API documentation, which usually doesn't go into every implementation detail of the API. This meant that when we initially ran the tests against the real GAE, quite a few of them actually failed, even though they had been passing against CapeDwarf. There were minor differences between Google's and CapeDwarf's implementation of the API, and through the tests, we were able to pin-point the differences and iron-out CapeDwarf so it would behave exactly like GAE. This would have been a lot harder if we had not had Arquillian at our disposal.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-StoringAndRetrievingData"><a href="/2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api#H-StoringAndRetrievingData">Storing and retrieving data</a></h2>
+
+<p class="wikiPara">
+OK, let's finally move on to the actual implementation of the datastore. The most basic operations of the Datastore are storing and retrieving Entity objects by key. Implementing this with Infinispan was very straight-forward, since Infinispan exposes a Cache interface, which extends java.util.Map. So, basically, implementing datastore's get and put methods was as simple as invoking put and get on a Map. It really doesn't get any easier than this.
+</p>
+
+<p class="wikiPara">
+One caveat that would reveal itself later is that by default Infinispan does not make a defensive copy when you store an object in the cache. This means any modification made to the object after storing it would also be seen by clients retrieving the object from the cache (this is only true if the object hasn't been passivated and is being accessed on the same node in the cluster). We could have used Infinispan's storeAsBinary option, but we figured it was faster to simply clone the Entity prior to storing and returning it, since the clone() method was already implemented on Entity. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-Querying"><a href="/2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api#H-Querying">Querying</a></h2>
+
+<p class="wikiPara">
+With the basic operations implemented (storing, retrieving and deleting entities by their keys), we moved on to the hard(er) part - querying. Infinispan-Query and <a href="http://www.hibernate.org/subprojects/search.html" target="" class="regularLink">Hibernate-Search</a> already offered the ability to index the properties of entities into a Lucene index and perform queries against this index and then retrieve the results from the Infinispan cache.
+</p>
+
+<p class="wikiPara">
+In order to make Infinispan index the entities, we needed to add a few annotations to the Entity class. We accomplished this through bytecode manipulation with Javassist as well. Since every datastore Entity can have a completely dynamic set of properties (the properties don't have to be specified up-front in any kind of schema), we needed to implement a Hibernate-Search Field Bridge that would map all the properties of the Entity to a Lucene document.
+</p>
+
+<p class="wikiPara">
+With the entities now stored in the cache as well as in the Lucene index, all that was left to do was implement a query converter that would convert Google AppEngine queries into Infinispan's cache-queries. Actually, Infinispan's CacheQuery is not much more than a wrapper around a Lucene query, so the converter actually converts GAE queries into Lucene queries. It does this through a DSL provided by Hibernate-Search.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AppEngineSplitsCertainTypesOfQueriesCapeDwarfDoesntNeedTo"><a href="/2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api#H-AppEngineSplitsCertainTypesOfQueriesCapeDwarfDoesntNeedTo">AppEngine splits certain types of queries, CapeDwarf doesn't need to</a></h2>
+
+<p class="wikiPara">
+One interesting thing about Google's implementation of Datastore queries is the fact that certain types of queries (IN, OR, NOT_EQUAL) are split up into multiple queries with the results then merged into a single result set. We opted not to do this, since Infinispan-Query/Hibernate-Search/Lucene are quite capable of doing this in a single query. However, there is a problem with using this single-query approach with queries containing the IN operator. Since GAE performs multiple queries in this case, the order of the results depends on the order of the items in the IN list. Since this is clearly documented in the GAE documentation and certain applications may depend on this, we were forced to implement sorting of the results according to the same rules. While this is not really a problem when queries return whole entities, it is quite a pain when performing projection queries (these queries return only a subset of the entity's properties). When a client performs a projection query returning property <i class="wikiEmphasis">foo</i>, and filtering (with an IN operator) on property <i class="wikiEmphasis">bar</i>, we have to add <i class="wikiEmphasis">bar</i> to the list of requested projection properties, just so we can sort the results according to the order of items in the IN clause. In hindsight, maybe we should have simply gone the same route as GAE does and split these kinds of queries into multiple queries as well. It is possible we will do this in the future.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Wrapup"><a href="/2012/12/11/inside-cape-dwarf-how-we-implemented-the-datastore-api#H-Wrapup">Wrap-up</a></h2>
+
+<p class="wikiPara">
+This was a quick look at how we implemented the Datastore API in CapeDwarf. I didn't cover Datastore statistics, Callbacks and Metadata yet. These are fairly recent additions to the Datastore API and I'll go into how we implemented them in one of my future <q>Inside CapeDwarf</q> blog posts.
+</p>
+
+<p class="wikiPara">
+If any of you have an application running on Google AppEngine, we'd really appreciate it if you could give CapeDwarf a try and report to us any problems you encounter. For detailed instructions on how to run your app on CapeDwarf, see Aleš Justin's recent <a href="http://in.relation.to/Bloggers/FirstCapeDwarfRelease" target="" class="regularLink">blog post</a> about the first CapeDwarf release.</p>
+</div>
+

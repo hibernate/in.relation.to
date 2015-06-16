@@ -1,0 +1,130 @@
+---
+title: "Hibernate Search 4.3.0.Beta1 released: more Near-Real-Time than ever"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+creation_date: "25-05-2013"
+tags: [Hibernate Search,News]
+
+relative_url: /2013/05/25/hibernate-search-430-beta-1-released-more-near-real-time-than-ever
+slug: hibernate-search-430-beta-1-released-more-near-real-time-than-ever
+lace: http://in.relation.to/24239.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/05/25/hibernate-search-430-beta-1-released-more-near-real-time-than-ever
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate Search 4.3.0.Beta1 is now available both in Maven repositories and from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-search/4.3.0.Beta1/" target="" class="regularLink">Sourceforge</a>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsNew"><a href="/2013/05/25/hibernate-search-430-beta-1-released-more-near-real-time-than-ever#H-WhatsNew">What's new?</a></h1>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">Performance boosts for the NRT backend</li>
+<li class="wikiUnorderedListItem">Spatial API is getting nicer</li>
+<li class="wikiUnorderedListItem">Modules for deploying on JBoss improved (bugfixes)</li>
+<li class="wikiUnorderedListItem">Compatible with JBoss EAP 6.1</li>
+</ul>
+
+<p class="wikiPara">
+More details can be found on this <a href="https://hibernate.atlassian.net/issues/?filter=12860" target="" class="regularLink">JIRA filter</a>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-PerformanceImprovementsForNRTUsers"><a href="/2013/05/25/hibernate-search-430-beta-1-released-more-near-real-time-than-ever#H-PerformanceImprovementsForNRTUsers">Performance improvements for NRT users</a></h1>
+<p class="wikiPara">
+We got a brand new performance testsuite, so we started to play with it and spotted some interesting optimisation opportunities which had eluded us in previous tests. The <a href="http://docs.jboss.org/hibernate/search/4.3/reference/en-US/html_single/#d0e824" target="" class="regularLink">NRT backend (near-real-time)</a> was affected by some unnecessary locking contention, which could in some scenarios result in significant slowdowns.
+</p>
+
+<p class="wikiPara">
+So what kind of fix are we talking about? Let's see the performance results of the new tests on the latest Final release first:
+</p>
+
+<h3 class="wikiHeadline3" id="H-PerformanceReportHibernateSearch420Final"><a href="/2013/05/25/hibernate-search-430-beta-1-released-more-near-real-time-than-ever#H-PerformanceReportHibernateSearch420Final">Performance Report: Hibernate Search 4.2.0.Final</a></h3>
+
+<pre class="wikiPreformatted">SUMMARY
+    Name   : FileSystemNearRealTimeTestScenario
+
+    Memory usage (total-free):
+        before : 37MB
+        after  : 40MB
+
+TASKS
+    10000x InsertBookTask                      | sum 25:24.769 | avg 00:00.152
+    10000x UpdateBookRatingTask                | sum 25:01.950 | avg 00:00.150
+    10000x UpdateBookTotalSoldTask             | sum 22:54.125 | avg 00:00.137
+    10000x QueryBooksByAuthorTask              | sum 20:22.324 | avg 00:00.122
+    10000x QueryBooksByAverageRatingTask       | sum 30:21.692 | avg 00:00.182
+    10000x QueryBooksByBestRatingTask          | sum 39:56.530 | avg 00:00.239
+    10000x QueryBooksByNewestPublishedTask     | sum 27:02.078 | avg 00:00.162
+    10000x QueryBooksBySummaryTask             | sum 27:19.568 | avg 00:00.163
+    10000x QueryBooksByTitleTask               | sum 27:49.037 | avg 00:00.166
+    10000x QueryBooksByTotalSoldTask           | sum 26:01.403 | avg 00:00.156
+
+TEST CONFIGURATION
+    threads              : 10
+    measured cycles      : 10000
+    warmup cycles        : 100
+    initial book count   : 1000000
+    initial author count : 10000
+</pre>
+
+
+<p class="wikiPara">
+Let's see now how much this improved.
+</p>
+
+<h3 class="wikiHeadline3" id="H-PerformanceReportHibernateSearch430Beta1"><a href="/2013/05/25/hibernate-search-430-beta-1-released-more-near-real-time-than-ever#H-PerformanceReportHibernateSearch430Beta1">Performance Report: Hibernate Search 4.3.0.Beta1</a></h3>
+
+<pre class="wikiPreformatted">SUMMARY
+    Name   : FileSystemNearRealTimeTestScenario
+
+    Memory usage (total-free):
+        before : 38MB
+        after  : 40MB
+
+TASKS
+    10000x InsertBookTask                      | sum 04:53.440 | avg 00:00.029
+    10000x UpdateBookRatingTask                | sum 04:32.154 | avg 00:00.027
+    10000x UpdateBookTotalSoldTask             | sum 04:41.969 | avg 00:00.028
+    10000x QueryBooksByAuthorTask              | sum 01:58.408 | avg 00:00.011
+    10000x QueryBooksByAverageRatingTask       | sum 12:02.741 | avg 00:00.072
+    10000x QueryBooksByBestRatingTask          | sum 12:26.415 | avg 00:00.074
+    10000x QueryBooksByNewestPublishedTask     | sum 12:01.274 | avg 00:00.072
+    10000x QueryBooksBySummaryTask             | sum 07:08.790 | avg 00:00.042
+    10000x QueryBooksByTitleTask               | sum 02:03.112 | avg 00:00.012
+    10000x QueryBooksByTotalSoldTask           | sum 11:54.997 | avg 00:00.071
+
+[same configuration]
+</pre>
+
+
+<p class="wikiPara">
+And here comes the traditional disclaimer: don't expect the exact same performance benefit to apply to your application. Other applications are very likely to benefit from this but the scale will be different. This is why I am not sharing hardware details, they are not relevant: suffice it to say these tests where run in same conditions, so they comparable among each other.
+</p>
+
+<p class="wikiPara">
+We can't test all applications out there but I think I can state as an educated guess that I don't expect there to be cases in which performance could worsen. Improvements are likely to be measurable for any application using the near-real-time IndexManager, and could be even better than these figures if you have higher contention (more threads), slower storage performance, or significantly larger indexes.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ThanksForThis"><a href="/2013/05/25/hibernate-search-430-beta-1-released-more-near-real-time-than-ever#H-ThanksForThis">Thanks for this</a></h3>
+<p class="wikiPara">
+I would like to express gratitude for these exciting figures to the whole Apache Lucene development team for having created the Near-Real-Time improvements in Lucene, which we're building on to provide this feature, and to Tomas Hradec from the JBoss QA team for creating the performance tests which nailed the problem and allowed us to make the measuring needed for these improvements.
+</p>
+
+<p class="wikiPara">
+If anyone wants to contribute tests, even performance ones, we'll be glad to play with them and use them as a base for future improvements.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheUsualLinks"><a href="/2013/05/25/hibernate-search-430-beta-1-released-more-near-real-time-than-ever#H-TheUsualLinks">The usual links</a></h2>
+
+<p class="wikiPara">
+As usual, the issue tracker is <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a> and all code is on <a href="https://github.com/hibernate/hibernate-search" target="" class="regularLink">GitHub</a>: pull requests and any kind of feedback welcome.
+</p>
+
+<p class="wikiPara">
+Stay tuned and test this quickly as the Final release will arrive very quickly! We're planning a CR (Candidate Release) next week.</p>
+</div>
+

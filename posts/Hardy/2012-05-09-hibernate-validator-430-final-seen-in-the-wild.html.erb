@@ -1,0 +1,57 @@
+---
+title: "Hibernate Validator 4.3.0.Final seen in the wild"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "09-05-2012"
+tags: [Hibernate Validator]
+
+relative_url: /2012/05/09/hibernate-validator-430-final-seen-in-the-wild
+slug: hibernate-validator-430-final-seen-in-the-wild
+lace: http://in.relation.to/23184.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/05/09/hibernate-validator-430-final-seen-in-the-wild
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Without further ado, Hibernate Validator 4.3.0.Final is available for download in the <a href="http://repository.jboss.org/nexus" target="" class="regularLink">JBoss Maven Repository</a> under the GAV <i class="wikiEmphasis">org.hibernate:hibernate-validator:4.3.0.Final</i> or via <a href="http://sourceforge.net/projects/hibernate/files/hibernate-validator/4.3.0.Final" target="" class="regularLink">SourceForge</a>.
+</p>
+
+<p class="wikiPara">
+The <a href="https://hibernate.onjira.com/secure/ReleaseNote.jspa?projectId=10060&amp;version=11110" target="" class="regularLink">changelog</a> for this version does not contain much, so let me summarize
+the most important changes of Hibernate Validator 4.3
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The package structure got refactored to separate clearly between API, SPI and internal classes. Doing though we deprecated some classes. Make sure to migrate to the new types when upgrading to 4.3 <a href="http://in.relation.to/Bloggers/HibernateValidatorRoadmapAnd430Alpha1Release" target="" class="regularLink">read more</a>
+</li>
+<li class="wikiUnorderedListItem"> slf4j got replaced by JBoss Logging as the main logging framework <a href="http://in.relation.to/Bloggers/HibernateValidatorRoadmapAnd430Alpha1Release" target="" class="regularLink">read more</a>
+</li>
+<li class="wikiUnorderedListItem"> A bunch of new and improved constraints, e.g. MOD11, CNPJ, CPF and TituloEleitoral  <a href="http://in.relation.to/Bloggers/HibernateValidatorRoadmapAnd430Alpha1Release" target="" class="regularLink">read more</a>
+</li>
+<li class="wikiUnorderedListItem"> A bunch of performance and quality improvements, in particular we addressed issues around metadata caching <a href="http://in.relation.to/Bloggers/HibernateValidator430CR1" target="" class="regularLink">read more</a>
+</li>
+<li class="wikiUnorderedListItem"> The Hibernate Validator Annotation Processor can now be used without any additional dependencies which makes it setup easier <a href="http://in.relation.to/Bloggers/HibernateValidator430Beta1" target="" class="regularLink">read more</a> </li>
+<li class="wikiUnorderedListItem"> <b>Hibernate Validator 4.3 requires now a Java 6 or 7 runtime</b>
+</li>
+</ul>
+
+<p class="wikiPara">
+Please check also the <a href="https://community.jboss.org/wiki/HibernateValidatorMigrationGuide" target="" class="regularLink">Hibernate Validator Migration Guide</a>.
+</p>
+
+<p class="wikiPara">
+Last but not least, thanks to everyone who was lending a helping hand during the development of Hibernate Validator 4.3 (in case you wanted to help, but missed out - why not helping by translating the documentation? Join the Hibernate Validator project on <a href="https://translate.jboss.org" target="" class="regularLink">Zanata</a> and get started...).
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+
+<p class="wikiPara">
+P.S. In case you are waiting for a Validator release which aligns with the <a href="http://in.relation.to/Bloggers/BeanValidation11UpdateAndFirstDraft" target="" class="regularLink">first draft</a> of Bean Validation 1.1, have an eye on the JBoss <a href="https://repository.jboss.org/nexus/content/repositories/snapshots/org/hibernate/hibernate-validator/" target="" class="regularLink">snapshot repository</a>. An initial hibernate-validator-5.0.0-SNAPSHOT won't be far off.</p>
+</div>
+

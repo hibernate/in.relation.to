@@ -1,0 +1,249 @@
+---
+title: "Migrating Spring Applications to Java EE 6"
+author: "Strong Liu"
+blogger_name: "StrongLiu"
+creation_date: "18-08-2012"
+tags: [JavaEE ,Spring]
+
+relative_url: /2012/08/18/migrating-spring-applications-to-java-ee-6
+slug: migrating-spring-applications-to-java-ee-6
+lace: http://in.relation.to/23475.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/08/18/migrating-spring-applications-to-java-ee-6
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<h3 class="wikiHeadline3" id="H-Commentary"><a href="/2012/08/18/migrating-spring-applications-to-java-ee-6#H-Commentary">commentary 译注</a></h3>
+
+<p class="wikiPara">
+This is a translation of <a href="http://howtojboss.com/2012/04/17/article-series-migrating-spring-applications-to-java-ee-6-part-1/" target="" class="regularLink">this post</a>, so if you're a english speaker, please read the original post.
+</p>
+
+<p class="wikiPara">
+这是我第一次正经的翻译整篇的英文文章, 感觉真是比自己写还要累啊...... :(
+</p>
+
+<p class="wikiPara">
+------------------------------------------------------------------------------------------------------------------
+</p>
+
+<p class="wikiPara">
+<a href="https://twitter.com/#!/bertertman" target="" class="regularLink">Bert Ertman</a>, <a href="https://twitter.com/#!/pbakker" target="" class="regularLink">Paul Bakker</a>和<a href="http://www.luminis.eu/" target="" class="regularLink">Luminis</a> 写了一系列的文章来介绍如何把应用从Spring迁移到Java EE6上, 并且他们还提供了一个简单的实例项目. 
+</p>
+
+<p class="wikiPara">
+在本系列中, Paul和Bert从基本的原理开始介绍整个Spring到Java EE6的迁移过程, 并且通过实际的例子展示了如何升级Web UI显示层, 替换数据访问层, 如何从AOP切换到CDI 拦截器, 迁移JMX, 如何处理JDBC Templates等等, 另外, 还额外的演示了如何使用<a href="http://www.arquillian.org" target="" class="regularLink">Arquillian</a>来对基于Java EE6的应用程序做集成测试.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-"><a href="/2012/08/18/migrating-spring-applications-to-java-ee-6#H-">简介</a></h1>
+
+<p class="wikiPara">
+在过去的几年中, 越来越多的人开始对Java EE感兴趣了, Java EE 5的出现就让大家耳目一新, Java EE 6则重建了开发人员对Java EE技术体系的信心. 现在, Java EE 已经是当下的热点技术, 许多开发人员都在重新对其进行评估, 已审视自己对其的固有印象. 在2003/2004年的时候, J2EE正处于最低潮的时期, 由于它太过于阳春白雪而忽视了如何解决实际问题, 让开发人员对J2EE嗤之以鼻. 正是那个时期, 一本书横空出世, 从本质上改变了之后五年内企业级Java开发的方式. 这本书正是<q>J2EE Design and Development</q>, 不久之后, 又有一本<q>J2EE without EJB</q>出版, 这两本书都出自Rod Johnson(译注:最近Rod Johnson刚刚从SrpingSource离开)之手.
+</p>
+
+<p class="wikiPara">
+开发人员当时非常喜爱这两本书和书中对他们在开发中碰到的问题所给出的解决方案. 事实上, 开发人员现在仍然很喜欢这些书, 但是, 他们并没有意识到现在的世界和几年前已经发生了根本性的改变. 现在, 我们需要思考的是那些在Rod Johnson 2003/2004的书中所提出的前提条件是否还合理. 按照我们的观点, 所有书中所提到的问题, 现在都可以使用基于轻量级POJO的 Java EE技术所以解决. 所以, 如果你仍然在意那两本书, 那么表达你的敬意的最好的方式可能就是用他们垫个桌子/显示器啥的.
+</p>
+
+<p class="wikiPara">
+有两种情况最有可能会讨论到究竟是用Spring还是Java EE, 从头开发一个全新的企业级应用, 或者, 升级一个遗留下来的应用. 如果是升级一个六七年前的Java应用, 那么不管是用Spring 还是Java EE, 都是个相当大的麻烦事. 不过, 如果是一个从头开始的项目, 我们认为选择Srping还是Java EE根本就不是一个问题了, Java EE由于其是Java业界的标准, 并且轻量, 对于主流企业级应用开发中的问题都有合适的解决方案, 自然是我们应该优先选择的方案. 如果没有特殊的原因, 你不应该选择标准技术之外的东东.
+</p>
+
+
+<p class="wikiPara">
+本文并不着重于讨论究竟哪种技术更好, Spring还是Java EE, 我们想要展示的是如何解决在升级老的Spring项目的过程中所遇到的问题. 并且, 我们也不鼓励完全按照本文所讲的路径进行升级. 现实中, 可能会有各种各样的原因没有办法完全遵循本文所介绍的迁移步骤进行, 例如时间, 金钱和经验等因素. 不过我们保证, 当你遗留的Spring项目遇到问题, 并且你想把它迁移到一个现代的企业软件架构, 还需要保证这个架构在未来五年内能够满足要求的话, 本文将为你演示一个可行的方案.
+</p>
+
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/08/18/migrating-spring-applications-to-java-ee-6#H-">为什么要迁移?</a></h3>
+
+<p class="wikiPara">
+在我们讨论如何迁移一个遗留的Spring项目之前, 首先需要问自己的是 <q>为什么要这样搞?</q> 这绝对是个合理的问题, 并且它可以有很多的答案. 首先, Spring是一个创建于主流技术不能满足大家要求的年代的开源项目, 它从诞生以来一直都很成功, 所以, 它从一开始就很吸引风险投资的眼球, 最终, 被专注于虚拟话的VMware所收购. 对于Java世界的人来说, 大家可能都知道可以用它在我们的Mac上跑虚拟机运行Windows. 不过Spring和它的众多子项目, 没有一个成为Java 标准, 不过还是有公司和个人在推动Spring的标准化进程的. 据我们所知, 推动Spring的标准化, 不管是对Spring项目, 还是它身后的SpringSource公司, 都没有任何明显的好处. 当然, 这些都是公司间的政治, 大堆数开发人员对此一点都不感冒, 所以, 还是让我们从技术的角度来看看为什么迁移到Java EE是一个更好的选择. 
+</p>
+
+<p class="wikiPara">
+从技术角度来看, 就算你要把老版本的Spring项目升级到新版的, 也还是有好多工作要做, 老版本中所用到的好多Spring技术可能很快或者已经不被支持了.
+</p>
+
+<p class="wikiPara">
+当我们说<q>老版本的Spring项目</q>的时候, 我们脑海中浮现的是, 大量复杂的XML配置文件, 过时的DAO层技术, 例如JDBC Template, Kodo 或者TopLink, 还有像使用早就不推荐使用了的Web MVC的扩展 -- SimpleFormController.
+</p>
+
+<p class="wikiPara">
+现在还有程序员对这些技术很精通么? 就算有, 那么未来五年还能有么? 从我们自身的经验来说, 这些老的项目每年都需要维护, 需要每年都更换不同的Web / ORM 框架去适应这个框架在当时的最新版本.所有的上面这些, 都需要对项目进行大规模的改动, 部分程序需要从根本上被更新, 有些时候甚至需要从头来过, 既然你这都能够忍, 那为什么不一步到位, 直接把项目转成符合Java EE 标准的?
+</p>
+
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/08/18/migrating-spring-applications-to-java-ee-6#H-">谣言终结者</a></h3>
+
+<p class="wikiPara">
+如果你仍然对Java EE是否能够满足你的需求持怀疑态度, 那么我们建议你继续阅读本文, 希望能够消除你对其的一些误解. 大家都J2EE的一些缺点可能都很了解了, 但是, 一些开发人员就从此完全放弃了Java EE, 也不再关心其的最新进展了, 所以可能对当前Java EE不是很了解.
+</p>
+
+<p class="wikiPara">
+本文的目的不是向你完整的介绍Java EE6, 只是通过对比Spring 和 Java EE 6中的一些关键技术来说明为什么我们认为你应该选择Java EE 6.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">轻量</i>
+</p>
+
+<p class="wikiPara">
+过去大家经常抱怨Java EE的一点就是它太过于沉重了, 一些人甚至把Java EE解释成Java Evil Edition. 这个问题现在还存在么? 光听我们说可能还不够, 让我们来看看现在的应用服务器的启动时间. 在一台不是很老的PC上, 最新版的JBoss AS 7能够在2到5秒内完成启动和部属一个完整的Java EE6项目, 基本上和使用Tomcat + Spring相同. 不过, 如果考虑到你的项目的war/ear包的大小, 就会有明显的不同了, 一个标准的Java EE6项目最终的部属文件(war/ear)也就大约100K的大小, 而一个Spring, 则差不多要30M, 这是因为对于基于Java EE的项目来说, 所有的标准Java EE 服务都是由应用服务器所提供的, 就不需要再把依赖的Jar打进你自己的项目当中了.
+</p>
+
+<p class="wikiPara">
+一个我们最喜欢的观点来自于JBoss的工程师Andrew Lee Rubinger, 他说<q>没有任何Java EE标准要求应用服务器要是笨重并且缓慢的</q> -- 非常正确!
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">依赖注入</i>
+</p>
+
+<p class="wikiPara">
+单纯从技术角度, 我们值得看看过去的J2EE在这方面有哪些缺失, 而Spring也正是从那里切入的. 过去, 大家选择Spring的很重要的一个原因是它提供了反转控制(Inversion of Control, IoC), 或者, 现在比较流行的名字, 依赖注入(Dependency Injection, DI). 根据Wikipedia上的表述, 反转控制是一种开发模式, 核心在于让可重用的结构性代码控制业务逻辑代码. 这个模式有一个隐性的前提条件就是结构性代码和业务逻辑代码是分别独立开发的, 然后再整合进一个程序当中. 反转控制有时候也被表述称<q>好莱坞原则, 即不要给我打电话, 有需要的时候我会叫你的</q>, 因为其实现通常依赖于回调函数.
+</p>
+
+<p class="wikiPara">
+尽管反转控制通常被认为是由Spring框架的作者发明的, 但实际上, 早在上个世纪八十年代就已经有公开的出版物提到过这个古老的设计模式了. Spring 所做的, 实际上把这个设计模式成功的应用到了企业级Java开发当中, 并且借助于此, 大幅度的对代码之间的关系进行解耦, 从而得到了更好的可测试代码. Java EE在很长一段时间内都做不到这一点, 但是, 从Java EE6开始, 基于上下文关系的依赖注入(Contextal Dependency Injection, CDI), 成为了EE标准的一部分, 它提供了强大的基于上下文关系的依赖注入, 并且能够非常灵活的注入各种标准规范所提供的服务. 如果你还不了解它, 那可能真是一种损失了.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">面向方面编程</i>
+</p>
+
+<p class="wikiPara">
+另一项由Spring引领而流行起来的技术就是面向方面编程(Aspect Oriented Programming, AOP). 通过使用AOP, 基于面向对象的语言能够在编译期或者运行期被织入一些横向关注点. 典型的场景就要数日志和安全了, 当然, AOP的能力并不局限于这两部分. 但是过度的使用AOP则是另外一个常见的误区, 这会导致代码可读性降低. 这是因为AOP所关注的切面, 和切面逻辑的实现代码并不在同一个位置. 这样, 要是想知道一段代码在运行时究竟干了哪些事情就不是那么清楚了. 当然, 这并不是说AOP就一无是处, 如果你能够合理的使用AOP的话, 它能够帮你很好的做到关注点分离和代码重用.
+</p>
+
+<p class="wikiPara">
+我们通常把在有限的位置使用AOP称之为<q>轻量级的AOP</q>, 这也正是Java EE中的拦截器所提供的功能. EJB中过滤器的实现能够在某种程度上达到限制滥用AOP的作用. 过滤器模型是在Java EE 5的时候被引入的, 如果把它和CDI (在Java EE 6中被引入) 结合起来, 可以做到很清晰的关注分离架构, 并且大幅度的减少重复代码. 
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">测试</i>
+</p>
+
+<p class="wikiPara">
+在上面介绍依赖注入的时候, 我们已经简单的提了一下这块内容, 在过去的J2EE中, 基本上很难做到真正的功能代码测试, 主要是因为大部分J2EE的组件都依赖于各种运行时的服务才能够正常工作. 这一点是可测试设计的死穴. 而现在的Java EE已经回归到基于POJO的组件设计了, 可测试性提升不少, 不过, 各个组件依旧依赖于运行时的服务. 为了真正的对Java EE的组件在应用服务器中进行测试, 我们需要创建一个模拟(mock)框架. 或者不需要?
+</p>
+
+
+<p class="wikiPara">
+正是在不久之前, Arquillian 框架横空出世, 为Java EE领域中的功能测试创造了可能性.
+</p>
+
+<p class="wikiPara">
+通过使用Arquillian, 我们可以抛开各种模拟框架, 直接在容器中对Java EE组件进行测试. 在测试被执行之前, Arquillian会先创建一个所谓的微型部属文件(micro deployment)包含了被测试的Java EE组件和它直接依赖的服务, 然后再由此创建出一个可部属文件并将其部属至一个正在运行的Java EE容器(或者临时启动一个)当中. 
+</p>
+
+<p class="wikiPara">
+Arauillian也不会强迫你转向一个新的测试技术, 相反, 它会无侵入性的与你喜爱的测试框架集成, 例如JUnit. 在测试领域, Arquillian可以说是Java EE的最佳伴侣了. 在Arquillian的网站上提供了非常好的文档和大量的示例, 同时, 在本系列文章中, 我们也会向你展示如何写基本的功能性测试.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">工具</i>
+</p>
+
+<p class="wikiPara">
+最后, 我们都有过这样的经历, 开发工具太过笨重, 缓慢, 还得先画一堆UML, 再通过复杂的向导一步步的往下走, 幸运的情况下才能够把向导走完, 才能做出个简单的东西来. 你的电脑还会像一辆小汽车正在被一个大卡车蹂躏一样的狂叫. 幸运的是, 这些情况都过去了. 现在主流的三大Java IDE都已经对开发Java EE组件有了很好的支持, 并且占用资源也不那么多. 开发Java EE应用也不再被限定在某一家的工具上了, 你可以按照自己的喜好来选择IDE, 还有应用服务器了. 通过使用诸如JBoss Forge等工具来创建一个基于Maven的Java EE项目现在轻而易举.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Spring和Java EE的功能对比</i>
+</p>
+
+<table>
+	<tr>
+		<td>功能</td>
+		<td>Spring</td>
+		<td>Java EE</td>
+
+	</tr>
+<tr>
+<td align="left">依赖注入 </td>
+<td align="left"> Spring 容器  </td>
+<td> CDI</td>
+</tr>
+<tr>
+<td align="left">事务    </td>
+<td align="left"> AOP/Annotations </td>
+<td>EJB</td>
+</tr>
+<tr>
+<td align="left">Web 框架</td>
+<td align="left">  Spring Web MVC</td>
+<td>  JSF</td>
+</tr>
+<tr>
+<td align="left">AOP     </td>
+<td align="left"> AspectJ (只支持Spring Beans) </td>
+<td>拦截器</td>
+</tr>
+<tr>
+<td align="left">消息     </td>
+<td align="left">JMS    </td>
+<td>   JMS/CDI</td>
+</tr>
+<tr>
+<td align="left">数据访问  </td>
+<td align="left">JDBC Template / other ORM / JPA </td>
+<td>  JPA</td>
+</tr>
+<tr>
+<td align="left">RESTful  </td>
+<td align="left">Spring Web MVC(3.x)   </td>
+<td> JAX-RS</td>
+</tr>
+<tr>
+<td align="left">集成测试  </td>
+<td align="left">Spring Test Framework </td>
+<td>  Arquillian</td>
+</tr>
+</table>
+
+
+<p class="wikiPara">
+作为总结, 我们可以负责任的说, 轻量级的Java EE能够提供Spring所提供的所有功能. 
+</p>
+
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/08/18/migrating-spring-applications-to-java-ee-6#H-">迁移方法</a></h3>
+
+<p class="wikiPara">
+怎样做才是最好的方法来开始这个迁移呢? 一些人可能会直接扔掉遗留项目然后选择从头开始, 尽管这种方式很吸引人, 并且如果时间和资金没有限制的话这样做非常可行. 不过, 对于大多数现实情况来说, 这显然不可取. 我们需要一种渐进式替换的方法, 并且保证在这个过程当中不会出现什么灾难性的故障. 我们需要有一个迁移方案来带领我们一步步的向前推进, 这个方案不应限制我们自己的创造性, 并且, 它应该允许我们在任何一步的时候停下来. 由此, 我们得出如下的迁移方案:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> 升级Spring到最新版本</li>
+<li class="wikiOrderedListItem"> 替换Spring中使用的过时的框架(例如ORM, Web框架等)</li>
+<li class="wikiOrderedListItem"> 同时运行Spring 容器和应用服务器</li>
+<li class="wikiOrderedListItem"> 完全替换掉Spring</li>
+<li class="wikiOrderedListItem"> 移除Spring容器</li>
+</ol>
+
+<p class="wikiPara">
+在本系列的下一篇中, 我们会把重点放在如何迁移上面, 然后通过一个真实的示例项目向你展示迁移过程中的不同阶段. 届时会有实例代码和一个github上的项目提供给你, 这样, 你可以自己动手来尝试整个迁移过程.
+</p>
+
+<h3 class="wikiHeadline3" id="H-"><a href="/2012/08/18/migrating-spring-applications-to-java-ee-6#H-">关于作者</a></h3>
+
+<p class="wikiPara">
+作者: Bert Ertman, Paul Bakker
+</p>
+
+<p class="wikiPara">
+Bert Ertman(@BertErtman) 是Luminis公司的院士, 该公司位于荷兰, 他同时还是荷兰Java用户组的领导人(该用户组大约3500名成员).
+</p>
+
+<p class="wikiPara">
+Paul Bakker(@pbakker)是Luminis公司的一名高级工程师, 他还是JBoss Seam, Arquillian 和Forge等项目的contribitor.
+</p>
+
+<p class="wikiPara">
+这两名作者都有着非常丰富的企业应用软件开发经验, 无论是使用J2EE之前的技术, 还是J2EE, Spring以及现代的Java EE技术. 他们对现代的企业软件开发技术有过很多的讨论, 也包括Spring和Java EE的对比, 现在, 他们相信, 不管是全新的企业应用软件, 还是迁移已经被广泛部属的遗留项目, Java EE 6都可以提供最好的技术. 本文的作者们已经在全球很多技术会议中介绍推荐过Java EE 6技术了, 包括J-Fall, Jfokus
+, Devoxx 和 JavaOne. 本系列文章是基于他们广受好评的在JavaOne 2011上的演讲<q>迁移Spring到Java EE6的最佳实践</q>写成.
+</p>
+</div>
+

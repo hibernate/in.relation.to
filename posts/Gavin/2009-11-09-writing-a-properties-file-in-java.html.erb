@@ -1,0 +1,87 @@
+---
+title: "Writing a properties file in Java?"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "09-11-2009"
+tags: [Contexts and Dependency Injection,Web Beans,Weld]
+
+relative_url: /2009/11/09/writing-a-properties-file-in-java
+slug: writing-a-properties-file-in-java
+lace: http://in.relation.to/12787.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/11/09/writing-a-properties-file-in-java
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I just noticed that CDI makes it possible to write properties files in Java, instead of plain text. I'm not sure if this is useful, but it <i class="wikiEmphasis">is</i> cute.
+</p>
+
+<p class="wikiPara">
+We define our properties in a class. Of course, since the properties are going to be deployment-specific, we should declare the class <tt>@Alternative</tt>. (Unless it holds the default values, I suppose.)
+</p>
+
+<pre class="wikiPreformatted brush:java;">@Alternative 
+class TestSettings {
+   @Produces @Named String adminUser = "admin";
+   @Produces @Named String adminPassword = "nimda";
+   @Produces @Named int maxRetries = 100;
+}</pre>
+
+
+<p class="wikiPara">
+Now, we can inject these properties. Into fields:
+</p>
+
+<pre class="wikiPreformatted brush:java;">@Inject @Named int maxRetries;</pre>
+
+
+<p class="wikiPara">
+Or even into constructors or methods:
+</p>
+
+<pre class="wikiPreformatted brush:java;">@Inject 
+Connection(@Named("adminUser") String user, 
+           @Named("adminPassword") String pass) { 
+   ... 
+}</pre>
+
+
+<p class="wikiPara">
+To select the right settings class for a deployment, we list it in <tt>beans.xml</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:xml;">&lt;beans&gt;
+   &lt;alternatives&gt;
+      &lt;class&gt;settings.TestSettings&lt;/class&gt;
+   &lt;/alternatives&gt;
+&lt;/beans&gt;</pre>
+
+
+<p class="wikiPara">
+You could even write a really simple portable extension that would weave in the necessary <tt>@Alternative</tt>, <tt>@Produces</tt> and <tt>@Named</tt> annotations to the following class:
+</p>
+
+<pre class="wikiPreformatted brush:java;">@Properties 
+class TestSettings {
+   String adminUser = "admin";
+   String adminPassword = "nimda";
+   int maxRetries = 100;
+}</pre>
+
+
+<p class="wikiPara">
+(If you want to know how to do this, go read up on the <tt>ProcessAnnotatedType</tt> event that is part of the CDI portable extension SPI.)
+</p>
+
+<p class="wikiPara">
+Well, I suppose it would be more typesafe to create a <tt>Settings</tt> interface with getter methods for all the properties, and inject that. Still, for an <q>accidental</q> feature, this is kinda cool.
+</p>
+
+<p class="wikiPara">
+UPDATE: hrrrm ... this feature makes somewhat more sense, when you realize that <tt>TestSettings</tt> is also a perfect place to declare all your <a href="/Bloggers/MakingExternalResourcesConfigurableWithoutLotsOfXML" target="" class="regularLink">deployment specific resources</a>.</p>
+</div>
+

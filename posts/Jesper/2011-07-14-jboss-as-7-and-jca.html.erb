@@ -1,0 +1,149 @@
+---
+title: "JBoss AS7 and JCA"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+creation_date: "14-07-2011"
+tags: [JBossAS7]
+
+relative_url: /2011/07/14/jboss-as-7-and-jca
+slug: jboss-as-7-and-jca
+lace: http://in.relation.to/21013.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/07/14/jboss-as-7-and-jca
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+JBoss Application Server 7 has been <a href="http://www.jboss.org/as7.html" target="" class="regularLink">released</a> !
+</p>
+
+<p class="wikiPara">
+The <a href="http://www.jboss.org/ironjacamar" target="" class="regularLink">IronJacamar</a> project provides the implementation of the <a href="http://jcp.org/en/jsr/detail?id=322" target="" class="regularLink">Java EE Connector Architecture 1.6</a> specification inside the server.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhyIsJCASoImportant"><a href="/2011/07/14/jboss-as-7-and-jca#H-WhyIsJCASoImportant">Why is JCA so important ?</a></h2>
+
+<p class="wikiPara">
+Java EE Connector Architecture (JCA) is one of those <q>hidden</q> technologies in the Java Enterprise Edition platform and if you asked me the specification should be used a lot more to implement enterprise solutions.
+</p>
+
+<p class="wikiPara">
+You may ask <q>So, what is so special about JCA ?</q>. If we take a look at the introduction of the specification we see
+</p>
+
+<blockquote class="wikiBlockquote">
+The Java Connector Architecture (JCA) defines a standard architecture for connecting the Java EE platform to heterogeneous Enterprise Information Systems (EIS). Examples of EISs include Enterprise Resource Planning (ERP), mainframe transaction processing (TP), databases and messaging systems.
+</blockquote>
+
+<p class="wikiPara">
+Hey, wait a minute... databases and messaging ?!?
+</p>
+
+<p class="wikiPara">
+Yes, every time you hit a database or a messaging system - or use technologies that hides those systems like JPA and EJB/MDBs - in your application they go through the IronJacamar container.
+</p>
+
+<p class="wikiPara">
+The resource adapters - the enterprise archive format for deployment - provides the specific interface for those system, like exposing a JDBC or JMS API to the applications - this means that the JCA container is <q>hidden</q> from the applications.
+</p>
+
+<p class="wikiPara">
+Which leads to <q>So why should I care ?</q>. Well, since the IronJacamar container controls all connections and their properties that means that the JCA container can add extra features <q>on-top</q> of APIs - like connection pooling, connection validation, a flush strategy in case of an error, reauthentication of connections and more.
+</p>
+
+<p class="wikiPara">
+Things that you take for granted that an application server will provide you - now you know how we do it :)
+</p>
+
+<h2 class="wikiHeadline2" id="H-EnterIronJacamar"><a href="/2011/07/14/jboss-as-7-and-jca#H-EnterIronJacamar">Enter IronJacamar</a></h2>
+
+<p class="wikiPara">
+As I mentioned above the IronJacamar project provides the JCA container for JBoss AS 7, so the features of the project really mandates what datasource can do and which features that are available to a resource adapter deployment.
+</p>
+
+<p class="wikiPara">
+I wrote a blog about our 1.0.0.Final release <a href="http://in.relation.to/20958.lace" target="" class="regularLink">here</a> - that will give you some insight to what the project is about.
+</p>
+
+<p class="wikiPara">
+And yes, the project is included in our Java EE 6 Web Profile bundle too.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DeployingAResourceAdapter"><a href="/2011/07/14/jboss-as-7-and-jca#H-DeployingAResourceAdapter">Deploying a resource adapter</a></h2>
+
+<p class="wikiPara">
+The <a href="https://docs.jboss.org/author/display/AS7/Documentation" target="" class="regularLink">documentation</a> shows you how to deploy an application in different ways, but for now we will just assume that you manually copied the <q>eis.rar</q> file to the deployments/ directory.
+</p>
+
+<p class="wikiPara">
+Next you will need to configure the resource adapter like provide the JNDI name for a connection factory.
+</p>
+
+<p class="wikiPara">
+An example could look like this
+</p>
+
+<pre class="wikiPreformatted">
+&lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"&gt;
+   &lt;resource-adapters&gt;
+      &lt;resource-adapter&gt;
+         &lt;archive&gt;eis.rar&lt;/archive&gt;
+
+         &lt;config-property name="Server"&gt;localhost&lt;/config-property&gt;
+         &lt;config-property name="Port"&gt;19000&lt;/config-property&gt;
+
+         &lt;transaction-support&gt;XATransaction&lt;/transaction-support&gt;
+  
+         &lt;connection-definitions&gt;
+            &lt;connection-definition class-name="com.acme.eis.ra.EISManagedConnectionFactory" 
+                                   jndi-name="java:/eis/AcmeConnectionFactory"
+                                   pool-name="AcmeConnectionFactory"&gt;
+               &lt;pool&gt;
+                  &lt;min-pool-size&gt;10&lt;/min-pool-size&gt;
+                  &lt;max-pool-size&gt;100&lt;/max-pool-size&gt;
+               &lt;/pool&gt;
+               &lt;security&gt;
+                  &lt;application/&gt;
+               &lt;/security&gt;
+            &lt;/connection-definition&gt;
+         &lt;/connection-definitions&gt;
+      &lt;/resource-adapter&gt;
+   &lt;/resource-adapters&gt;
+&lt;/subsystem&gt;
+</pre>
+
+
+<p class="wikiPara">
+which configures the connection factory of <q>com.acme.eis.ra.EISManagedConnectionFactory</q> to be located under <q>java:/eis/AcmeConnectionFactory</q>.
+</p>
+
+<p class="wikiPara">
+Alternative - you could add a <q>META-INF/ironjacamar.xml</q> file to the .rar archive with the configuration.
+</p>
+
+<p class="wikiPara">
+You can find the schemas for the XML structures in our <a href="http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/" target="" class="regularLink">user guide</a> or on our <a href="http://docs.jboss.org/ironjacamar/schema/" target="" class="regularLink">schema site</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-LearnMore"><a href="/2011/07/14/jboss-as-7-and-jca#H-LearnMore">Learn more</a></h2>
+
+<p class="wikiPara">
+Check out our <a href="http://docs.jboss.org/ironjacamar/userguide/1.0/en-US/html/" target="" class="regularLink">documentation</a> for more information about Java EE Connector Architecture and send us your feedback through the <a href="http://community.jboss.org/en/ironjacamar?view=all" target="" class="regularLink">forum</a>.
+</p>
+
+<p class="wikiPara">
+Be sure to also read <a href="http://www.javalinux.it/wordpress/2011/07/14/how-to-create-an-manage-datasources-in-as7/" target="" class="regularLink">Stefano's blog</a> about how to do datasource deployments in AS 7.
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/jbossas" target="" class="regularLink">WebSite</a>] [<a href="http://www.jboss.org/jbossas/downloads" target="" class="regularLink">Download</a>] [<a href="https://docs.jboss.org/author/display/AS7/Documentation" target="" class="regularLink">Documentation</a>] [<a href="https://issues.jboss.org/browse/AS7" target="" class="regularLink">JIRA</a>] [<a href="http://community.jboss.org/en/jbossas/as7_users" target="" class="regularLink">Forum</a>]
+</p>
+</div>
+

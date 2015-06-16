@@ -1,0 +1,87 @@
+---
+title: "Better performance, simpler MassIndexer: Hibernate Search 4.5.0.CR1 available"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+creation_date: "27-01-2014"
+tags: [Hibernate,Hibernate Search]
+
+relative_url: /2014/01/27/better-performance-simpler-mass-indexer-hibernate-search-450-cr-1-available
+slug: better-performance-simpler-mass-indexer-hibernate-search-450-cr-1-available
+lace: http://in.relation.to/24816.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/01/27/better-performance-simpler-mass-indexer-hibernate-search-450-cr-1-available
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Latest release from the 4.5 branch is now available:
+</p>
+
+<pre class="wikiPreformatted brush: xml">&lt;dependency&gt;
+ &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+ &lt;artifactId&gt;hibernate-search-orm&lt;/artifactId&gt;
+ &lt;version&gt;4.5.0.CR1&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-ImprovedPerformance"><a href="/2014/01/27/better-performance-simpler-mass-indexer-hibernate-search-450-cr-1-available#H-ImprovedPerformance">Improved performance</a></h2>
+<p class="wikiPara">
+Actually we fixed a performance regression: during some of the recent code cleanups we started allocating some objects which seem to be rather expensive; this is resolved now and performance is looking good again [<a href="https://hibernate.atlassian.net/browse/HSEARCH-1486" target="" class="regularLink">HSEARCH-1486</a>].
+</p>
+
+<p class="wikiPara">
+If you use Faceting, you might also see some memory allocation improvements [<a href="https://hibernate.atlassian.net/browse/HSEARCH-1468" target="" class="regularLink">HSEARCH-1468</a>].
+</p>
+
+<h2 class="wikiHeadline2" id="H-SimplifiedMassIndexer"><a href="/2014/01/27/better-performance-simpler-mass-indexer-hibernate-search-450-cr-1-available#H-SimplifiedMassIndexer">Simplified MassIndexer</a></h2>
+<p class="wikiPara">
+The MassIndexer was greatly simplified and as a result it should now be:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> faster</li>
+<li class="wikiUnorderedListItem"> easier to tune (just one threadpool to guess a reasonable size for)</li>
+<li class="wikiUnorderedListItem"> no more lazy initialization problems on custom FieldBridges: this resolves the highly voted [<a href="https://hibernate.atlassian.net/browse/HSEARCH-1260" target="" class="regularLink">HSEARCH-1260</a>].</li>
+</ul>
+
+<p class="wikiPara">
+Two tasks which used to be performed by two independent thread pools where unified:
+if you where tuning your MassIndexer using <u>threadsForSubsequentFetching</u> and <u>threadsToLoadObjects</u>, you should now only use <u>threadsToLoadObjects</u> and probably you want to enlarge this executor a bit more.
+</p>
+
+<p class="wikiPara">
+See <a href="http://docs.jboss.org/hibernate/search/4.5/reference/en-US/html_single/#search-batchindex-massindexer" target="" class="regularLink">this section</a> of the documentation for an updated explanation of these MassIndexer options.
+</p>
+
+<p class="wikiPara">
+Tuning property <u>threadsForSubsequentFetching</u> is now deprecated and ignored.
+</p>
+
+<h2 class="wikiHeadline2" id="H-HibernateORM43JPA21Compatibility"><a href="/2014/01/27/better-performance-simpler-mass-indexer-hibernate-search-450-cr-1-available#H-HibernateORM43JPA21Compatibility">Hibernate ORM 4.3 (JPA 2.1) compatibility</a></h2>
+<p class="wikiPara">
+Important reminder: the 4.5 is the stable branch of the series compatible with <a href="http://in.relation.to/Bloggers/HibernateORM431FinalRelease" target="" class="regularLink">Hibernate ORM 4.3 and JPA 2.1</a> and WildFly 8.
+</p>
+
+<p class="wikiPara">
+If you need to use an older version of Hibernate ORM, you can't benefit from this release: we highly suggest keeping up to date.
+</p>
+
+<h3 class="wikiHeadline3" id="H-UsefulLinks"><a href="/2014/01/27/better-performance-simpler-mass-indexer-hibernate-search-450-cr-1-available#H-UsefulLinks">Useful links</a></h3>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://hibernate.org/search/downloads/" target="" class="regularLink">Downloads</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://community.jboss.org/wiki/HibernateSearchMigrationGuide#jive_content_id_Hibernate_Search_450CR1" target="" class="regularLink">Migration guide</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Forums</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/hibernate/search/4.5/reference/en-US/html_single/" target="" class="regularLink">Documentation</a>
+</li>
+</ul>
+</div>
+

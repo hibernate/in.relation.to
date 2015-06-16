@@ -1,0 +1,206 @@
+---
+title: "Seam 3.0.0.Final Released"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+creation_date: "01-04-2011"
+tags: [Seam,Seam News]
+
+relative_url: /2011/04/01/seam-300-final-released
+slug: seam-300-final-released
+lace: http://in.relation.to/18956.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/04/01/seam-300-final-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<div style="float:right;margin-left:20px"><img src="/images/18955.png"></div>
+
+<p class="wikiPara">
+The Seam development team is pleased to announce the final release of Seam 3.0.  Seam is a modular collection of portable extensions and tooling for Java EE6.  This latest version represents a significant milestone in Seam's history, as it is the first release to be based on the standardized component model defined by the CDI (JSR-299 Java Contexts and Dependency Injection) specification.
+</p>
+
+<p class="wikiPara">
+Seam's goal is to enable developers to create rich, standards-based internet applications by solving many of the challenges encountered when developing software in today's connected world.  It achieves this by providing an integrated set of feature-centric modules, each targetted at a single area of concern.  This modular design also allows users the choice of using individual Seam modules based on the requirements of their project, without forcing them to adopt the overhead of a monolithic framework stack.
+</p>
+
+<p class="wikiPara">
+The following table contains a list of the modules included in the Seam 3.0 release, along with a brief description of their features.
+</p>
+
+<table border="1" cellspacing="0" cellpadding="4">
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/Solder" target="" class="regularLink">Solder</a></td>
+    <td>Provides a collection of useful features for portable extension developers, and generally useful annotations and more for CDI-based applications.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/CatchModule" target="" class="regularLink">Catch</a></td>
+    <td>Provides a simple infrastructure based on the CDI event bus to allow developers to establish a unified and robust exception handling process.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/ConfigModule" target="" class="regularLink">Config</a></td>
+    <td>Provides the capability to configure beans via alternate bean metadata sources, such as an XML-based configuration file.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/FacesModule" target="" class="regularLink">Faces</a></td>
+    <td>Further unifies JSF and CDI by providing additional features not defined by the specification, and provides JSF integration with other Seam modules.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/InternationalModule" target="" class="regularLink">International</a></td>
+    <td>Provides a set of language and locale-based features to allow complete internationalization of your internet application.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/PersistenceModule" target="" class="regularLink">Persistence</a></td>
+    <td>Enables transactions and persistence features for managed beans, and provides a simplified transaction API.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/RemotingModule" target="" class="regularLink">Remoting</a></td>
+    <td>Allows web-based applications to interact with the server-side component model via AJAX.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/RESTModule" target="" class="regularLink">REST</a></td>
+    <td>Provides JAX-RS integration for your Seam-based application.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/SecurityModule" target="" class="regularLink">Security</a></td>
+    <td>Authentication and authorization services for your Java EE6 application.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/ServletModule" target="" class="regularLink">Servlet</a></td>
+    <td>Unifies the Servlet and CDI programming models via an event bridge, and provides producers for implicit Servlet objects.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/ValidationModule" target="" class="regularLink">Validation</a></td>
+    <td>Provides enhanced validation features based on Hibernate Validator.</td>
+  </tr>
+  <tr>
+    <td><a href="http://www.seamframework.org/Seam3/WicketModule" target="" class="regularLink">Wicket</a></td>
+    <td>Integrates the CDI programming model and other portable Seam enhancements with Apache Wicket.</td>
+  </tr>
+</table>
+
+<h2 class="wikiHeadline2" id="H-MavenUsers"><a href="/2011/04/01/seam-300-final-released#H-MavenUsers">Maven Users</a></h2>
+
+<p class="wikiPara">
+The Seam BOM (Bill Of Materials) is a Maven POM artifact that is provided as a convenience for your Seam application.  It declares the versions for all Seam modules and third party libraries that are used in the Seam stack.  To use Seam in your Maven-based project, it is first recommended that you define the Seam version you wish to use by declaring the following property value:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;properties&gt;
+   &lt;seam.version&gt;3.0.0.Final&lt;/seam.version&gt;
+&lt;/properties&gt;
+</pre>
+
+
+
+<p class="wikiPara">
+Next, add the following section to your project's POM file to import the Seam BOM:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;dependencyManagement&gt;
+   &lt;dependencies&gt;
+      &lt;dependency&gt;
+         &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+         &lt;artifactId&gt;seam-bom&lt;/artifactId&gt;
+         &lt;version&gt;${seam.version}&lt;/version&gt;
+         &lt;type&gt;pom&lt;/type&gt;
+         &lt;scope&gt;import&lt;/scope&gt;
+      &lt;/dependency&gt;
+   &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;</pre>
+
+
+
+
+<p class="wikiPara">
+After this, it is a simple matter of declaring which Seam modules you wish to use in your project.  For example, if you wish to use the Seam Catch module in your project, simply add the following dependency:
+</p>
+
+
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+   &lt;groupId&gt;org.jboss.seam.catch&lt;/groupId&gt;
+   &lt;artifactId&gt;seam-catch&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Please note</i> that the Seam artifacts are published to the JBoss Community Maven Repository.  See <a href="http://www.seamframework.org/Seam3/MavenArtifacts" target="" class="regularLink">this page</a> for more details on configuring Maven to use this repository.
+</p>
+
+<h2 class="wikiHeadline2" id="H-GlassfishUsers"><a href="/2011/04/01/seam-300-final-released#H-GlassfishUsers">Glassfish Users</a></h2>
+
+<p class="wikiPara">
+If you use Glassfish 3.1 (or earlier) you must update the version of Weld contained inside your Glassfish installation.  Please refer to the instructions at <a href="http://www.seamframework.org/Seam3/Compatibility" target="" class="regularLink">http://www.seamframework.org/Seam3/Compatibility</a> for further information.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Downloads"><a href="/2011/04/01/seam-300-final-released#H-Downloads">Downloads</a></h2>
+
+<p class="wikiPara">
+Seam is available for download as a bundled distribution that includes all the modules, or alternatively as individual downloads for each module.
+</p>
+
+<p class="wikiPara">
+Bundled distribution: <a href="http://sourceforge.net/projects/jboss/files/Seam/3/3.0.0.Final/" target="" class="regularLink">http://sourceforge.net/projects/jboss/files/Seam/3/3.0.0.Final/</a>
+</p>
+
+<p class="wikiPara">
+Individual module downloads: <a href="http://www.seamframework.org/Seam3/Downloads" target="" class="regularLink">http://www.seamframework.org/Seam3/Downloads</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-Documentation"><a href="/2011/04/01/seam-300-final-released#H-Documentation">Documentation</a></h2>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/seam/3/latest/reference/en-US/html/" target="" class="regularLink">Reference Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/seam/3/latest/api/" target="" class="regularLink">API Documentation</a>
+</p>
+
+<p class="wikiPara">
+Documentation for individual modules can also be found on the <a href="http://seamframework.org/Seam3/Documentation" target="" class="regularLink">Seam documentation page</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-UserForums"><a href="/2011/04/01/seam-300-final-released#H-UserForums">User Forums</a></h2>
+
+<p class="wikiPara">
+The Seam 3 user forums can be found at <a href="http://www.seamframework.org/Community/Seam3Users" target="" class="regularLink">http://www.seamframework.org/Community/Seam3Users</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-IRC"><a href="/2011/04/01/seam-300-final-released#H-IRC">IRC</a></h2>
+
+<p class="wikiPara">
+The Seam community is very active on IRC.  Join us on the <tt>#seam</tt> or <tt>#seam-dev</tt> channels on Freenode to chat with the Seam developers. Find out more on the <a href="http://www.seamframework.org/Seam3/Chat" target="" class="regularLink">Seam Chat page</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Tooling"><a href="/2011/04/01/seam-300-final-released#H-Tooling">Tooling</a></h2>
+
+<p class="wikiPara">
+The Seam distribution comes bundled with <a href="http://seamframework.org/Documentation/SeamForge" target="" class="regularLink">Seam Forge</a>, which replaces the seam-gen tool that was part of earlier versions of Seam.  Forge is a rapid application development tool for Java EE6, which provides many productivity-enhancing features.
+</p>
+
+<p class="wikiPara">
+<a href="http://www.jboss.org/tools/download" target="" class="regularLink">JBoss Tools 3.2</a> also supports Seam 3 development with its excellent CDI tooling. Some of the new features of Seam 3 are not yet covered, but are on the roadmap for JBoss Tools 3.3. You can find an informative walkthrough of the CDI tooling features <a href="http://community.jboss.org/community/tools/blog/2011/01/31/overview-of-context-dependency-injection-tools" target="" class="regularLink">here</a>. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-GWT"><a href="/2011/04/01/seam-300-final-released#H-GWT">GWT</a></h2>
+
+<p class="wikiPara">
+GWT support for CDI is provided by <a href="http://www.jboss.org/errai/Components/CDI-Integration.html" target="" class="regularLink">Errai</a>.  Please refer to the <a href="http://download.jboss.org/errai/docs/1.2.2/userguide/index.html#cdi" target="" class="regularLink">Errai reference documentation</a> for details on integrating your GWT-based application with a CDI-based backend.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Acknowledgements"><a href="/2011/04/01/seam-300-final-released#H-Acknowledgements">Acknowledgements</a></h2>
+
+<p class="wikiPara">
+The Seam development team consists of a small team of full-time developers, plus a rapidly growing number of community contributors! Many of the modules in Seam 3 are led by community members who love and believe in Open Source software. Their ambition, innovation and ideas have made this important milestone possible! The entire Seam community should recognize and appreciate them for their dedication to the project, which is very much a collective community effort.  While there are too many names to mention individually in this post, the full list of Seam contributors can be found <a href="http://docs.jboss.org/seam/3/latest/reference/en-US/html/seam.credits.html#d0e10" target="" class="regularLink">here</a>.
+</p>
+</div>
+

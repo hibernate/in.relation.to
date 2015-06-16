@@ -1,0 +1,97 @@
+---
+title: "Animating JBoss projects with Gource"
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "16-01-2010"
+tags: [Eclipse,Hibernate,JBoss Tools]
+
+relative_url: /2010/01/16/animatingjboss-projects-with-gource
+slug: animatingjboss-projects-with-gource
+lace: http://in.relation.to/14001.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/01/16/animatingjboss-projects-with-gource
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+<a href="http://code.google.com/p/gource/" target="" class="regularLink">Gource</a> is a software version control visualization tool and one of its unique features is that its pretty darn fast and support a multitude of version control systems including SVN.
+</p>
+
+<p class="wikiPara">
+It took me less than 10 minutes to get it up and running to visualize JBoss Tools and Hibernate svn checkout.
+</p>
+
+<p class="wikiPara">
+It took a little bit of insomnia to also add in automatic fetching of user images from <a href="http://community.jboss.org" target="" class="regularLink">community.jboss.org</a> based on the committer names in the logs and I end up with something like this:
+</p>
+
+<p class="wikiPara">
+<a href="/service/File/14003" target="" class="regularLink"><img src="/images/14003.png"></a>
+</p>
+
+<p class="wikiPara">
+The still shot doesn't really make Gource justice so be sure to check out some of the <a href="http://code.google.com/p/gource/wiki/Videos" target="" class="regularLink">example videos</a> available from Gource.
+</p>
+
+<p class="wikiPara">
+If you want to try to run this on your own then here is the script I created for it (tested on cygwin but should work on other *nix variants too).
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheScript"><a href="/2010/01/16/animatingjboss-projects-with-gource#H-TheScript">The Script</a></h2>
+
+<p class="wikiPara">
+Requirements:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://code.google.com/p/gource/downloads/list" target="" class="regularLink">Gource</a> for your platform</li>
+<li class="wikiUnorderedListItem"> <a href="http://gource.googlecode.com/files/svn-gource-1.2.tar.gz" target="" class="regularLink">svn-gource.py</a> (place it in the root directory of Gource)</li>
+<li class="wikiUnorderedListItem"> svn</li>
+<li class="wikiUnorderedListItem"> curl</li>
+<li class="wikiUnorderedListItem"> Python</li>
+<li class="wikiUnorderedListItem"> Cygwin (if on windows)</li>
+</ul>
+
+<p class="wikiPara">
+Update the <code>GOURCE_HOME</code> in the following (non-optimized, but working) shell-script and save it to <code>gourcejboss.sh</code>:
+</p>
+
+<pre class="wikiPreformatted">export GOURCE_HOME=/cygdrive/c/work/products/gource
+echo Fetching SVN Log
+svn log --verbose --xml &gt; gource-svn.log
+
+echo Convert svn log to gource log
+python $GOURCE_HOME/svn-gource.py --filter-dirs gource-svn.log &gt; gource-custom.log
+
+echo Getting unique committers from log and preparing urls
+gawk -F\| '{ print $2 }' gource-custom.log &gt; gource-all.txt
+sort gource-all.txt | uniq &gt; gource-unique.txt
+
+gawk -F\| '{ print "curl -o " $1 ".png http://community.jboss.org/profile-image-display.jspa?username=" $1 }' gource-unique.txt &gt; gource-urls.txt
+
+echo Fetching committer images from community.jboss.org
+mkdir gource-img
+cd gource-img
+sh ../gource-urls.txt 
+echo Removing images for users with errors/missing
+grep -l "unexpected error" *.png | xargs -n1 -i rm {}
+cd ..
+
+echo Running gource
+$GOURCE_HOME/gource --log-format custom --user-image-dir ./gource-img gource-custom.log</pre>
+
+
+<p class="wikiPara">
+Now go into the root of the svn checkout you want to run gource on and run <code>sh gourcejboss.sh</code>
+and see the magic unfold.
+</p>
+
+<p class="wikiPara">
+Have fun and if you have a machine with enough diskspace/cpu to <a href="http://code.google.com/p/gource/wiki/Videos" target="" class="regularLink">record a video</a>, post the link!
+</p>
+
+</div>
+

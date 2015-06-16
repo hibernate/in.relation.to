@@ -1,0 +1,100 @@
+---
+title: "Hibernate Validator 4.1.0.Beta2 with programmatic constraint configuration API"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "02-06-2010"
+tags: [Hibernate Validator]
+
+relative_url: /2010/06/02/hibernate-validator-410-beta-2-with-programmatic-constraint-configuration-api
+slug: hibernate-validator-410-beta-2-with-programmatic-constraint-configuration-api
+lace: http://in.relation.to/15699.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/06/02/hibernate-validator-410-beta-2-with-programmatic-constraint-configuration-api
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate Validator 4.1.0.Beta2 is out. A total of 29 issues got resolved since the last release and you can review then in the <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10060&amp;version=10960" target="" class="regularLink">Jira changelog</a>. Amongst others we added the @ScriptAssert constraints as promised in the previous <a href="http://in.relation.to/14950.lace" target="" class="regularLink">release blog</a>. Initially we wanted to release 4.1.0.CR directly, but we added a new programmatic constraint configuration API (<a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-274" target="" class="regularLink">HV-274</a>) for which we want to first gather some feedback.
+</p>
+
+<p class="wikiPara">
+The new API is centered around <i class="wikiEmphasis">ConstraintMapping</i> which is the entry point to a <a href="http://en.wikipedia.org/wiki/Fluent_interface" target="" class="regularLink">fluent API</a> allowing the configuration of constraints. The API is comparable to the one described in Emmanuel's blog <a href="http://in.relation.to/Bloggers/HibernateSearch32ProgrammaticMappingAPI" target="" class="regularLink">Hibernate Search Programmatic Mapping API</a>. But let's look at an example:
+</p>
+
+<pre class="wikiPreformatted">
+ConstraintMapping mapping = new ConstraintMapping();
+mapping.type( Car.class )
+    .property( "manufacturer", FIELD )
+        .constraint( NotNullDef.class )
+    .property( "licensePlate", FIELD )
+        .constraint( NotNullDef.class )
+        .constraint( SizeDef.class )
+            .min( 2 )
+            .max( 14 )
+    .property( "seatCount", FIELD )
+        .constraint( MinDef.class )
+            .value ( 2 )
+.type( RentalCar.class )
+    .property( "rentalStation", METHOD)
+        .constraint( NotNullDef.class );
+</pre>
+<p class="wikiPara">
+ 
+ 
+As you can see you can configure constraints on multiple classes and properties using method chaining. The constraint definition classes <i class="wikiEmphasis">NotNullDef</i>, <i class="wikiEmphasis">SizeDef</i>  and <i class="wikiEmphasis">MinDef</i> are helper classes which allow to configure constraint parameters in a type-safe fashion. Definition classes exists for all built-in constraints in the <i class="wikiEmphasis">org.hibernate.validator.cfg.defs</i> package. For a custom constraint you can either create your own definition class extending <i class="wikiEmphasis">ConstraintDef</i> or you can use <i class="wikiEmphasis">GenericConstraintDef</i> (we are also thinking about providing another annotation processor which at compile time could generate the required helper classes):
+</p>
+
+<pre class="wikiPreformatted">
+ConstraintMapping mapping = new ConstraintMapping();
+mapping.type( Car.class )
+    .property( "licensePlate", FIELD )
+        .constraint( GenericConstraintDef.class )
+            .constraintType( CheckCase.class )
+            .param( "value", CaseMode.UPPER );
+</pre>
+
+
+<p class="wikiPara">
+Last but not least, you can also define cascading constraints as well as the default group sequence of an entity.
+</p>
+
+<pre class="wikiPreformatted">
+ConstraintMapping mapping = new ConstraintMapping();
+mapping.type( Car.class )
+    .valid( "driver", FIELD )
+.type( RentalCar.class)
+    .defaultGroupSequence( RentalCar.class, CarChecks.class );
+</pre>
+
+
+<p class="wikiPara">
+Since the programmatic configuration is not part of the official Bean Validation specification you will have to get hold of <i class="wikiEmphasis">HibernateValidatorConfiguration</i> during the bootstrapping process in order to set your <i class="wikiEmphasis">ConstraintMapping</i>:
+</p>
+
+<pre class="wikiPreformatted">
+HibernateValidatorConfiguration config = Validation.byProvider( HibernateValidator.class ).configure();
+config.addMapping( mapping );
+ValidatorFactory factory = config.buildValidatorFactory();
+Validator validator = factory.getValidator();
+</pre>
+
+
+<p class="wikiPara">
+WDYT? Is this API useful? Easy to use? Anything we should consider/change?
+</p>
+
+<p class="wikiPara">
+If you want to play with this release, you can download it from the JBoss Maven <a href="https://repository.jboss.org/nexus/content/repositories/public/org/hibernate/hibernate-validator/4.1.0.Beta2" target="" class="regularLink">repo</a> or from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/4.1.0.Beta2" target="" class="regularLink">SourceForge</a>.
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+
+<p class="wikiPara">
+ </p>
+</div>
+

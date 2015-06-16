@@ -1,0 +1,115 @@
+---
+title: "Callable statement support"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "03-04-2013"
+tags: [feature,jpa21,orm43]
+
+relative_url: /2013/04/03/callable-statement-support
+slug: callable-statement-support
+lace: http://in.relation.to/24103.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/04/03/callable-statement-support
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The soon-to-be final JPA 2.1 specification adds standardized support for dealing with JDBC CallableStatements (stored procedure and function calls).  Arun Gupta has a decent summary of the initial JPA 2.1 features, including Stored procedure support, at <a href="https://blogs.oracle.com/arungupta/entry/jpa_2_1_early_draft" target="" class="regularLink">https://blogs.oracle.com/arungupta/entry/jpa_2_1_early_draft</a>.  Standardized here means both across providers as well as across database vendors.  Pretty sweet.  As much as I liked the idea of standarized support for handling callable statements, I was not overly thrilled with certain aspects of the proposed JPA StoredProcedureQuery API.  My worries were mainly around how the outputs were accessed, especially when multiple results are expected.  Let's first look at a simple example of a procedure returning a result:
+</p>
+
+<pre class="wikiPreformatted">StoredProcedreQuery query = entityManager.createStoredProcedureQuery( "top10SalesmenByQuarter", Employee.class );
+query.registerStoredProcedureParameter( "quarter", String.class, ParameterMode.IN );
+query.setParameter( "quarter", "Q1-2000" );
+List top10Salesmen = query.getResultList();
+...</pre>
+
+
+<p class="wikiPara">
+Nothing too odious there.
+</p>
+
+<p class="wikiPara">
+However, imagine that we instead want to call a procedure that has a mix of update counts and results.  This is where, in my humble opinion, the StoredProcedureQuery gets a bit dodgy.  Largely it tries to follow the JDBC paradigm for accessing mixed returns.  The argument for that approach of course is that it is familiar to developers familiar with the JDBC API.  Lets take an example:
+</p>
+
+<pre class="wikiPreformatted">StoredProcedreQuery query = entityManager.createStoredProcedureQuery( "mixedReturns" );
+...
+while( 1==1 ) {
+    boolean isResult = query.hasMoreResults();
+    if ( isResult ) {
+        handleResult( query.getResultList() );
+    }
+    else {
+        int updateCount = query.getUpdateCount();
+
+        // complete exit condition is ( ! query.hasMoreResults() &amp;&amp; query.getUpdateCount != -1 )
+        if ( updateCount == -1 ) {
+            break;
+        }
+
+        handleUpdateCount( updateCount );
+    }
+}
+...</pre>
+
+
+<p class="wikiPara">
+To me, thats not very user friendly.  However I was not able to get proposed changes to that API in.  So I instead decided to develop an alternate API; A Hibernate-native API accessed through Session.  The above query, using that API would look like:
+</p>
+
+<pre class="wikiPreformatted">org.hibernate.procedure.ProcedureCall call = entityManager.unwrap( Session.class ).createStoredProcedureCall( "mixedReturns" );
+...
+org.hibernate.procedure.ProcedureResult callResult = call.getResult();
+
+while ( callResult.hasMoreReturns() ) {
+    final org.hibernate.result.Return return = callResult.getNextReturn();
+    if ( org.hibernate.result.ResultSetReturn.class.isInstance( return ) ) {
+        handleResult( ( (org.hibernate.result.ResultSetReturn) return ).getResultList() );
+    }
+    else {
+        handleUpdateCount( (org.hibernate.result.UpdateCountReturn) return ).getUpdateCount() );
+    }
+}
+...</pre>
+
+
+<p class="wikiPara">
+Both APIs support processing of multiple ResultSets too.  If return classes or result-set-mappings are supplied, they apply to all of the processed ResultSets:
+</p>
+
+<pre class="wikiPreformatted">StoredProcedreQuery query = entityManager.createStoredProcedureQuery( "top_and_bottom_salesmen_by_quarter", Employee.class );
+query.registerStoredProcedureParameter( "quarter", String.class, ParameterMode.IN );
+query.registerStoredProcedureParameter( "top_salesmen", String.class, ParameterMode.REF_CURSOR );
+query.registerStoredProcedureParameter( "bottom_salesmen", String.class, ParameterMode.REF_CURSOR );
+query.setParameter( "quarter", "Q1-2000" );
+
+// we will end up with 2 result lists, where each list contains elements of type Employee.  Pretty sweet!
+
+boolean isResult = query.hasMoreResults();
+while( isResult ) {
+    handleResult( query.getResultList() );
+}
+...</pre>
+
+
+<pre class="wikiPreformatted">ProcedureCall call = entityManager.unwrap( Session.class ).createStoredProcedureCall( "top_and_bottom_salesmen_by_quarter", Employee.class );
+call.registerParameter( "quarter", String.class, ParameterMode.IN );
+call.registerParameter( "top_salesmen", String.class, ParameterMode.REF_CURSOR );
+call.registerParameter( "bottom_salesmen", String.class, ParameterMode.REF_CURSOR );
+call.setParameter( "quarter", "Q1-2000" );
+
+// we will end up with 2 result lists, where each list contains elements of type Employee.  Pretty sweet!
+
+ProcedureResult callResult = call.getResult();
+while ( callResult.hasMoreReturns() ) {
+    final ResultSetReturn rtn = (ResultSetReturn) callResult.getNextReturn();
+    handleResult( rtn.getResultList() );
+}
+...</pre>
+
+
+</div>
+

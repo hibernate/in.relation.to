@@ -1,0 +1,44 @@
+---
+title: "Hibernate Search 3.3 CR1: numeric fields, query timeouts and directory providers"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "08-11-2010"
+tags: [Hibernate,Hibernate Search]
+
+relative_url: /2010/11/08/hibernate-search-33-cr-1-numeric-fields-query-timeouts-and-directory-providers
+slug: hibernate-search-33-cr-1-numeric-fields-query-timeouts-and-directory-providers
+lace: http://in.relation.to/17650.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/11/08/hibernate-search-33-cr-1-numeric-fields-query-timeouts-and-directory-providers
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate Search 3.3 CR1 is out. Last chance for testing before the baby goes out. This release include many bug fixes and small features but we have added a couple of significant ones:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> support for Lucene <a href="http://docs.jboss.org/hibernate/search/3.3/reference/en-US/html_single/#basic-mapping" target="" class="regularLink">numeric fields</a>: numbers can be indexed using a trie structure and make queries much faster than the traditional string representation (experimental)</li>
+<li class="wikiUnorderedListItem"> support for <a href="http://docs.jboss.org/hibernate/search/3.3/reference/en-US/html_single/#d0e4268" target="" class="regularLink">query timeouts</a> (either by raising an exception or by returning results already fetched)</li>
+<li class="wikiUnorderedListItem"> support for queryable null values (see <a href="http://docs.jboss.org/hibernate/search/3.3/reference/en-US/html_single/#basic-mapping" target="" class="regularLink">indexNullAs</a>: by default null values are not indexed (and thus not queryable), you can optionally index null values ow</li>
+<li class="wikiUnorderedListItem"> support for NIO and memory mapped file for <a href="http://docs.jboss.org/hibernate/search/3.3/reference/en-US/html_single/#search-configuration-directory" target="" class="regularLink">filesystem based directory providers</a>
+</li>
+<li class="wikiUnorderedListItem"> support for shortcut names for common <a href="http://docs.jboss.org/hibernate/search/3.3/reference/en-US/html_single/#search-configuration-directory" target="" class="regularLink">directory providers</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+Many thanks to <a href="http://twitter.com/gustavonalle" target="" class="regularLink">Gustavo Nalle Fernandes</a> for all his <q>week-end</q> contributions.
+</p>
+
+<p class="wikiPara">
+Check out the new release on JBoss.org's Maven <a href="http://repository.jboss.org/nexus/content/groups/public-jboss/" target="" class="regularLink">repository</a> or <a href="http://www.hibernate.org/subprojects/search/download" target="" class="regularLink">download the distribution</a>. You can also <a href="http://docs.jboss.org/hibernate/search/3.3/reference/en-US/" target="" class="regularLink">read the documentation</a>.
+</p>
+
+<p class="wikiPara">
+If you find an issue, <a href="http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH" target="" class="regularLink">you know the way</a>.</p>
+</div>
+

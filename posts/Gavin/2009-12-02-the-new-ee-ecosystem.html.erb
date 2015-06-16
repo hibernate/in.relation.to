@@ -1,0 +1,59 @@
+---
+title: "The new EE ecosystem"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "02-12-2009"
+tags: [Contexts and Dependency Injection,Java EE 6]
+
+relative_url: /2009/12/02/the-new-ee-ecosystem
+slug: the-new-ee-ecosystem
+lace: http://in.relation.to/13231.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/12/02/the-new-ee-ecosystem
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I called EE 6 <a href="/Bloggers/AnExcitingDayForEnterpriseJava" target="" class="regularLink">the beginning of a whole new ecosystem</a>. Some of you guys are probably thinking this is hyperbole. Well, here's why I think it's possible.
+</p>
+
+<p class="wikiPara">
+For several years, web application developers have been trapped between <q>too much</q> and <q>too little</q>. A servlet container like Tomcat doesn't provide all the infrastructure they need, missing critical items like transaction management, persistence and <q>container managed</q> beans. But many teams also feel that Java EE containers like JBoss have been forcing stuff down their throats that they simply don't need or want to know about. They don't need or want a CORBA ORB, support for EJB 2.x, a web service stack, EARs, remote EJBs, etc.
+</p>
+
+<p class="wikiPara">
+Meanwhile, vendors like JBoss have also been trapped. The EE brand is important to us since it signals to our customers that code written for our platform is portable to other implementations of Java EE, and that existing applications that were written for our competitors' products can easily be ported to run on our platform. Unsurprisingly, we share the opinion of many developers regarding the usefulness of certain technologies that were required by Java EE. For example, most of us were shaking our heads in astonished despair while the lemmings were following each other off the WS-WXYZ cliff a couple of years ago. What we've had to do is quietly implement these bits and then hope that our users don't actually use them for anything. 
+</p>
+
+<p class="wikiPara">
+Other vendors, such as Caucho, chose a different path. A small company, the cost of implementing everything that was required by Java EE, including many technologies that just weren't interesting to their customers, was simply too great a burden. So they provided a servlet container, with a partial implementation of certain EE APIs. Of course, potential customers could never be certain about portability between Resin and other servers.
+</p>
+
+<p class="wikiPara">
+In this confusing environment, many developers rejected EE, and cobbled together their own stack of technologies based upon a plain servlet container like Tomcat. Since integrating these technologies was difficult - servlet containers have never provided much support for framework integration - solutions like the Spring framework popped up, with pre-built integration for a wide variety of technologies. Spring eventually involved into a proprietary container that competes with the EE platform. Unfortunately, the proprietary nature of Spring has resulted in vendor lock-in and slower innovation. Innovation in Spring has been so slow that Spring itself now looks decidedly creaky and old-fashioned compared to technologies like CDI that arrived much later.
+</p>
+
+<p class="wikiPara">
+Java web development is now so fractured that it's very difficult for framework developers like me to write code that works in all these environments. For example, transaction management, for which a <a href="http://jcp.org/en/jsr/detail?id=907" target="" class="regularLink">complete, standard, solution</a> has been available since 2002, is now a total mess.
+</p>
+
+<p class="wikiPara">
+Here's how Java EE 6 changes all this.
+</p>
+
+<p class="wikiPara">
+The Java EE Web Profile defines a <q>smaller</q> container, with just the technologies that most developers really need: servlets, JPA, JTA, CDI, EJB Lite. That makes EE easier to implement, which might result in a more vibrant market, with more implementations, and shorter release cycles. It definitely removes the main reason many developers give for not adopting Java EE.
+</p>
+
+<p class="wikiPara">
+Even better, the CDI portable extension SPI makes it <i class="wikiEmphasis">much</i> easier to integrate technologies into the Java EE environment. And, since some CDI implementations also run in a plain servlet container like Tomcat, CDI can also serve as a foundation for integrating technologies into these environments.
+</p>
+
+<p class="wikiPara">
+Thus, we've laid the <i class="wikiEmphasis">technical</i> foundation for a new ecosystem. A platform developers can be comfortable with, that lets vendors focus on things their customers actually care about, that framework developers can easily integrate with. The only missing ingredient is for the community to get excited about this stuff. :-)
+</p>
+</div>
+

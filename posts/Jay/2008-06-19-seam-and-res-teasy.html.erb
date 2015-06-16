@@ -1,0 +1,60 @@
+---
+title: "Seam and RESTeasy"
+author: "Jay Balunas"
+blogger_name: "Jay"
+creation_date: "19-06-2008"
+tags: [RESTeasy,Seam,Seam News]
+
+relative_url: /2008/06/19/seam-and-res-teasy
+slug: seam-and-res-teasy
+lace: http://in.relation.to/9120.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/06/19/seam-and-res-teasy
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+There has been a post or two regarding Seam and RESTeasy in the Seam forums, and the RESTeasy mailing list so I thought I would share my opinion as to where these technologies could fit together.  I have been thinking about this since talking with Bill Burke at his JUG talk on RESTeasy.
+</p>
+
+<p class="wikiPara">
+For those who are not familiar RESTeasy it is an implementation of the <a href="https://jsr311.dev.java.net/" target="" class="regularLink">JAX-RS</a> specification that Bill Burke is working on.  See <a href="http://wiki.jboss.org/wiki/RESTeasyJAXRS" target="" class="regularLink">RESTeasy</a> project page for more info.
+</p>
+
+<p class="wikiPara">
+Some people get hung up on how these two technologies can integrate because Seam is by nature and definition a <i class="wikiEmphasis">stateful</i> framework, and REST by definition should be <i class="wikiEmphasis">stateless</i>.  The question is not do they integrate, but can they <i class="wikiEmphasis">co-exist</i>?
+</p>
+
+<p class="wikiPara">
+I see two primary ways for Seam and RESTeasy to work together :
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Multiple ways to access/manipulate the same server side component. </li>
+</ul>
+
+<p class="wikiPara">
+If I have a Seam component (EJB or POJO does not matter) and I want to have it accessible via a restful call.  I should be able to put the correct annotations on it from the JAX-RS spec, and have RESTeasy manage restful access.  This EJB/POJO would effectively be both a seam component, and a restful service.  
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Seam using restful calls as a result of a user action, or to pull data</li>
+</ul>
+
+<p class="wikiPara">
+Take for example a Seam application that displays TV schedules for any zip code in the country, and lets users create a calender of what shows they want to watch.  Seam internally could make restful calls to an existing service for all of the TV schedule information.  When the user selects a show the seam application captures the information from the service, and processes and stores that information locally using EJBs, POJOs, or whatever.  
+</p>
+
+<p class="wikiPara">
+I suppose providing an easy way for Seam to access a remote restful service as a seam component would be useful.  It could treat it like a stateless session bean, or something like that.  Users today need to write the plumbing to make the restful call, and manipulate the return.  I'll have to think on that some more :-)
+</p>
+
+<p class="wikiPara">
+My $.02
+</p>
+
+</div>
+

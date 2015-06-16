@@ -1,0 +1,127 @@
+---
+title: "A Validation stickler!"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "07-05-2010"
+tags: []
+
+relative_url: /2010/05/07/a-validation-stickler
+slug: a-validation-stickler
+lace: http://in.relation.to/15401.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/05/07/a-validation-stickler
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+One unsolved problem with Bean Validation is how to apply a constraint on the elements of a collection (or iterable). Think about a User entity with a list of emails (primary, secondary, ...). This could be modeled like this:
+</p>
+
+<pre class="wikiPreformatted">public class User {
+    @NotEmpty
+    private String name;
+
+    @NotEmpty
+    @Email
+    private List&lt;String&gt; emailList;
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+The problem is that validating an instance of this User would currently throw an UnexpectedTypeException, since there is no built-in ConstraintValidator&lt;Email, Collection&lt;String&gt;&gt; which could validate emailList (see also <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-264" target="" class="regularLink">HV-264</a>). 
+One way to solve the problem within the current framework is to implement a ConstraintValidator&lt;Email, Iterable&lt;String&gt;&gt;. Great, but it only solves the problem for @Email, not for the generic problem: <q>How can I apply a constraint on all elements of a collection?</q>.
+</p>
+
+<p class="wikiPara">
+Not thinking about language limitations, the following solution would be nice:
+</p>
+
+<pre class="wikiPreformatted">public class User {
+    @NotEmpty
+    private String name;
+
+    @NotEmpty
+    private List&lt;@Email String&gt; emailList;
+     ...
+}</pre>
+
+
+<p class="wikiPara">
+Of course this is not possible in the current version of Java. However, there is <a href="http://jcp.org/en/jsr/detail?id=308" target="" class="regularLink">JSR 308</a>, which allows the above example and which will hopefully be part <a href="http://openjdk.java.net/projects/jdk7/features/" target="" class="regularLink">Java 7</a>. For the Bean Validation specification it makes sense to wait for this feature (see <a href="http://opensource.atlassian.com/projects/hibernate/browse/BVAL-202" target="" class="regularLink">BVAL-202</a>), but should we have a interim solution for Hibernate Validator. This is what <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-296" target="" class="regularLink">HV-296</a> is about. HV-296 discusses several solutions to the problem. Two solutions I would like to introduce here:
+</p>
+
+<h2 class="wikiHeadline2" id="H-ThePayloadSolution"><a href="/2010/05/07/a-validation-stickler#H-ThePayloadSolution">The payload solution</a></h2>
+
+<p class="wikiPara">
+For this solution a custom payload class would be introduced. If this payload is specified on a constraint, the constraints will be applied on the elements of the collection:
+</p>
+
+<pre class="wikiPreformatted">public class User {
+    @NotEmpty
+    private String name;
+
+    @NotEmpty
+    @Email(payload=OnElements.class)
+    private List&lt; String&gt; emailList; 
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+This seems to be the least intrusive solution and hopefully within the rules of the specification: <q>Payloads are typically used by validation clients to associate some metadata information with a given constraint declaration. Payloads are typically non-portable</q>. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheValidateEachAnnotationSolution"><a href="/2010/05/07/a-validation-stickler#H-TheValidateEachAnnotationSolution">The @ValidateEach annotation solution</a></h2>
+
+<p class="wikiPara">
+For this solution we would introduce a new annotation @ValidateEach (or maybe @ApplyOn).
+</p>
+
+<pre class="wikiPreformatted">@ValidateElements
+public @interface ValidateEach {
+	Email[] value();
+}
+</pre>
+
+
+<p class="wikiPara">
+@ValidateElements is a marker annotation used by the validator engine to determine annotations used for applying built-in constraints on collections.
+Our usecase looks like this now:
+</p>
+
+<pre class="wikiPreformatted">public class User {
+    @NotEmpty
+    private String name;
+
+    @NotEmpty
+    @ValidateEach(@Email)
+    private List&lt; String&gt; emailList;
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+Problematic with this solution is that for each constraint we have to place the corresponding ValidateEach annotation in its own package. This could be avoided if we give each annotation a distinctive name, for example ValidateEachEmail, ValidateEachSize, etc. Alternatively we could have one single ValidateEach annotation and attributes for each built-in constraint:
+</p>
+
+<pre class="wikiPreformatted">@ValidateElements
+public @interface ValidateEach {
+       Email[] email() default{};
+       Size[] size() default {};
+       NotNull[] notNull() default {};
+       ...
+}</pre>
+
+
+<p class="wikiPara">
+This would reduce the required number of annotations, but it would introduce a special case for custom constraints.
+</p>
+
+<p class="wikiPara">
+You get the full history on how we arrived at these solutions by reading the irc log attached to <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-296" target="" class="regularLink">HV-296</a>. If you have an opinion on the matter,  make sure to leave a comment, post on the <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-296" target="" class="regularLink">forum</a> or send an email to hibernate-dev.</p>
+</div>
+

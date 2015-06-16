@@ -1,0 +1,83 @@
+---
+title: "Java Generics WTF?!"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "22-09-2009"
+tags: []
+
+relative_url: /2009/09/22/java-generics-wtf
+slug: java-generics-wtf
+lace: http://in.relation.to/12369.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/09/22/java-generics-wtf
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Now here's something I didn't expect. 
+</p>
+
+<p class="wikiPara">
+Linda was having some problems compiling code written with the new JPA 2.0 typesafe criteria API, and after looking into the problem, I really, really think this should compile.
+</p>
+
+<p class="wikiPara">
+The <tt>QueryBuilder</tt> interface defines the following method:
+</p>
+
+<pre class="wikiPreformatted">&lt;Y extends Comparable&lt;Y&gt;&gt; Predicate lessThan(Expression&lt;? extends Y&gt; x, Expression&lt;? extends Y&gt; y);</pre>
+
+
+<p class="wikiPara">
+The compiler spits out an error in this case:
+</p>
+
+<pre class="wikiPreformatted">Expression&lt;java.sql.Date&gt; x = ....;
+Expression&lt;java.sql.Date&gt; y = ....;
+q.where( qb.lessThan(x, y) );</pre>
+
+
+<p class="wikiPara">
+Why in hell? Substitute <tt>java.util.Date</tt> for <tt>Y</tt>, and all the bounds are satisfied:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">
+<tt>java.sql.Date</tt> is a subtype of <tt>java.util.Date</tt>
+</li>
+<li class="wikiUnorderedListItem">
+<tt>java.util.Date</tt> is a subtype of <tt>Comparable&lt;java.util.Date&gt;</tt>
+</li>
+</ul>
+
+<p class="wikiPara">
+But apparently the compiler is refusing to consider the bound on <tt>Y</tt> when determining a candidate <tt>Y</tt>: it seems to decide from looking at just the parameter bounds that <tt>Y</tt> must be <tt>java.sql.Date</tt>, which does not implement <tt>Comparable&lt;java.sql.Date&gt;</tt>. To me this is just wrong and non-intuitive. Why not keep searching up the type hierarchy until you find something that matches?
+</p>
+
+<p class="wikiPara">
+So, there are two workarounds for this. The first is to explicitly tell the compiler what it should have been able to figure out for itself:
+</p>
+
+<pre class="wikiPreformatted">q.where( qb.&lt;java.util.Date&gt;lessThan(x, y) );</pre>
+
+
+<p class="wikiPara">
+But a better solution is to redeclare the API as follows:
+</p>
+
+<pre class="wikiPreformatted">&lt;Y extends Comparable&lt;? super Y&gt;&gt; Predicate lessThan(Expression&lt;? extends Y&gt; x, Expression&lt;? extends Y&gt; y);</pre>
+
+
+<p class="wikiPara">
+UPDATE: to see just how crazy this is, consider that the following <i class="wikiEmphasis">does</i> compile:
+</p>
+
+<pre class="wikiPreformatted">Expression&lt;java.sql.Date&gt; x = ....;
+Expression&lt;java.sql.Time&gt; y = ....;
+q.where( qb.lessThan(x, y) );</pre>
+
+</div>
+

@@ -1,0 +1,141 @@
+---
+title: "Query improvements and better Neo4j support - Hibernate OGM 4.1.0.Beta6 is out"
+author: "Gunnar Morling"
+blogger_name: "Gunnar"
+creation_date: "08-08-2014"
+tags: [Hibernate,News]
+
+relative_url: /2014/08/08/query-improvements-and-better-neo-4-j-support-hibernate-ogm-410-beta-6-is-out
+slug: query-improvements-and-better-neo-4-j-support-hibernate-ogm-410-beta-6-is-out
+lace: http://in.relation.to/29175.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/08/08/query-improvements-and-better-neo-4-j-support-hibernate-ogm-410-beta-6-is-out
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The Hibernate team is very happy to announce the release of another Beta of Hibernate OGM 4.1!
+</p>
+
+<p class="wikiPara">
+Progress has been made with respect to query execution and the Neo4j dialect. Also we do provide a so-called <q>Bill of Materials</q> POM now which the Maven users out there will appreciate (details below).
+</p>
+
+<p class="wikiPara">
+The GAV coordinates to be used with Maven, Gradle etc. are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-core:4.1.0.Beta6</i> for the OGM engine and</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-&lt;%DATASTORE%&gt;:4.1.0.Beta6</i>, depending on the backend you want to use.</li>
+</ul>
+
+<p class="wikiPara">
+Alternatively you can fetch a <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.1.0.Beta6/" target="" class="regularLink">release bundle</a> containing Hibernate OGM and all its dependencies from SourceForge.
+</p>
+
+<p class="wikiPara">
+Please note that this new release requires <b>Hibernate ORM 4.3.6.Final</b> or later.
+</p>
+
+<h3 class="wikiHeadline3" id="H-QueryImprovements"><a href="/2014/08/08/query-improvements-and-better-neo-4-j-support-hibernate-ogm-410-beta-6-is-out#H-QueryImprovements">Query improvements</a></h3>
+
+<p class="wikiPara">
+We've reworked major parts of the integration with the query execution machinery from ORM. This enables quite a few improvements in the field of JP-QL as well as native queries.
+</p>
+
+<p class="wikiPara">
+One is support for <b>polymorphic queries</b> also on those backends which don't use Hibernate Search for querying (Neo4j and MongoDB). This means queries targetting a super-class will return instances of any mapped sub-class as well.
+</p>
+
+<p class="wikiPara">
+Furthermore, Hibernate OGM now shows the same behavior with respect to <b>auto-flushing</b> you already know from Hibernate ORM. That is, if you submit a query, all pending changes to entities of the effected types will be flushed to the data store in order to ensure queries don't return any stale data. Whereas this works nicely on stores supporting full transaction semantics (namely, Neo4j), some care must be taken on stores with limited or non-existing rollback capabilities. Refer to the <a href="https://docs.jboss.org/hibernate/ogm/4.1/reference/en-US/html_single/#ogm-mongodb-queries" target="" class="regularLink">reference guide</a> to learn more about the details.
+</p>
+
+<p class="wikiPara">
+In addition we took measures to <b>cache native queries</b> derived from JP-QL queries. Note that this requires Hibernate ORM 4.3.6.Final or newer. Generally we strive for compatibility with a complete minor release family (4.3.x), but in this case we need to make use of some advanced SPIs only introduced in 4.3.6. The module ZIP we provide for WildFly contains an updated ORM module as well. This will be added along side the existing ORM module, which remains unchanged.
+</p>
+
+<h3 class="wikiHeadline3" id="H-MoreNaturalAssociationMappingsInNeo4j"><a href="/2014/08/08/query-improvements-and-better-neo-4-j-support-hibernate-ogm-410-beta-6-is-out#H-MoreNaturalAssociationMappingsInNeo4j">More natural association mappings in Neo4j</a></h3>
+
+<p class="wikiPara">
+As part of our ongoing work on the Neo4j dialect, <b>associations</b> are mapped to relationships finally the way you'd expect it. There used to be redundant properties on associations which are gone now. Only actual association properties are stored on relationships, e.g. the order of the elements of an ordered list. The following shows an example:
+</p>
+
+<div align="center"><img src="https://i.imgur.com/RV1ApUe.png"></div>
+
+<p class="wikiPara">
+Here we have an entity <tt>Father</tt> with an ordered collection of <tt>Child</tt> entities which is mapped by a relationship to each <tt>Child</tt> node. The <tt>birthorder</tt> attribute (the name has been given via <tt>@OrderColumn</tt>) is stored as property on the relationships, just as it naturally makes sense.
+</p>
+
+<p class="wikiPara">
+On a tangent, we've updated to <b>Neo4j 2.1.3</b>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SimplifiedVersionManagement"><a href="/2014/08/08/query-improvements-and-better-neo-4-j-support-hibernate-ogm-410-beta-6-is-out#H-SimplifiedVersionManagement">Simplified version management</a></h3>
+
+<p class="wikiPara">
+Another big usage improvement for Maven users comes in form of our new <b>Bill of Material POM</b> (BOM). This POM defines a set of matching versions of the Hibernate OGM modules and their dependencies, such as Hibernate ORM, Hibernate Search or the different datatstore connectors.
+</p>
+
+<p class="wikiPara">
+All you need to do is to add this BOM to the <i class="wikiEmphasis">dependencyManagement</i> block of your project POM using the special <i class="wikiEmphasis">import</i> scope:
+</p>
+
+<pre class="wikiPreformatted brush: xml">&lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-ogm-bom&lt;/artifactId&gt;
+            &lt;version&gt;4.1.0.Beta6&lt;/version&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;</pre>
+
+<p class="wikiPara">
+  
+Then you can declare dependencies to Hibernate OGM or any of the related modules without specifying a version, which you will get automatically from the BOM:
+</p>
+
+<pre class="wikiPreformatted brush: xml">&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-ogm-mongodb&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-search-orm&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate.javax.persistence&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-jpa-2.1-api&lt;/artifactId&gt;
+    &lt;/dependency&gt;
+    ...
+&lt;/dependencies&gt;</pre>
+
+<p class="wikiPara">
+  
+To update to a new version of Hibernate OGM, simply update the referenced version of the BOM. This in turn will give you updated versions of any dependencies as required.
+</p>
+
+<h1 class="wikiHeadline1" id="H-YourFeedbackMatters"><a href="/2014/08/08/query-improvements-and-better-neo-4-j-support-hibernate-ogm-410-beta-6-is-out#H-YourFeedbackMatters">Your feedback matters</a></h1>
+
+<p class="wikiPara">
+As we're approaching the Final release of Hibernate OGM 4.1 soon, your feedback matters more than ever! You can use the following tools to get in touch:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://forum.hibernate.org/viewforum.php?f=31" target="" class="regularLink">User forum</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/OGM" target="" class="regularLink">Issue tracker</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://lists.jboss.org/mailman/listinfo/hibernate-dev" target="" class="regularLink">Mailing list</a>
+</li>
+</ul>
+</div>
+

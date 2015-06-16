@@ -1,0 +1,59 @@
+---
+title: "No more hibernate-annotations module"
+author: "Strong Liu"
+blogger_name: "StrongLiu"
+creation_date: "05-04-2012"
+tags: [Hibernate]
+
+relative_url: /2012/04/05/no-more-hibernateannotations-module
+slug: no-more-hibernateannotations-module
+lace: http://in.relation.to/23081.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/04/05/no-more-hibernateannotations-module
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+dear hibernate users,
+</p>
+
+<p class="wikiPara">
+I helped some community users on IRC recently which run into issues when migrating to 4.0, and the most popular issue I'm seeing is caused by the <i class="wikiEmphasis">hibernate-anntations</i> module dependency, so, I would like to explain it again.
+</p>
+
+<p class="wikiPara">
+we MERGED this module into hibernate-core since hibernate core 3.6 release, see the <a href="http://in.relation.to/Bloggers/HibernateCore360FinalRelease" target="" class="regularLink">release note</a> of 3.6.
+</p>
+
+<p class="wikiPara">
+so, maven / gradle users, you just need to add hibernate-core ( and hibernate-entitymanager if you're using JPA ) to your dependency list, and remove hibernate-annotation dependency if it is there.
+</p>
+
+
+<p class="wikiPara">
+some background:
+</p>
+
+<p class="wikiPara">
+before hibernate-core 3.5, it was JDK 1.4 compatible, so, to use Annotation,  the new feature of JDK 1.5, we had to create a new module, aka, hibernate-annotations
+</p>
+
+<p class="wikiPara">
+but since we had moved to JDK 1.5 since hibernate-core 3.5, there is no reason to keep hibernate-annotations as a separated module, so, we merged back into hibernate-core.
+</p>
+
+<p class="wikiPara">
+------------------------ chinese below ---------------------------
+</p>
+
+<p class="wikiPara">
+我注意到很多人在迁移到hibernate orm 4.x的过程中, 遇到最多的一个问题是关于hibernate-annotations的, 这里, 需要再重申一下, 从hibernate core 3.6开始, 就没有hibernate-annotations这个项目了, 它已经被整合进了hibernate-core, 所以, 如果你在使用hibernate-core 3.6 / 4.x的话, 请把hibernate-annotation这个依赖移除掉 (事实上, 如果有的话, 那你可能在使用错误的版本, 因为根本就不存在 3.6 / 4.x 版本的hibernate-annotations)
+</p>
+
+<p class="wikiPara">
+在hibernate core 3.2 / 3.3的时代, hibernate-core需要兼容JDK1.4, 所以为了能够使用JDK1.5中出现的annotation, 我们必须创建一个新的项目, 即hibernate-annotations, 而从hibernate-core 3.5开始, 我们抛弃了JDK1.4转向了1.5, 所以, 就没有必要在把annotations放在一个单独的项目当中了.</p>
+</div>
+

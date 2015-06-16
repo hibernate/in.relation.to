@@ -1,0 +1,39 @@
+---
+title: "Hibernate 3.5.0.Beta-1 released"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "21-08-2009"
+tags: [Core Release,Hibernate,News]
+
+relative_url: /2009/08/21/hibernate-350-beta-1-released
+slug: hibernate-350-beta-1-released
+lace: http://in.relation.to/12153.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/08/21/hibernate-350-beta-1-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+This is the first release towards supporting <a href="http://jcp.org/en/jsr/detail?id=317" target="" class="regularLink">JPA 2</a>.  Most of the APIs are implemented.  Some know limitations for this beta include:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Some of the 'metamodel' APIs are still unimplemented, specifically differentiating between declared attributes and attributes (same wording as java.lang.reflect).  The getDeclaredXYZ methods simply return null in this release.</li>
+<li class="wikiUnorderedListItem"> 'criteria' query building is fully implemented aside from defining subquery correlations, to the best of my knowledge and current state of the spec.  However, compiling criteria queries is unimplemented scheduled for the next release.</li>
+</ul>
+
+<p class="wikiPara">
+Additionally, initial support for <q>fetch profiles</q> has been added in this release.  Currently only join-fetching is supported as a strategy in fetch profiles.
+</p>
+
+<p class="wikiPara">
+The artifacts have all been published to the JBoss Maven repository.  Additionally the release bundles have been uploaded to <a href="https://sourceforge.net/projects/hibernate/files/hibernate3/3.5.0.Beta-1/" target="" class="regularLink">SourceForge</a>.
+</p>
+
+<p class="wikiPara">
+This is also the first version bundling annotations, entitymanager and envers together with the other core modules.  Moving forward all will be versioned and released together.</p>
+</div>
+

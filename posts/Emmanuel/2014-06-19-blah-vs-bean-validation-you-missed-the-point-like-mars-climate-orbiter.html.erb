@@ -1,0 +1,191 @@
+---
+title: "Blah vs Bean Validation: you missed the point like Mars Climate Orbiter"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "19-06-2014"
+tags: [Bean Validation,Hibernate Validator,News]
+
+relative_url: /2014/06/19/blah-vs-bean-validation-you-missed-the-point-like-mars-climate-orbiter
+slug: blah-vs-bean-validation-you-missed-the-point-like-mars-climate-orbiter
+lace: http://in.relation.to/26738.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/06/19/blah-vs-bean-validation-you-missed-the-point-like-mars-climate-orbiter
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+This post is about validation, Bean Validation specifically. And the <i class="wikiEmphasis">what</i> it solves.
+It is a reaction to a <a href="http://jto.github.io/articles/scala_is_faster_than_java/" target="" class="regularLink">post by Julien Tournay</a> which basically claims - if I sum it up - that:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Scala is faster than Java (he is coming from far far away on that one - du diable vauvert as we say in French)</li>
+<li class="wikiUnorderedListItem"> Bean Validation is kind of crap</li>
+<li class="wikiUnorderedListItem"> The new Play Unified Validation API is awesome</li>
+</ul>
+
+<p class="wikiPara">
+I usually am old and wise enough not to answer these kind of posts.
+But I want to feel the blood of my youth again damn it!
+After all I am from an era when <a href="http://www.theserverside.com" target="" class="regularLink">The Server Side</a> was all the rage, trolls had real teeth, things were black or white. 
+That was good fun.
+</p>
+
+<p class="wikiPara">
+Why the <q>You missed the point like Mars Climate Orbiter</q> title?
+With a sensationalist title like <q>Scala is faster than Java</q>, I had to step up my game.
+Plus Mars Climate Orbiter missed Mars <a href="http://en.wikipedia.org/wiki/Mars_Climate_Orbiter" target="" class="regularLink">due to a conversion error</a>
+and we will talk about conversion today.
+</p>
+
+<p class="wikiPara">
+I won't refute things point by point but rather highlight a few fundamental misunderstandings and explain why things are like they are in Bean Validation and why it makes sense.
+</p>
+
+<h2 class="wikiHeadline2" id="H-JavaWasLimiting"><a href="/2014/06/19/blah-vs-bean-validation-you-missed-the-point-like-mars-climate-orbiter#H-JavaWasLimiting">Java was limiting</a></h2>
+
+<blockquote class="wikiBlockquote">
+IMHO, @emmanuelbernard a créer son API avec les outils a sa disposition - @skaalf
+</blockquote>
+<blockquote class="wikiBlockquote">
+IMHO, @emmanuelbernard has created his API with the tools he had at his disposal - @skaalf
+</blockquote>
+
+<p class="wikiPara">
+We certainly pushed the boundaries of Java when both CDI and Bean Validation were designed and I wished I had more freedom here and there.
+But no Bean Validation is like it is because that's the most <i class="wikiEmphasis">natural</i> way validation is expressed in the Java ecosystem for what we wanted to achieve.
+It is no good to offer something that does not fit into the ecosystem.
+</p>
+
+<p class="wikiPara">
+For example, in Java, people use mutable objects. <q>Mutable</q> believe it or not is not a swear word in this language.
+My understanding is that Play Unified Validation API makes use of Scala's community incline for immutability.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ValidationConversionAndMarshalling"><a href="/2014/06/19/blah-vs-bean-validation-you-missed-the-point-like-mars-climate-orbiter#H-ValidationConversionAndMarshalling">Validation, conversion and marshalling</a></h2>
+
+<p class="wikiPara">
+In the use case Julien takes as an example, a JSON string is unmarshalled, conversion is applied (for dates - darn JSON) and then values are validated.
+He considers it weird that Bean Validation only does the latter and finds the flow wrong.
+</p>
+
+<p class="wikiPara">
+We kept this separation on purpose.
+The expert group vastly agreed that Bean Validation was not in the business of conversion
+and that these steps ((un)marshalling, conversion, validation) should be separated.
+Here is a key reason:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> marshalling and conversions are only at the Java boundaries (Web frameworks, services enpoints, datastores enpoints, etc)</li>
+<li class="wikiUnorderedListItem"> validation happens both at these boundaries but also at key lifecycle events within the Java boundaries</li>
+</ul>
+
+<p class="wikiPara">
+Conceptually, separating validation from the rest makes a lot of sense to enable technology composition and avoid repetitions - more on that latter point later.
+What is important is that for a given boundary, they are properly integrated.
+It's not unlike inlining in compilation.
+</p>
+
+<h2 class="wikiHeadline2" id="H-BeanValidationIsInTheBusinessOfIClasswikiEmphasisnotiBeingCalled"><a href="/2014/06/19/blah-vs-bean-validation-you-missed-the-point-like-mars-climate-orbiter#H-BeanValidationIsInTheBusinessOfIClasswikiEmphasisnotiBeingCalled">Bean Validation is in the business of <i class="wikiEmphasis">not</i> being called</a></h2>
+
+<p class="wikiPara">
+One key point in the design of Bean Validation is that it has been built to be integrated within a cohesive stack more than to be used individually.
+</p>
+
+<p class="wikiPara">
+JPA transparently calls Bean Validation on your objects at the right time.
+JSF calls Bean Validation transparently before populating the beans.
+JAX-RS calls Bean Validation on the inbound and outbound resources transparently.
+Note that these three technologies do address the marshalling and conversion problem already. That's their job.
+</p>
+
+<p class="wikiPara">
+So the key is that an application rarely has to call the Bean Validation API.
+I consider it a failure or an unfinished work when it has to.
+</p>
+
+<p class="wikiPara">
+If you need to explicitly validate some piece of data in a fire and forget way, Bean Validation might not be the best tool. And that's OK.
+</p>
+
+<p class="wikiPara">
+Back to the JSON case.
+When the JSON Binding spec will be out, we will have the same integration that is currently present in Play Unified parsing, conversion and validation API (it could also be done today in Jackson, I'm not sure what extension points this library offers).
+While the three layers marshalling / conversion / validation will be conceptually separated - and I'm sure will report different types of error for better tracking - 
+the implementation will use some specific APIs of Bean Validation to inline validation with the unmarshalling and conversion. 
+That API exists BTW, it is <tt>Validator.validateValue</tt> which lets you validate a value without creating the POJO associated.
+It is used by web frameworks already. Pretty much what Play Unified Validation API does.
+</p>
+
+<p class="wikiPara">
+As for JAX-B and XML binding, well let's say that there is an X in it and that it's not safe for children.
+More seriously, we have integration plans with mapping between the XSD and the Bean Validation constraints but we haven't got around to do it yet.
+</p>
+
+<h2 class="wikiHeadline2" id="H-BeanValidationIsInTheBusinessOfDeclaringConstraintsIClasswikiEmphasisoncei"><a href="/2014/06/19/blah-vs-bean-validation-you-missed-the-point-like-mars-climate-orbiter#H-BeanValidationIsInTheBusinessOfDeclaringConstraintsIClasswikiEmphasisoncei">Bean Validation is in the business of declaring constraints <i class="wikiEmphasis">once</i></a></h2>
+
+<p class="wikiPara">
+From what <a href="https://github.com/jto/validation-bench/blob/master/src/main/scala/io/github/jto/models.scala#L13" target="" class="regularLink">I see of the Play Unified Validation API</a>, you put the declaration / implementation of the validation next the marshalling logic.
+In other words you cannot share the constraint declaration between different marshalling operations or even between object transformations.
+</p>
+
+<p class="wikiPara">
+Bean Validation has been designed to let the user declare the constraints <i class="wikiEmphasis">once</i>
+and have them validated across the whole stack.
+From the web form and service entry points down to the database input/output and schema definition.
+Some even use our metadata facility to propagate the constraints up to the client side (JavaScript).
+</p>
+
+<p class="wikiPara">
+And that's future proof, when we add JSON-B support, boom the constraints already declared are used automatically and for free.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Conclusion"><a href="/2014/06/19/blah-vs-bean-validation-you-missed-the-point-like-mars-climate-orbiter#H-Conclusion">Conclusion</a></h2>
+
+<p class="wikiPara">
+Bean Validation cannot be understood if you take it in isolation.
+It is useful and works in isolation for sure but it shines when integrated in a platform from top to bottom.
+We did and keep doing it in Java EE but we also make sure to keep our APIs and SPIs open for other platforms to do the same.
+Spring famously has been doing some of it.
+</p>
+
+<p class="wikiPara">
+Let's mention a few key features of Bean Validation that are not addressed at all in Play's approach:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> i18n</li>
+<li class="wikiUnorderedListItem"> constraint inheritance</li>
+<li class="wikiUnorderedListItem"> method validation</li>
+<li class="wikiUnorderedListItem"> custom and context sensitive programmatic error report</li>
+<li class="wikiUnorderedListItem"> partially valid object graph - yes that's important in a mutable world</li>
+<li class="wikiUnorderedListItem"> etc</li>
+</ul>
+
+<p class="wikiPara">
+Even a few of these would make Play's stuff much much different.
+</p>
+
+<p class="wikiPara">
+Now with this context properly set, if you read back Julien's complaints about Bean Validation (especially about they design), they fall one by one pretty much. I have to admit their composition approach is much nicer than Bean Validation's which relies on annotated annotations. That's the main thing I miss.
+</p>
+
+<p class="wikiPara">
+Design is choice. Without knowledge to the designer's choices, you can too easily misunderstand her design and motives.
+Julien has been comparing Apples with Oranges, which is ironic for someone working on one of the most type-safe language out there :o)
+</p>
+
+<p class="wikiPara">
+But it's good that more people take data validation holistically and seriously and step up the game.
+Less work for app developers, safer apps, happier customers.
+Judging by the location, I could even share some thoughts over a few rounds of whisky with Julien :)
+</p>
+
+<p class="wikiPara">
+Peace.</p>
+</div>
+

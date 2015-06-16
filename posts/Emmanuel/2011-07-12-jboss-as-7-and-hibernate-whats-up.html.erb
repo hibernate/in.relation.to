@@ -1,0 +1,163 @@
+---
+title: "JBoss AS 7 and Hibernate: what's up?"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "12-07-2011"
+tags: [Hibernate,Hibernate Search,Hibernate Validator,jbossas7]
+
+relative_url: /2011/07/12/jboss-as-7-and-hibernate-whats-up
+slug: jboss-as-7-and-hibernate-whats-up
+lace: http://in.relation.to/20991.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/07/12/jboss-as-7-and-hibernate-whats-up
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+You might have heard the news: <a href="http://www.jboss.org/as7" target="" class="regularLink">JBoss AS 7 is out :)</a> What does it mean from an Hibernate user perspective?
+</p>
+
+<p class="wikiPara">
+Before we go that way and if you are in a hurry <a href="http://in.relation.to/Bloggers/Pete" target="" class="regularLink">Pete</a> has written a few <a href="http://bit.ly/as7tutorials" target="" class="regularLink">getting started guides</a> covering JPA in JBoss AS 7. You might be interested.
+</p>
+
+<p class="wikiPara">
+Back to the subject: JBoss AS 7 and Hibernate.
+</p>
+
+<h1 class="wikiHeadline1" id="H-HibernateCore"><a href="/2011/07/12/jboss-as-7-and-hibernate-whats-up#H-HibernateCore">Hibernate Core</a></h1>
+
+<p class="wikiPara">
+First of all, JBoss AS 7 comes with Hibernate Core 4. This essentially means that AS 7 will be using the new foundational grounds for Hibernate Core.
+Hibernate Core 4 comes with many internal changes:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A new <tt>ServiceRegistry</tt> interface: many pieces of Hibernate are now service based and many contracts have been enhanced (like connections and second level caches)</li>
+<li class="wikiUnorderedListItem"> A <tt>MetadataSources</tt> interface: instead of mixing configuration and mapping like the <tt>Configuration</tt> class was doing, we have now split the concerns and lifecycles</li>
+<li class="wikiUnorderedListItem"> A package refactoring splitting classes into api, spi and internals: if your application depends on internals, you know you might get burnt by a minor/micro update</li>
+<li class="wikiUnorderedListItem"> A new class loader service (see below)</li>
+<li class="wikiUnorderedListItem"> Better logging with consistent error id (our goal is to build an error-id to solution database somewhere over time)</li>
+<li class="wikiUnorderedListItem"> A move to Git and GitHub for version control: hopefully this is speeding up community contribution integration</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-Multitenancy"><a href="/2011/07/12/jboss-as-7-and-hibernate-whats-up#H-Multitenancy">Multi-tenancy</a></h2>
+
+<p class="wikiPara">
+We have also introduced some new features, the most interesting definitely being <a href="/Bloggers/MultitenancyInHibernate" target="" class="regularLink">multi-tenancy</a> (see also <a href="/Bloggers/HibernateAndMultitenancyWebinar" target="" class="regularLink">here</a>).
+</p>
+
+<h2 class="wikiHeadline2" id="H-NewClassloaderService"><a href="/2011/07/12/jboss-as-7-and-hibernate-whats-up#H-NewClassloaderService">New classloader service</a></h2>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Why?</i>
+</p>
+
+<p class="wikiPara">
+Historically, Hibernate relied on standard class-loading paradigms that targeted JSE and JEE deployment environments.  However, with the growth of OSGi and other modular systems like JBoss AS 7, those same approaches no longer always work. So Hibernate needed a new approach that would allow it operate in all possible deployment environments.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">How?</i>
+</p>
+
+<p class="wikiPara">
+In Hibernate 4 we leverage the <tt>ServiceRegistry</tt> to define a pluggable service for providing interaction with the class-loading of the semantics of the environment in which Hibernate will be run. Specifically, the idea is to allow external entities (the user, the environment developers, etc) to define and <q>plug in</q> a custom scheme for class path interactions. For example, an OSGi container could choose to provide Hibernate (either directly or as its JPA provider) and install a custom service for class loader interactions to override the default one.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-HibernateCoreInAS7"><a href="/2011/07/12/jboss-as-7-and-hibernate-whats-up#H-HibernateCoreInAS7">Hibernate Core in AS 7</a></h1>
+
+<p class="wikiPara">
+JBoss AS 7 integrates with Hibernate 4.0.0.Beta1, to provide both the EE container managed JPA features and application managed access as well. The AS7 JPA subsystem integrates with Hibernate via the JPA specification SPI interfaces.  In earlier releases of JBoss AS, JPA integration code was part of the EJB3 container (reflecting the evolution from EJB entity beans).  Moving the JPA integration code into its own subsystem helps simplify the code and makes it easier to make changes.
+</p>
+
+<h2 class="wikiHeadline2" id="H-QuickSecondlevelCacheTip"><a href="/2011/07/12/jboss-as-7-and-hibernate-whats-up#H-QuickSecondlevelCacheTip">Quick second-level cache tip</a></h2>
+
+<p class="wikiPara">
+Enabling the (Infinispan) second level cache should be as simple as including the following in your <tt>persistence.xml</tt> file:
+</p>
+
+<pre class="wikiPreformatted brush:xml">  &lt;shared-cache-mode&gt;ENABLE_SELECTIVE&lt;/shared-cache-mode&gt;
+  &lt;properties&gt;
+    &lt;property name="hibernate.cache.infinispan.cachemanager" value="java:jboss/infinispan/hibernate"/&gt;
+    &lt;property name="hibernate.cache.region.factory_class" value="org.hibernate.cache.infinispan.JndiInfinispanRegionFactory"/&gt;
+  &lt;/properties&gt;</pre>
+
+
+<p class="wikiPara">
+I (aka Scott Marlow) would like to thank the following people for contributing to the JBoss AS7 JPA subsystem:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Stuart Douglas for contributing to the JPA subsystem.</li>
+<li class="wikiUnorderedListItem"> Steve Ebersole for contributing to the JPA subsystem (especially Hibernate 4.0 integration).</li>
+<li class="wikiUnorderedListItem"> Jaikiran Pai for contributing to the JPA subsystem and answering an amazing number of questions in the forums (JPA + hundreds of other topics).</li>
+<li class="wikiUnorderedListItem"> Emmanuel Bernard for answering my never ending JPA 2.0 specification questions.</li>
+<li class="wikiUnorderedListItem"> Carlo de Wolf for answering my questions about the EJB3 subsystem (which the new code is based on).</li>
+</ul>
+
+
+<h2 class="wikiHeadline2" id="H-WhatIsNext"><a href="/2011/07/12/jboss-as-7-and-hibernate-whats-up#H-WhatIsNext">What is next</a></h2>
+
+<p class="wikiPara">
+Improving support for applications that use a different version of Hibernate than is packaged with JBoss AS 7.  The plan is to let users deploy the Hibernate jars as well as a hibernate-jbossas7 integration jar. The integration jar will be tailored to the specific couple of Hibernate / JBoss AS version (or families of).
+</p>
+
+<p class="wikiPara">
+To be clear, Hibernate native applications can already include their own version of Hibernate in JBoss AS 7 simply by including the jar in their deployment. But we want JPA applications to benefit from this enhancement as well. Because it involves specification classes, this requires a bit more work.
+</p>
+
+<p class="wikiPara">
+We will also include additional tuning options to disable some of the JPA integration (ie prevent the container from starting the persistence unit).
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-HibernateValidatorAndBeanValidation"><a href="/2011/07/12/jboss-as-7-and-hibernate-whats-up#H-HibernateValidatorAndBeanValidation">Hibernate Validator and Bean Validation</a></h1>
+
+<p class="wikiPara">
+What's new in AS7 in relation to Bean Validation? The short answer - nothing. It was already awesome ;) The initial version - AS 7.0 - ships with Hibernate Validator 4.1.0.Final. This is the same Validator version as in AS 6 so no change there.
+</p>
+
+<p class="wikiPara">
+The long answer is that Hibernate Validator 4.2.0.Final merely missed the AS 7.0 release train and an upgrade is planned at the latest in AS 7.1. What will the update mean for AS users? Besides the usual bug fixes and performance improvements, the biggest new feature is the implementation of appendix C of the Bean Validation specification: method level validation.
+</p>
+
+<p class="wikiPara">
+With this API a <q><a href="http://en.wikipedia.org/wiki/Design_by_contract" target="" class="regularLink">design by contract</a></q> approach is possible which can already be seen in action in the <a href="http://seamframework.org/Seam3/ValidationModule" target="" class="regularLink">Seam Validation</a> module. Another new feature is the ability to combine the composing constraints with AND and OR operators. There is also a fail fast mode in which validation stops on the first validation error and a new message interpolator which is able to interpolate the validated value.
+</p>
+
+<p class="wikiPara">
+As you can see AS 7.0 is just the beginning. More is to come in the coming releases...
+</p>
+
+<h1 class="wikiHeadline1" id="H-HibernateSearch"><a href="/2011/07/12/jboss-as-7-and-hibernate-whats-up#H-HibernateSearch">Hibernate Search</a></h1>
+
+
+<p class="wikiPara">
+We are working on Hibernate Search 4 which will be compatible with Hibernate Core 4. As a matter of fact, we have already published a compatible version via a Maven SNAPSHOT but expect a first alpha release soon.
+</p>
+
+<p class="wikiPara">
+Hibernate Search 4 is our chance to fix mistakes from the past. To be honest, the codebase and concepts have aged quite well despite the massive feature shifts we have done in Hibernate Search. Anyways, we are doing some changes including splitting API/SPI/implementations to help people discover when they use a class that is subject to change.
+</p>
+
+<p class="wikiPara">
+We are also working on a new per index manager to better use some of the new features and design changes of Lucene. This will give you more flexibility on how to index data on a per entity level (sync/async etc).
+</p>
+
+<p class="wikiPara">
+And remember, go try the <a href="http://jboss.org/as7" target="" class="regularLink">blazingly fast, lightweight, modular, hot and incremental deployable, elegantly administrable, domain manageable, first class best of breed JBoss Application Server 7</a>
+</p>
+
+<p class="wikiPara">
+Happy code/fast deploy/test cycles :)
+</p>
+
+<p class="wikiPara">
+Steve, Hardy, Scott Marlow and Emmanuel</p>
+</div>
+

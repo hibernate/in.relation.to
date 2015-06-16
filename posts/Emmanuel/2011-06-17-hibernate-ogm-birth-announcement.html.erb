@@ -1,0 +1,180 @@
+---
+title: "Hibernate OGM: birth announcement"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "17-06-2011"
+tags: [Hibernate,Hibernate OGM,jbw2011keynote,jbwkeynote2011]
+
+relative_url: /2011/06/17/hibernate-ogm-birth-announcement
+slug: hibernate-ogm-birth-announcement
+lace: http://in.relation.to/20842.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/06/17/hibernate-ogm-birth-announcement
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+This is a pretty exciting moment, the first public alpha release of a brand new project: Hibernate OGM. Hibernate OGM stands for Object Grid Mapping and its goal is to offer a full-fledged JPA engine storing data into NoSQL stores. This is a rather long blog entry so I've split it into distinct sections from goals to technical detail to future. 
+</p>
+
+<p class="wikiPara">
+Note that I say it's the first public alpha because the JBoss World Keynote 2011 was powered by Hibernate OGM Alpha 1. Yes it was 100% live and nothing was faked, No it did not crash :) Sanne explained <a href="http://in.relation.to/Bloggers/WhatYouDidNotSeeAtTheJBossWorld2011KeynoteDemo" target="" class="regularLink">in more detail</a> how we used Hibernate OGM in the demo. This blog entry is about Hibernate OGM itself and how it works.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhyHibernateOGM"><a href="/2011/06/17/hibernate-ogm-birth-announcement#H-WhyHibernateOGM">Why Hibernate OGM</a></h1>
+
+<p class="wikiPara">
+One of the objectives of the <a href="http://infinispan.org" target="" class="regularLink">Infinispan</a> team is to offer a higher level API for object manipulation. One thing leading to another, we have experimented with JPA and Hibernate Core's engine to see if this could fit the bill: looks like it does. The vision has quickly expanded though and Hibernate OGM is now an independent project aiming to offer JPA on top of other NoSQL stores too.
+</p>
+
+<p class="wikiPara">
+At JBoss, we strongly believe that provided tools become available, developers, applications and whole corporations will exploit new data usage patterns and create value out of it. We want to speed up this adoption / experimentation and bring it to the masses. NoSQL is like sex for teenagers: everybody is talking about it but few have actually gone for it. It's not really surprising, NoSQL solutions are inherently complex, extremely diverse and come with quite different strengths and weaknesses: going for it implies a huge investment (in time if not money). (One of) JBoss's goal is to help lower the barrier of entry and Hibernate OGM is right inline with this idea.
+</p>
+
+<p class="wikiPara">
+We want to simplify the programmatic model of various NoSQL approaches by offering a familiar one to many Java developers: JPA. The good thing about a familiar and common programmatic model is that it's easy to try out one data backend and move to another down the road without affecting dramatically the application design.
+</p>
+
+<p class="wikiPara">
+So when should you use Hibernate OGM? We are not claiming (that would be foolish) that all NoSQL use cases can and will be addressed by JPA and Hibernate OGM. However, if you build a domain model centric application, this will be a useful tool for you. We will also expand Hibernate OGM feature set and use cases to address different areas (like fronting a RDBMS with a NoSQL store). Besides, Hibernate OGM is not an all or nothing tool. You can very well use it for some of the datastore interactions and fall back to your datastore native API for more advanced features or custom query mechanism. No lock-in here.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-HowDoesItWork"><a href="/2011/06/17/hibernate-ogm-birth-announcement#H-HowDoesItWork">How does it work</a></h1>
+
+<p class="wikiPara">
+Basically, we are reusing the very mature Hibernate Core engine and trick it into storing data into a grid :) We plug into Hibernate Core via two main contracts named <tt>Loader</tt> and <tt>Persister</tt>. As you could expect, these load and persist/update/delete entities and collections. 
+</p>
+
+<p class="wikiPara">
+Early in the project, we have decided to keep as much of the goodies of the relational model as possible:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> store entities as tuples</li>
+<li class="wikiUnorderedListItem"> keep the notion of primary key and foreign key (foreign keys violation are not enforced though - yet)</li>
+<li class="wikiUnorderedListItem"> keep an (optional) indirection layer between the application data model and the datastore data model</li>
+<li class="wikiUnorderedListItem"> limit ourselves to core data types to maximize portability</li>
+</ul>
+
+<p class="wikiPara">
+Entities are stored as tuples which essentially is a <tt>Map&lt;String,Object&gt;</tt> where the key is the column name and the value is the column value. In most cases, the property is mapped to a column but this can be de-correlated (<tt>@Column</tt>). An entity tuple is accessible via a single key lookup. Associations as a bit trickier because unlike RDBMs, many NoSQL stores and Grid specifically do not have build-in query engines and thus cannot query for associated data easily. Hibernate OGM stores navigational information to go from a given entity to its association information. This is achieved by a single key lookup. The drawback here is that writing requires several key lookup / update operations.
+</p>
+
+<p class="wikiPara">
+Here is a schema representing the object model, the relational model and finally how data is stored in the data grid.
+</p>
+
+<div style="text-align:center">
+<img src="/images/20848.png" width="632" height="608">
+</div>
+
+<p class="wikiPara">
+All this means that we do not store entity objects in the grid but rather a dehydrated version of them. And this is a good thing. Blindly serializing entities would have led to many issues including:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> When entities are pointing to other entities, are you storing the whole graph?</li>
+<li class="wikiUnorderedListItem"> How do you guarantee object identity or even consistency amongst duplicated objects?</li>
+<li class="wikiUnorderedListItem"> What happens in case of class schema change?</li>
+<li class="wikiUnorderedListItem"> How do you query your data?</li>
+<li class="wikiUnorderedListItem"> How to replicate class definitions to other nodes?</li>
+</ul>
+
+<p class="wikiPara">
+Unless you store relatively simple and short lived data, never go for blind serialization. Hibernate OGM does this smart dehydration for you.
+</p>
+
+<p class="wikiPara">
+For more information on how we did things, please have a look at the <a href="http://docs.jboss.org/hibernate/ogm/3.0/reference/en-US/html_single/#ogm-architecture" target="" class="regularLink">architecture section</a> of Hibernate OGM's reference documentation.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatIsSupportedTodayAndWhatAboutTomorrow"><a href="/2011/06/17/hibernate-ogm-birth-announcement#H-WhatIsSupportedTodayAndWhatAboutTomorrow">What is supported today and what about tomorrow?</a></h1>
+
+<p class="wikiPara">
+Today Hibernate OGM is quite stable for everything CRUD (Create, Read, Update, Delete) and of course extremely stable for all the JPA object lifecycle rules as we simply reuse Hibernate Core's engine. Here is an excerpt on the things supported but for the full detail, please go check the reference documentation that list what is not supported.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> CRUD operations for entities</li>
+<li class="wikiUnorderedListItem"> properties with simple (JDK) types</li>
+<li class="wikiUnorderedListItem"> embeddable objects</li>
+<li class="wikiUnorderedListItem"> entity hierarchy</li>
+<li class="wikiUnorderedListItem"> identifier generators (TABLE and all in-memory based generators today)</li>
+<li class="wikiUnorderedListItem"> optimistic locking</li>
+<li class="wikiUnorderedListItem"> <tt>@ManyToOne</tt>, <tt>@OneToOne</tt>, <tt>@OneToMany</tt> and <tt>@ManyToMany</tt> associations</li>
+<li class="wikiUnorderedListItem"> bi-directional associations</li>
+<li class="wikiUnorderedListItem"> <tt>Set</tt>, <tt>List</tt> and <tt>Map</tt> support for collections</li>
+<li class="wikiUnorderedListItem"> most Hibernate native APIs (like <tt>Session</tt>) and JPA APIs (like <tt>EntityManager</tt>)</li>
+<li class="wikiUnorderedListItem"> same bootstrap model found in JPA or Hibernate Core: in JPA, set <tt>&lt;provider&gt;</tt> to <tt>org.hibernate.ogm.jpa.HibernateOgmPersistence</tt> and you're good to go</li>
+</ul>
+
+<p class="wikiPara">
+Since Hibernate OGM is a JPA implementation, you simply configure and use it like you would use Hibernate Core and you map your entities with the JPA annotations. Same thing, nothing new here. Check our the <a href="http://docs.jboss.org/hibernate/ogm/3.0/reference/en-US/html_single/#ogm-gettingstarted" target="" class="regularLink">getting started</a> section in our reference documentation.
+</p>
+
+<p class="wikiPara">
+What we do not support today is JP-QL. Support for simple-ish queries is due very soon and will be based on Hibernate Search indexing and querying capabilities. However, you can already use Hibernate Search directly with Hibernate OGM. You can even <a href="http://community.jboss.org/wiki/InfinispanAsADirectoryForLucene" target="" class="regularLink">store your index in Infinispan</a>, in <a href="http://sourceforge.net/projects/voldemortlucene/" target="" class="regularLink">Voldemort</a> or in <a href="http://blog.sematext.com/2010/02/09/lucandra-a-cassandra-based-lucene-backend/" target="" class="regularLink">Cassandra</a> (and others).
+</p>
+
+<p class="wikiPara">
+Also, the NoSQL solution initially supported is Infinispan. The reasons behind it are quite simple:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> we had to start with one</li>
+<li class="wikiUnorderedListItem"> key/value is a simple model</li>
+<li class="wikiUnorderedListItem"> we can kick some JBoss employees in the nuts if we find a bug or need a feature</li>
+<li class="wikiUnorderedListItem"> we have a very good in-house knowledge about Infinispan's isolation and transaction model and it happens to be quite close to the relational model</li>
+</ul>
+
+<p class="wikiPara">
+That being said, we do intend to support other NoSQL engines especially other key/value engines very soon. We have some abstractions in place already so they do need polishing. If you know a NoSQL solution and want to write a dialect for Hibernate OGM, please come talk to us and contribute.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Future"><a href="/2011/06/17/hibernate-ogm-birth-announcement#H-Future">Future</a></h1>
+
+<p class="wikiPara">
+We are at the very beginning of the project and the future is literally being shaped. Here are a few thing we have in plan:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> support for other key/value pair systems</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> support for other NoSQL engine</li>
+<li class="wikiUnorderedListItem"> declarative denormalization: we have focused on feature so far, performance check and association denormalization is planned)</li>
+<li class="wikiUnorderedListItem"> support for complex JP-QL queries including to-many joins and aggregation</li>
+<li class="wikiUnorderedListItem"> fronting existing JPA applications</li>
+</ul>
+
+<p class="wikiPara">
+This is a community driven effort, if one of these areas interest you or if you have other ideas, <a href="http://docs.jboss.org/hibernate/ogm/3.0/reference/en-US/html_single/#ogm-howtocontribute" target="" class="regularLink">let us know</a>!
+</p>
+
+<h1 class="wikiHeadline1" id="H-HowToDownloadAndComeContribute"><a href="/2011/06/17/hibernate-ogm-birth-announcement#H-HowToDownloadAndComeContribute">How to download and come contribute!</a></h1>
+
+<p class="wikiPara">
+You can download the jars on JBoss.org's <a href="http://repository.jboss.org/nexus/content/groups/public-jboss/" target="" class="regularLink">Maven repository</a> or of course <a href="http://www.hibernate.org/subprojects/ogm/download" target="" class="regularLink">download the distribution</a> (I'd recommend you download the distribution as it contains a consistent documentation with the release you wish to use). 
+</p>
+
+<p class="wikiPara">
+Speaking of documentation, we tried to initially release with a fairly advanced reference documentation. In particular, the getting started and the architecture sections are quite complete: <a href="http://docs.jboss.org/hibernate/ogm/3.0/reference/en-US/html_single/" target="" class="regularLink">check it out</a>.
+</p>
+
+<p class="wikiPara">
+Last but not least, Hibernate OGM is in its infancy, if you're interested in contributing or have ideas on how things should be done, <a href="http://docs.jboss.org/hibernate/ogm/3.0/reference/en-US/html_single/#ogm-howtocontribute" target="" class="regularLink">let us know and speak up</a>!
+</p>
+
+<p class="wikiPara">
+Many thanks to the team, to external contributors as well as the <a href="http://www.cloudtm.eu" target="" class="regularLink">Cloud-TM project</a> members for their support and tests.
+</p>
+
+<p class="wikiPara">
+Emmanuel and the team.</p>
+</div>
+

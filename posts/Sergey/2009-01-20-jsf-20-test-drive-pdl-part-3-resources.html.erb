@@ -1,0 +1,66 @@
+---
+title: "JSF 2.0. Test Drive PDL. Part 3. Resources"
+author: "Sergey Smirnov"
+blogger_name: "Sergey"
+creation_date: "20-01-2009"
+tags: [JavaServer Faces,RichFaces]
+
+relative_url: /2009/01/20/jsf-20-test-drive-pdl-part-3-resources
+slug: jsf-20-test-drive-pdl-part-3-resources
+lace: http://in.relation.to/10488.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/01/20/jsf-20-test-drive-pdl-part-3-resources
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+If you compare the look-n-feel of our <a href="http://livedemo.exadel.com/richfaces4-panel-2/" target="" class="regularLink">new panel</a> after step <tt>#2</tt> and the one on the <a href="http://livedemo.exadel.com/richfaces-demo/richfaces/panel.jsf?c=panel&amp;tab=usage" target="" class="regularLink">richfaces-demo</a>, you can see one important difference. Our new panel misses the gradient in the header background.
+</p>
+
+<p class="wikiPara">
+Let's try to find a solution using JSF 2.0 PDL.
+</p>
+
+<p class="wikiPara">
+RichFaces components have one important peculiarity. They are skinnable based on the predefined set of skin paramaters. Most graphic images used in the components, such as the gradient background image of the rich panel, are not static, but generated with the java classes using the same set of skin-parameters. 
+</p>
+
+<p class="wikiPara">
+In the JSF 2.0 PDL, we can refer to a resource such as an image using the following expression:
+</p>
+
+
+<pre class="wikiPreformatted">#{resources['foo/bar/foobar.gif']}</pre>
+
+
+
+<p class="wikiPara">
+According to the Mojarra spurce code, it reads only the static resource from the classpath and hardcodded folder 'resources' from the web root. Mojarra does not presume that resource can be generated dynamically. Thus, for the sake of simplicity, let's drop the idea of skinnability for now and take the gradient for default blueSky skin.
+</p>
+
+<p class="wikiPara">
+We have drop the static image to the <tt>{webroot}/resources/img/</tt> folder and add just three lines to the css file:
+</p>
+
+<pre class="wikiPreformatted">
+.rich-panel-header{
+ ....... 
+ background-position:left top;
+ background-repeat:repeat-x;
+ background-image: url(#{resource['rich/img/panel_header.png']})
+}</pre>
+
+
+
+<p class="wikiPara">
+That is it. We can see the gradient in the panel header background now. The new panel after step <tt>#3</tt> looks like that:
+</p>
+
+
+<p class="wikiPara">
+<a href="http://livedemo.exadel.com/richfaces4-panel-3/" target="" class="regularLink">http://livedemo.exadel.com/richfaces4-panel-3/</a></p>
+</div>
+

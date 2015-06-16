@@ -1,0 +1,144 @@
+---
+title: "Bean Validation (JSR 303) Public Draft: give us feedback"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "06-01-2009"
+tags: [Bean Validation]
+
+relative_url: /2009/01/06/bean-validation-jsr-303-public-draft-give-us-feedback
+slug: bean-validation-jsr-303-public-draft-give-us-feedback
+lace: http://in.relation.to/10416.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/01/06/bean-validation-jsr-303-public-draft-give-us-feedback
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The public draft of Bean Validation is finally out and available <a href="http://jcp.org/en/jsr/detail?id=303" target="" class="regularLink">here on the JCP website</a>. We have made a lot of improvements and took a lot of feedback from you since the last draft:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> interface-based groups</li>
+<li class="wikiUnorderedListItem"> constraint composition</li>
+<li class="wikiUnorderedListItem"> built-in constraints</li>
+<li class="wikiUnorderedListItem"> multiple reports per constraint violation</li>
+<li class="wikiUnorderedListItem"> bootstrap API</li>
+<li class="wikiUnorderedListItem"> method level validation</li>
+<li class="wikiUnorderedListItem"> integration with JPA, JSF and Java EE</li>
+</ul>
+
+<p class="wikiPara">
+Please go check the spec and give us your feedback <a href="http://forum.hibernate.org/viewforum.php?f=26" target="" class="regularLink">in our forum</a>. We plan to get a final spec early february, so don't delay :)
+</p>
+
+<h1 class="wikiHeadline1" id="H-Groups"><a href="/2009/01/06/bean-validation-jsr-303-public-draft-give-us-feedback#H-Groups">Groups</a></h1>
+
+<p class="wikiPara">
+The fundamental notion of group is basically unchanged but it has morphed into a much more type-safe and cleaner beast. Instead of declaring groups as strings, groups are now interfaces. This has several advantages including:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> easier to find a group usage in IDEs</li>
+<li class="wikiUnorderedListItem"> errors due to typos will be visible at compilation time rather than runtime</li>
+<li class="wikiUnorderedListItem"> groups can inherit from each other using the natural interface inheritance model. This allows group composition.</li>
+<li class="wikiUnorderedListItem"> partial validation based on interfaces hosting constraint definitions</li>
+</ul>
+
+<pre class="wikiPreformatted">
+/** 
+ * Customer can buy bypassing the harassing checking process 
+ * 
+ * @author Emmanuel Bernard 
+ */ 
+public interface BuyInOneClick extends Default, Billable {} 
+
+/** 
+ * User representation 
+ */ 
+public class User { 
+    @NotNull private String firstname; 
+    @NotNull(groups = Default.class) private String lastname; 
+    @NotNull(groups = {Billable.class}) private CreditCard defaultCreditCard; 
+}
+
+Set&lt;ConstraintViolation&gt; violations = validator.validate(user, BuyInOneClick.class);</pre>
+
+
+<p class="wikiPara">
+The spec is very readable and has a lot of real-life examples, check section 3.4.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Constraints"><a href="/2009/01/06/bean-validation-jsr-303-public-draft-give-us-feedback#H-Constraints">Constraints</a></h1>
+
+<p class="wikiPara">
+Constraints can now declaratively be composed of more primitive constraints. This both helps to reduce code duplication and to allow primitive constraints to be exposed in the metadata and used by tools like JavaScript generators. 
+</p>
+
+<pre class="wikiPreformatted">@Numerical
+@Size(min=5, max=5)
+@ConstraintValidator(FrenchZipcodeValidator.class)
+@Documented
+@Target({ANNOTATION_TYPE, METHOD, FIELD})
+@Retention(RUNTIME)
+public @interface FrenchZipCode {
+    String message() default "Wrong zipcode";
+    Class&lt;?&gt;[] groups() default {};
+}
+</pre>
+
+<p class="wikiPara">
+I described the idea in more details in this <a href="/Bloggers/ConstraintCompositionProposalInBeanValidationJSR303" target="" class="regularLink">previous blog entry</a>.
+</p>
+
+<p class="wikiPara">
+Speaking of constraint definition, the specification now comes with a set of built-in constraints: <tt>@Null</tt>, <tt>@NotNull</tt>, <tt>@AssertTrue</tt>, <tt>@AssertFalse</tt>, <tt>@Min</tt>, <tt>@Max</tt>, <tt>@Size</tt>, <tt>@Digits</tt>, <tt>@Past</tt>, <tt>@Future</tt>. These are the fundamental bricks that can be understood by all tools accessing metadata.
+</p>
+
+<p class="wikiPara">
+Finally, constraint implementations can now raise more than one violation report per constraint. This is particularly useful when a bean-level constraint is targeting two specific properties.
+</p>
+
+<pre class="wikiPreformatted">
+@CheckAddressConsistency
+public class Address {
+  private String zipCode;
+  private String city;
+}</pre>
+
+<p class="wikiPara">
+<tt>@CheckAddressConsistency</tt> probably wants to raise two violation reports, one targeting <tt>zipCode</tt> and one targeting <tt>city</tt>.
+This is also useful to define fine grained error messages depending on the failure. See section 2.4 for more info.
+</p>
+
+<h1 class="wikiHeadline1" id="H-API"><a href="/2009/01/06/bean-validation-jsr-303-public-draft-give-us-feedback#H-API">API</a></h1>
+
+<p class="wikiPara">
+The <tt>Validator</tt> interface can now validate any type of object and is no longer tied to a given JavaBean type.
+</p>
+
+<pre class="wikiPreformatted">Validator validator = validatorFactory.getValidator();
+Set&lt;ConstraintViolation&lt;Address&gt;&gt; addressViolations = validator.validate(address);
+Set&lt;ConstraintViolation&lt;User&gt;&gt; userViolations = validator.validate(user);</pre>
+
+
+<p class="wikiPara">
+The specification has a bootstrap API letting you customize various validation components and optionally letting you choose the specific Bean Validation provider you seek. An older version of the bootstrap API is described in this <a href="/Bloggers/BeanValidationReferenceImplementationAndBootstrapAPI" target="" class="regularLink">blog entry</a>, the latest version is of course available in the spec section 4.4.
+</p>
+
+<p class="wikiPara">
+In appendix, you will find a proposal for method level validations: parameter and returned values can be decorated with constraints declarations. This feature has been widely requested, let us know what you think.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Integration"><a href="/2009/01/06/bean-validation-jsr-303-public-draft-give-us-feedback#H-Integration">Integration</a></h1>
+
+<p class="wikiPara">
+The JPA, JSF and Java EE integration proposals are also available in appendix.
+</p>
+
+<p class="wikiPara">
+Thanks to everyone for your past feedback and your <a href="http://forum.hibernate.org/viewforum.php?f=26" target="" class="regularLink">future one</a> :)</p>
+</div>
+

@@ -1,0 +1,115 @@
+---
+title: "JBoss Tools 3.1 M3 - "
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "15-09-2009"
+tags: [Eclipse,JBoss Tools,JBoss Tools Eclipse]
+
+relative_url: /2009/09/15/jboss-tools-31-m-3
+slug: jboss-tools-31-m-3
+lace: http://in.relation.to/12327.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/09/15/jboss-tools-31-m-3
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The JBoss Tools 3.1 M3 release are now available!
+</p>
+
+<div align="center">
+<img src="/images/10824.png" width="600" height="145">
+<h2>3.1 Milestone 3: The Summer Edition!</h2>
+</div>
+
+<div align="center">
+[<a href="http://www.jboss.org/tools/download" target="" class="regularLink">Download</a>]
+[<a href="http://download.jboss.org/jbosstools/updates/development" target="" class="regularLink">Update Site</a>] 
+[<a href="http://docs.jboss.org/tools/whatsnew" target="" class="regularLink">What's New</a>]
+[<a href="http://docs.jboss.org/tools/movies/" target="" class="regularLink">Movies</a>]
+[<a href="http://docs.jboss.org/tools/3.1.0.M2/" target="" class="regularLink">Documentation</a>] 
+[<a href="http://www.jboss.com/index.html?module=bb&amp;op=viewforum&amp;f=201" target="" class="regularLink">Forums</a>] 
+[<a href="http://jira.jboss.com/jira/browse/JBIDE" target="" class="regularLink">JIRA</a>]
+[<a href="http://twitter.com/jbosstools" target="" class="regularLink">Twitter</a>]
+</div>
+
+<h2 class="wikiHeadline2" id="H-Improvements"><a href="/2009/09/15/jboss-tools-31-m-3#H-Improvements">Improvements</a></h2>
+
+<p class="wikiPara">
+This time around we got <a href="https://jira.jboss.org/jira/secure/IssueNavigator.jspa?reset=true&amp;&amp;fixfor=12313490&amp;pid=10020&amp;sorter/field=issuekey&amp;sorter/order=DESC" target="" class="regularLink">250+ issues</a> fixed and a couple of new features added over the Summer.
+As always you can see the major highlights with screenshots in <a href="http://docs.jboss.org/tools/whatsnew" target="" class="regularLink">What's New</a>!
+</p>
+
+<h3 class="wikiHeadline3" id="H-Maven"><a href="/2009/09/15/jboss-tools-31-m-3#H-Maven">Maven</a></h3>
+
+<p class="wikiPara">
+We continue pushing our integration with m2eclipse further. Now if you import an existing pom.xml and that pom.xml has a dependency to Seam artifacts we will enable the Seam tooling on that project. Making it even easier to get started without having to mess with the Eclipse configuration. Going forward we will explore doing the same for JSF, Portlet and other framework dependencies.
+</p>
+
+<p class="wikiPara">
+Furthermore we added support for using Maven dependencies as a WTP 3.1 Library provider, first for JSF Facets but going forward we will open it more up and allow it for others possibly any facet. Stay tuned for that.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Hibernate"><a href="/2009/09/15/jboss-tools-31-m-3#H-Hibernate">Hibernate</a></h3>
+
+<p class="wikiPara">
+We have improved the Dali JPA integration for Hibernate and the visual diagram of Hibernate mappings. The Dali JPA integration is visible when you have setup your project to use the JPA Facet and chosen to use the Hibernate Platform as opposed to the Generic Platform. 
+</p>
+
+<p class="wikiPara">
+We added more support for Hibernate specific annotations so the JPA Details pane now can be used to edit/view them plus the JPA Validator understands more of Hibernate's added flexibility compared to plain JPA and stop giving false warning/errors. Similarly we added support for projects that uses a custom Naming Strategy for table and columns, again making the JPA Validator aware of the Hibernate specific support correcting the validation concerning
+missing table and columns.
+</p>
+
+<h3 class="wikiHeadline3" id="H-VisualPageEditor"><a href="/2009/09/15/jboss-tools-31-m-3#H-VisualPageEditor">Visual Page Editor</a></h3>
+
+<p class="wikiPara">
+The visual page editor received updates to its supported component set for Richfaces 3.3.1 and for latest JSTL. It also introduces a new CSS Editing perspective to give easier access to the CSS specific views we have introduced over the last few milestones.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SOA"><a href="/2009/09/15/jboss-tools-31-m-3#H-SOA">SOA</a></h3>
+
+<p class="wikiPara">
+This release also brings updates to the <q>SOA</q> components in the tools, i.e. we now include jbpm4 tooling in addition to the jbpm3 version, there is an updated Drools 5 plugin, the Smooks plugin have been greatly enhanced and we also provide updated bits of our experimental work with using Eclipse BPMN project together with <a href="https://www.jboss.org/riftsaw" target="" class="regularLink">Riftsaw</a> the new bpmn project at JBoss.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SDKDownloads"><a href="/2009/09/15/jboss-tools-31-m-3#H-SDKDownloads">SDK Downloads</a></h3>
+
+<p class="wikiPara">
+Our update site now includes a <q>SDK</q> category which you can use to get the actual plugins + the source code used to build them. This allows you to use the Eclipse PDE development environment and improve individual plugins without having to mess with importing code from JBoss Tools SVN. Making contributions even easier - hint hint! 
+</p>
+
+<p class="wikiPara">
+Initially only a few of our plugins are available as SDK's, but we will add more and more as we go through updating their builds to support for SDK creation.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatsNext"><a href="/2009/09/15/jboss-tools-31-m-3#H-WhatsNext">What's next</a></h2>
+
+<p class="wikiPara">
+In the next milestone you will start to see the effect of some of the not-yet-user visible changes we have been working on over the summer. These includes CDI/JSR-299 (aka WebBeans) support, JSF 2 support, More WTP/Maven integration, Smooks and BPM and the biggest small improvement we are contributing to WTP 3.2, but will be available in JBoss Tools 3 first - better module assembly support for WTP projects. 
+</p>
+
+<p class="wikiPara">
+If you want to get a first hand on the progress for these you can use our nightly build update site. See the links on our <a href="http://jboss.org/tools/download.html" target="" class="regularLink">download page</a>. We might even <a href="http://twitter.com/jbosstools" target="" class="regularLink">Twitter</a> about the progress in there.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Feedback"><a href="/2009/09/15/jboss-tools-31-m-3#H-Feedback">Feedback</a></h2>
+
+<p class="wikiPara">
+Remember, if you want to ensure that JBoss Tools are useful for you too - leave a comment on this blog or use our <a href="http://www.jboss.com/index.html?module=bb&amp;op=viewforum&amp;f=201" target="" class="regularLink">forums</a> and/or <a href="http://jira.jboss.com/jira/browse/JBIDE" target="" class="regularLink">JIRA</a> or to let us know what you think! 
+</p>
+
+<p class="wikiPara">
+Have fun!
+</p>
+
+
+
+
+
+
+</div>
+

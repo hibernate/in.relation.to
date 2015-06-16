@@ -1,0 +1,96 @@
+---
+title: "A generic Web Bean for injecting entities"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "17-11-2008"
+tags: [Web Beans]
+
+relative_url: /2008/11/17/a-generic-web-bean-for-injecting-entities
+slug: a-generic-web-bean-for-injecting-entities
+lace: http://in.relation.to/9928.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/11/17/a-generic-web-bean-for-injecting-entities
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Here's another usecase for the <a href="/Bloggers/InjectionPointMetadataAPIForWebBeans" target="" class="regularLink">injection point metadata API</a> that we're considering adding to Web Beans. I've always thought it would be nice to be able to inject entity instances by role, instead of passing references around the system. (In Seam, you can use <a href="http://docs.jboss.org/seam/1.1BETA2/reference/en/html/framework.html" target="" class="regularLink">home objects</a> to achieve this.)
+</p>
+
+<p class="wikiPara">
+Of course, we need a way to distinguish <i class="wikiEmphasis">which</i> instance of a particular entity type we're interested in. For each conversation, there are certain <q>roles</q>. For example, in an user administration screen, there is the current user, and the user that is being administered.
+</p>
+
+<p class="wikiPara">
+In a Web Beans world, we would represent a role using an annotation. For example, we would refer to the <tt>@Administered User</tt>. What I would like to be able to do is associate an identifier with the role, at the beginning of a conversation, and then simply inject the entity with that identifier into any Web Bean that is invoked during that conversation. Of course, I could write a Web Bean with a producer method to do this:
+</p>
+
+<pre class="wikiPreformatted">@ConversationScoped
+public class AdministeredUser {
+
+    private @PersistenceContext EntityManager em;
+    private String userId;
+    
+    public void setUserId(String userId) { 
+        this.userId = userId; 
+    }
+    
+    @Produces @Administered User getUser() {
+        return userId==null ? null : em.find(userId);
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+However, I don't really want to have to write a new Web Bean for every role! So let's generify this code. Instead of making <tt>@Administered</tt> a binding annotation, we'll use a generic binding type <tt>@Persistent</tt>, and use <tt>InjectionPoint</tt> to determine the role that was specified at the injection point:
+</p>
+
+<pre class="wikiPreformatted">@ConversationScoped
+public class EntityRoles {
+
+    private @PersistenceContext EntityManager em;
+    private Map&lt;Key, Object&gt; idByRole = new HashMap&lt;Key, Object&gt;();
+    
+    public void setId(Class entity, Annotation role, Object Id) { 
+        idByRole.put(new Key(entity, role), id);
+    }
+    
+    @Produces @Persistent Object getInstance(InjectionPoint ij) {
+        Object id = idByRole.get(new Key(ij.getType(), ij.getAnnotations()));
+        return id==null ? null : em.find(id);
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+(I'm leaving out the boring implementation of <tt>Key</tt>, and the binding annotation <tt>@Persistent</tt>.)
+</p>
+
+<p class="wikiPara">
+Now, the following code may be used to set the identifier, at the beginning of a conversation:
+</p>
+
+<pre class="wikiPreformatted">@Current EntityRoles er;
+
+...
+
+er.setId(User.class, Administered.class, userId);</pre>
+
+
+<p class="wikiPara">
+And the <tt>User</tt> may be injected as follows:
+</p>
+
+<pre class="wikiPreformatted">@Administered @Persistent User user</pre>
+
+
+<p class="wikiPara">
+We probably also want to make it possible to refer to the <tt>User</tt> by a name in Unified EL, but for that we'll need to write a <tt>ELResolver</tt> (which is also too boring for this post).
+</p>
+</div>
+

@@ -1,0 +1,117 @@
+---
+title: "Multi-tenancy in Hibernate"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "22-10-2010"
+tags: [ConnectionProvider,Filters,Hibernate,Shards]
+
+relative_url: /2010/10/22/multitenancy-in-hibernate
+slug: multitenancy-in-hibernate
+lace: http://in.relation.to/17513.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/10/22/multitenancy-in-hibernate
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+This has come up a few times so I thought I'd write up the ways to handle multi-tenancy in Hibernate.  This is not an exhaustive list.  We wont go into database vendor specific features (Oracle VPD, etc) for example.  Generally speaking there are 3 ways to factor multi-tenancy into your database design:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Separate database instances - This approach gives each tenant their own physical database instance.</li>
+<li class="wikiOrderedListItem"> Separate schemas - This approach uses the same physical database instance for all the tenants, but each gets its own schema (or catalog) within that instance.</li>
+<li class="wikiOrderedListItem"> Partitioning - This approach uses the same database instance and same schema.  In other words a single table holds the data for every tenant.  The tenants are <q>partitioned</q> by some form of discriminator value.</li>
+</ol>
+
+<p class="wikiPara">
+The approaches to handling the first two are pretty much the same.  So let's look at the third approach first as it requires a much different handling.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Partitioning"><a href="/2010/10/22/multitenancy-in-hibernate#H-Partitioning">Partitioning</a></h2>
+<p class="wikiPara">
+To be clear lets look at an example.  Lets say that the application in question has a <tt>CUSTOMER</tt> table:
+</p>
+
+<pre class="wikiPreformatted">CUSTOMER (
+  ID BIGINT,
+  NAME VARCHAR,
+  ...
+  TENANT_ID VARCHAR
+)</pre>
+
+
+<p class="wikiPara">
+Notice the <tt>TENANT_ID</tt> column as it is the crux to this design.  Basically it identifies which tenant the given row belongs to.  Choosing this style of design has important ramifications which are beyond the scope of this discussion (like unique keys probably now need to include the <tt>TENANT_ID</tt> column, etc).  For the purposes of this discussion, we are just concerned with how we identify rows as belonging to a particular tenant.  Two choices for dealing with this are (1) use of Hibernate Shards or (2) use of the <i class="wikiEmphasis">filter</i> feature of Hibernate Core.
+</p>
+
+<p class="wikiPara">
+This approach has the distinct advantage of being capable of leveraging Hibernate second level caching.  As we will see below, that is currently not possible with the other approaches.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeparateData"><a href="/2010/10/22/multitenancy-in-hibernate#H-SeparateData">Separate data</a></h2>
+
+<p class="wikiPara">
+As I mentioned before, the first two options are pretty similar in terms of handling from JDBC, so therefore pretty similar in terms of handling from Hibernate.  Going back to the <tt>CUSTOMER</tt> table, here we have:
+</p>
+
+<pre class="wikiPreformatted">CUSTOMER (
+  ID BIGINT,
+  NAME VARCHAR,
+  ...
+)</pre>
+
+
+<p class="wikiPara">
+This time, we have no tenant discriminator as far as column.  The <q>discriminator</q> comes from the fact of which tenant's database/schema we are looking at.  Again getting into the pros and cons of this approach compared to partitioning is beyond the scope of this discussion.  In terms of JDBC, this really just boils down to different connection urls that indicate the tenant we are dealing with at that time.  So how can we get Hibernate to manage that for us?
+</p>
+
+<p class="wikiPara">
+One approach is to define a <tt>SessionFactory</tt> for each tenant.  However, if you have large schemas and/or a large number of tenants and these <tt>SessionFactory</tt>s all reside in the same memory space, this approach can become very burdensome in terms of the memory footprint.
+</p>
+
+<p class="wikiPara">
+Another approach is to utilize a feature called <q>application-supplied connections</q>.  Notice that from a <tt>SessionFactory</tt> you can open a <tt>Session</tt> using a <tt>Connecton</tt> you <a href="http://docs.jboss.org/hibernate/core/3.6/javadocs/org/hibernate/SessionFactory.html#openSession(java.sql.Connection)" target="" class="regularLink">supply</a>.  However this can get unwieldy.  A variation of this is for our application to tell Hibernate which Connection to use for the current context.  Internally Hibernate makes use of an SPI contract named <a href="http://docs.jboss.org/hibernate/core/3.6/javadocs/org/hibernate/connection/ConnectionProvider.html" target="" class="regularLink">ConnectionProvider</a> for obtaining <tt>Connection</tt>s when it needs them.  And although this contract does not account for passing in the <q>tenant identifier</q> it's pretty trivial to account for that using a <tt>ThreadLocal</tt>, JNDI/ENC or some other contextual and accessible manner.  For the purpose of illustration, lets assume a DataSource JNDI names based on the tenant for look-ups and that the identifier of the current tenant is statically available from a custom <tt>TenantContext</tt> class:
+</p>
+
+<pre class="wikiPreformatted">public class MyTenantAwareConnectionProvider implements ConnectionProvider {
+    public static final String BASE_JNDI_NAME_PARAM = "MyTenantAwareConnectionProvider.baseJndiName";
+
+    private String baseJndiName;
+
+    public void configure(Properties props) {
+        baseJndiName = props.getProperty( BASE_JNDI_NAME_PARAM );
+    }
+
+    public Connection getConnection() throws SQLException {
+        final String tenantId = TenantContext.getTenantId()
+        final String tenantDataSourceName = baseJndiName + '/' + tenantId;
+        DataSource tenantDataSource = JndiHelper.lookupDataSource( tenantDataSourceName );
+        return tenantDataSource.getConnection();
+    }
+
+    public void closeConnection(Connection conn) throws SQLException {
+        conn.close();
+    }
+
+    public boolean supportsAggressiveRelease() {
+        // so long as the tenant identifier remains available in TL throughout, we can
+        return true;
+    }
+
+    public close() {
+        // currently nothing to do here
+    }
+}</pre>
+
+
+<p class="wikiPara">
+The essential idea here is that Hibernate continues with what it normally does, but that we plug in a new behavior here so far as how it obtains connections in relation to our application's understanding of a <q>current tenant</q>.  We are using a single <tt>SessionFactory</tt> and so get the benefit of the memory footprint of just one <tt>SessionFactory</tt> instead of one per tenant.
+</p>
+
+<p class="wikiPara">
+It was mentioned before, but bears repeating, that second level caching is problematic using this approach and should be disabled.  The reason being that Hibernate does not know that Customer#1 from one tenant and Customer#1 from another tenant are actually different data.  For that to work we'd have to encode the notion of tenant id into the cache key we use when storing into the second level cache.  That has been discussed as an enhancement, but is not currently implemented.</p>
+</div>
+

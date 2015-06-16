@@ -1,0 +1,55 @@
+---
+title: "PostgreSQL and BLOBs"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "11-05-2010"
+tags: [BLOB,Hibernate,PostgreSQL]
+
+relative_url: /2010/05/11/postgre-sql-and-blo-bs
+slug: postgre-sql-and-blo-bs
+lace: http://in.relation.to/15492.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/05/11/postgre-sql-and-blo-bs
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+In triaging a reported <a href="http://hibernate.onjira.com/browse/HHH-4617" target="" class="regularLink">issue</a> I ended up having to once again delve into investigating PostgreSQL BLOB <q>suppport</q>.  So for the sake of posterity and for the sake of my swiss cheese memory I decided to record my findings here.  
+</p>
+
+<p class="wikiPara">
+By far the best resource I found on the subject was <a href="http://jdbc.postgresql.org/documentation/84/binary-data.html" target="" class="regularLink">http://jdbc.postgresql.org/documentation/84/binary-data.html</a>.  Anyway, it sets the tone right from the get go:
+</p>
+
+<blockquote class="wikiBlockquote">
+PostgreSQL™ provides two distinct ways to store binary data.
+</blockquote>
+
+<p class="wikiPara">
+Each way utilizes a different proprietary data type, <i class="wikiEmphasis">oid</i> or <i class="wikiEmphasis">bytea</i>:
+</p>
+
+<blockquote class="wikiBlockquote">
+
+To use the bytea data type you should simply use the getBytes(), setBytes(), getBinaryStream(), or setBinaryStream() methods.
+
+To use the Large Object functionality you can use either the LargeObject class provided by the PostgreSQL™ JDBC driver, or by using the getBLOB() and setBLOB() methods. 
+
+</blockquote>
+
+<p class="wikiPara">
+Unfortunately there is no effort to make this transparent to the developer.  So as of this moment, bottom line is that to use Hibernate and PostgreSQL together for storing large binary data your best bet is to:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> use a consistent style for defining the column datatypes (aka pick either bytea or oid and use it consistently)</li>
+<li class="wikiOrderedListItem"> set hibernate.jdbc.use_streams_for_binary appropriately based on which style you chose (false for oid, true for bytea)</li>
+</ol>
+
+<p class="wikiPara">
+Otherwise you'll need to set hibernate.jdbc.use_streams_for_binary for your most commonly used style and handle deviations property-by-property :(</p>
+</div>
+

@@ -1,0 +1,62 @@
+---
+title: "Rotterdam JBug and Hibernate's import.sql"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "09-06-2008"
+tags: []
+
+relative_url: /2008/06/09/rotterdamjbug-and-hibernates-importsql
+slug: rotterdamjbug-and-hibernates-importsql
+lace: http://in.relation.to/9081.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/06/09/rotterdamjbug-and-hibernates-importsql
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The Rotterdam JBug is happening June 20th and <tt>import.sql</tt> is a pretty neat feature for unit testing. Two unrelated infos in one entry today, let's call it macroblogging!
+</p>
+
+<h1 class="wikiHeadline1" id="H-RotterdamJBugOnJune20th"><a href="/2008/06/09/rotterdamjbug-and-hibernates-importsql#H-RotterdamJBugOnJune20th">Rotterdam JBug on June 20th</a></h1>
+
+<p class="wikiPara">
+The Benelux JBoss User Group is organizing an event on Friday June 20th 2008. There will be plenty of presentations:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> JBoss Portal - Julien Viet and Thomas Heute - JBoss</li>
+<li class="wikiUnorderedListItem"> Hibernate Search - Emmanuel Bernard - JBoss</li>
+<li class="wikiUnorderedListItem"> Woman in IT - (special guest presentation) Clara Ko and Linda van der Pal - jduchess.org</li>
+<li class="wikiUnorderedListItem"> JBoss Drools - Kris Verlaenen - JBoss</li>
+</ul>
+
+<p class="wikiPara">
+<a href="http://www.lunatech-research.com/archives/2008/05/16/jbug-2008-06" target="" class="regularLink">Here</a> is more information, it's free of course but <a href="http://www.lunatech-research.com/event/register/jbug4" target="" class="regularLink">you need to register</a>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ImportsqlEasilyImportDataInYourUnitTests"><a href="/2008/06/09/rotterdamjbug-and-hibernates-importsql#H-ImportsqlEasilyImportDataInYourUnitTests">import.sql: easily import data in your unit tests</a></h1>
+<p class="wikiPara">
+Hibernate has a neat little feature that is heavily under-documented and unknown. You can execute an SQL script during the <tt>SessionFactory</tt> creation right after the database schema generation to import data in a fresh database.
+You just need to add a file named <tt>import.sql</tt> in your classpath root and set either <tt>create</tt> or <tt>create-drop</tt> as your <tt>hibernate.hbm2ddl.auto</tt> property.
+</p>
+
+<p class="wikiPara">
+I use it for <a href="http://www.manning.com/affiliate/idevaffiliate.php?id=952_117_1_24" target="" class="regularLink">Hibernate Search in Action</a> now that I have started the query chapter. It initializes my database with a fresh set of data for my unit tests. JBoss Seam also uses it a lot in the various examples. <tt>import.sql</tt> is a very simple feature but is quite useful at time.
+Remember that the SQL might be dependent on your database (ah portability!).
+</p>
+
+<pre class="wikiPreformatted">#import.sql file
+delete from PRODUCTS
+insert into PRODUCTS (PROD_ID, ASIN, TITLE, PRICE, IMAGE_URL, DESCRIPTION) values ('1', '630522577X', 'My Fair Lady', 19.98, '630522577X.jpg', 'My Fair blah blah...');
+insert into PRODUCTS (PROD_ID, ASIN, TITLE, PRICE, IMAGE_URL, DESCRIPTION) values ('2', 'B00003CXCD', 'Roman Holiday ', 12.98, 'B00003CXCD.jpg', 'We could argue that blah blah');
+</pre>
+
+
+<p class="wikiPara">
+For more information about this feature, check <a href="http://www.jroller.com/eyallupu/entry/hibernate_s_hbm2ddl_tool" target="" class="regularLink">Eyal's blog</a>, he wrote a nice little entry about it.
+Remember if you want to add additional database objects (indexes, tables and so on), you can also use the <a href="http://www.hibernate.org/hib_docs/v3/reference/en/html_single/#mapping-database-object" target="" class="regularLink">auxiliary database objects</a> feature.</p>
+</div>
+

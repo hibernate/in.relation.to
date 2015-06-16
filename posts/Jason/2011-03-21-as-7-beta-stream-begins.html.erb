@@ -1,0 +1,65 @@
+---
+title: "AS7 Beta Stream Begins!"
+author: "Jason Greene"
+blogger_name: "Jason"
+creation_date: "21-03-2011"
+tags: []
+
+relative_url: /2011/03/21/as-7-beta-stream-begins
+slug: as-7-beta-stream-begins
+lace: http://in.relation.to/18840.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/03/21/as-7-beta-stream-begins
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I am happy to announce that last week we officially kicked off the beta stream for AS7. This will be a very rapid biweekly release schedule up until we hit CR. So expect to see a lot coming from us very quickly. 
+</p>
+
+<p class="wikiPara">
+The first release of this series is AS 7 Beta1, <q>Ides of March</q> (released on the 15th), and it includes a number of significant changes/improvements over the original alpha.
+</p>
+
+<p class="wikiPara">
+On the management front, we have moved to fully detyped management model which will allow for Java based management clients to use a single, small library, for controlling any subsystem in AS7. We also now have a new HTTP/JSON interface that allows for applications/tools to be easily written in any language, since most have a number of JSON frameworks already. Finally, we have an initial implementation of our CLI (command line interface). The CLI included in this release focuses on exposing the <a href="http://community.jboss.org/wiki/FormatofaDetypedOperationRequest" target="" class="regularLink">lower level operation API</a> that is part of our other management interfaces. Future releases will include a more task/command driven layer, which we expect to be the most commonly used.
+</p>
+
+<p class="wikiPara">
+On the EE front, we have completed the core foundation of our unified component infrastructure. All EE components (Servlets, EJBs, Managed Beans, etc) have common annotation processing, naming, injection, lifecycle, proxy, and interceptor facilities. All of it is dependency based and takes advantage of our <a href="http://github.com/jbossas/msc" target="" class="regularLink">lightweight service container</a>. This means that deployments will automatically start in the correct order even with complex relationships. Also if one fails it can succeed later if the facility it depended on becomes available.
+</p>
+
+<p class="wikiPara">
+In addition we have initial support for a number of the EE web profile (and beyond) technologies including:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> EJB - Annotation driven SLSBs, SFSBs, and Singletons</li>
+<li class="wikiUnorderedListItem"> JPA </li>
+<li class="wikiUnorderedListItem"> CDI/Weld</li>
+<li class="wikiUnorderedListItem"> JSF</li>
+<li class="wikiUnorderedListItem"> Bean Validation</li>
+<li class="wikiUnorderedListItem"> JAX-RS / Resteasy</li>
+<li class="wikiUnorderedListItem"> JAX-WS</li>
+</ul>
+
+
+<p class="wikiPara">
+You'll also notice that even with all of these additional services running we still have a very fast boot-up time (1800ms on my system).
+</p>
+
+<p class="wikiPara">
+You can download the Beta1 release <a href="http://www.jboss.org/jbossas/downloads" target="" class="regularLink">in the usual location</a>
+</p>
+
+<p class="wikiPara">
+The current getting started wiki is <a href="http://community.jboss.org/wiki/JBossAS7UserGuide" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+Stay tuned for Beta2...</p>
+</div>
+

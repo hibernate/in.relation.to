@@ -1,0 +1,429 @@
+---
+title: "Introduction to Ceylon Part 5"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "28-04-2011"
+tags: [Ceylon,Introduction to Ceylon]
+
+relative_url: /2011/04/28/introduction-to-ceylon-part-5
+slug: introduction-to-ceylon-part-5
+lace: http://in.relation.to/19622.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/04/28/introduction-to-ceylon-part-5
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+<i class="wikiEmphasis">This is the fifth installment in a <a href="/Tutorials/IntroductionToCeylon" target="" class="regularLink">series of articles</a> introducing the Ceylon language. Note that some features of the language may change before the final release.</i>
+</p>
+
+<h1 class="wikiHeadline1" id="H-NarrowingTheTypeOfAnObjectReference"><a href="/2011/04/28/introduction-to-ceylon-part-5#H-NarrowingTheTypeOfAnObjectReference">Narrowing the type of an object reference</a></h1>
+
+<p class="wikiPara">
+In any language with subtyping there is the hopefully occasional need to perform narrowing conversions. In most statically-typed languages, this is a two-part process. For example, in Java, we first test the type of the object using the <tt>instanceof</tt> operator, and then attempt to downcast it using a C-style typecast. This is quite curious, since there are virtually no good uses for <tt>instanceof</tt> that don't involve an immediate cast to the tested type, and typecasts without type tests are dangerously non-typesafe.
+</p>
+
+<p class="wikiPara">
+As you can imagine, Ceylon, with its emphasis upon static typing, does things differently. Ceylon doesn't have C-style typecasts. Instead, we must test and narrow the type of an object reference in one step, using the special <tt>if (is ... )</tt> construct. This construct is very, very similar to <tt>if (exists ... )</tt> and <tt>if (nonempty ... )</tt>, which we met earlier. 
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Object obj = ... ; 
+if (is Hello obj) {
+    obj.say();
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>switch</tt> statement can be used in a similar way:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Object obj = ... ; 
+switch(obj) 
+case (is Hello) {
+    obj.say();
+} 
+case (is Person) {
+    stream.writeLine(obj.firstName);
+} 
+else {
+    stream.writeLine("Some miscellaneous thing");
+}</pre>
+
+
+<p class="wikiPara">
+These constructs protect us from inadvertantly writing code that would cause a <tt>ClassCastException</tt> in Java, just like <tt>if (exists ... )</tt> protects us from writing code that would cause a <tt>NullPointerException</tt>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-MoreAboutUnionTypes"><a href="/2011/04/28/introduction-to-ceylon-part-5#H-MoreAboutUnionTypes">More about union types</a></h1>
+
+<p class="wikiPara">
+We've seen a few examples of how ad-hoc union types are used in Ceylon. Let's just revisit the notion to make sure we completely understand it. When I declare the type of something using a union type <tt>X|Y</tt>, I'm saying that only expressions of type <tt>X</tt> and expressions of type <tt>Y</tt> are assignable to it. The type <tt>X|Y</tt> is a supertype of both <tt>X</tt> and <tt>Y</tt>. The following code is well-typed:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void print(String|Natural|Integer val) { ... }
+
+print("hello");
+print(69);
+print(-1);</pre>
+
+
+<p class="wikiPara">
+But what operations does a type like <tt>String|Natural|Integer</tt> have? What are <i class="wikiEmphasis">its</i> supertypes? Well, the answer is pretty intuitive: <tt>T</tt> is a supertype of <tt>X|Y</tt> if and only if it is a supertype of both <tt>X</tt> and <tt>Y</tt>. The Ceylon compiler determines this automatically. So the following code is also well-typed:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Natural|Integer i = ... ;
+Number num = i;
+String|Natural|Integer val = i;
+Object obj = val;</pre>
+
+
+<p class="wikiPara">
+However, <tt>num</tt> is not assignable to <tt>val</tt>, since <tt>Number</tt> is not a supertype of <tt>String</tt>.
+</p>
+
+<p class="wikiPara">
+Of course, it's very common to narrow an expression of union type using a <tt>switch</tt> statement. Usually, the Ceylon compiler forces us to write an <tt>else</tt> clause in a <tt>switch</tt>, to remind us that there might be additional cases which we have not handled. But if we <i class="wikiEmphasis">exhaust</i> all cases of a union type, the compiler will let us leave off the <tt>else</tt> clause.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void print(String|Natural|Integer val) {
+    switch (val)
+    case (is String) { writeLine(val); }
+    case (is Natural) { writeLine("Natural: " + val); }
+    case (is Integer) { writeLine("Integer: " + val); }
+}</pre>
+
+
+<h1 class="wikiHeadline1" id="H-EnumeratedSubtypes"><a href="/2011/04/28/introduction-to-ceylon-part-5#H-EnumeratedSubtypes">Enumerated subtypes</a></h1>
+
+<p class="wikiPara">
+Sometimes it's useful to be able to do the same kind of thing with the subtypes of an ordinary type. First, we need to explicitly enumerate the subtypes of the type using the <tt>of</tt> clause:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">abstract class Hello() 
+        of DefaultHello | PersonalizedHello { 
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+(This makes <tt>Hello</tt> into Ceylon's version of what the functional programming community calls an <q>algebraic</q> data type.)
+</p>
+
+<p class="wikiPara">
+Now the compiler won't let us declare additional subclasses of <tt>Hello</tt>, and so the union type <tt>DefaultHello|PersonalizedHello</tt> is exactly the same type as <tt>Hello</tt>. Therefore, we can write <tt>switch</tt> statements without an <tt>else</tt> clause:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">Hello hello = ... ; 
+switch (hello) 
+case (is DefaultHello) {
+    writeLine("What's your name?");
+} 
+case (is PersonalizedHello) {
+    writeLine("Nice to hear from you again!");
+}</pre>
+
+
+<p class="wikiPara">
+Now, it's usually considered bad practice to write long <tt>switch</tt> statements that handle all subtypes of a type. It makes the code non-extensible. Adding a new subclass to <tt>Hello</tt> means breaking all the <tt>switch</tt> statements that exhaust its subtypes. In object-oriented code, we usually try to refactor constructs like this to use an abstract method of the superclass that is overridden as appropriate by subclasses.
+</p>
+
+<p class="wikiPara">
+However, there are a class of problems where this kind of refactoring isn't appropriate. In most object-oriented languages, these problems are usually solved using the <i class="wikiEmphasis">visitor pattern</i>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Visitors"><a href="/2011/04/28/introduction-to-ceylon-part-5#H-Visitors">Visitors</a></h1>
+
+<p class="wikiPara">
+Let's consider the following tree visitor implementation:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">abstract class Node() {
+    shared formal void accept(Visitor v);
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">class Leaf(Object val) extends Node() {
+    shared Object value = val;
+    shared actual void accept(Visitor v) { 
+        v.visitLeaf(this); 
+    }
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">class Branch(Node left, Node right) extends Node() {
+    shared Node leftChild = left;
+    shared Node rightChild = right;
+    shared actual void accept(Visitor v) { 
+        v.visitBranch(this);
+    }
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">interface Visitor {
+    shared formal void visitLeaf(Leaf l);
+    shared formal void visitBranch(Branch b);
+}</pre>
+
+
+<p class="wikiPara">
+We can create a method which prints out the tree by implementing the <tt>Visitor</tt> interface:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void print(Node node) {
+    object printVisitor satisfies Visitor {
+        shared actual void visitLeaf(Leaf l) {
+            writeLine("Found a leaf: " l.value "!");
+        }
+        shared actual void visitBranch(Branch b) {
+            b.leftChild.accept(this);
+            b.rightChild.accept(this);
+        }
+    }
+    node.accept(printVisitor);
+}</pre>
+
+
+<p class="wikiPara">
+Notice that the code of <tt>printVisitor</tt> looks just like a <tt>switch</tt> statement. It must explicitly enumerate all subtypes of <tt>Node</tt>. It <q>breaks</q> if we add a new subtype of <tt>Node</tt> to the <tt>Visitor</tt> interface. This is correct, and is the desired behavior. By <q>break</q>, I mean that the compiler lets us know that we have to update our code to handle the new subtype.
+</p>
+
+<p class="wikiPara">
+In Ceylon, we can achieve the same effect, with less verbosity, by enumerating the subtypes of <tt>Node</tt> in its definition, and using a <tt>switch</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">abstract class Node() of Leaf | Branch {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">class Leaf(Object val) extends Node() {
+    shared Object value = val;
+}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">class Branch(Node left, Node right) extends Node() {
+    shared Node leftChild = left;
+    shared Node rightChild = right;
+}</pre>
+
+
+<p class="wikiPara">
+Our <tt>print()</tt> method is now much simpler, but still has the desired behavior of <q>breaking</q> when a new subtype of <tt>Node</tt> is added.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void print(Node node) {
+    switch (node)
+    case (is Leaf) {
+        writeLine("Found a leaf: " node.value "!");
+    }
+    case (is Branch) {
+        print(node.leftChild);
+        print(node.rightChild);
+    }
+}</pre>
+
+
+<h1 class="wikiHeadline1" id="H-TypesafeEnumerations"><a href="/2011/04/28/introduction-to-ceylon-part-5#H-TypesafeEnumerations">Typesafe enumerations</a></h1>
+
+<p class="wikiPara">
+Ceylon doesn't have anything exactly like Java's <tt>enum</tt> declaration. But we can emulate the effect using the <tt>of</tt> clause.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared class Suit(String name) 
+        of hearts | diamonds | clubs | spades 
+        extends Case(name) {}
+        
+shared object hearts extends Suit("hearts") {} 
+shared object diamonds extends Suit("diamonds") {} 
+shared object clubs extends Suit("clubs") {} 
+shared object spades extends Suit("spades") {}</pre>
+
+
+<p class="wikiPara">
+We're allowed to use the names of <tt>object</tt> declarations in the <tt>of</tt> clause if they extend the language module class <tt>Case</tt>.
+</p>
+
+<p class="wikiPara">
+Now we can exhaust all cases of <tt>Suit</tt> in a <tt>switch</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">void print(Suit suit) {
+    switch (suit)
+    case (hearts) { writeLine("Heartzes"); }
+    case (diamonds) { writeLine("Diamondzes"); }
+    case (clubs) { writeLine("Clidubs"); }
+    case (spades) { writeLine("Spidades"); }
+}</pre>
+
+
+<p class="wikiPara">
+(Note that these <tt>case</tt>s are ordinary value <tt>case</tt>s, not <tt>case (is...)</tt> type cases.)
+</p>
+
+<p class="wikiPara">
+Yes, this is a bit more verbose than a Java <tt>enum</tt>, but it's also slightly more flexible.
+</p>
+
+<p class="wikiPara">
+For a more practical example, let's see the definition of <tt>Boolean</tt> from the language module:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared abstract class Boolean(String name) 
+        of true | false 
+        extends Case(name) {}</pre>
+
+<pre class="wikiPreformatted brush:ceylon">shared object false extends Boolean("false") {}</pre>
+
+<pre class="wikiPreformatted brush:ceylon">shared object true extends Boolean("true") {}</pre>
+
+
+<p class="wikiPara">
+And here's how <tt>Comparable</tt> is defined. First, the typesafe enumeration <tt>Comparison</tt>:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">doc "The result of a comparison between two
+     Comparable objects."
+shared abstract class Comparison(String name) 
+        of larger | smaller | equal 
+        extends Case(name) {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">doc "The receiving object is exactly equal 
+     to the given object."
+shared object equal extends Comparison("equal") {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">doc "The receiving object is smaller than 
+     the given object."
+shared object smaller extends Comparison("smaller") {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">doc "The receiving object is larger than 
+     the given object."
+shared object larger extends Comparison("larger") {}</pre>
+
+
+<p class="wikiPara">
+Now, the <tt>Comparable</tt> interface itself:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">shared interface Comparable&lt;in Other&gt; 
+        satisfies Equality
+        given Other satisfies Comparable&lt;Other&gt; {
+    
+    doc "The &lt;=&gt; operator."
+    shared formal Comparison compare(Other other);
+    
+    doc "The &gt; operator."
+    shared Boolean largerThan(Other other) {
+        return compare(other)==larger;
+    }
+    
+    doc "The &lt; operator."
+    shared Boolean smallerThan(Other other) {
+        return compare(other)==smaller;
+    }
+    
+    doc "The &gt;= operator."
+    shared Boolean asLargeAs(Other other) {
+        return compare(other)!=smaller;
+    }
+    
+    doc "The &lt;= operator."
+    shared Boolean asSmallAs(Other other) {
+        return compare(other)!=larger;
+    }
+    
+}</pre>
+
+
+<h1 class="wikiHeadline1" id="H-TypeInference"><a href="/2011/04/28/introduction-to-ceylon-part-5#H-TypeInference">Type inference</a></h1>
+
+<p class="wikiPara">
+So far, we've always been explicitly specifying the type of every declaration. I think this generally makes code, especially example code, much easier to read and understand.
+</p>
+
+<p class="wikiPara">
+However, Ceylon does have the ability to infer the type of a locals or the return type of a local method. Just place the keyword <tt>local</tt> in place of the type declaration.
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">local hello = DefaultHello();
+local operators = { "+", "-", "*", "/" };
+local add(Natural x, Natural y) { return x+y; }</pre>
+
+
+<p class="wikiPara">
+There are some restrictions applying to this feature. You can't use <tt>local</tt>:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> for declarations annotated <tt>shared</tt>, </li>
+<li class="wikiUnorderedListItem"> for declarations annotated <tt>formal</tt>,</li>
+<li class="wikiUnorderedListItem"> when the value is specified later in the block of statements,</li>
+<li class="wikiUnorderedListItem"> for methods with multiple <tt>return</tt> statements, or</li>
+<li class="wikiUnorderedListItem"> to declare a parameter.</li>
+</ul>
+
+<p class="wikiPara">
+These restrictions mean that Ceylon's type inference rules are quite simple. Type inference is purely <q>right-to-left</q> and <q>top-to-bottom</q>. The type of any expression is already known without needing to look to any types declared to the left of the <tt>=</tt> specifier, or further down the block of statements.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The inferred type of a local declared <tt>local</tt> is just the type of the expression assigned to it using <tt>=</tt> or <tt>:=</tt>. </li>
+<li class="wikiUnorderedListItem"> The inferred type of a method declared <tt>local</tt> is just the type of the <tt>return</tt>ed expression.</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-TypeInferenceForSequenceEnumerationExpressions"><a href="/2011/04/28/introduction-to-ceylon-part-5#H-TypeInferenceForSequenceEnumerationExpressions">Type inference for sequence enumeration expressions</a></h1>
+
+<p class="wikiPara">
+What about sequence enumeration expressions like this:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">local sequence  = { DefaultHello(), "Hello", 12.0 };</pre>
+
+
+<p class="wikiPara">
+What type is inferred for <tt>sequence</tt>? You might answer: <q><tt>Sequence&lt;X&gt;</tt> where <tt>X</tt> is the common superclass or super-interface of all the element types</q>. But that can't be right, since there might be more than one common supertype.
+</p>
+
+<p class="wikiPara">
+The answer is that the inferred type is <tt>Sequence&lt;X&gt;</tt> where <tt>X</tt> is the union of all the element expression types. In this case, the type is <tt>Sequence&lt;DefaultHello|String|Float&gt;</tt>. Now, this works out nicely, because <tt>Sequence&lt;T&gt;</tt> is covariant in <tt>T</tt>. So the following code is well typed:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">local sequence  = { DefaultHello(), "Hello", 12.0 }; //type Sequence&lt;DefaultHello|String|Float&gt;
+Object[] objects = sequence; //type Empty|Sequence&lt;Object&gt;</pre>
+
+
+<p class="wikiPara">
+As is the following code:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">local nums = { 12.0, 1, -3 }; //type Sequence&lt;Float|Natural|Integer&gt;
+Number[] numbers = nums; //type Empty|Sequence&lt;Number&gt;</pre>
+
+
+<p class="wikiPara">
+What about sequences that contain <tt>null</tt>? Well, do you remember the type of <tt>null</tt> from Part 1 was <tt>Nothing</tt>?
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">local sequence = { null, "Hello", "World" }; //type Sequence&lt;Nothing|String&gt;
+String?[] strings = sequence; //type Empty|Sequence&lt;Nothing|String&gt;
+String? s = sequence[0]; //type Nothing|Nothing|String which is just Nothing|String</pre>
+
+
+<p class="wikiPara">
+It's interesting just how useful union types turn out to be. Even if you only very rarely explicitly write code with any explicit union type declaration (and that's probably a good idea), they are still there, under the covers, helping the compiler solve some hairy, otherwise-ambiguous, typing problems.
+</p>
+
+<h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/04/28/introduction-to-ceylon-part-5#H-TheresMore">There's more...</a></h1>
+
+<p class="wikiPara">
+A more advanced example of an algebraic datatype is <a href="/Bloggers/TuplesOrNot" target="" class="regularLink">shown here</a>.
+</p>
+
+<p class="wikiPara">
+In <a href="/Bloggers/IntroductionToCeylonPart6" target="" class="regularLink">Part 6</a> we'll explore Ceylon's generic type system in more depth.
+ </p>
+</div>
+

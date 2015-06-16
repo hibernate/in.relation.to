@@ -1,0 +1,78 @@
+---
+title: "Hibernate Metamodel Generator 1.1.0.Final"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "04-11-2010"
+tags: []
+
+relative_url: /2010/11/04/hibernate-metamodel-generator-110-final
+slug: hibernate-metamodel-generator-110-final
+lace: http://in.relation.to/17636.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/11/04/hibernate-metamodel-generator-110-final
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate Metamodel Generator 1.1.0.Final is now available for download either from the <a href="https://repository.jboss.org/nexus/content/repositories/public/org/hibernate/hibernate-jpamodelgen/1.1.0.Final" target="" class="regularLink">JBoss Maven repo</a> or from <a href="http://sourceforge.net/projects/hibernate/files/hibernate-jpamodelgen/1.1.0.Final" target="" class="regularLink">SourceForge</a>. 
+</p>
+
+<p class="wikiPara">
+A look into the <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN/fixforversion/11171" target="" class="regularLink">changelog</a> shows three issues of which only <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN-45" target="" class="regularLink">METAGEN-45</a> is worth mentioning. Several people reported problems with metamodel classes not getting compiled, especially when the annotation processor was used in conjunction with the -s option (which specifies where to place generated source files). This is resolved by METAGEN-45. 
+</p>
+
+<p class="wikiPara">
+I also would like to follow up on the question on <a href="http://in.relation.to/16308.lace" target="" class="regularLink">how to best integrate the processor into maven build</a>. As always there are more than one way to skin a cat and here is my preferred version:
+</p>
+
+<pre class="wikiPreformatted">...
+   &lt;plugins&gt;
+    &lt;plugin&gt;
+        &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
+        &lt;configuration&gt;
+            &lt;source&gt;1.6&lt;/source&gt;
+            &lt;target&gt;1.6&lt;/target&gt;
+            &lt;compilerArgument&gt;-proc:none&lt;/compilerArgument&gt;
+        &lt;/configuration&gt;
+    &lt;/plugin&gt;
+    &lt;plugin&gt;
+        &lt;groupId&gt;org.bsc.maven&lt;/groupId&gt;
+        &lt;artifactId&gt;maven-processor-plugin&lt;/artifactId&gt;
+        &lt;version&gt;1.3.7&lt;/version&gt;
+        &lt;executions&gt;
+            &lt;execution&gt;
+                &lt;id&gt;process&lt;/id&gt;
+                &lt;goals&gt;
+                    &lt;goal&gt;process&lt;/goal&gt;
+                &lt;/goals&gt;
+                &lt;phase&gt;process-sources&lt;/phase&gt;
+            &lt;/execution&gt;
+        &lt;/executions&gt;
+        &lt;dependencies&gt;
+            &lt;dependency&gt;
+                &lt;groupId&gt;org.hibernate&lt;/groupId&gt;
+                &lt;artifactId&gt;hibernate-jpamodelgen&lt;/artifactId&gt;
+                &lt;version&gt;1.1.0.Final&lt;/version&gt;
+                &lt;scope&gt;compile&lt;/scope&gt;
+            &lt;/dependency&gt;
+        &lt;/dependencies&gt;
+    &lt;/plugin&gt;
+...
+</pre>
+
+
+<p class="wikiPara">
+The benefits of this version are that there is no need for the build-helper plugin and, more importantly, the processor is defined as a plugin dependency of the maven-processor-plugin instead of a direct project dependency. You find this and other setup versions in the <a href="http://docs.jboss.org/hibernate/stable/jpamodelgen/reference/en-US/html_single" target="" class="regularLink">online documentation</a> of the Hibernate Metamodel Generator.
+</p>
+
+<p class="wikiPara">
+As always, feedback is always welcome. If you find a bug make sure to report it in <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN" target="" class="regularLink">METAGEN</a>.
+</p>
+
+<p class="wikiPara">
+--Hardy</p>
+</div>
+

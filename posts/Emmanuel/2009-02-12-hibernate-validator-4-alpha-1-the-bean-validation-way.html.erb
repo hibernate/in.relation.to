@@ -1,0 +1,84 @@
+---
+title: "Hibernate Validator 4 alpha 1: the Bean Validation way"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "12-02-2009"
+tags: [Bean Validation,Hibernate Validator]
+
+relative_url: /2009/02/12/hibernate-validator-4-alpha-1-the-bean-validation-way
+slug: hibernate-validator-4-alpha-1-the-bean-validation-way
+lace: http://in.relation.to/10679.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/02/12/hibernate-validator-4-alpha-1-the-bean-validation-way
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Bean Validation's public draft has now been <a href="http://jcp.org/en/jsr/results?id=4797" target="" class="regularLink">approved</a> by the EC (all members voting yes except Nortel and SpringSource who did not vote). 
+</p>
+
+<p class="wikiPara">
+But we have not stopped there! 
+</p>
+
+<h1 class="wikiHeadline1" id="H-ReferenceImplementation"><a href="/2009/02/12/hibernate-validator-4-alpha-1-the-bean-validation-way#H-ReferenceImplementation">Reference implementation</a></h1>
+
+<p class="wikiPara">
+We are pleased to release the first alpha of the Bean Validation Reference Implementation: Hibernate Validator 4 Alpha (<a href="http://hibernate.org/6.html" target="" class="regularLink">download</a>).
+</p>
+
+<p class="wikiPara">
+This is a big milestone and the core features are already present and the implementation is already used in the JSF 2.0 RI prototype. 
+This release is not feature complete though, here are the main missing parts:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Group inheritance using interfaces or implicit grouping</li>
+<li class="wikiUnorderedListItem"> Group sequence is implemented but not fully tested</li>
+<li class="wikiUnorderedListItem"> Overriding the <tt>Default</tt> group of a class is not implemented yet</li>
+<li class="wikiUnorderedListItem"> <tt>TraversableResolver</tt> does not integrates with JPA yet</li>
+<li class="wikiUnorderedListItem"> XML configuration (<tt>META-INF/validation.xml</tt>)</li>
+<li class="wikiUnorderedListItem"> XML mapping</li>
+<li class="wikiUnorderedListItem"> some metadata APIs are not fully compliant</li>
+<li class="wikiUnorderedListItem"> <tt>ConstraintValidatorContext</tt> is not operational</li>
+</ul>
+
+
+<p class="wikiPara">
+The <a href="http://hibernate.org/6.html" target="" class="regularLink">distribution</a> includes source code, jars and a getting started guide.
+</p>
+
+<p class="wikiPara">
+Everything should work as described in the spec otherwise. For help, come to our <a href="http://forum.hibernate.org/viewforum.php?f=26" target="" class="regularLink">forum</a>. Please file bugs to <a href="http://opensource.atlassian.com/projects/hibernate/browse/BVAL" target="" class="regularLink">JIRA</a>. For more informations on Hibernate Validator 4, see <a href="http://www.hibernate.org/459.html" target="" class="regularLink">here</a>.
+  
+Many thanks to Hardy for leading the effort and to Alaa and Gunnar for stepping up.
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-Specification"><a href="/2009/02/12/hibernate-validator-4-alpha-1-the-bean-validation-way#H-Specification">Specification</a></h1>
+
+<p class="wikiPara">
+This implementation is based on the <a href="#hibernate-validator-4-alpha-1-the-bean-validation-way_attachment1" target="" class="regularLink">specification 1.0 Beta3[1]</a> (post public draft). This version improves:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the bootstrap API names are much more intuitive</li>
+<li class="wikiUnorderedListItem"> type-safe validator implementations: a constraint is attached to several validators, the right one being chosen based on the targeted type</li>
+<li class="wikiUnorderedListItem"> XML configuration via META-INF/valiation.xml</li>
+<li class="wikiUnorderedListItem"> XML constraint mapping (allowing annotation overriding)</li>
+</ul>
+
+<p class="wikiPara">
+Give us feedback and tell us how it goes.  
+</p>
+</div>
+
+<div class="attachments">
+<h4>Attachments</h4>
+<ol class="wikiOrderedList"><li class="wikiOrderedListItem"><a name="hibernate-validator-4-alpha-1-the-bean-validation-way_attachment1" href="/assets/JSR-303-Specification-1.0.Beta3.pdf">JSR-303-Specification-1.0.Beta3.pdf</a></li>
+</ol>
+</div>
+

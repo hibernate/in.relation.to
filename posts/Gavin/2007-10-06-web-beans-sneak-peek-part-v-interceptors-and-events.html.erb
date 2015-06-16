@@ -1,0 +1,413 @@
+---
+title: "Web Beans Sneak Peek Part V: Interceptors and events"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "06-10-2007"
+tags: [Web Beans,Web Beans Sneak Peek]
+
+relative_url: /2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events
+slug: web-beans-sneak-peek-part-v-interceptors-and-events
+lace: http://in.relation.to/2564.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+/This is the fifth installment of a series of articles describing the current status of the Web Beans specification. Please read the 
+<a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans" target="" class="regularLink">first</a>,  
+<a href="/Bloggers/WebBeansSneakPeekPartIIInjectionBindingAnnotationsAndComponentTypes" target="" class="regularLink">second</a>, <a href="/Bloggers/WebBeansSneakPeekPartIIIDeclaringComponentsUsingXML" target="" class="regularLink">third</a> and <a href="/Bloggers/WebBeansSneakPeekPartIVScopesContextsAndResolverMethods" target="" class="regularLink">fourth</a> installments first./
+</p>
+
+<p class="wikiPara">
+One of the themes of Web Beans is <i class="wikiEmphasis">loose coupling</i>. We've already seen three means of achieving loose coupling:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">component types</i> enable /deployment time/ polymorphism</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">producer methods</i> enable /runtime/ polymorphism</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">contextual lifecycle management</i> decouples component lifecycles</li>
+</ul>
+
+<p class="wikiPara">
+These techniques serve to enable loose coupling of client and server. The client is no longer tightly bound to an implementation of an API, nor is it required to manage the lifecycle of the server object. This approach lets /stateful objects interact as if they were services/. 
+</p>
+
+<p class="wikiPara">
+Web Beans provides two extra important facilities that further the goal of loose coupling:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">interceptors</i> decouple technical concerns from business logic</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">event notifications</i> decouple event producers from event consumers</li>
+</ul>
+
+<p class="wikiPara">
+Let's explore these features.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Interceptors"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-Interceptors">Interceptors</a></h2>
+
+<p class="wikiPara">
+Web Beans re-uses the basic interceptor architecture of EJB 3.0, extending the functionality in two directions:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> any Web Bean may have interceptors, not just session beans</li>
+<li class="wikiUnorderedListItem"> Web Beans features a more sophisticated annotation-based approach to binding interceptors to components</li>
+</ul>
+
+<p class="wikiPara">
+Suppose we want to declare that some of our components are transactional. The first thing we need is an /interceptor binding annotation/ to specify exactly which components we're interested in:
+</p>
+
+<pre class="wikiPreformatted">@InterceptorBindingType
+@Target({METHOD, TYPE})
+@Retention(RUNTIME)
+public @interface Transactional {}</pre>
+
+
+<p class="wikiPara">
+Now we can easily specify that our <tt>ShoppingCart</tt> is a transactional object:
+</p>
+
+<pre class="wikiPreformatted">@Transactional @Component
+public class ShoppingCart { ... }</pre>
+
+
+<p class="wikiPara">
+Or, if we prefer, we can specify that just one method is transactional:
+</p>
+
+<pre class="wikiPreformatted">@Component
+public class ShoppingCart {
+    @Transactional public void checkout() { ... }
+}</pre>
+
+
+<p class="wikiPara">
+That's great, but somewhere along the line we're going to have to actually implement the interceptor that provides this transaction management aspect. All we need to do is create a standard EJB interceptor, and annotate it <tt>@Interceptor</tt> and <tt>@Transactional</tt>.
+</p>
+
+<pre class="wikiPreformatted">@Transactional @Interceptor
+public class TransactionInterceptor {
+    @AroundInvoke public Object manageTransaction(InvocationContext ctx) { ... }
+}</pre>
+
+
+<p class="wikiPara">
+Finally, we need to /enable/ our interceptor in <tt>web-beans.xml</tt>.
+</p>
+
+<pre class="wikiPreformatted">&lt;interceptors&gt;
+    &lt;interceptor&gt;to.relation.in.TransactionInterceptor&lt;/interceptor&gt;
+&lt;/interceptors&gt;</pre>
+
+
+<p class="wikiPara">
+Whoah! Why the angle bracket stew? 
+</p>
+
+<p class="wikiPara">
+Well, the XML declaration solves two problems:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> it enables us to specify a total ordering for all the interceptors in our system, ensuring deterministic behavior</li>
+<li class="wikiUnorderedListItem"> it lets us enable or disable interceptor classes at deployment time </li>
+</ul>
+
+<p class="wikiPara">
+For example, we could specify that our security interceptor runs before our <tt>TransactionInterceptor</tt>. And we can turn them both off in our test environment.
+</p>
+
+<h3 class="wikiHeadline3" id="H-InterceptorBindingsWithMembers"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-InterceptorBindingsWithMembers">Interceptor bindings with members</a></h3>
+
+<p class="wikiPara">
+Suppose we want to add some extra information to our <tt>@Transactional</tt> annotation:
+</p>
+
+<pre class="wikiPreformatted">@InterceptorBindingType
+@Target({METHOD, TYPE})
+@Retention(RUNTIME)
+public @interface Transactional {
+    boolean requiresNew() default false;
+}</pre>
+
+
+<p class="wikiPara">
+Web Beans will use the value of <tt>requiresNew</tt> to choose between two different interceptors, <tt>TransactionInterceptor</tt> and <tt>RequiresNewTransactionInterceptor</tt>.
+</p>
+
+<pre class="wikiPreformatted">@Transactional(requiresNew=true) @Interceptor
+public class RequiresNewTransactionInterceptor {
+    @AroundInvoke public Object manageTransaction(InvocationContext ctx) { ... }
+}</pre>
+
+
+<p class="wikiPara">
+Now we can use <tt>RequiresNewTransactionInterceptor</tt> like this:
+</p>
+
+<pre class="wikiPreformatted">@Transactional(requiresNew=true) @Component
+public class ShoppingCart { ... }</pre>
+
+
+<p class="wikiPara">
+But what if we only have one interceptor and we want the container to ignore the value of <tt>requiresNew</tt> when binding interceptors? We can use the <tt>@NonBinding</tt> annotation:
+</p>
+
+<pre class="wikiPreformatted">@InterceptorBindingType
+@Target({METHOD, TYPE})
+@Retention(RUNTIME)
+public @interface Secure {
+    @NonBinding String[] rolesAllowed() default {};
+}</pre>
+
+
+<h3 class="wikiHeadline3" id="H-MultipleInterceptorBindingAnnotations"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-MultipleInterceptorBindingAnnotations">Multiple interceptor binding annotations</a></h3>
+<p class="wikiPara">
+Usually we use combinations of interceptor bindings types to bind multiple interceptors to a component. For example, the following declaration would be used to bind <tt>TransactionInterceptor</tt> and <tt>SecurityInterceptor</tt> to the same component:
+</p>
+
+<pre class="wikiPreformatted">@Secure(rolesAllowed="admin") @Transactional @Component
+public class ShoppingCart { ... }</pre>
+
+
+<p class="wikiPara">
+However, in very complex cases, an interceptor itself may specify some combination of interceptor binding types:
+</p>
+
+<pre class="wikiPreformatted">@Transactional @Secure @Interceptor
+public class TransactionalSecureInterceptor { ... }</pre>
+
+
+<p class="wikiPara">
+Then this interceptor could be bound to the <tt>checkout()</tt> method using any one of the following combinations:
+</p>
+
+<pre class="wikiPreformatted">@Component
+public class ShoppingCart {
+    @Transactional @Secure public void checkout() { ... }
+}</pre>
+
+
+<pre class="wikiPreformatted">@Secure @Component
+public class ShoppingCart {
+    @Transactional public void checkout() { ... }
+}</pre>
+
+
+<pre class="wikiPreformatted">@Transactionl @Component
+public class ShoppingCart {
+    @Secure public void checkout() { ... }
+}</pre>
+
+
+<pre class="wikiPreformatted">@Transactional @Secure @Component
+public class ShoppingCart {
+    public void checkout() { ... }
+}</pre>
+
+
+<h3 class="wikiHeadline3" id="H-BindingAnInterceptorToEverything"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-BindingAnInterceptorToEverything">Binding an interceptor to /everything/</a></h3>
+<p class="wikiPara">
+What if we want an interceptor for /every/ component? Easy, just declare the interceptor without any interceptor binding type!
+</p>
+
+<pre class="wikiPreformatted">@Interceptor
+public class UberInterceptor { ... }</pre>
+
+
+<h3 class="wikiHeadline3" id="H-InterceptorBindingTypeInheritance"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-InterceptorBindingTypeInheritance">Interceptor binding type inheritance</a></h3>
+<p class="wikiPara">
+One of the awful, embarrassing, mistakes of the Java language is the lack of support for annotation inheritance. Really, annotations should have reuse built in, to allow this kind of thing to work:
+</p>
+
+<pre class="wikiPreformatted">public @interface Action extends Transactional, Secure { ... }</pre>
+
+
+<p class="wikiPara">
+Well, fortunately, Web Beans works around this missing feature of Java:
+</p>
+
+<pre class="wikiPreformatted">@Transactional @Secure
+@InterceptorBindingType
+@Target(TYPE)
+@Retention(RUNTIME)
+public @interface Action { ... }</pre>
+
+
+<p class="wikiPara">
+And now any component annotated <tt>@Action</tt> will be bound to both <tt>TransactionInterceptor</tt> and <tt>SecurityInterceptor</tt>. (And even <tt>TransactionalSecureInterceptor</tt>, if it exists.)
+</p>
+
+<h2 class="wikiHeadline2" id="H-Events"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-Events">Events</a></h2>
+
+<p class="wikiPara">
+/Please note that the following section describes functionality that is still under active discussion in the Web Beans expert group!/
+</p>
+
+<p class="wikiPara">
+The Web Beans event notification facility allows components to interact in a totally decoupled manner. Event /producers/ raise events that are then delivered to event /observers/. This basic schema might sound similar to the observer/observable pattern, but there are a couple of twists: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> not only are event producers decoupled from observers; observers are completely decoupled from producers</li>
+<li class="wikiUnorderedListItem"> observers can specify a combination of <q>selectors</q> to narrow the set of event notifications they will receive </li>
+<li class="wikiUnorderedListItem"> observers can be notified immediately, or can specify that delivery of the event should be delayed until the end of the current transaction</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-EventObservers"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-EventObservers">Event observers</a></h3>
+
+<p class="wikiPara">
+An /observer method/ is a method of any Web Bean with a parameter annotated <tt>@Observes</tt>.
+</p>
+
+<pre class="wikiPreformatted">public void onAnyDocumentEvent(@Observes Document document) { ... }</pre>
+
+
+<p class="wikiPara">
+The annotated parameter is called the /event parameter/. Observer methods may also specify <q>selectors</q>, which are called /event binding types/. An event binding type is just an annotation:
+</p>
+
+<pre class="wikiPreformatted">@EventBindingType
+@Target({PARAMETER, FIELD})
+@Retention(RUNTIME)
+public @interface Updated { ... }</pre>
+
+
+<p class="wikiPara">
+We specify the selector by annotating the event parameter:
+</p>
+
+<pre class="wikiPreformatted">public void afterDocumentUpdate(@Observes @Updated Document document) { ... }</pre>
+
+
+<p class="wikiPara">
+The observer method may have additional parameters, which are injected, according to the usual Web Beans semantics:
+</p>
+
+<pre class="wikiPreformatted">public void afterDocumentUpdate(@Observes @Updated Document document, @Current User user) { ... }</pre>
+
+
+<h3 class="wikiHeadline3" id="H-EventProducers"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-EventProducers">Event producers</a></h3>
+
+<p class="wikiPara">
+The event producer may obtain an /event notifier/ by injection:
+</p>
+
+<pre class="wikiPreformatted">@In @Notifier Event&lt;Document&gt; documentEvent;</pre>
+
+
+<p class="wikiPara">
+The <tt>@Notifier</tt> annotation implicitly defines a Web Beans component with scope <tt>@Dependent</tt> and component type <tt>@Standard</tt>.
+</p>
+
+<p class="wikiPara">
+A producer raises events by calling the one and only method of the <tt>Event</tt> interface:
+</p>
+
+<pre class="wikiPreformatted">documentEvent.raise(document);</pre>
+
+
+<p class="wikiPara">
+To specify a <q>selector</q>, the producer may either pass an instance of the event binding type to the <tt>raise()</tt>:
+</p>
+
+<pre class="wikiPreformatted">documentEvent.raise(document, new Updated(){});</pre>
+
+
+<p class="wikiPara">
+Of may specify the selector at the injection point:
+</p>
+
+<pre class="wikiPreformatted">@In @Notifier @Updated Event&lt;Document&gt; documentUpdatedEvent;</pre>
+
+
+<h3 class="wikiHeadline3" id="H-EventBindingsWithMembers"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-EventBindingsWithMembers">Event bindings with members</a></h3>
+
+<p class="wikiPara">
+An event binding type may have annotation members:
+</p>
+
+<pre class="wikiPreformatted">@EventBindingType
+@Target({PARAMETER, FIELD})
+@Retention(RUNTIME)
+public @interface Role {
+    RoleType value();
+}</pre>
+
+
+<p class="wikiPara">
+The member value is used to narrow the messages delivered to the observer:
+</p>
+
+<pre class="wikiPreformatted">public void adminLoggedIn(@Observes @Role(ADMIN) LoggedIn event) { ... }</pre>
+
+
+<p class="wikiPara">
+And can be specified by the event producer either statically:
+</p>
+
+<pre class="wikiPreformatted">@In @Notifier @Role(ADMIN) Event&lt;LoggedIn&gt; LoggedInEvent;</pre>
+
+
+<p class="wikiPara">
+Or dynamically:
+</p>
+
+<pre class="wikiPreformatted">documentEvent.raise( document, new Role() { public void value() { return user.getRole(); } } );</pre>
+
+
+<h3 class="wikiHeadline3" id="H-MultipleEventBindings"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-MultipleEventBindings">Multiple event bindings</a></h3>
+
+<p class="wikiPara">
+Event binding types can be combined, for example:
+</p>
+
+<pre class="wikiPreformatted">@In @Notifier @Blog Event&lt;Document&gt; blogEvent;
+...
+if (document.isBlog()) blogEvent.raise(document, new Updated(){});</pre>
+
+
+<p class="wikiPara">
+In this case, any of the following observer methods would be notified:
+</p>
+
+<pre class="wikiPreformatted">public void afterBlogUpdate(@Observes @Updated @Blog Document document) { ... }</pre>
+
+<pre class="wikiPreformatted">public void afterDocumentUpdate(@Observes @Updated Document document) { ... }</pre>
+
+<pre class="wikiPreformatted">public void onAnyBlogEvent(@Observes @Bog Document document) { ... }</pre>
+
+<pre class="wikiPreformatted">public void onAnyDocumentEvent(@Observes Document document) { ... }</pre>
+
+
+<h3 class="wikiHeadline3" id="H-TransactionalObservers"><a href="/2007/10/06/web-beans-sneak-peek-part-v-interceptors-and-events#H-TransactionalObservers">Transactional observers</a></h3>
+
+<p class="wikiPara">
+Transactional observers receive their event notifications during the before or after completion phase of the transaction in which the event was raised. For example, the following observer method needs to refresh a query result set that is cached in the application context, but only when transactions that update the <tt>Category</tt> tree succeed:
+</p>
+
+<pre class="wikiPreformatted">public void refreshCategoryTree(@AfterTransactionSuccess @Observes CategoryUpdateEvent event) { ... }</pre>
+
+
+<p class="wikiPara">
+There are three kinds of transactional observers:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>@AfterTransactionSuccess</tt> observers are called during the after completion phase of the transaction, but only if the transaction completes successfully</li>
+<li class="wikiUnorderedListItem"> <tt>@AfterTransactionCompletion</tt> observers are called during the after completion phase of the transaction</li>
+<li class="wikiUnorderedListItem"> <tt>@BeforeTransactionCompletion</tt> observers are called during the before completion phase of the transaction</li>
+</ul>
+
+<p class="wikiPara">
+Transactional observers are very important in a stateful component model, because state is often held for longer than a single atomic transaction.
+</p>
+</div>
+

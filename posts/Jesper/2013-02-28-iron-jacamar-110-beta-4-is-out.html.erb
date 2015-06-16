@@ -1,0 +1,169 @@
+---
+title: "IronJacamar 1.1.0.Beta4 is out"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+creation_date: "28-02-2013"
+tags: []
+
+relative_url: /2013/02/28/iron-jacamar-110-beta-4-is-out
+slug: iron-jacamar-110-beta-4-is-out
+lace: http://in.relation.to/23963.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/02/28/iron-jacamar-110-beta-4-is-out
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm happy to announce the release of IronJacamar 1.1.0.Beta4 - the first release of IronJacamar that targets the upcoming Java EE Connector Architecture 1.7 specification scheduled for inclusion in the Java EE 7 platform specification.
+</p>
+
+<p class="wikiPara">
+Full release notes are <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12310691&amp;version=12320677" target="" class="regularLink">here</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-PoolOnSteroids"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-PoolOnSteroids">Pool on steroids</a></h2>
+
+<p class="wikiPara">
+We spent a lot time in this release going over our pool implementation, which of course controls all the physical connections to the Enterprise Information Systems such as databases.
+</p>
+
+<h3 class="wikiHeadline3" id="H-CapacityPolicies"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-CapacityPolicies">Capacity policies</a></h3>
+
+<p class="wikiPara">
+First off we added support for capacity policies. So what is a capacity policy, and why is it important. Capacity policies are divided into two categories: incrementers and decrementers. 
+</p>
+
+<p class="wikiPara">
+An incrementer capacity policy specifies the properties when a new physical connection should be added to the pool, such as
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> MaxPoolSize -- increase to max-pool-size</li>
+<li class="wikiUnorderedListItem"> Size -- increase by a certain size</li>
+<li class="wikiUnorderedListItem"> Watermark -- increase until a certain size is reached</li>
+</ul>
+
+<p class="wikiPara">
+The incrementer policy will allow you to control how many or a specific size of the pool that is created when a connection isn't available for immediate check out. The default policy will remain the <q>Size</q> policy with a value of 1.
+</p>
+
+<p class="wikiPara">
+A decrementer capacity policy specifies the properties when the pool is scheduled for idle timeout cleanup, such as
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> MinPoolSize -- remove connections until min-pool-size is reached</li>
+<li class="wikiUnorderedListItem"> Size -- remove a certain number of connections</li>
+<li class="wikiUnorderedListItem"> TimedOut -- remove all connections that are registered with the timed out flag</li>
+<li class="wikiUnorderedListItem"> Watermark -- remove connections until a certain size is reached</li>
+</ul>
+
+<p class="wikiPara">
+The decrementer policy will allow you to optimize the resources used in a pool each time idle timeout is scheduled. The default policy will remain the <q>TimedOut</q> policy.
+</p>
+
+<p class="wikiPara">
+You can read more about the capacity policies <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/ch05.html#deploying_capacity_policies" target="" class="regularLink">here</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-FlushStrategies"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-FlushStrategies">Flush strategies</a></h3>
+
+<p class="wikiPara">
+Next we looked at our flush strategies, which specifies which connections that are removed in case of an error on a connection. This led to
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> FailingConnectionOnly (default)</li>
+<li class="wikiUnorderedListItem"> InvalidIdleConnections (new - will remove invalid idle connections)</li>
+<li class="wikiUnorderedListItem"> IdleConnections</li>
+<li class="wikiUnorderedListItem"> Gracefully (new - will remove all idle connections, and mark checked out connections for destruction upon return)</li>
+<li class="wikiUnorderedListItem"> EntirePool</li>
+</ul>
+
+<p class="wikiPara">
+and their related strategy which works on all sub-pools across credentials. This allow much finer control of the pool in error situations.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Statistics"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-Statistics">Statistics</a></h3>
+
+<p class="wikiPara">
+We added some new metrics to our statistics too
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> AverageGetTime</li>
+<li class="wikiUnorderedListItem"> MaxGetTime</li>
+<li class="wikiUnorderedListItem"> TotalGetTime</li>
+<li class="wikiUnorderedListItem"> InUse</li>
+<li class="wikiUnorderedListItem"> BlockingFailureCount</li>
+<li class="wikiUnorderedListItem"> WaitCount</li>
+</ul>
+
+<p class="wikiPara">
+to give a more detailed view of the run-time behaviour of pool.
+</p>
+
+<h3 class="wikiHeadline3" id="H-InitialSize"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-InitialSize">Initial size</a></h3>
+
+<p class="wikiPara">
+Last we added support for specifying the initial size of the pool upon start up.
+</p>
+
+<p class="wikiPara">
+Hopefully you find all these changes just as exciting as us ! 
+</p>
+
+<h2 class="wikiHeadline2" id="H-DistributedWorkManager"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-DistributedWorkManager">DistributedWorkManager</a></h2>
+
+<p class="wikiPara">
+The DistributedWorkManager implementation also got an update, and both the Socket and JGroups transports are now considered ready for general testing, so give them a spin.
+</p>
+
+<p class="wikiPara">
+In order to help creating a cluster of IronJacmar instances we added some <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/ch06.html#running_ant" target="" class="regularLink">Apache Ant</a> tasks, and <a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/ch06.html#running_maven" target="" class="regularLink">Apache Maven</a> mojos to control IronJacamar instances. Our test suite features test cases for both transports, so you can get an idea of how a cluster is created by looking there.
+</p>
+
+<h2 class="wikiHeadline2" id="H-JavaEEConnectorArchitecture17"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-JavaEEConnectorArchitecture17">Java EE Connector Architecture 1.7</a></h2>
+
+<p class="wikiPara">
+As stated above, this release targets the upcoming Java EE Connector Architecture 1.7 specification which will be included in the Java Enterprise Edition 7 platform specification.
+</p>
+
+<p class="wikiPara">
+The specification adds some new feature, but remains backwards compatible with the previous releases of the specification. I'll discuss these new features once the specification have received the final approval.
+</p>
+
+<p class="wikiPara">
+So hopefully soon you will see this release featured in the upcoming JBoss Application Server 8.0 release.
+</p>
+
+<h2 class="wikiHeadline2" id="H-OtherChanges"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-OtherChanges">Other changes</a></h2>
+
+<p class="wikiPara">
+There were other changes in this release
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Initial support for converting a weblogic-ra.xml resource into an IronJacamar one</li>
+<li class="wikiUnorderedListItem"> Numerous component updates in order to align against our EE 7 implementation</li>
+<li class="wikiUnorderedListItem"> Bucket of bug fixes</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-TheRoadAhead"><a href="/2013/02/28/iron-jacamar-110-beta-4-is-out#H-TheRoadAhead">The Road Ahead</a></h2>
+
+<p class="wikiPara">
+A lot of changes (phew!) over the last 3 months to bring IronJacamar into a new league. But we are of course not stopping there - we still got more changes planned before we go into feature freeze for JCA 1.7 certification. So if you have a good idea now is the time to speak up in our forum !
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="http://www.jboss.org/ironjacamar/" target="" class="regularLink">WebSite</a>] [<a href="http://www.jboss.org/ironjacamar/downloads.html" target="" class="regularLink">Download</a>] [<a href="http://docs.jboss.org/ironjacamar/userguide/1.1/en-US/html/" target="" class="regularLink">Documentation</a>] [<a href="https://issues.jboss.org/browse/JBJCA" target="" class="regularLink">JIRA</a>] [<a href="https://community.jboss.org/en/ironjacamar/?view=discussions" target="" class="regularLink">Forum</a>] 
+</p>
+</div>
+

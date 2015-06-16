@@ -1,0 +1,60 @@
+---
+title: "Embedded JBoss Update"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "07-12-2007"
+tags: [Embedded JBoss,Seam]
+
+relative_url: /2007/12/07/embeddedjboss-update
+slug: embeddedjboss-update
+lace: http://in.relation.to/3187.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/12/07/embeddedjboss-update
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+A quick update for those who like living on the edge ;-)
+</p>
+
+<p class="wikiPara">
+Firstly, I've published a <a href="http://snapshots.jboss.org/maven2/org/jboss/embedded/jboss-embedded/beta3-SNAPSHOT/jboss-embedded-beta3-SNAPSHOT-bin.zip" target="" class="regularLink">snapshot</a> of Embedded JBoss beta3 - this is a pretty major update to Embedded JBoss (and its components like EJB3, Hibernate etc.) and pretty close to the beta3 release - so it would be great to get some feedback. It's looking good (but there is a known issue with JMS).
+</p>
+
+<p class="wikiPara">
+If you want to give it a go:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">
+<i class="wikiEmphasis">Tomcat</i>: Follow these <a href="http://docs.jboss.org/seam/2.0.0.GA/reference/en/html/configuration.html#config.install.embedded" target="" class="regularLink">instructions</a>  to install into a /fresh/ copy of Tomcat.</li>
+<li class="wikiUnorderedListItem">
+<i class="wikiEmphasis">SeamTest</i>: Replace your current bootstrap directory and <tt>lib/test</tt> directory</li>
+</ul>
+
+<p class="wikiPara">
+Secondly, if you've made the move to Java 6 you need a couple of tweaks to Embedded JBoss for the beta3 snapshot:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem">Start java with <tt>-Dsun.lang.ClassLoader.allowArraySyntax=true</tt>
+</li>
+<li class="wikiOrderedListItem">Java 6 SE includes JAXB 2.0, but Embedded JBoss needs JAXB 2.1. The easiest way to do this is to put the <tt>jaxb-api.jar</tt> (for JAXB 2.1) into the <q>endorsed</q> library directory, then start java with <tt>-Djava.endorsed.dirs=/path/to/endorsed/directoy</tt>
+</li>
+</ol>
+
+<p class="wikiPara">
+Your testng launcher would look something like this:
+</p>
+
+<pre class="wikiPreformatted">&lt;testng outputdir="/path/to/test/report/directory"&gt;
+   &lt;jvmarg line="-Djava.endorsed.dirs=/path/to/endorsed/directory" /&gt;
+   &lt;jvmarg line="-Dsun.lang.ClassLoader.allowArraySyntax=true" /&gt;
+   &lt;classpath refid="test.classpath" /&gt;
+   &lt;xmlfileset dir="/path/to/src/directory" includes="**/testng.xml" /&gt;
+&lt;/testng&gt;</pre>
+</div>
+

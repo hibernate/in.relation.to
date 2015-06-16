@@ -1,0 +1,69 @@
+---
+title: "Hibernate Validator 4.2.0.Final"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "20-06-2011"
+tags: []
+
+relative_url: /2011/06/20/hibernate-validator-420-final
+slug: hibernate-validator-420-final
+lace: http://in.relation.to/20882.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/06/20/hibernate-validator-420-final
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Time to update your dependencies or to hit the <a href="http://www.hibernate.org/subprojects/validator/download" target="" class="regularLink">download site</a>. Hibernate Validator 4.2.0.Final is released.
+All artifacts are either available via the <a href="http://repository.jboss.org/nexus/content/groups/public-jboss/org/hibernate/hibernate-validator/4.2.0.Final" target="" class="regularLink">JBoss Maven Repository</a> or <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/4.2.0.Final" target="" class="regularLink">SourceForge</a>. Links to the latest documentation can be found on the Validator <a href="http://www.hibernate.org/subprojects/validator/docs" target="" class="regularLink">homepage</a>.
+</p>
+
+<p class="wikiPara">
+We have been blogging about the different new features and major changes during the interim releases, so let me just remind you. The most important new features are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> method level validation</li>
+<li class="wikiUnorderedListItem"> boolean composition for composed constraints via <i class="wikiEmphasis">@ConstraintComposition</i>
+</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">ValueFormatterMessageInterpolator</i> </li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">GroupSequenceProvider</i> annotation for the dynamic definition of the default group sequence</li>
+</ul>
+
+<p class="wikiPara">
+You can find more information about these features in the release blogs for <a href="http://in.relation.to/18074.lace" target="" class="regularLink">Hibernate Validator 4.2.0 Beta1</a> and <a href="http://in.relation.to/18632.lace" target="" class="regularLink">Hibernate Validator 4.2.0 Beta2</a>. 
+</p>
+
+<p class="wikiPara">
+The feature which underwent most changes during the development of Hibernate Validator 4.2.0 was the programmatic configuration API. In order to add programmatic configuration for method level validation and group sequence providers we had to go through several iterations. The final result is described in <a href="http://in.relation.to/20732.lace" target="" class="regularLink">Hibernate Validator 4.2.0 CR1</a>. We are sorry if you had to change your mappings several times, but we believe the outcome is worth it :-)
+</p>
+
+<p class="wikiPara">
+Even though we did not plan to add any new features after CR1, we introduced - thanks to a last minute contribution - a new 
+constraint annotation - <u>@SafeHtml</u>. This constraint allows to check whether a given character sequence contains potentially malicious html code. Check the <a href="http://docs.jboss.org/hibernate/validator/4.2/reference/en-US/html_single/#validator-defineconstraints-hv-constraints" target="" class="regularLink">online docs</a> for more information.
+</p>
+
+<p class="wikiPara">
+It is also important to know that together with Hibernate Validator 4.2.0.Final a new version of the Bean Validation TCK was released (1.0.5.GA). You find the latest documentation of the TCK <a href="http://docs.jboss.org/hibernate/stable/beanvalidation/tck/reference/html_single/" target="" class="regularLink">here</a>. The TCK contained wrong tests related to the Node.Path API (<a href="http://opensource.atlassian.com/projects/hibernate/browse/BVTCK-12" target="" class="regularLink">BVTCK-12</a>) and it also checked wrongly for a <i class="wikiEmphasis">ValidationException</i> in case a constraint is placed on a non getter method (<a href="http://opensource.atlassian.com/projects/hibernate/browse/BVTCK-14" target="" class="regularLink">BVTCK-14</a>). 
+</p>
+
+<p class="wikiPara">
+You can find more information on how to upgrade Hibernate Validator on the <a href="http://community.jboss.org/wiki/HibernateValidatorMigrationGuide" target="" class="regularLink">Hibernate Validator Migration Guide</a>.
+</p>
+
+<p class="wikiPara">
+The full change log for this release is available <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10060&amp;version=11203" target="" class="regularLink">here</a>. Feedback is welcome via the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">Validator Forum</a> and the <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV" target="" class="regularLink">Jira issue tracker</a>.
+</p>
+
+<p class="wikiPara">
+Last, but not least, this release would not have been possible without the help from the community. Thanks in particular to Dag, Frederico, George, Gunnar and Kevin!
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+</div>
+

@@ -1,0 +1,81 @@
+---
+title: "The case against do-while"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "19-07-2011"
+tags: [Ceylon]
+
+relative_url: /2011/07/19/the-case-against-dowhile
+slug: the-case-against-dowhile
+lace: http://in.relation.to/21106.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/07/19/the-case-against-dowhile
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+So the comment thread of my <a href="/Bloggers/AWrinkleInJavasDowhile" target="" class="regularLink">previous post</a> got me thinking again about the <tt>do/while</tt> statement. Frankly, it's difficult to see why we really need this as a first-class construct in modern programming languages. Here's my list of reasons for saying that.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">First,</i> at least in C-like languages, the syntax is pretty irregular. It's the only control statement that doesn't follow this syntax pattern: 
+</p>
+
+<pre class="wikiPreformatted">( keyword ("(" Something ")")? Block )+</pre>
+
+
+<p class="wikiPara">
+Instead its syntax features <i class="wikiEmphasis">two</i> glorious keywords and a stray - totally extraneous - semicolon. Weird. 
+</p>
+
+<p class="wikiPara">
+('Cos, like, even with the help of two keywords and a pair of parens, the parser still needs that extra juicy semicolon to know when to stop looking for more bits of the <tt>do/while</tt> statement. Sure, that makes sense.)
+</p>
+
+<p class="wikiPara">
+Anyway, I figure that it's this irregularity that apparently leads <a href="http://in.relation.to/Bloggers/AWrinkleInJavasDowhile#comment21090" target="" class="regularLink">different people</a> to have <a href="http://in.relation.to/Bloggers/AWrinkleInJavasDowhile#comment21098" target="" class="regularLink">different intuitions</a> about the scope of declarations contained in the body of the <tt>do/while</tt>.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Second,</i> <tt>do/while</tt> demands that we reserve as a keyword one of the most useful verbs in the English language. I could have found all kinds of uses for the word <q>do</q> if Java would just let me use it as an identifier!
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Third,</i> <tt>do/while</tt> is easily emulated using a <tt>while</tt> loop. The following:
+</p>
+
+<pre class="wikiPreformatted brush:java">do {
+    something();
+}
+while (!finished);</pre>
+
+
+<p class="wikiPara">
+is only somewhat less readable when written like this:
+</p>
+
+<pre class="wikiPreformatted brush:java">while (true) {
+    something();
+    if (finished) break;
+}</pre>
+
+
+<p class="wikiPara">
+And this second formulation doesn't open up any <a href="/Bloggers/AWrinkleInJavasDowhile" target="" class="regularLink">debate about the scope of things</a>.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Fourth,</i> the current crop of programming languages all have support for higher-order functions, allowing libraries to introduce new kinds of flow control, and taking pressure off the language itself to provide every possible kind of loop baked into its basic syntax.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Finally,</i> even though I've written a reasonably significant amount of Java code in over more than a decade of familiarity with the language, I can barely recall <i class="wikiEmphasis">ever</i> having found a use for this construct. Unless my memory is even worse than I think it is, I can't possibly have used <tt>do/while</tt> more than two or three times in my entire career!
+</p>
+
+<p class="wikiPara">
+So I'm strongly considering simply dropping <tt>do/while</tt> from Ceylon. It's simply not pulling its weight.</p>
+</div>
+

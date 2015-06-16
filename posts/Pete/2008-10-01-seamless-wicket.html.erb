@@ -1,0 +1,380 @@
+---
+title: "Seamless Wicket"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "01-10-2008"
+tags: [Seam,Seam News]
+
+relative_url: /2008/10/01/seamless-wicket
+slug: seamless-wicket
+lace: http://in.relation.to/9454.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/10/01/seamless-wicket
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Seam 2.1.0.BETA1 brought Wicket support to Seam, but how do you use this support?
+</p>
+
+<p class="wikiPara">
+In this first tutorial we will discuss how to create a seam-wicket project, and how to inject Seam components into Wicket components. A follow-up tutorial will go into more depth on orchestrating a Wicket application with Seam.
+</p>
+
+<p class="wikiPara">
+First, let's set up a new project using seam-gen which will create a skeleton project for us. Although seam-gen is designed for use with JSF, we can easily customize the project it creates to work with Wicket.
+</p>
+
+<pre class="wikiPreformatted">$ ./seam setup
+Buildfile: build.xml
+
+init:
+
+setup:
+     [echo] Welcome to seam-gen :-)
+    [input] Enter your Java project workspace (the directory that contains your Seam projects) [C:/Projects] [C:/Projects]
+/workspace
+    [input] Enter your JBoss home directory [C:/Program Files/jboss-4.2.3.GA] [C:/Program Files/jboss-4.2.3.GA]
+/Applications/jboss-4.2.3.GA
+    [input] Enter the project name [myproject] [myproject]
+wicket-tutorial
+     [echo] Accepted project name as: wicket_tutorial
+    [input] Do you want to use ICEfaces instead of RichFaces [n] (y, [n])
+n
+    [input] skipping input as property icefaces.home.new has already been set.
+    [input] Select a RichFaces skin [blueSky] ([blueSky], classic, ruby, wine, deepMarine, emeraldTown, japanCherry, DEFAULT)
+ruby
+    [input] Is this project deployed as an EAR (with EJB components) or a WAR (with no EJB support) [ear] ([ear], war)
+war
+    [input] Enter the Java package name for your session beans [com.mydomain.wicket_tutorial] [com.mydomain.wicket_tutorial]
+&lt;ENTER&gt;
+    [input] Enter the Java package name for your entity beans [com.mydomain.wicket_tutorial] [com.mydomain.wicket_tutorial]
+&lt;ENTER&gt;
+    [input] Enter the Java package name for your test cases [com.mydomain.wicket_tutorial.test] [com.mydomain.wicket_tutorial.test]
+&lt;ENTER&gt;
+    [input] What kind of database are you using? [hsql] ([hsql], mysql, oracle, postgres, mssql, db2, sybase, enterprisedb, h2)
+&lt;ENTER&gt;
+    [input] Enter the Hibernate dialect for your database [org.hibernate.dialect.HSQLDialect] [org.hibernate.dialect.HSQLDialect]
+&lt;ENTER&gt;
+    [input] Enter the filesystem path to the JDBC driver jar [../lib/hsqldb.jar] [../lib/hsqldb.jar]
+&lt;ENTER&gt;
+    [input] Enter JDBC driver class for your database [org.hsqldb.jdbcDriver] [org.hsqldb.jdbcDriver]
+&lt;ENTER&gt;
+    [input] Enter the JDBC URL for your database [jdbc:hsqldb:.] [jdbc:hsqldb:.]
+&lt;ENTER&gt;
+    [input] Enter database username [sa] [sa]
+&lt;ENTER&gt;
+    [input] Enter database password [] []
+&lt;ENTER&gt;
+    [input] Enter the database schema name (it is OK to leave this blank) [] []
+&lt;ENTER&gt;
+    [input] Enter the database catalog name (it is OK to leave this blank) [] []
+&lt;ENTER&gt;
+    [input] Are you working with tables that already exist in the database? [n] (y, [n])
+n
+    [input] Do you want to drop and recreate the database tables and data in import.sql each time you deploy? [n] (y, [n])
+y
+[propertyfile] Creating new property file: /workspace/seam/seam-gen/build.properties
+     [echo] Installing JDBC driver jar to JBoss server
+     [copy] Copying 1 file to /Applications/jboss-4.2.3.GA/server/default/lib
+     [echo] Type 'seam create-project' to create the new project
+
+BUILD SUCCESSFUL
+Total time: 44 seconds</pre>
+<p class="wikiPara">
+ 
+</p>
+
+<p class="wikiPara">
+Next, we need to create the project:
+</p>
+
+<pre class="wikiPreformatted">$ ./seam create-project</pre>
+
+
+<p class="wikiPara">
+Now, we need to alter the project to support wicket. Lets first remove the JSF specific configuration files: <tt>/resources/WEB-INF/pages.xml</tt>, <tt>/resources/WEB-INF/faces-config.xml</tt>, <tt>/view/*.xhtml</tt> and <tt>/view/*.page.xml</tt>. Next, we need to edit <tt>/resources/WEB-INF/web.xml</tt> to remove the JSF servlet, its mapping, and any JSF, Facelets and RichFaces configuration parameter. You should end up with a web.xml like this:
+</p>
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" ?&gt;
+&lt;web-app xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="
+      http://java.sun.com/xml/ns/javaee
+      http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" 
+   version="2.5"&gt;
+    
+   &lt;listener&gt;
+      &lt;listener-class&gt;org.jboss.seam.servlet.SeamListener&lt;/listener-class&gt;
+   &lt;/listener&gt;
+    
+   &lt;filter&gt;
+      &lt;filter-name&gt;Seam Filter&lt;/filter-name&gt;
+      &lt;filter-class&gt;org.jboss.seam.servlet.SeamFilter&lt;/filter-class&gt;
+   &lt;/filter&gt;
+
+   &lt;filter-mapping&gt;
+      &lt;filter-name&gt;Seam Filter&lt;/filter-name&gt;
+      &lt;url-pattern&gt;/*&lt;/url-pattern&gt;
+   &lt;/filter-mapping&gt;
+        
+   &lt;servlet&gt;
+      &lt;servlet-name&gt;Seam Resource Servlet&lt;/servlet-name&gt;
+      &lt;servlet-class&gt;org.jboss.seam.servlet.SeamResourceServlet&lt;/servlet-class&gt;
+   &lt;/servlet&gt;
+    
+   &lt;servlet-mapping&gt;
+      &lt;servlet-name&gt;Seam Resource Servlet&lt;/servlet-name&gt;
+      &lt;url-pattern&gt;/seam/resource/*&lt;/url-pattern&gt;
+   &lt;/servlet-mapping&gt;
+   
+&lt;/web-app&gt;</pre>
+
+
+<p class="wikiPara">
+And finally, we need to add the wicket libraries and seam-wicket integration library to the project. First, copy <tt>jboss-seam-wicket.jar</tt> from the <tt>/lib/</tt> directory of the Seam distribution to your project's <tt>/lib/</tt> directory. Then, make sure the wicket libraries get deployed into the archive by first removing <tt>jsf-facelets.jar</tt> and the various Seam-JSF integration libraries from the file <tt>/deployed-jars.list</tt> and adding line items for <tt>jboss-seam-wicket.jar</tt> and <tt>wicket.jar</tt>. The file should now contain the following list:
+</p>
+
+<pre class="wikiPreformatted">antlr-runtime.jar
+core.jar
+drools-compiler.jar
+drools-core.jar
+janino.jar
+jboss-el.jar
+jboss-seam.jar
+jboss-seam-wicket.jar
+jboss-seam-debug.jar
+jbpm-jpdl.jar
+mvel14.jar
+slf4j-log4j12.jar
+slf4j-api.jar
+wicket.jar</pre>
+
+
+<p class="wikiPara">
+Now would be a good time to update your IDE to reflect the libraries you are using. You'll probably need to edit the classpath of your IDE using the project buildpath screen.
+</p>
+
+<p class="wikiPara">
+Lets now set up the source directories in your project. We need to deploy our Wicket components with Seam super powers to a special directory <tt>/WEB-INF/wicket</tt> where Seam can grab hold of them and enhance them. Unfortunately, this gets a little hairy because you need to modify the Ant build script.
+</p>
+
+<p class="wikiPara">
+Start by creating a new source directory called <tt>/src/web</tt> which we'll use to store Wicket views. Then, we need to alter the build script to copy these compiled classes to <tt>/WEB-INF/wicket</tt>, you can add this target:
+</p>
+
+<pre class="wikiPreformatted">&lt;target name="compileweb" 
+         depends="init" 
+         description="Compile the Wicket views from java source code"&gt;
+   &lt;mkdir dir="${war.dir}/WEB-INF/wicket"/&gt;
+   &lt;!-- Compile the Wicket classes --&gt;
+   &lt;javac classpathref="build.classpath" 
+          destdir="${war.dir}/WEB-INF/wicket" 
+          debug="${javac.debug}" 
+          deprecation="${javac.deprecation}" 
+          nowarn="on"&gt;
+      &lt;src path="src/web" /&gt;
+   &lt;/javac&gt;
+   &lt;!-- Copy the html markup to the same location --&gt;
+   &lt;copy todir="${war.dir}/WEB-INF/wicket"&gt;
+      &lt;fileset dir="src/web"&gt;
+         &lt;include name="**/*.html"/&gt;
+      &lt;/fileset&gt;
+   &lt;/copy&gt;
+&lt;/target&gt;</pre>
+
+
+<p class="wikiPara">
+And make sure it is run, by adding <tt>compileweb</tt> as a dependency for the <tt>war</tt> target:
+</p>
+
+<pre class="wikiPreformatted">&lt;target name="war" 
+         depends="compilemodel,compileactions, compileweb, copyclasses" 
+         description="Build the distribution .war file"&gt;</pre>
+
+
+<blockquote class="wikiBlockquote">
+<b>TIP</b> You may want to create a target named <tt>compile</tt> which depends <tt>compilemodel, compileactions, compileweb, copyclasses</tt> and then have the <tt>war</tt> target depend on <tt>compile</tt>, if this change has not already been made in Seam.
+</blockquote>
+
+<p class="wikiPara">
+Wicket uses a class to configure the application (similar in nature to <tt>/WEB-INF/faces-config.xml</tt> for JSF); so before we can deploy the application to the server, we need to create the following class in the <tt>com.mydomain.wicket_tutorial.web</tt> package under the <tt>src/web</tt> directory:
+</p>
+
+<pre class="wikiPreformatted">public class TutorialApplication extends SeamWebApplication {}</pre>
+
+
+<p class="wikiPara">
+We tell Wicket to use this class by adding a component definition to the Seam component descriptor (i.e., <tt>/resources/WEB-INF/components.xml</tt>). Start by adding the <tt>wicket</tt> namespace:
+</p>
+
+<pre class="wikiPreformatted">&lt;components xmlns="http://jboss.com/products/seam/components"
+   ...
+   xmlns:wicket="http://jboss.com/products/seam/wicket"&gt;</pre>
+
+
+<p class="wikiPara">
+Then configure the Wicket application by adding the following component definition:
+</p>
+
+<pre class="wikiPreformatted">&lt;wicket:web-application
+   application-class="com.mydomain.wicket_tutorial.web.TutorialApplication"/&gt;</pre>
+
+
+<p class="wikiPara">
+Now we can get to the real development. Let's first define a home page for Wicket; we'll make a really simple one for now. First, we need some html to layout and style our page:
+</p>
+
+<pre class="wikiPreformatted">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"&gt;
+&lt;html&gt;
+   &lt;head&gt;
+   &lt;/head&gt;
+   &lt;body&gt;
+      &lt;div style="font-weight:bold"&gt;
+         &lt;p wicket:id="replace"&gt;Wicket will replace this text at runtime.&lt;/p&gt;
+      &lt;/div&gt;
+   &lt;/body&gt;
+&lt;/html&gt;</pre>
+
+
+<p class="wikiPara">
+Each page in Wicket is accompanies by a matching tree of components in Java. The following class pairs with the home page we just created:
+</p>
+
+<pre class="wikiPreformatted">public class HomePage extends WebPage {
+
+    public HomePage(PageParameters parameters) {
+        add(new Label("replace", "Hello World!"));
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+Finally, we need to tell Wicket to use our home page as the application's start page:
+</p>
+
+<pre class="wikiPreformatted">public class TutorialApplication extends SeamWebApplication {
+
+    @Override
+    public Class getHomePage() {
+        return HomePage.class;
+    }
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+Admittedly, it's taken a bit of time to get a Wicket project set up, but now that we have, we can start adding Seam to the mix.
+</p>
+
+<blockquote class="wikiBlockquote">
+<b>TIP</b> For those of you who are adventurous, and perhaps comfortable with Ant and Freemarker, you are encouraged to hack the seam-gen templates to create your own Wicket starter application. That way, you never have to repeat these steps again.
+</blockquote>
+
+<p class="wikiPara">
+Now, let's make the application do something interesting. We'll add a login box to the home page and use the Seam authenticator to authenticate the user. Here's what a typical login form might look like in Wicket:
+</p>
+
+<pre class="wikiPreformatted">&lt;div style="border: 1px solid black; width: 400px; padding: 3px"&gt;
+   &lt;form wicket:id="login"&gt;
+      &lt;div&gt;
+         &lt;label for="username"&gt;Username&lt;/label&gt;
+         &lt;input wicket:id="username" /&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+         &lt;label for="password"&gt;Password&lt;/label&gt;
+         &lt;input wicket:id="password" type="password" /&gt;
+      &lt;/div&gt;
+      &lt;div&gt;
+         &lt;input type="submit" value="Login"/&gt;
+      &lt;/div&gt;
+   &lt;/form&gt;
+&lt;/div&gt;</pre>
+
+
+<p class="wikiPara">
+Of course, we also need to build a matching component tree in Java:
+</p>
+
+<pre class="wikiPreformatted">public class HomePage extends WebPage {
+
+   public HomePage(PageParameters parameters) {
+      add(new Label("replace", "Hello World!"));
+      add(new LoginForm("login"));
+   }
+
+   public class LoginForm extends Form {
+      public LoginForm(String id) {
+         super(id);
+         add(new TextField("username"));
+         add(new PasswordTextField("password"));
+      }
+   }
+
+}</pre>
+
+
+<p class="wikiPara">
+Notice how the Wicket tags are acting as slots where the Java code can inject real UI components. But how do we capture the information that the user submits using the Wicket-powered login form? This is an area where Wicket really shines. There is no need to touch the html page. We can just manipulate the Java components to get what we want. First, let's inject the <tt>identity</tt> Seam component and tell Wicket to call <tt>authenticate()</tt> when the form is submitted. At this point, we aren't looking at the values the user entered.
+</p>
+
+<pre class="wikiPreformatted">public class LoginForm extends Form {
+
+    @In Identity identity;
+    @Logger log log;
+		
+    public LoginForm(String id) {
+        super(id);
+        add(new TextField("username"));
+        add(new PasswordTextField("password"));
+    }
+		
+    protected void onSubmit() {
+        try {
+            identity.authenticate();
+            log.info("Login succeeded");
+            setResponsePage(HomePage.class);
+        } catch (LoginException e) {
+            log.info("Login failed");
+            error("Login failed");                    
+        }
+    }
+	
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>onSubmit()</tt> callback method will be called by Wicket when the user submits the form. In it, we tell Wicket to redirect us back to the current page if login succeeds, or raise an error if the login fails. Notice how we use exactly the same annotations as you use in a regular Seam application to inject a Seam component, including the <tt>@Logger</tt> annotation. For more information about Seam's bijection mechanism, see the <a href="http://docs.jboss.com/seam/2.1.0.BETA1/reference/en-US/html/concepts.html#d0e3566" target="" class="regularLink">bijection section</a> of the Seam reference documentation. 
+</p>
+
+<p class="wikiPara">
+All that is left is to bind the input controls to the <tt>username</tt> and <tt>password</tt> properties of the built-in Seam component named <tt>credentials</tt> so that we can access the values the user submits in the login routine. To do this, we inject the <tt>credentials</tt> component and bind it using the Wicket <tt>PropertyModel</tt>:
+</p>
+
+<pre class="wikiPreformatted">public class LoginForm extends Form {
+
+    @In Identity identity;
+    @In Credentials credentials;
+		
+    public LoginForm(String id) {
+        super(id);
+        add(new TextField("username", new PropertyModel(credentials, "username")));
+        add(new PasswordTextField("password", new PropertyModel(credentials, "password")));
+    }
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+Now, try logging in with the username <tt>admin</tt> and take a look at the console - you'll see your login succeeded message printed. (The default authenticator class in a seam-gen 2.1 project requires the username to be <tt>admin</tt> and the password to be blank).
+</p>
+
+<p class="wikiPara">
+That concludes our introduction to using Seam with Wicket. In this tutorial we've looked at creating a new Seam project, removing the JSF view layer and replacing it with Wicket, and using injection to access our Seam components from Wicket. In the next tutorial we'll look at controlling conversations using annotations on Wicket components, raising events, and more bijection (including outjection).</p>
+</div>
+

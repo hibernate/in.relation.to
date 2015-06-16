@@ -1,0 +1,72 @@
+---
+title: "Tools QA at Seam In Action JavaPolis"
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "10-12-2007"
+tags: []
+
+relative_url: /2007/12/10/tools-qa-at-seam-in-action-java-polis
+slug: tools-qa-at-seam-in-action-java-polis
+lace: http://in.relation.to/3226.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/12/10/tools-qa-at-seam-in-action-java-polis
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Sitting in on the <q>Seam In Action</q> talk with Pete Muir, Peter Hilton and Nicholas Leroux and thought that I could put more elaborate answers to the questions asked during this talk about the tooling.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Can we use the Seam tools on existing java projects ?</i>
+
+</p>
+
+<p class="wikiPara">
+/Yes, in general this just works. If you have an existing java project you enable Seam support in Eclipse by going to Project properties, select Seam and put a check in the checkbox. This is actually used by the Seam team to develop Seam it self with. 
+</p>
+
+<p class="wikiPara">
+When enabled the Seam tools will simply scan your project(s) classpath for Seam components, components.xml etc. and you will have EL code completion with Seam  components and the Seam component view will list the configured components.  
+</p>
+
+<p class="wikiPara">
+There is though <i class="wikiEmphasis">one</i> current limitation. The Seam artifact wizards New Action, New Entity, etc. won't work in current version of the tooling on 'plain java projects', they require the Seam project wizard to set them up. This is something we will fix. 
+</p>
+
+<p class="wikiPara">
+In general if you find something that is not working on simple java projects (and you think it should) then let us know since it is one of our goals is to enable as many features as possible with as little and hopefully zero additional configuration of the IDE./
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Is Seam tooling in JBoss Tools specific to JBoss AS ?</i>
+</p>
+
+<p class="wikiPara">
+/No and Yes./
+</p>
+
+<p class="wikiPara">
+/No, since the default Seam projects are 'just' Eclipse Web projects and thus you can choose to configure and deploy it to any other application server (that supports Seam)/
+</p>
+
+<p class="wikiPara">
+/Yes, because some of the libraries might not be provided by your application server and some additional configuration over what the tooling does for the projects might be needed. But since this is just a standard JEE/Seam project you just need to add the relevant libraries and adjust the configuration accordingly./
+</p>
+
+<p class="wikiPara">
+/The Seam team has started to document these in the <a href="http://docs.jboss.com/seam/2.0.0.GA/reference/en/html/oc4j.html" target="" class="regularLink">Seam Documentation</a> and more is being added to it./
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Is the hot-deploy features of Seam components in war's supported by the tooling ?</i>
+</p>
+
+<p class="wikiPara">
+/Yes, the Seam tools projects are by default setup so it works out-of-the-box./
+</p>
+</div>
+

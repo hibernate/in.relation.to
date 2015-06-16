@@ -1,0 +1,78 @@
+---
+title: "Finalizers are even eviler than you think"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "18-02-2004"
+tags: []
+
+relative_url: /2004/02/18/finalizers-are-even-eviler-than-you-think
+slug: finalizers-are-even-eviler-than-you-think
+lace: http://in.relation.to/1515.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2004/02/18/finalizers-are-even-eviler-than-you-think
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Developerworks is featuring the best <a href="http://www-106.ibm.com/developerworks/library/j-jtp01274.html" target="" class="regularLink">article </a>
+I have ever read on the subject of Java performance. The authors dispose of the
+canard that temporary object creation is expensive in Java, by explaining how
+generational garbage collection works in the Sun JVM (this is a bit more detailed
+explanation than the typical one, by the way). Well, I already knew this; Hibernate
+rejected the notion of object pooling right from the start (unfortunately, the
+EJB spec has not yet caught up).
+</p>
+
+<p class="wikiPara">
+What I did /not/ know was that objects which implement finalize() require two
+full garbage collection cycles to be released. Now, everyone knows that 
+finalize() cannot be relied upon and we should not write <q>important</q> code in
+a finalizer. But /this/ finalize() method, taken from Hibernate's SessionImpl
+class seemed like a really good idea:
+</p>
+
+<pre class="wikiPreformatted">
+/**
+ * Just in case user forgot to call close()
+ */
+protected void finalize() throws Throwable {
+  
+  log.debug("running Session.finalize()");
+  
+  if (isCurrentTransaction) log.warn("afterTransactionCompletion() was never called");
+  
+  if (connection!=null) { //ie it was never disconnected
+    if ( connection.isClosed() ) {
+      log.warn("finalizing unclosed session with closed connection");
+    }
+    else {
+      log.warn("unclosed connection");
+      if (autoClose) connection.close();
+    }
+  }
+}
+</pre>
+
+
+<p class="wikiPara">
+The main thing that this method is doing is checking to see if the naughty 
+application forgot to close the session and, if so, log a WARN. This is a
+really good idea! It is otherwise quite hard to noticed unclosed sessions, and
+the JDBC connections they own. Unfortunately it has the terrible side-effect
+of preventing the session from being garbage collected immediately. Now, even
+after reading the article, I didn't think that this would be such a big deal,
+since I dereference almost all of the session's state from close(). However,
+My performance tests are showing a really /big/ difference in performance, just
+from removing the finalizer. For one problematic test, I actually /halved/ the
+overhead of Hibernate!
+</p>
+
+<p class="wikiPara">
+I can barely believe this result, but I've been successfully reproducing it for
+the last two hours.
+</p>
+</div>
+

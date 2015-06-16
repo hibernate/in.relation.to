@@ -1,0 +1,175 @@
+---
+title: "On contexts, scopes and conversations"
+author: "Nicklas Karlsson"
+blogger_name: "Nicklas"
+creation_date: "23-06-2010"
+tags: []
+
+relative_url: /2010/06/23/on-contexts-scopes-and-conversations
+slug: on-contexts-scopes-and-conversations
+lace: http://in.relation.to/15960.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/06/23/on-contexts-scopes-and-conversations
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Contexts in JSR-299 is so important that it actually was incorporated in the name after a few attempts so let's have a look 
+at what the contexts and scopes really are. We'll be using Weld as the reference when we want to get into implementation details but the core stuff is implementation agnostic and follow the rules of the specification. This blog posting is sort of a "scopes and contexts for dummies" with some simplifications, for a more formal approach you might want to Read The Fine Specification.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Contexts"><a href="/2010/06/23/on-contexts-scopes-and-conversations#H-Contexts">Contexts</a></h1>
+
+<p class="wikiPara">
+A context is like a labeled shelf. There are shelves named @RequestScoped, @SessionScoped etc. When you use a bean of a particular scope, a bean instance is fetched from that shelf (or one is created and placed there if it wasn't already there) so that you are guaranteed to get the same instance the next time you reference it (withing the same lifecycle)
+</p>
+
+<p class="wikiPara">
+As a curiosity can be mentioned that there can actually be many shelves for a particular scope (as long as only one is active at any given time). 5 minutes of fame and honor to the one that can find a usecase for that. I think it has something to do with child activites that once was a part of the spec.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Scopes"><a href="/2010/06/23/on-contexts-scopes-and-conversations#H-Scopes">Scopes</a></h1>
+
+<p class="wikiPara">
+The scope is the link between a bean and a context. Different contexts/scopes have different lifecycles and that determines for how long your stuff should be kept on the shelf. The shelf is automatically wiped clean when the scope hits it's end-of-life (e.g. the contents of the session context is destroyed when the session expires etc). There is no cheating, in Seam you could place almost any bean in any scope but in CDI, a bean of a particular scope always end up on the corresponding shelf. A bean has one and only one scope.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Proxies"><a href="/2010/06/23/on-contexts-scopes-and-conversations#H-Proxies">Proxies</a></h1>
+
+<p class="wikiPara">
+Proxies are wrappers. There are different kinds of proxies, there are placeholder proxies used at injection points for normal scoped beans that look up the real instance before invoking methods on it and there are proxies that wrap interceptors and stuff around the real instance of the bean class. 
+</p>
+
+<h1 class="wikiHeadline1" id="H-BehindTheScenes"><a href="/2010/06/23/on-contexts-scopes-and-conversations#H-BehindTheScenes">Behind the scenes</a></h1>
+
+<p class="wikiPara">
+So what really happens when you have something like this
+</p>
+
+<pre class="wikiPreformatted">
+@Model
+public class Foo
+{
+   @Inject Bar bar;
+
+   public String getPong()
+   {
+       return bar.pong();
+   }
+}
+</pre>
+
+
+<p class="wikiPara">
+and 
+</p>
+
+<pre class="wikiPreformatted">
+@SessionScoped
+public class Bar implements Serializable
+{
+    public String pong()
+    {
+        return "pong";
+    };
+}
+</pre>
+
+
+<p class="wikiPara">
+is that Weld at boot time creates the beans for both Foo and Bar. Foo is a @Named @RequestScoped bean (@Model stereotype) and Bar is a @SessionScoped one. There are no actual instances created at this time but there is a proxy injected at
+</p>
+
+<pre class="wikiPreformatted">
+@Inject Bar bar;
+</pre>
+
+
+<p class="wikiPara">
+which has the ability to look up the Bar instance when needed. At this point both the request context and session contexts are empty. Now for the magic. When you in a xhtml page do something like
+</p>
+
+<pre class="wikiPreformatted">
+#{foo.pong}
+</pre>
+
+
+<p class="wikiPara">
+the EL-resolver kicks in and comes to the conclusion that we need the named (EL-available) bean <q>foo</q> as a starting point. The BeanManager will resolve the bean and notice that Foo is @RequestScoped so it will ask the RequestContext for an instance. Since the request context is empty, an instance is generated, using the <q>Foo-bean</q> as template. This instance is placed in the request context in case someone needs it during the same request.
+</p>
+
+<p class="wikiPara">
+The getPong() method on that instance is called which hits the proxy for Bar. Since Bar is @SessionScoped, the BeanManager  consults the session context for an instance. Since there is none there, one is created, and stuck in the session context for later reference. This instance is the one that has it's <q>pong()</q> method invoked. 
+</p>
+
+<p class="wikiPara">
+When the request is over, the request context is destroyed and any destructors of Foo are called but since the session context is still alive (the session didn't terminate), the instance for Bar stays alive.
+</p>
+
+<p class="wikiPara">
+Now another request from the same webapp comes along. The request scope is once again empty and we have a new instance for foo but this time bar is already found in the session context and we get the same instance of Bar. Just as we should since we have a new request (fresh request context) but same 'ol session (old session context). In this way we can mix injection between contexts - we can inject @RequestScoped beans in @SessionScoped ones and vice versa and the proxies will make sure the correct instances are hit (or created) in the contexts.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ContextNotActive"><a href="/2010/06/23/on-contexts-scopes-and-conversations#H-ContextNotActive">Context not active</a></h1>
+
+<p class="wikiPara">
+All contexts are not active all the time. Getting a <q>context not active</q> exception from an @ApplicationScoped bean is a bit tricky but the request context is only available when there is an active HTTP request and the session context is only available when there is an active HTTP session. It means that accessing beans in those contexts are no-go from e.g. MDB:s. Why is this?
+</p>
+
+<p class="wikiPara">
+Weld-specific stuff ahead, using the request context as an example: There is only one request context. Really. All 5000 concurrent users of your webapp share the same request context instance. Yup, the actual context data is stored in a ThreadLocal&lt;BeanStore&gt; field which means that (lucky for us) each users thread has own data in the field. 
+</p>
+
+<p class="wikiPara">
+BeanStore is an interface and the particular implementation of it that is stuck in the ThreadLocal field of the request context is wrapping a HTTP servlet request. This means that adding stuff to that bean store actually places it in the request and clearing the bean store removes all keys from the request that belong to that bean store. The request attributes names are filtered through a naming scheme so that attributes that start with the @RequestScoped class name are considered belonging to that bean store. 
+</p>
+
+<p class="wikiPara">
+What this means in practice is that the servlet request has to <i class="wikiEmphasis">be there</i> in order to work as backing storage for the bean  store in the request context. The active-flag of the context is just there to indicate that at this point, Weld has populated that context with a true bean store.
+</p>
+
+<p class="wikiPara">
+So actually, you can't put stuff directly on the @RequestScoped shelf. You are only allowed to put things in a box (the servlet request backed bean store) Weld has placed on the shelf. The placing of the box is coupled to the activation of the context and the removal of the box is coupled to the deactivation. These activations and deactivations are handled by servlet request listeners that watch for the creation and destruction of the request.
+</p>
+
+<p class="wikiPara">
+When we're talking request scope, the context is short-lived and a new box is placed on the shelf when the request begins and it is cleared out when it ends but how about session scope? The story is very similar with the exception that the stuff belonging to the session bean store is <i class="wikiEmphasis">not</i> destroyed when the request ends. When the next request comes in, the session context is re-populated with a bean store that wraps the HTTP session. Since the previous request also used the HTTP session as backing storage, stuff placed in the session context then lives on in session attributes starting with the @SessionScoped class name. As you notice, for both request and session context, naming plays an important role. There are other things floating around the HTTP request and session attributes and we don't want to hit anything not belonging to us when we e.g. clear out a bean store.
+</p>
+
+<p class="wikiPara">
+It is important to realize that the <q>limitations</q> are not that of Welds implementation. Sure, there could be other ways of implementing the contexts that would make them appear available all the time but they could per definition not be semantically correct. You could also implement stuff without writing directly e.g. to the underlying HTTP session but when it comes to session replication, it's a Good Thing.
+</p>
+
+<p class="wikiPara">
+As a curiosity can be mentioned that due to the fact that the specification say the session context must survive session invalidation (which is not a Good Thing when you have direct HTTP session backed beanstore and try to access it after invalidation) there is a sort of buffering built into the session context that loads on init and caches stuff if the session should go AWOL at some point.
+</p>
+
+<h1 class="wikiHeadline1" id="H-HoneyWeNeedToHaveAConversation"><a href="/2010/06/23/on-contexts-scopes-and-conversations#H-HoneyWeNeedToHaveAConversation">Honey, we need to have a conversation</a></h1>
+
+<p class="wikiPara">
+The conversation context is actually like a named sub-session-context. The @RequestScoped shelf can have only one box where stuff is stored in but on the @ConversationScoped shelf there can be many boxes. The labels on the boxes is the conversation ID. Conversations can be either transient (the default) and in this case it behaves much like the request context and only lives during one HTTP request. This is not very useful, therefore conversations can be promoted to non-transient (long-running). This is achieved by calling the begin() or begin(String) methods on the Conversation bean that's available for injection. When the request ends, the Conversation Manager decides the fate of the conversation context by looking at the transient flag of the Conversation. If it is transient, the conversation context is destroyed, if it's non-transient it's left alone and the generated (or assigned) conversation ID is passed along as a HTTP parameter to the next request. 
+</p>
+
+<p class="wikiPara">
+The Conversation Manager is also the one which determines if we should start with an empty, transient conversation and conversation context or if we should resume an existing one when a request comes in. The <q>cid</q> parameter is looked for in the incoming HTTP request. No parameter present means transient conversation but if there is a value for cid, say 1, the conversation manger picks down the box labeled <q>1</q> from it's storage and loads it into the conversation context. Well, actually it wraps the HTTP session with a conversation-beanstore suited to match that conversation id (again, naming play an important role) and pre-populates the Conversation instance with the cid and transient flagged to false. We are free to switch conversations, promoting and demoting them and the HTTP session will mirror those contexts through its attributes, suited to match the names of the conversations.
+</p>
+
+<p class="wikiPara">
+If you think you can get cute and do some URL-rewriting by modify the passed-along cid-parameter feel free. Since your own session is used as backing storage, the only thing you can do is switch to another conversation of your own (or bomb out because the cid was not known). There is no way you can access conversational data from another user, even the specification says you can't cross the HTTP session boundary. 
+</p>
+
+<p class="wikiPara">
+As a curiosity could be mentioned that it's harder and harder with modern browsers to actually get new sessions since tabbed browsings etc have brought along the side-effect that the session and cookies are shared among browser instances. Earlier it was usually enough to start a new browser but nowadays you usually have to use incognito/private browsing to test the session boundaries with the same brand of browser.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Conclusion"><a href="/2010/06/23/on-contexts-scopes-and-conversations#H-Conclusion">Conclusion</a></h1>
+
+<p class="wikiPara">
+Hopefully you are now confused at a higher level. You might also want to check out the specification on how to write custom contexts and scope types. You might also want to have a look at the Weld source code in the org.jboss.weld.context package and look at how the BeanManagerImpl does the resolving.
+</p>
+
+</div>
+

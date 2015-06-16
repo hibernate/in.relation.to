@@ -1,0 +1,225 @@
+---
+title: "Designers vs. Developers, Declaration vs. Procedure"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "28-10-2007"
+tags: [Web Frameworks]
+
+relative_url: /2007/10/28/designers-vs-developers-declaration-vs-procedure
+slug: designers-vs-developers-declaration-vs-procedure
+lace: http://in.relation.to/2677.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/10/28/designers-vs-developers-declaration-vs-procedure
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+<a href="http://poorinnerlife.blogspot.com/2007/10/jsf-first-impressions.html" target="" class="regularLink">This post</a> 
+summarizes a complaint about JSF that I hear from time to time:
+</p>
+
+<blockquote class="wikiBlockquote">
+... traditional page design workflow isn't as 
+straight-forward with JSF. With action-based web frameworks, it was rather easy 
+for a HTML designer with some technical acumen to directly edit JSPs to 
+implement a look and feel. Not so with JSF -- you're farther away from the final 
+HTML. Its the components you include on the page that generate DIV tags and so 
+forth. Having accrued 10+ years experience working with HTML, I find this the 
+most frustrating aspect of JSF. We've been given a series of HTML Mockups from a 
+design firm, and integrating has proved to be very challenging. I wonder if JSF 
+merely shifts work efforts from HTML editing to Component customization.
+</blockquote>
+
+<p class="wikiPara">
+Well, it may be frustrating at first, but on balance I would argue that it is a 
+/good thing/ that your web designer is not editing HTML directly.
+</p>
+
+<p class="wikiPara">
+The reason is that you should not be implementing look and feel by directly 
+editing HTML. If you're doing that, then you're working around the whole 
+architecture of HTML. What you should be doing instead is adding CSS selectors 
+to your <i class="wikiEmphasis">semantic</i> HTML content, and applying your layout, look and feel using 
+CSS. The architecturally correct separation of responsibilities is:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Developers</i> produce /semantic content/</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">Designers</i> produce /stylesheets/</li>
+</ul>
+
+<p class="wikiPara">
+Now, most JSF component libraries (and most Ajax libraries in general) kinda 
+muddy the water here by providing widgets that look pretty out of the box, and 
+can be skinned according to some built-in <q>theme</q> facility. Well, this is an 
+important marketing  feature for something like RichFaces - users have an 
+expectation that widgets will look pretty without customization - but for 
+serious development I think it tends to lead people down the wrong path. That's 
+why one of my first feature requests for RichFaces was a <q>plain</q> theme that
+looks /intentionally/ ugly, and is easy to style using CSS.
+</p>
+
+<p class="wikiPara">
+In my opinion, there is third, under-appreciated, attribute of the HTML architecture:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Both content and style are expressed /declaratively/</li>
+</ul>
+
+<p class="wikiPara">
+And, in my view, this is essential for understandability of the code.
+</p>
+
+<p class="wikiPara">
+Let's consider good 'ol <tt>&lt;h:dataTable&gt;</tt>:
+</p>
+
+<pre class="wikiPreformatted">&lt;h:dataTable value="#{products}" var="prod"&gt;
+   &lt;h:column&gt;
+      &lt;f:facet name="header"&gt;SKU&lt;/f:facet&gt;
+      #{prod.sku}
+   &lt;/h:column&gt;
+   ...
+&lt;/h:dataTable&gt;</pre>
+
+
+<p class="wikiPara">
+This code fits the <q>semantic content</q> description perfectly. It's a highly 
+declarative specification that:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> there is a table, where each row is a product</li>
+<li class="wikiOrderedListItem"> with a column that has a header and some content in each cell</li>
+</ol>
+
+<p class="wikiPara">
+I can't really imagine a nicer way to express this. Consider the traditional  
+JSP/JSTL type approach:
+</p>
+
+<pre class="wikiPreformatted">&lt;table&gt;
+   &lt;tr&gt;
+      &lt;th&gt;SKU&lt;/th&gt;
+      ...
+   &lt;/tr&gt;
+   &lt;c:forEach items="${products}" var="prod"&gt;
+      &lt;tr&gt;
+         &lt;td&gt;
+            &lt;c:out value="${prod.sku}"/&gt;
+         &lt;/td&gt;
+         ...
+      &lt;/tr&gt;
+   &lt;/c:forEach&gt;
+&lt;/table&gt;</pre>
+
+
+<p class="wikiPara">
+This is a significantly more complex implementation: 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> there are 5 levels of nesting, compared to 3</li>
+<li class="wikiUnorderedListItem"> it's difficult to correlate the column header name with the content, except by counting <tt>&lt;th&gt;</tt>s and <tt>&lt;td&gt;</tt>s</li>
+</ul>
+
+<p class="wikiPara">
+Even worse, it features an /iterator/, thus mixing two completely different 
+language paradigms (declarative vs. procedural) in a totally unsatisfying way.
+</p>
+
+<p class="wikiPara">
+On the other hand, it doesn't hide the bare HTML tags from us. If we wanted 
+to edit the JSP template to add presentational concerns, it's easy enough. 
+Unfortunately, once we start adding presentation concerns to our HTML, the
+HTML code becomes /much/ less reusable. What we should be doing instead is
+adding CSS selectors.
+</p>
+
+<p class="wikiPara">
+And, of course, all well-written JSF components make this super-easy:
+</p>
+
+<pre class="wikiPreformatted">&lt;h:dataTable value="#{products}" 
+                var="prod" 
+         rowClasses="oddrow,evenrow"
+        headerClass="header"
+          syleClass="table products"&gt;
+   &lt;h:column&gt;
+      &lt;f:facet name="header"&gt;SKU&lt;/f:facet&gt;
+      #{prod.sku}
+   &lt;/h:column&gt;
+   ...
+&lt;/h:dataTable&gt;</pre>
+
+
+<p class="wikiPara">
+Now our designer can concentrate upon developing declarative CSS stylesheets
+to target the selectors we have provided, and we will be free to make all 
+kinds of changes to the semantic HTML without affecting the design (for
+example, we could use some 
+<a href="http://livedemo.exadel.com/richfaces-demo/richfaces/scrollableDataTable.jsf" target="" class="regularLink">fancy table control</a>
+such as <tt>&lt;rich:table&gt;</tt> that provides lazy fetching of data from the server
+when the scrollbar is dragged, along with sortable, resizable columns and 
+row selection. All without a line of JavaScript.
+</p>
+
+<p class="wikiPara">
+The declarative, semantic style of user interface development really starts 
+to show its potential when we consider databinding. In a traditional UI
+library, tree views are a pain. We need to write messy Java code to adapt our application's model to something that the tree widget can comprehend.
+In RichFaces, we simply declare how the tree structure maps to the /structure/
+of our object model. No Java code required:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:tree&gt;
+
+    &lt;rich:recursiveTreeNodesAdaptor roots="#{root}" 
+                                    nodes="#{dir.children}"
+                                      var="dir"&gt;
+                                    
+        &lt;rich:treeNode&gt;#{dir.name}/&lt;/rich:treeNode&gt;
+        
+        &lt;rich:treeNodesAdaptor nodes="#{dir.files}" 
+                                 var="file"&gt;
+                               
+            &lt;rich:treeNode&gt;#{file.name}&lt;/rich:treeNode&gt;
+            
+        &lt;/rich:treeNodesAdaptor&gt;
+        
+    &lt;/rich:recursiveTreeNodesAdaptor&gt;
+    
+&lt;/rich:tree&gt;</pre>
+
+
+<p class="wikiPara">
+Now just try to do that in some other Web framework! :-)
+</p>
+
+<p class="wikiPara">
+Probably, you can now guess why I'm going against the grain by sticking
+up for JSF when some folks are jumping on bandwagons like GWT or 
+Wicket. These technologies attempt to specify a naturally hierarchical
+artefact using sequential code. Personally, I just don't get that. I'm
+deeply interested in technologies like Hibernate, JPA, Seam, Web Beans, 
+EJB3, jBPM which reformulate what used to be programmatic concerns in a 
+declarative mode. That there should be a movement /away/ from declarative 
+programming in the one field where it is /most/ natural (user interface) is 
+counter-intuitive to me.
+</p>
+
+<p class="wikiPara">
+Actually, the pure-declarative nature of JSF templates is a pretty 
+unique feature of JSF. Facelets is the first templating language I've ever 
+seen that doesn't need iterators and conditionals. JSP, Velocity, FreeMarker,
+RHTML, etc, all encourage the mixing of logic and content. Facelets/JSF
+let you express dynamic content every bit as declaratively as HTML or
+DocBook express static content. (Jacob Hookom is one of the smartest guys
+in Java, in case you missed it.)
+</p>
+</div>
+

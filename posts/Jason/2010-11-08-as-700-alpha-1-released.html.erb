@@ -1,0 +1,104 @@
+---
+title: "AS 7.0.0.Alpha1 released!"
+author: "Jason Greene"
+blogger_name: "Jason"
+creation_date: "08-11-2010"
+tags: []
+
+relative_url: /2010/11/08/as-700-alpha-1-released
+slug: as-700-alpha-1-released
+lace: http://in.relation.to/17654.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/11/08/as-700-alpha-1-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+As AS6 has been getting closer to CR, we have recently started working on our new next generation application server. Last week, we just released an early alpha of this work, 7.0.0.Alpha1, code named <q>Halloween</q>. 
+</p>
+
+<p class="wikiPara">
+I am putting links first, in case you don't feel like reading my long post:
+</p>
+
+<p class="wikiPara">
+You can download the release in the usual place here:
+</p>
+
+<p class="wikiPara">
+<a href="http://jboss.org/jbossas/downloads" target="" class="regularLink">http://jboss.org/jbossas/downloads</a>
+</p>
+
+<p class="wikiPara">
+There is some basic user instructions here:
+</p>
+
+<p class="wikiPara">
+<a href="http://community.jboss.org/wiki/JBossAS7UserGuide" target="" class="regularLink">http://community.jboss.org/wiki/JBossAS7UserGuide</a>
+</p>
+
+<p class="wikiPara">
+Also, Brian, one of our core devs hacked together a quick late-night (yet very nice) demo covering the new powerful management capabilities:
+</p>
+
+<p class="wikiPara">
+</p>
+<div id="j_id495:flashPluginDiv"><div id="j_id495:j_id496">
+        <object width="640" height="385">
+            <param name="movie" value="http://www.youtube.com/v/phV3QiKQf2E?fs=1">
+            <param name="wmode" value="transparent">
+            <param name="allowFullScreen" value="true">
+            <embed src="http://www.youtube.com/v/phV3QiKQf2E?fs=1" type="application/x-shockwave-flash" wmode="transparent" allowfullscreen="true" width="640" height="385">
+           </embed>
+        </object>
+</div></div>
+
+
+<p class="wikiPara">
+</p>
+<div id="j_id502:flashPluginDiv"><div id="j_id502:j_id503">
+        <object width="640" height="385">
+            <param name="movie" value="http://www.youtube.com/v/gCeQ2KIO0qc?fs=1">
+            <param name="wmode" value="transparent">
+            <param name="allowFullScreen" value="true">
+            <embed src="http://www.youtube.com/v/gCeQ2KIO0qc?fs=1" type="application/x-shockwave-flash" wmode="transparent" allowfullscreen="true" width="640" height="385">
+           </embed>
+        </object>
+</div></div>
+
+
+<p class="wikiPara">
+As you can see, the biggest change in AS7 is that we are treating administrators with the same love that we have always shown developers. In particular, we have been doing a lot of thinking about how to make their lives easier when it comes to managing small to very large environments. This is a very important part of a bigger effort you may have heard us reference called <a href="http://community.jboss.org/groups/usability" target="" class="regularLink">"Andiamo"</a>, a major focus on improving the usability of JBoss projects and products.
+</p>
+
+<p class="wikiPara">
+In AS7, configuration is now centralized and presented in a user-friendly manner. So instead of searching for one of our beans.xml files to change some settings for a specific subsystem, you now know exactly where to look. Also the configuration can now describe an entire domain. This means any number of servers, and groupings thereof can be controlled in one place.
+</p>
+
+<p class="wikiPara">
+For those that don't want to run in a more complex domain topology, we have a simpler more traditional mode you can run JBoss AS in called <q>standalone</q>. The configuration is largely the same, but is slightly simplified, so you still benefit from user-friendly configuration all in one place.
+</p>
+
+<p class="wikiPara">
+AS7 isn't just about administrators, we are also aiming to make life better for developers as well. One big change we are making is moving to a <a href="http://in.relation.to/Bloggers/ModularizedJavaWithJBossModules" target="" class="regularLink">"pure" modular class-loading environment</a> that will allow us to finally hide our implementation classes from application deployments. In other words, if we decide to use foobar.jar, version 1.1, your application won't see those classes, so it can happily use foobar 2.2.
+</p>
+
+<p class="wikiPara">
+Another big change on the developer front is that the AS7 service container is fully concurrent, which takes advantage of modern cpus. This among other changes leads to a much improved boot time.
+</p>
+
+<p class="wikiPara">
+Note that this release just offers a glimpse into the management model and server environment we are working on. EE capabilities will be added as they are developed in subsequent releases.
+</p>
+
+<p class="wikiPara">
+If you are interested in contributing, check out our <a href="http://community.jboss.org/wiki/HackingonAS7" target="" class="regularLink">Hacking on AS7</a> page.
+</p>
+
+<p class="wikiPara">
+Thanks!</p>
+</div>
+

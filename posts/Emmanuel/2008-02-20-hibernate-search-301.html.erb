@@ -1,0 +1,91 @@
+---
+title: "Hibernate Search 3.0.1"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "20-02-2008"
+tags: [Hibernate Search,Seam News]
+
+relative_url: /2008/02/20/hibernate-search-301
+slug: hibernate-search-301
+lace: http://in.relation.to/8636.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/02/20/hibernate-search-301
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+It's been quite some time since the latest release of Hibernate Search, but since the code base has been fairly stable and bug free, we have been holding it until now. But there are some interesting features that could not wait anymore:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">transparent reindexing on all collection changes</li>
+<li class="wikiUnorderedListItem">support of Lucene 2.3 (performance improvements and stability)</li>
+<li class="wikiUnorderedListItem">query <tt>ResultTransformer</tt> making projections even more friendly</li>
+</ul>
+
+
+<h3 class="wikiHeadline3" id="H-TransparentReindexingOnCollectionChange"><a href="/2008/02/20/hibernate-search-301#H-TransparentReindexingOnCollectionChange">Transparent reindexing on collection change</a></h3>
+
+
+<p class="wikiPara">
+Finally! This one has been annoying some of you for some time now. If you use Hibernate 3.2.6, Hibernate Search will reindex the entities on collection change. Be sure to add the appropriate additional event listeners
+</p>
+
+
+<pre class="wikiPreformatted">        &lt;event type="post-collection-recreate"/&gt;
+            &lt;listener class="org.hibernate.search.event.FullTextIndexCollectionEventListener"/&gt;
+        &lt;/event&gt;
+        &lt;event type="post-collection-remove"/&gt;
+            &lt;listener class="org.hibernate.search.event.FullTextIndexCollectionEventListener"/&gt;
+        &lt;/event&gt;
+        &lt;event type="post-collection-update"/&gt;
+            &lt;listener class="org.hibernate.search.event.FullTextIndexCollectionEventListener"/&gt;
+        &lt;/event&gt;</pre>
+
+
+
+<p class="wikiPara">
+This event listeners configuration will transparently be done when Hibernate Annotations 3.3.1 is out (the code is checked in already).
+</p>
+
+<h3 class="wikiHeadline3" id="H-Lucene23"><a href="/2008/02/20/hibernate-search-301#H-Lucene23">Lucene 2.3</a></h3>
+
+<p class="wikiPara">
+Hibernate Search now runs Lucene 2.3. Hibernate Search is fully backward compatible with Lucene 2.2 but we highly recommend you to move to Lucene 2.3 (included in the latest Hibernate Search distribution) as some interesting performance improvements have been done by the Lucene team (I know, they did it again).
+</p>
+
+<h3 class="wikiHeadline3" id="H-QueryTtResultTransformertts"><a href="/2008/02/20/hibernate-search-301#H-QueryTtResultTransformertts">Query <tt>ResultTransformer</tt>s</a></h3>
+
+<p class="wikiPara">
+Projection query is a useful tool in some performance critical situations but the returned result is <tt>List&lt;Object[]&gt;</tt>: needless to say, not very developer friendly. 
+</p>
+
+<p class="wikiPara">
+<tt>ResultTransformer</tt>, already available in regular Hibernate Core queries to post process the results, can now be used in Hibernate Search queries.
+</p>
+
+<pre class="wikiPreformatted">
+FullTextQuery query = s.createFullTextQuery( query, Employee.class );
+query.setProjection("id", "lastname", "department");
+query.setResultTransformer( new AliasToBeanResultTransformer(EmployeeView.class) );
+List&lt;EmployeeView&gt; results = (List&lt;EmployeeView&gt;) query.list();
+</pre>
+
+
+<h3 class="wikiHeadline3" id="H-AndAFewOtherBugFixes"><a href="/2008/02/20/hibernate-search-301#H-AndAFewOtherBugFixes">And a few other bug fixes</a></h3>
+
+<p class="wikiPara">
+Some additional bug fixes and enhancements have been introduced, including <tt>@IndexedEmbedded</tt> used in multiple levels, Hibernate Search filter caching actually cache now with the standard Lucene <tt>CachingWrapperFilter</tt> and so on.
+</p>
+
+<p class="wikiPara">
+The release can be downloaded <a href="http://www.hibernate.org/6.html" target="" class="regularLink">here</a>, the complete changelog can be found at <a href="http://opensource.atlassian.com/projects/hibernate/browse/HSEARCH?report=com.atlassian.jira.plugin.system.project:changelog-panel" target="" class="regularLink">here</a>. 
+</p>
+
+<p class="wikiPara">
+Enjoy</p>
+</div>
+

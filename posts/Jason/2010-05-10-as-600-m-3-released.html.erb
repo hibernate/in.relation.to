@@ -1,0 +1,50 @@
+---
+title: "AS 6.0.0.M3 released!"
+author: "Jason Greene"
+blogger_name: "Jason"
+creation_date: "10-05-2010"
+tags: []
+
+relative_url: /2010/05/10/as-600-m-3-released
+slug: as-600-m-3-released
+lace: http://in.relation.to/15483.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/05/10/as-600-m-3-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Last week we released the third milestone for AS6. One major improvement this release brings is a <a href="http://jboss.org/hornetq" target="" class="regularLink">completely new high performance messaging implementation</a>. HornetQ is available out of the box, all you have to do is setup your queues/topics and deploy any EE app using JMS. You can read more about this on <a href="http://hornetq.blogspot.com/2010/05/turbo-messaging-in-jboss-as-60-m3.html" target="" class="regularLink">Clebert's blog</a> .
+</p>
+
+<p class="wikiPara">
+Another major feature this release includes is support for EJB 3.1 <i class="wikiEmphasis">singleton beans</i>, and <i class="wikiEmphasis">container managed concurrency</i>. For those that aren't familiar with singleton beans, they are essentially a stateless bean that can be used similar to the <i class="wikiEmphasis">"servlet"</i> model, where you can have multiple concurrent requests on the same instance. Traditional stateless session beans can never allow multiple threads to execute on the same instance. This means the container must pool a collection of instances to be ready to process your request load. The obvious advantage this brings is that it simplifies the bean implementation; however, for some applications the pooling, especially when left untuned, can be counter-productive.  Singletons are a way to achieve greater control by allowing the application to implement any concurrency/locking model of its choosing. 
+</p>
+
+<p class="wikiPara">
+If you have an application that that follows a common read/write locking pattern, then a singleton can optionally use <i class="wikiEmphasis">container managed concurrency</i> by annotating methods with the @Lock(READ) and @Lock(Write) annotations. This gives you the additional control but takes some of the burden of lock management away.
+</p>
+
+<p class="wikiPara">
+Another notable addition to the M3 release, is a new OSGI profile that can be triggered using the -c option:
+</p>
+
+<pre class="wikiPreformatted">./run.sh -c osgi</pre>
+
+
+<p class="wikiPara">
+This will start a number of OSGi services, as well as the ability to directly deploy bundles. You can find out more on how to use this new profile by checking out the <a href="http://community.jboss.org/wiki/jbossosgi" target="" class="regularLink">JBoss OSGI project docs</a>.
+</p>
+
+<p class="wikiPara">
+There are of course many other improvements too numerous to mention. To get the complete list of features, changes, and fixes that made this release, take a look at the full release notes, available <a href="http://community.jboss.org/wiki/AS600M3ReleaseNotes" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+As always, you can download all AS releases on the <a href="http://www.jboss.org/jbossas/downloads/" target="" class="regularLink">AS download page</a>.
+</p>
+</div>
+

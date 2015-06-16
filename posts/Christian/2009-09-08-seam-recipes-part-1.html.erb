@@ -1,0 +1,60 @@
+---
+title: "Seam Recipes Part 1"
+author: "Christian Bauer"
+blogger_name: "Christian"
+creation_date: "08-09-2009"
+tags: [Seam,Seam News]
+
+relative_url: /2009/09/08/seam-recipes-part-1
+slug: seam-recipes-part-1
+lace: http://in.relation.to/12289.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/09/08/seam-recipes-part-1
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<div style="float:right; margin-left:15px;margin-bottom:15px">
+<img src="http://www.seamframework.org/themes/sfwkorg/img/seam_icon_large.png">
+</div>
+
+<p class="wikiPara">
+Finally had time to clean up and write down a few knowledge base articles for Seam. Some of these tricks have been very useful for building and running the Seam website. I still have leftovers, hopefully I can post another round of articles next week. 
+</p>
+
+<p class="wikiPara">
+Here is the list for today, there should be something in there for anyone using Seam:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.seamframework.org/Documentation/ExtendingDBUnitSeamTest" target="" class="regularLink">Extending DBUnitSeamTest</a> shows how you can extend the unit testing feature of Seam for mock data import. Examples are: adding support for PostgreSQL, writing custom DBUnit dataset operations (like calling a stored procedure before a test method runs) and configuration of DBUnit.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.seamframework.org/Documentation/ImportingDBUnitDatasetsForDevelopmentDeployments" target="" class="regularLink">Importing DBUnit datasets for development deployments</a> explains how to use DBUnit during actual development, not only for unit testing. I found it very convenient to have the same mock data as I had available in unit testing imported automatically when deploying an application on my development machine. It helps you keeping interactive and automated testing in sync.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.seamframework.org/Documentation/UsingMySQLInProductionWithUTF8" target="" class="regularLink">Using MySQL in production with UTF8</a> wasn't as straightforward as I hoped it would be, I had to customize the Hibernate dialect, the JBoss AS datasource, and Tomcat. This recipe summarizes all the changes.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.seamframework.org/Documentation/AutomaticallyExtendingSessionTimeoutForAuthenticatedUsers" target="" class="regularLink">Automatically extending session timeout for authenticated users</a> is a good idea and if you also have anonymous and authenticated users on your Seam application, I recommend you implement the same pattern.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.seamframework.org/Documentation/RemovingJSESSIONIDFromYourURLsAndFixingScache" target="" class="regularLink">Removing JSESSIONID from your URLs (and fixing s:cache)</a> was a problem that actually only hit me in staging and I almost rolled it out without noticing. If you use the Seam HTML fragment cache, you need to read this. Unfortunately, there is nothing we can do in Seam to fix this. </li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.seamframework.org/Documentation/DropdownBoxesWithEntitiesAndPageScope" target="" class="regularLink">Drop-down boxes with entities and page scope</a> describes my favorite JSF misfeature, or how the good intentions of the specification have been destroyed by a bad reference implementation. It's very hard to have drop-down box in JSF with a list of products or customers. Seam makes it easy out of the box if you can also use a long-running conversation context. My solution is a bit of a hack, but it makes it easy without the conversation context, just the page context.</li>
+</ul>
+
+<p class="wikiPara">
+Post improvements directly on the pages please, they are editable for all Seam community members.
+</p>
+
+</div>
+

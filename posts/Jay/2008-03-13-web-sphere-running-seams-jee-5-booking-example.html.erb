@@ -1,0 +1,201 @@
+---
+title: "WebSphere Running Seam's JEE5 Booking Example"
+author: "Jay Balunas"
+blogger_name: "Jay"
+creation_date: "13-03-2008"
+tags: [Interoperability,Seam,Seam News]
+
+relative_url: /2008/03/13/web-sphere-running-seams-jee-5-booking-example
+slug: web-sphere-running-seams-jee-5-booking-example
+lace: http://in.relation.to/8704.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/03/13/web-sphere-running-seams-jee-5-booking-example
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+So you need to deploy to WebSphere, and you really want to take advantage of all the benefits of Seam including EJB3 - but your not sure where to begin?  
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">You're in luck!!</i> 
+</p>
+
+<p class="wikiPara">
+This article along with the Seam Reference Guide <a href="http://docs.jboss.com/seam/2.0.1.GA/reference/en/html/websphere.html" target="" class="regularLink">WebSphere Integration Chapter</a> should tell you everything you need to know.  I'm going to get into some of the troubleshooting and debugging that went into that investigation and explain some of the parts that took a lot of time to figure out.  I don't want to repeat the reference guide chapter word-for-word so I'll refer you to it at some points.
+</p>
+
+<h3 class="wikiHeadline3" id="H-WhatYouNeed"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-WhatYouNeed">What You Need</a></h3>
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.seamframework.org/Download" target="" class="regularLink">Seam 2.0.1.GA</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://www.ibm.com/developerworks/downloads/ws/was/?S_TACT=105AGX10&amp;S_CMP=LP" target="" class="regularLink">WebSphere 6.1.X</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://www-1.ibm.com/support/docview.wss?rs=180&amp;uid=swg21287579" target="" class="regularLink">EJB3 feature pack</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+WebSphere 6.1.X does not support EJB3/JPA out of the box, so you need to download the EJB3 feature pack listed above.  WebSphere is a commercial product so you will either have to have a IBM account or download the trial version.  Basic installation of WebSphere can also be a little tricky - so don't forget to augment the server profile you plan on using with the EJB3 features.
+</p>
+
+<p class="wikiPara">
+A really good network connection would also be helpful when downloading WebSphere and the feature pack.  WebSphere itself is almost 500MB, and the feature pack is an amazing 750MB.  That's 1.25GB of application server downloads- not sure where it all went exactly.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SpecialWebSphereSetting"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-SpecialWebSphereSetting">Special WebSphere setting</a></h3>
+<p class="wikiPara">
+There are 2 special properties that need to be set for WebSphere to work well with any modern web application (especially JSF/AJAX apps).  They are both custom web container properties (<a href="http://www-1.ibm.com/support/docview.wss?rss=180&amp;uid=swg21284395" target="" class="regularLink">how to change</a>).
+</p>
+
+<p class="wikiPara">
+These were both amazingly difficult to find, and the errors that are displayed do not make it obvious as to what the problem is.
+</p>
+
+<h4 class="wikiHeadline4" id="H-TtprependSlashToResourceQuottruequottt"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-TtprependSlashToResourceQuottruequottt"><tt>prependSlashToResource = "true"</tt></a></h4>
+<p class="wikiPara">
+If you start to see a lot of exceptions like <tt>java.net.MalformedURLException: SRVE0238E:</tt> this property is probably not set.  What was more annoying about this issue is that you need to track down the correct WebSphere <i class="wikiEmphasis">error</i> file in order to see the full exception.  IBM is saying that they are spec compliant and every path must start with a <tt>/</tt>, that may be, but I've never had this problem anywhere else.
+</p>
+
+<p class="wikiPara">
+Even after you add this property you will still see a lot of warning <tt>Resource paths should have a leading slash</tt> but the resource will be returned as expected.
+</p>
+
+<h4 class="wikiHeadline4" id="H-TtcomibmwswebcontainerinvokefilterscompatibilityQuottruequottt"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-TtcomibmwswebcontainerinvokefilterscompatibilityQuottruequottt"><tt>com.ibm.ws.webcontainer.invokefilterscompatibility = "true"</tt></a></h4>
+<p class="wikiPara">
+In most modern web applications resources like javascript, css, etc... are often served to the browser via dynamic requests.  Most of these requests go through servlet filters for processing.  With out this custom property you will see <tt>404 FileNotFoundException</tt> for each resource retrieved this way.  The tricky part was finding that out in the first place - because the symptom of this issue is seen as problems with css or javascript.  So it looks like a RichFaces or JSF component incompatibility.  Use something like firebug to look at each server request and you'll see what the real problem is. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheJEE5BookingExample"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-TheJEE5BookingExample">The JEE5 booking example</a></h2>
+<p class="wikiPara">
+So now that WebSphere settings are configured we can move on to actually getting our application working.  All of the paths below assume that you in the <tt>examples/jee5/booking</tt> directory under your seam distribution.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ConfigurationFileChanges"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-ConfigurationFileChanges">Configuration file changes</a></h3>
+<p class="wikiPara">
+Except for the <tt>web.xml</tt> file all the other configuration file changes are pretty basic.
+</p>
+
+<h4 class="wikiHeadline4" id="H-TtresourcesWEBINFwebxmltt"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-TtresourcesWEBINFwebxmltt"><tt>resources/WEB-INF/web.xml</tt></a></h4>
+<p class="wikiPara">
+What needed to be done to this file was difficult to track down.  The documentation for the EJB3 feature pack was hard to navigate and at some points contradicted itself.  What it comes down to is that WebSphere EJB3 feature pack is <i class="wikiEmphasis">not</i> a full JEE5 implementation.  One of the side effects of that is WebSphere does not support <i class="wikiEmphasis">Servlet 2.5</i>.  So how are we going to reference EJB 3.0 beans?  Good question - the answer is a little mucking around with the <tt>&lt;ejb-local-ref&gt;</tt> tags.
+</p>
+
+<p class="wikiPara">
+First things first though you need to adjust the top of the file to use Servlet 2.4.  See the <a href="http://docs.jboss.com/seam/2.0.1.GA/reference/en/html/websphere.html#jee5-websphere-section" target="" class="regularLink">reference guide</a> for details.
+</p>
+
+<p class="wikiPara">
+Now for the <tt>&lt;ejb-local-ref&gt;</tt> tags (here is just one of them).  Notice that the <tt>&lt;local-home&gt;</tt> element is empty.  This is the special sauce that tells WebSphere to make the correct bindings between the web module and the EJB3 beans. Without this it looks like everything is configured correctly and binding names in the logs appear to be correct, but your application won't be able to retrieve the beans.
+</p>
+
+<pre class="wikiPreformatted">
+  &lt;ejb-local-ref&gt;              
+    &lt;ejb-ref-name&gt;jboss-seam-jee5/AuthenticatorAction&lt;/ejb-ref-name&gt;                
+    &lt;ejb-ref-type&gt;Session&lt;/ejb-ref-type&gt;     
+    &lt;local-home&gt;&lt;/local-home&gt;
+    &lt;local&gt;org.jboss.seam.example.booking.Authenticator&lt;/local&gt;  
+  &lt;/ejb-local-ref&gt;    
+</pre>
+
+
+<h4 class="wikiHeadline4" id="H-TtresourcesMETAINFpersistencexmltt"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-TtresourcesMETAINFpersistencexmltt"><tt>resources/META-INF/persistence.xml</tt></a></h4>
+<p class="wikiPara">
+See the <a href="http://docs.jboss.com/seam/2.0.1.GA/reference/en/html/websphere.html#jee5-websphere-section" target="" class="regularLink">reference guide</a> for the full details, here is just some of the notable changes.
+</p>
+
+<p class="wikiPara">
+If your application is idle for about 10 minutes (WebSphere's default SFSB timeout) you may see a lot of exceptions like the one below:
+</p>
+
+<pre class="wikiPreformatted">com.ibm.wsspi.injectionengine.InjectionException: 
+                 EJBContext may only be looked up by or injected into an EJB
+</pre>
+
+
+<p class="wikiPara">
+This is another limitation of the EJB3 Feature pack.  Only EJBs support injection of the <tt>EJBContext</tt>.  This means that when Seam/Hibernate attempt to handle clean-up of the transaction this exception is thrown.  The solution is to tell hibernate not to flush transactions before completion.  This can be done by either removing the property below or by setting it to false {th default is <q>false</q>).  
+</p>
+
+<pre class="wikiPreformatted">
+&lt;property name="hibernate.transaction.flush_before_completion" value="false"/&gt;
+</pre>
+
+
+<h4 class="wikiHeadline4" id="H-Ttresourcesimportsqltt"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-Ttresourcesimportsqltt"><tt>resources/import.sql</tt></a></h4>
+<p class="wikiPara">
+The default <tt>import.sql</tt> file needs to be overwritten with the one from the Seam <tt>JPA</tt> example.  Either the Derby DB or the dialect does not support changes to the ID column.  If you see errors related to the <tt>ID</tt> column it is probably this issue.
+</p>
+
+<h4 class="wikiHeadline4" id="H-OtherFileChanges"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-OtherFileChanges">Other file changes</a></h4>
+<p class="wikiPara">
+See the <a href="http://docs.jboss.com/seam/2.0.1.GA/reference/en/html/websphere.html#jee5-websphere-section" target="" class="regularLink">reference guide</a> for the full details on changes needed for these files.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>resources/WEB-INF/components.xml</tt>
+</li>
+<li class="wikiUnorderedListItem"> <tt>resources/GlassfishDerbyDialect.class</tt>
+</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-LibraryChanges"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-LibraryChanges">Library changes</a></h3>
+<p class="wikiPara">
+Manipulating required libraries is a pretty standard task when deploying applications from one application server to another.  As with other parts of this document the details are in the <a href="http://docs.jboss.com/seam/2.0.1.GA/reference/en/html/websphere.html#jee5-websphere-section" target="" class="regularLink">reference guide</a> (specific jars, modifications to the <tt>build.xml</tt> file, etc...).
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> WebSphere 6.1 comes with their own version of JSF 1.1 (Seam requires JSF 1.2).</li>
+<li class="wikiUnorderedListItem"> During deployment through the administration console jar files in the root of <tt>EAR</tt> are not visible and may cause <tt>ClassCastExceptions</tt>.</li>
+<li class="wikiUnorderedListItem"> <tt>GlassfishDerbyDialect.class</tt> needs to be injected into the <tt>jboss-seam-jee5.jar</tt> because there is no place to put unarchived classes in the EAR.</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-DeployingTheApplication"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-DeployingTheApplication">Deploying the application</a></h3>
+<p class="wikiPara">
+I like to sum up the deployment steps with this phrase:
+</p>
+
+<blockquote class="wikiBlockquote">
+Cool administration consoles are great as long as they are easy to understand and do what they say they will
+</blockquote>
+
+<p class="wikiPara">
+The IBM administration console is very slick and looks good.  It can do a lot of things, but when it came to deploying the EJB3 application it got a little confusing.
+</p>
+
+<h4 class="wikiHeadline4" id="H-EARFileLibraries"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-EARFileLibraries">EAR file libraries</a></h4>
+<p class="wikiPara">
+As mentioned above jar files at the base of the ear do not always seem to be available through the deployment mechanism of the console.  This mean that we actually had two copied of <tt>jboss-seam.jar</tt> jar file.  One at the EAR root, and one in the <tt>/lib</tt> directory.
+</p>
+
+<h4 class="wikiHeadline4" id="H-DeploymentOptions"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-DeploymentOptions">Deployment options</a></h4>
+<p class="wikiPara">
+Probably because the EJB3 feature pack is relatively new many of the deployment options were not well explained.  This meant a lot of trial and error (along with a good dose of forum and support browsing).  The results seem easy <q>Deploy enterprise beans</q> check box must be selected (only if the <tt>EAR</tt> was not packaged by a WebSphere tool), and <q>Allow EJB reference targets to resolve automatically</q> is required to have the EJB3 bindings work correctly with the modified <tt>web.xml</tt> from above.
+</p>
+
+<h4 class="wikiHeadline4" id="H-ClassloaderSettingNotWorking"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-ClassloaderSettingNotWorking">Classloader setting not working</a></h4>
+<p class="wikiPara">
+The Reference Guide talks about changes that are needed to the classloader settings of the application.  This is to be expected, but when one of the options on the admin console does not seem to take effect no matter how you modify it, or how many times you restart it gets frustrating.  Eventually I was able to find the file that the console was attempting to change, and I was able to change it manually (described in the guide).  The path to the file was a little crazy and without really digging into the logs and directory structure you would not be able to get past this issue.
+</p>
+
+<pre class="wikiPreformatted">$WebSphereInstall/$yourServerName/profiles/$yourProfileName/config/cells/$yourCellName/applications/Seam Booking.ear/deployments/Seam Booking/deployment.xml
+</pre>
+
+
+<h4 class="wikiHeadline4" id="H-ClassloaderViewer"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-ClassloaderViewer">Classloader Viewer</a></h4>
+<p class="wikiPara">
+One great feature of the console is the <i class="wikiEmphasis">ClassLoader Viewer</i>.  In order to get this to work for a server profile you need to activate it in the profile settings.  This allows you to view the classloader hierarchy and inspect classpaths, loaded classes, and what jars the classes came from.  You can also search the whole tree with wild cards.  This was very valuable when investigating various <tt>ClassCastExceptions</tt> and incompatible class errors.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Wrapup"><a href="/2008/03/13/web-sphere-running-seams-jee-5-booking-example#H-Wrapup">Wrap-up</a></h2>
+<p class="wikiPara">
+Seam applications deploy to WebSphere just fine, but the server is a little hard to manage and use without being a WebSphere expert.  A few glaring things popped out as unexpected, but configuration and library file tweaking will almost certainly be a part of application deployments no matter what the platform.    
+</p>
+
+<p class="wikiPara">
+For more examples and information on Seam integration with WebSphere and other application servers check out the Seam <a href="http://www.seamframework.org/Documentation/GettingStarted" target="" class="regularLink">Getting Started Guide</a> or the <a href="http://docs.jboss.com/seam/2.0.1.GA/reference/en/html/" target="" class="regularLink">Seam Reference Guide</a></p>
+</div>
+

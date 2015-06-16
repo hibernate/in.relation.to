@@ -1,0 +1,229 @@
+---
+title: "Seamless Wicket: Orchestrating your application"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "16-10-2008"
+tags: [Seam,Seam News,Wicket]
+
+relative_url: /2008/10/16/seamless-wicket-orchestrating-your-application
+slug: seamless-wicket-orchestrating-your-application
+lace: http://in.relation.to/9564.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/10/16/seamless-wicket-orchestrating-your-application
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+This is the second part in my short series on using Wicket with Seam. 
+</p>
+
+<p class="wikiPara">
+In the <a href="/Bloggers/SeamlessWicket" target="" class="regularLink">first part</a> we looked at how to create a project. Here, we'll get to the meat of how you can use Seam Security, conversations and bijection and more of Seam's goodies with Wicket. One of the primary goals of Seam is to allow you to use <q>one kind of stuff</q> when writing your project, so when integrating with Wicket with Seam we've tried, as far as possible, to allow you to use exactly the same annotations, with exactly the same meaning in your Wicket application.
+</p>
+
+<p class="wikiPara">
+Of course, some annotations and their results don't make sense when using Wicket, and some annotations just aren't supported yet - if you see an annotation you would like supported in Wicket, please <a href="http://seamframework.org/Community/SeamUsers" target="" class="regularLink">let us know</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Security"><a href="/2008/10/16/seamless-wicket-orchestrating-your-application#H-Security">Security</a></h3>
+
+<p class="wikiPara">
+First, let's look at using Seam Security with Wicket. Both <tt>@Restrict</tt> and <tt>@RoleCheck</tt> are supported. You can read more about the use of these annotations and their attributes in the Seam Security chapter; but briefly
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Applying <tt>@Restrict("#{identity.loggedIn}")</tt> to a Wicket component will require the user to be logged in to access that component. You can define the annotation on a page class to restrict access to the entire page, or on just a sub-component to restrict access to that sub component.</li>
+</ul>
+
+<p class="wikiPara">
+For example, here the user must be logged in to access the home page:
+</p>
+
+<pre class="wikiPreformatted">@Restrict("#{identity.loggedIn}")
+public class HomePage extends WebPage {</pre>
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Annotating a page or component with an annotation which has the <tt>@RoleCheck</tt> meta-annotation</li>
+</ul>
+
+<p class="wikiPara">
+For example, here only administrators can access the admin page:
+</p>
+
+<pre class="wikiPreformatted">@RoleCheck
+@Target(TYPE)
+@Retention(RUNTIME)
+public @interface Admin {}</pre>
+
+
+<pre class="wikiPreformatted">@Admin
+public class AdminPage extends WebPage {</pre>
+
+
+<p class="wikiPara">
+Finally, you can set the login page through your <tt>Application</tt>:
+</p>
+
+<pre class="wikiPreformatted">public class WicketBookingApplication extends SeamWebApplication {
+
+   protected Class getLoginPage() {
+      return Home.class;
+   }</pre>
+
+
+
+<h3 class="wikiHeadline3" id="H-ConversationsAndValidation"><a href="/2008/10/16/seamless-wicket-orchestrating-your-application#H-ConversationsAndValidation">Conversations and Validation</a></h3>
+
+<p class="wikiPara">
+Just as you can use <tt>@Begin</tt> and <tt>@End</tt> in a Seam component to start and end a conversation, you can do the same in your Wicket component. For example, to start a long running conversation as we click on the link to create a new user. We can even enable <a href="http://docs.jboss.org/seam/2.1.0.CR1/reference/en-US/html/persistence.html#d0e6811" target="" class="regularLink">manual flush mode</a> to start an atomic conversation:
+</p>
+
+<pre class="wikiPreformatted">public class HomePage extends WebPage {
+
+   public HomePage(PageParameters parameters) {
+      add(new Link("createUser") {
+
+         @Begin(flushMode=MANUAL)
+         public void onClick() {
+            setResponsePage(com.mydomain.wicket_tutorial.web.CreateUser.class);
+         }
+      });
+   }</pre>
+
+
+<p class="wikiPara">
+The <tt>User</tt> entity probably has some Hibernate Validator constraints which we want to apply. Seam provides a Wicket validator, <tt>org.jboss.seam.wicket.ModelValidator</tt> which will apply the constraints to the Wicket input component:
+</p>
+
+<pre class="wikiPreformatted">public class CreateUser extends WebPage {
+
+   @In UserManager userManager;
+   
+   public CreateUser(PageParameters parameters) {
+      super(parameters);
+      add(new CreateUserForm("userForm"));
+   }
+
+   public class CreateUserForm extends Form {
+      
+      public CreateUserForm(String id) {
+         super(id);
+         // Add a field label
+         add(new Label("usernameLabel", "Username:"));
+
+         TextField username = new TextField("username");
+
+         // Attach the field to the Entity
+         username.setModel(new PropertyModel(userManager.getUser(), "username"));
+
+         // Attach the Seam model based validator
+         username.addValidator(new ModelValidator(User.class, "username"));
+         add(username);
+
+         // Give feedback to the user if there is an error
+         add(new FeedbackPanel("message", new ContainerFeedbackMessageFilter(username)));
+      }</pre>
+
+
+<p class="wikiPara">
+Of course, you can easily wrap this behaviour up in a Wicket border (take a look at <a href="http://fisheye.jboss.org/browse/Seam/tags/JBoss_Seam_2_1_0_GA/examples/wicket/src/web/org/jboss/seam/example/wicket/FormInputBorder.java?r=8886" target="" class="regularLink">FormInputBorder.java</a> and <a href="http://fisheye.jboss.org/browse/Seam/tags/JBoss_Seam_2_1_0_GA/examples/wicket/src/web/org/jboss/seam/example/wicket/FormInputBorder.html?r=9207" target="" class="regularLink">FormInputBorder.html</a> in the Wicket example).
+</p>
+
+<p class="wikiPara">
+Finally, we want to end the conversation when the user submits the form:
+</p>
+
+<pre class="wikiPreformatted">     @End 
+      protected void onSubmit() {
+         userManager.createUser();
+      }
+   }
+}</pre>
+
+
+<p class="wikiPara">
+You could even start a conversation on a regular Seam component, and end it in Wicket!
+</p>
+
+<p class="wikiPara">
+Sometimes, you might want to ensure that a Wicket page can only be accessed inside a long running conversation; you can do this using the <tt>@NoConversationPage</tt> annotation:
+</p>
+
+<pre class="wikiPreformatted">@NoConversationPage(HomePage.class)
+public class CreateUser extends WebPage {</pre>
+
+
+<h3 class="wikiHeadline3" id="H-Bijection"><a href="/2008/10/16/seamless-wicket-orchestrating-your-application#H-Bijection">Bijection</a></h3>
+
+<p class="wikiPara">
+In <a href="/Bloggers/SeamlessWicket" target="" class="regularLink">part 1</a> we showed some basic injection, and it really doesn't get any harder! Let's say the <tt>User</tt> entity was a Seam component as well, we could just biject it into the Wicket component:
+</p>
+
+<pre class="wikiPreformatted">public class CreateUser extends WebPage {
+
+   // You can even use the Seam logger!
+   @Logger static Log log;
+
+   @In UserManager userManager;
+   @In @Out User user;</pre>
+
+
+<h3 class="wikiHeadline3" id="H-AndMore"><a href="/2008/10/16/seamless-wicket-orchestrating-your-application#H-AndMore">And more!</a></h3>
+
+<p class="wikiPara">
+Seam's event bus is a simple way to write a very loosely coupled application. You might want to use events from Wicket; of course, you can raise an event programatically:
+</p>
+
+<pre class="wikiPreformatted">     @End 
+      protected void onSubmit() {
+         userManager.createUser();
+         Events.instance.raiseEvent("userCreated");
+      }
+   }
+}</pre>
+
+
+<p class="wikiPara">
+But you might want to do it declaratively:
+</p>
+
+<pre class="wikiPreformatted">     @End
+      @RaiseEvent("userCreated")
+      protected void onSubmit() {
+         userManager.createUser();
+      }
+   }
+}</pre>
+
+
+<p class="wikiPara">
+And finally, Seam provides a simple way to add messages to display to the user in the business layer:
+</p>
+
+<pre class="wikiPreformatted">@Name("userManager")
+public class UserManager {
+
+   @In EntityManager entityManager;
+   @In StatusMessages statusMessages;
+
+   User user = new User();
+
+   public User getUser() {
+      return user;
+   }
+
+   public void createUser() {
+      entityManager.persist(user);
+      statusMessages.add("User " + user.getName() + " created!");
+   }
+}</pre>
+
+
+<p class="wikiPara">
+So, armed with this toolkit, you should be able to create powerful Wicket applications with Seam!</p>
+</div>
+

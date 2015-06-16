@@ -1,0 +1,144 @@
+---
+title: "Uncurrying method references and more"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "31-05-2011"
+tags: [Ceylon]
+
+relative_url: /2011/05/31/uncurrying-method-references-and-more
+slug: uncurrying-method-references-and-more
+lace: http://in.relation.to/20611.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/05/31/uncurrying-method-references-and-more
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+A method reference like <tt>Float.times</tt> is represented in <q>curried</q> form in Ceylon. I can write:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Float twoTimes(Float x) = 2.times;</pre>
+
+
+<p class="wikiPara">
+Here, the expression <tt>2.times</tt> is a typical first-class <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-FunctionReferences" target="" class="regularLink">function reference produced by the partial application</a> of the method <tt>times()</tt> to the receiver expression <tt>2</tt>. 
+</p>
+
+<p class="wikiPara">
+But I can also write:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Float times(Float x)(Float y) = Float.times;</pre>
+
+
+<p class="wikiPara">
+Actually, the expression <tt>Float.times</tt> is really a <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAMethod" target="" class="regularLink">metamodel reference to a method declaration</a>. The type <tt>Method&lt;Float,Float,Float&gt;</tt> is a subtype of <tt>Callable&lt;Callable&lt;Float,Float&gt;,Float&gt;</tt>, so we can treat it as a function reference.
+</p>
+
+<p class="wikiPara">
+Therefore, an alternative definition of <tt>twoTimes()</tt> is:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Float twoTimes(Float x) = Float.times(2);</pre>
+
+
+<p class="wikiPara">
+(We're partially applying <tt>Float.times</tt> by supplying one of its two argument lists.)
+</p>
+
+<p class="wikiPara">
+Unfortunately, the following isn't correctly typed:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Float product(Float x, Float y) = Float.times;  //error: Float.times not a Callable&lt;Float,Float,Float&gt;</pre>
+
+
+<p class="wikiPara">
+The problem is that <tt>Float.times</tt>, when considered as a function reference, is a higher-order function that accepts a <tt>Float</tt> and returns a function that accepts a <tt>Float</tt>, <i class="wikiEmphasis">not</i> a first-order function that accepts two <tt>Float</tt>s.
+</p>
+
+<p class="wikiPara">
+So how can we transform the method reference <tt>Float.times</tt> into an <q>uncurried</q> function with a single parameter list? 
+</p>
+
+<p class="wikiPara">
+Well, one really simple way would be to fall back to writing:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Float product(Float x, Float y) {
+    return x.times(y);   //or even: x*y
+}</pre>
+
+
+<p class="wikiPara">
+But, well, the purpose of this post is to demonstrate some fancy features of higher-order functions in Ceylon, so this isn't a very interesting solution. Instead, we're going to use a really cool higher-order function that will be part of the Ceylon language module. It's just two lines of code, so I'm sure you'll immediately understand it:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">R uncurry&lt;R,T,P...&gt;(R curried(T t)(P... p))(T receiver, P... args) { 
+    return curried(receiver)(args);
+}</pre>
+
+
+<p class="wikiPara">
+Whoah! Wtf?
+</p>
+
+<p class="wikiPara">
+Well, it's obviously time for you to re-read <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8" target="" class="regularLink">Part 8</a>! Ok, done that? Cool, now let's try to unwind this:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> First, it's a <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-MoreAboutHigherorderFunctions" target="" class="regularLink">function with two parameter lists</a>, so <tt>uncurry()()</tt> is a function that returns a function. </li>
+<li class="wikiOrderedListItem"> The first parameter list contains a single argument which also has two parameter lists, so the argument <tt>curried()()</tt> is also a function that returns a function.</li>
+<li class="wikiOrderedListItem"> <tt>curried()()</tt> has an argument of form <tt>P...</tt>, a <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAFunction" target="" class="regularLink">sequenced type parameter</a>, so we know that <tt>curried()()</tt> is somehow abstracted over functions with arbitrary lists of parameters. </li>
+<li class="wikiOrderedListItem"> The second parameter list contains two arguments, of the same types as the parameters of the individual arguments of the parameter lists of <tt>curried()()</tt>. These are the parameters of the function returned by <tt>uncurry()()</tt>.</li>
+</ol>
+
+<p class="wikiPara">
+So what <tt>uncurry()()</tt> is doing is taking a function in curried form, where the second parameter list can have an arbitrary number of parameters, and producing a different function with just one parameter list, including all the original parameters of the argument function. It's <q>flattening</q> the parameter lists of <tt>curried()()</tt> into a single list of parameters. So we can write the following:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Float product(Float x, Float y) = uncurry(Float.times);</pre>
+
+
+<p class="wikiPara">
+Other kinds of operations on functions can be represented in a similar way. Consider:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">R curry&lt;R,T,P...&gt;(R uncurried(T t, P... p))(T receiver)(P... args) { 
+    return uncurried(receiver,args);
+}</pre>
+
+
+<p class="wikiPara">
+This function does precisely the opposite of <tt>uncurry()()</tt>, it takes the first parameter of an argument function, and separates it out into its own parameter list, allowing the argument function to be partially applied:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Float times(Float x)(Float y) = curry(product);
+Float double(Float y) = times(2.0);</pre>
+
+
+<p class="wikiPara">
+Now consider:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">R compose&lt;R,S,P...&gt;(R f (S s), S g(P... p))(P... args) { 
+    return f(g(args));
+}</pre>
+
+
+<p class="wikiPara">
+This function composes two functions:
+</p>
+
+<pre class="wikiPreformatted brush: ceylon">Float incrementThenDouble(Float x) = compose(2.0.times,1.0.plus);</pre>
+
+
+<p class="wikiPara">
+Fortunately, you won't need to be writing functions like <tt>curry()()</tt>, <tt>uncurry()()</tt> and <tt>compose()()</tt> yourself. They're general purpose tools that are packaged as part of the language module. Nevertheless, it's nice to know that machinery like this is expressible within the type system of Ceylon.
+</p>
+</div>
+

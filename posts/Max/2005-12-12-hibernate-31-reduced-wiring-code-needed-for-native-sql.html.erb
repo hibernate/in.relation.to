@@ -1,0 +1,145 @@
+---
+title: "Hibernate 3.1: Reduced wiring code needed for native sql"
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "12-12-2005"
+tags: []
+
+relative_url: /2005/12/12/hibernate-31-reduced-wiring-code-needed-for-native-sql
+slug: hibernate-31-reduced-wiring-code-needed-for-native-sql
+lace: http://in.relation.to/2108.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2005/12/12/hibernate-31-reduced-wiring-code-needed-for-native-sql
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Over the past few months we have been adding some simplifications to
+the way you can use and specify native sql queries in Hibernate.
+Gavin even blogged about some of them <a href="http://blog.hibernate.org/cgi-bin/blosxom.cgi/Gavin%20King/customsql.html" target="" class="regularLink">earlier </a>, but I thought it were about time we brought some more news on this blog about it.
+</p>
+
+<h2 class="wikiHeadline2" id="H-AutoDetectReturnTypesAndAliases"><a href="/2005/12/12/hibernate-31-reduced-wiring-code-needed-for-native-sql#H-AutoDetectReturnTypesAndAliases">Auto detect return types and aliases</a></h2>
+
+<p class="wikiPara">
+The newest feature related to native sql is that Hibernate will now auto detect
+the return types and even aliases of any scalar value from a sql query.
+</p>
+
+<p class="wikiPara">
+Before you had to do something like:
+</p>
+
+<pre class="wikiPreformatted">
+List l = s.createSQLQuery("SELECT emp.regionCode as region, emp.empid as id, {employee.*} 
+                           FROM EMPLOYMENT emp, EMPLOYEE employee ...")
+         .addScalar("region", Hibernate.STRING)
+         .addScalar("id", Hibernate.LONG)
+         .addEntity("employee", Employee.class)
+         .list();
+Object[] data = l.get(0);
+</pre>
+
+
+<p class="wikiPara">
+Today you do not need to specify the type of the scalar values, but simply the alias name
+so Hibernate knows what data you actually want to extract from the resultset.
+</p>
+
+<pre class="wikiPreformatted">
+List l = s.createSQLQuery("SELECT emp.regionCode as region, emp.empid as id, {employee.*} 
+                           FROM EMPLOYMENT emp, EMPLOYEE employee ...")
+         .addScalar("region")
+         .addScalar("id")
+         .addEntity("employee", Employee.class)
+         .list();
+Object[] data = l.get(0); 
+</pre>
+
+
+<p class="wikiPara">
+If the query is only returning scalar values then <tt>addScalar</tt> is not needed at all; you just call <tt>list()</tt> on the query.
+</p>
+
+<pre class="wikiPreformatted">
+List l = s.createSQLQuery("SELECT * FROM EMPLOYMENT emp").list();
+Object[] data = l.get(0); 
+</pre>
+
+
+<p class="wikiPara">
+It of course needs some more processing from Hibernate, but it makes experimentation and
+some data processing problems easier to do.
+</p>
+
+<h2 class="wikiHeadline2" id="H-NoRedundantColumnMappings"><a href="/2005/12/12/hibernate-31-reduced-wiring-code-needed-for-native-sql#H-NoRedundantColumnMappings">No redundant column mappings</a></h2>
+
+<p class="wikiPara">
+Previously when you specified native sql in named queries you had to use the <tt>return-property</tt>
+element to (redundantly) specify which column aliases you wanted Hibernate to use for your native sql query.
+It were redundant because in most cases you would simply just be specifying the exact same columns as you had
+just done in the <tt>class</tt> mapping.
+</p>
+
+<p class="wikiPara">
+Thus it could get pretty ugly and verbose when you were starting to have even just mildly complex mappings 
+such as the following which is from our unit tests for a native sql stored procedure call.
+</p>
+
+<pre class="wikiPreformatted">
+&lt;sql-query name="selectAllEmployees" callable="true"&gt;
+ &lt;return alias="employement" class="Employment"&gt;
+ &lt;return-property name="employee" column="EMPLOYEE"/&gt;
+ &lt;return-property name="employer" column="EMPLOYER"/&gt;                     
+ &lt;return-property name="startDate" column="STARTDATE"/&gt;
+ &lt;return-property name="endDate" column="ENDDATE"/&gt;                       
+   &lt;return-property name="regionCode" column="REGIONCODE"/&gt;                       
+   &lt;return-property name="id" column="EMPID"/&gt;                                            
+   &lt;return-property name="salary"&gt; 
+    &lt;return-column name="VALUE"/&gt;
+    &lt;return-column name="CURRENCY"/&gt;                      
+   &lt;/return-property&gt;
+ &lt;/return&gt;
+ { call selectAllEmployments() }
+&lt;/sql-query&gt;
+</pre>
+
+
+<p class="wikiPara">
+In the upcoming Hibernate 3.1 you can do the exact same with loss less code:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;sql-query name="selectAllEmployees" callable="true"&gt;
+ &lt;return class="Employment"/&gt;
+ { call selectAllEmployments() }
+&lt;/sql-query&gt;
+</pre>
+
+
+<p class="wikiPara">
+or in code (for normal sql):
+</p>
+
+<pre class="wikiPreformatted">
+List l = s.createSQLQuery("SELECT * FROM EMPLOYMENT emp")
+          .addEntity(Employee.class)
+          .list();
+Object[] data = l.get(0); 
+</pre>
+
+
+<p class="wikiPara">
+This also removes the need for always using the curly brackets syntax
+(e.g. <tt>{emp.name}</tt>)to handle the aliasing as long as you 
+are not returning the same entity type more than once per row.
+</p>
+
+<p class="wikiPara">
+Hope you like it, Enjoy :-)
+</p>
+</div>
+

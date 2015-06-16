@@ -1,0 +1,103 @@
+---
+title: "Hibernate OGM 4.1.0.Beta3 is out, bringing improved support for Neo4j, querying and more"
+author: "Gunnar Morling"
+blogger_name: "Gunnar"
+creation_date: "22-05-2014"
+tags: [Hibernate,Hibernate OGM,News,Release]
+
+relative_url: /2014/05/22/hibernate-ogm-410-beta-3-is-out-bringing-improved-support-for-neo-4-j-querying-and-more
+slug: hibernate-ogm-410-beta-3-is-out-bringing-improved-support-for-neo-4-j-querying-and-more
+lace: http://in.relation.to/25852.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/05/22/hibernate-ogm-410-beta-3-is-out-bringing-improved-support-for-neo-4-j-querying-and-more
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+It's my great pleasure to announce the release of Hibernate OGM 4.1.0.Beta3. This release is focused on an improved experience when working with the Neo4j graph datastore and several improvements in the field of querying (the complete change log can be found <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&amp;version=16051" target="" class="regularLink">here</a>).
+</p>
+
+<p class="wikiPara">
+As always, you can either download a <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.1.0.Beta3/" target="" class="regularLink">release bundle</a> from SourceForge or retrieve the JARs from the JBoss Nexus <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate/ogm/" target="" class="regularLink">repository server</a> using Maven, Gradle etc. The GAV coordinates are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-core:4.1.0.Beta3</i> for the Hibernate OGM engine and</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-&lt;datastore&gt;:4.1.0.Beta3</i>, depending on the backend you want to use.</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-ImprovedSupportForNeo4j"><a href="/2014/05/22/hibernate-ogm-410-beta-3-is-out-bringing-improved-support-for-neo-4-j-querying-and-more#H-ImprovedSupportForNeo4j">Improved support for Neo4j</a></h1>
+
+<p class="wikiPara">
+We now take advantage of labels - a new feature of Neo4J 2.x - to map entities in a more natural way. We use these labels to tag all the nodes belonging to one entity type. This does not only remove the need to put additional properties to the nodes but also will allow us to query for all the nodes of one entity type in an efficient manner.
+</p>
+
+<p class="wikiPara">
+We also support the execution of native Cypher queries now. You can either create them ad-hoc via <tt>EntityManager#createNativeQuery()</tt> or using the <tt>@NamedNativeQuery</tt> annotation on your entities:
+</p>
+
+<pre class="wikiPreformatted brush: java">@Entity
+@NamedNativeQuery(
+    name = "AnimalsBySpecies",
+    query = "MATCH ( n: Animal { species: {species} } ) RETURN n",
+    resultClass = Animal.class 
+)
+public class Animal { ... }
+    
+EntityManager em = ...
+List&lt;Animal&gt; giraffes = em.createNamedQuery( "AnimalsBySpecies", Animal.class )
+    .setParameter( "species", "Giraffe" )
+    .getResultList();</pre>
+
+
+<p class="wikiPara">
+As you can see in the example, native queries for Neo4j also support named parameters via the native Cypher parameter syntax.
+</p>
+
+<p class="wikiPara">
+The work on the Neo4j dialect is in full swing these days and you can expect to see further improvements in this field in the Beta4 release.
+</p>
+
+<h1 class="wikiHeadline1" id="H-QueryImprovements"><a href="/2014/05/22/hibernate-ogm-410-beta-3-is-out-bringing-improved-support-for-neo-4-j-querying-and-more#H-QueryImprovements">Query improvements</a></h1>
+
+<p class="wikiPara">
+When working with queries you can now make use of <tt>setFirstResult()</tt> and <tt>setMaxResults()</tt> to page through a result set. This works for JP-QL as well as native MongoDB queries:
+</p>
+
+<pre class="wikiPreformatted brush: java">EntityManager em = ...;
+List&lt;Animal&gt; giraffes = em.createQuery( "FROM Animal WHERE species = 'Giraffe'" )
+    .setFirstResult( 51 )
+    .setMaxResults( 100 )
+    .getResultList();</pre>
+
+
+<p class="wikiPara">
+Furthermore there is support for <tt>ORDER BY</tt> clauses in JP-QL queries now:
+</p>
+
+<pre class="wikiPreformatted brush: java">List&lt;Animal&gt; giraffes = em.createQuery( "FROM Animal WHERE species = 'Giraffe' ORDER BY name DESC" )
+    .getResultList();</pre>
+
+
+<p class="wikiPara">
+These two things together should be of great help when using Hibernate OGM to implement typical CRUD use cases (create, read, update, delete) on top of your NoSQL store.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsNext"><a href="/2014/05/22/hibernate-ogm-410-beta-3-is-out-bringing-improved-support-for-neo-4-j-querying-and-more#H-WhatsNext">What's next?</a></h1>
+
+<p class="wikiPara">
+For Beta4 we plan to translate JP-QL queries into native Cypher queries for the Neo4j backend. We also got some ideas for performance improvements and will take a look into a more natural mapping of assocations to Neo4j relationships.
+</p>
+
+<p class="wikiPara">
+The MongoDB dialect should see some improvements around querying as well and we plan on investigating an error report and compensation API. This will offer the ability to collect errors on partially executed units of work on stores without full transactional semantics and the ability to react to these errors.
+</p>
+
+<p class="wikiPara">
+Needless to say, your feedback matters very much to us. So you're very welcome to raise your voice on the <a href="https://lists.jboss.org/mailman/listinfo/hibernate-dev" target="" class="regularLink">mailing list</a>, ask questions in <a href="https://forum.hibernate.org/viewforum.php?f=31" target="" class="regularLink">the forum</a> or report any bugs or feature requests in the <a href="https://hibernate.atlassian.net/browse/OGM" target="" class="regularLink">issue tracker</a>.
+</p>
+</div>
+

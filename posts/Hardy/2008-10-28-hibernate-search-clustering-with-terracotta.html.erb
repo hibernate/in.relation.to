@@ -1,0 +1,95 @@
+---
+title: "Hibernate Search Clustering with Terracotta"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "28-10-2008"
+tags: []
+
+relative_url: /2008/10/28/hibernate-search-clustering-with-terracotta
+slug: hibernate-search-clustering-with-terracotta
+lace: http://in.relation.to/9692.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/10/28/hibernate-search-clustering-with-terracotta
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hi,
+</p>
+
+<p class="wikiPara">
+I just thought that the release of Hibernate Search 3.1.0.Beta2 would be a good time to announce another clustering possibility for Hibernate Search - Terracotta clustering. Why would one use Terracotta? Well, there are several potential benefits of Terracotta clustering over the default JMS clustering currently used by Hibernate Search?
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Updates to the index are immediately visible to all nodes in the cluster</li>
+<li class="wikiUnorderedListItem"> You don't have the requirement of a shared file system </li>
+<li class="wikiUnorderedListItem"> The faster <i class="wikiEmphasis">RAMDirectory</i> is used instead of the slower <i class="wikiEmphasis">FSDirectory</i>
+</li>
+</ul>
+
+<p class="wikiPara">
+But let's get started. You can download the code for the following example <a href="http://www.ferentschik.de/hsearch-demo/hsearch-demo-1.0.0-SNAPSHOT-project.tar.gz" target="" class="regularLink">here</a> or you can just download the <a href="http://www.ferentschik.de/hsearch-demo/hsearch-demo-1.0.0-SNAPSHOT-dist.tar.gz" target="" class="regularLink">binary package</a>. At the moment the code is not yet part of the Search codebase, but probably it will at some stage.
+</p>
+
+<p class="wikiPara">
+First you will need to download and install <a href="http://www.terracotta.org" target="" class="regularLink">Terracotta</a>. I am using the <a href="https://wiki.terracotta.org/confluence/display/orgsite/Download" target="" class="regularLink">2.6.2</a> release. Just unpack the release into a arbitrary directory. I am using <i class="wikiEmphasis">/opt/java/terracotta</i>. Next you will the main <a href="http://www.compass-project.org/" target="" class="regularLink">Compass</a> jar. You can use <a href="http://repo.compass-project.org/org/compass-project/compass/2.0.2/compass-2.0.2.jar" target="" class="regularLink">this jar</a>. Place this jar into the <i class="wikiEmphasis">modules</i> directory of your terracotta installation. This solution <u>does not</u> rely on any Compass classes per se, but utilizes a custom <i class="wikiEmphasis">RAMDirectoy</i> implementation - org.compass.needle.terracotta.TerracottaDirectory. This is required since Lucene's <i class="wikiEmphasis">RAMDirectory</i> is not Terracotta clusterable out of the box. 
+Let's start the terracotta server now. Switch into the <i class="wikiEmphasis">bin</i> directory of your terracotta installation and run <i class="wikiEmphasis">./start-tc-server.sh</i>. Check the log to see whether the server started properly.
+</p>
+
+<p class="wikiPara">
+Next download and extract <a href="http://www.ferentschik.de/hsearch-demo/hsearch-demo-1.0.0-SNAPSHOT-dist.tar.gz" target="" class="regularLink">hsearch-demo-1.0.0-SNAPSHOT-dist.tar.gz</a>. The dist package currently assumes that you have a mysql database running with a database <i class="wikiEmphasis">hibernate</i> and a username/password of hibernate/hibernate. You can change these settings and use a different database if you build the dist package from the source, but more to this later. The dist further assumes that you have installed Terracotta under <i class="wikiEmphasis">/opt/java/terracotta</i>. If this is not the case you can change the <i class="wikiEmphasis">repository</i> node in <i class="wikiEmphasis">config/tc-config.xml</i>. Provided that you have a running mysql database and <i class="wikiEmphasis">tc-config.xml</i> properly reflects your terracotta installation directory things should be as easy as just typing <i class="wikiEmphasis">./run.sh</i>. The scripts will ask you whether you want to start a standalone application or a terracotta clustered one. Just press 't' to start a terracotta clustered app. You should get up a Swing JTable:
+</p>
+
+<p class="wikiPara">
+<img src="/images/9691.png" width="800" height="202">
+</p>
+
+<p class="wikiPara">
+Press the index button to create an initial index. The data model is based on the former Seam sample DVD store application. Once the index is created just search for example for <i class="wikiEmphasis">Tom</i>. You should get a list of DVDs in the table. Experiment a little with the application and different queries. When you are ready start a second instance of the application by running <i class="wikiEmphasis">./run.sh</i> again. You won't have to create the index again. In the second instance the DVDs should be searchable right away. You can also edit the title field of a DVD in one application and search for the updated title in the other. Also try closing both applications and restarting a new instance. Again DVDs should be searchable right away. The Terracotta server keeps a persistent copy of the clustered Lucene directory.
+</p>
+
+<p class="wikiPara">
+Ok, now it is time to build the application from the source. This will allow you to actually inspect the code and change things like database settings. Donwload <a href="http://www.ferentschik.de/hsearch-demo/hsearch-demo-1.0.0-SNAPSHOT-project.tar.gz" target="" class="regularLink">hsearch-demo-1.0.0-SNAPSHOT-project.tar.gz</a> and unpack the tarball. Import the maven project in your preferred IDE. To build the project you will need to define the following repositories in your <i class="wikiEmphasis">settings.xml</i>:
+</p>
+
+<pre class="wikiPreformatted">        &lt;repository&gt;
+          &lt;id&gt;jboss&lt;/id&gt;
+          &lt;url&gt;http://repository.jboss.com/maven2&lt;/url&gt;
+        &lt;/repository&gt;
+        &lt;repository&gt;
+          &lt;id&gt;compass-project.org&lt;/id&gt;
+          &lt;url&gt;http://repo.compass-project.org&lt;/url&gt;
+        &lt;/repository&gt;
+</pre>
+
+
+<p class="wikiPara">
+If you want to use a different database you can add/modify the profiles section in <i class="wikiEmphasis">pom.xml</i>. Also have a look at <i class="wikiEmphasis">src/main/scripts/tc-config.xml</i> and adjust any settings which differ in your setup. Once you are happy with everything just run <i class="wikiEmphasis">mvn assembly:assembly</i> to build your own version of the application.
+</p>
+
+<p class="wikiPara">
+I basically just started experimenting with this form of clustering and there are still several open questions:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> How does it perform compared to the JMS clustering?</li>
+<li class="wikiUnorderedListItem"> What are the limits for the <i class="wikiEmphasis">RAMDirectory</i> size?</li>
+<li class="wikiUnorderedListItem"> How can I add failover capabilities?</li>
+</ul>
+
+<p class="wikiPara">
+I am planning to  do some more extensive performance tests shortly. Stay tuned in case you are interested.
+</p>
+
+<p class="wikiPara">
+--Hardy
+</p>
+
+<p class="wikiPara">
+P.S. It would be great if someone actually tries this out and let me know if it works. As said, it's still work in progress. Any feedback is welcome :)</p>
+</div>
+

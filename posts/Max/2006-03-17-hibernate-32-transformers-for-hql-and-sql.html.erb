@@ -1,0 +1,186 @@
+---
+title: "Hibernate 3.2: Transformers for HQL and SQL"
+author: "Max Andersen"
+blogger_name: "Max"
+creation_date: "17-03-2006"
+tags: []
+
+relative_url: /2006/03/17/hibernate-32-transformers-for-hql-and-sql
+slug: hibernate-32-transformers-for-hql-and-sql
+lace: http://in.relation.to/2133.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2006/03/17/hibernate-32-transformers-for-hql-and-sql
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+People using the Criteria API have either transparently or knowingly
+used a <a href="http://www.hibernate.org/hib_docs/v3/api/org/hibernate/transform/ResultTransformer.html" target="" class="regularLink">ResultTransformer </a>. 
+A ResultTransformer is a nice and simple interface that allows you to
+transform any Criteria result element.  E.g. you can make any Criteria
+result be returned as a java.util.Map or as a non-entity Bean.
+</p>
+
+<h2 class="wikiHeadline2" id="H-CriteriaTransformers"><a href="/2006/03/17/hibernate-32-transformers-for-hql-and-sql#H-CriteriaTransformers">Criteria Transformers</a></h2>
+
+<p class="wikiPara">
+Imagine you have a StudentDTO class:
+</p>
+
+<pre class="wikiPreformatted">
+public class StudentDTO {
+  private String studentName;
+  private String courseDescription;
+  
+  public StudentDTO() { }
+      
+  ...
+} </pre>
+
+
+<p class="wikiPara">
+Then you can make the Criteria return non-entity classes
+instead of scalars or entities by applying a ResultTransformer:
+</p>
+
+<pre class="wikiPreformatted">
+List resultWithAliasedBean = s.createCriteria(Enrolment.class)
+  .createAlias("student", "st").createAlias("course", "co")
+  .setProjection( Projections.projectionList()
+                   .add( Projections.property("st.name"), "studentName" )
+                   .add( Projections.property("co.description"), "courseDescription" )
+          )
+          .setResultTransformer( Transformers.aliasToBean(StudentDTO.class) )
+          .list();
+
+ StudentDTO dto = (StudentDTO)resultWithAliasedBean.get(0);  </pre>
+
+
+<p class="wikiPara">
+This is how ResultTransformer have been available since we introduced
+<a href="http://www.hibernate.org/hib_docs/v3/reference/en/html_single/#querycriteria-projection" target="" class="regularLink">projection </a> to the Criteria API in Hibernate 3. 
+</p>
+
+<p class="wikiPara">
+It is just one example of the built in transformers and users can
+provide their own transformers if they so please.
+</p>
+
+<h2 class="wikiHeadline2" id="H-JealousProgramming"><a href="/2006/03/17/hibernate-32-transformers-for-hql-and-sql#H-JealousProgramming">Jealous programming</a></h2>
+
+<p class="wikiPara">
+Since I am more a HQL/SQL guy I have been jealous on Criteria for
+having this feature and I have seen many requests for adding it to all
+our query facilities.
+</p>
+
+<p class="wikiPara">
+Today I put an end to this jealousy and introduced ResultTransformer
+for HQL and SQL in Hibernate 3.2.
+</p>
+
+<h2 class="wikiHeadline2" id="H-HQLTransformers"><a href="/2006/03/17/hibernate-32-transformers-for-hql-and-sql#H-HQLTransformers">HQL Transformers</a></h2>
+
+<p class="wikiPara">
+In HQL we already had a <q>kind</q> of result transformers via the (<q>select
+new</q> <a href="http://www.hibernate.org/hib_docs/v3/reference/en/html/queryhql.html#queryhql-select" target="" class="regularLink">http://www.hibernate.org/hib_docs/v3/reference/en/html/queryhql.html#queryhql-select</a>) 
+syntax, but for returning non-entity beans it only provided value 
+injection of these beans via its constructor. Thus if you used the same
+DTO in many different scenarios you could end up having many constructors
+on this DTO purely for allowing the <q>select new</q> functionality to work.
+</p>
+
+<p class="wikiPara">
+Now you can get the value injected via property methods or fields instead,
+removing the need for explicit constructors.
+</p>
+
+<pre class="wikiPreformatted">
+List resultWithAliasedBean = s.createQuery(
+  "select e.student.name as studentName," +
+  "       e.course.description as courseDescription" +
+  "from   Enrolment as e")
+  .setResultTransformer( Transformers.aliasToBean(StudentDTO.class))
+  .list();
+
+StudentDTO dto = (StudentDTO) resultWithAliasedBean.get(0);</pre>
+
+
+<h2 class="wikiHeadline2" id="H-SQLTransformers"><a href="/2006/03/17/hibernate-32-transformers-for-hql-and-sql#H-SQLTransformers">SQL Transformers</a></h2>
+
+<p class="wikiPara">
+With native sql returning non-entity beans or Map's is often more useful instead of basic <tt>Object[]</tt>. With
+result transformers that is now possible.
+</p>
+
+<pre class="wikiPreformatted">
+List resultWithAliasedBean = s.createSQLQuery(
+  "SELECT st.name as studentName, co.description as courseDescription " +
+  "FROM Enrolment e " +
+  "INNER JOIN Student st on e.studentId=st.studentId " +
+  "INNER JOIN Course co on e.courseCode=co.courseCode")
+  .addScalar("studentName")
+  .addScalar("courseDescription")
+  .setResultTransformer( Transformers.aliasToBean(StudentDTO.class))
+  .list();
+
+StudentDTO dto =(StudentDTO) resultWithAliasedBean.get(0);</pre>
+
+
+<p class="wikiPara">
+Tip: the addScalar() calls were required on HSQLDB to make it match a
+property name since it returns column names in all uppercase (e.g. <q>STUDENTNAME</q>). 
+This could also be solved with a custom transformer that search the property names
+instead of using exact match - maybe we should provide a fuzzyAliasToBean() method ;)
+</p>
+
+<h2 class="wikiHeadline2" id="H-TtMapttVsTtObjecttt"><a href="/2006/03/17/hibernate-32-transformers-for-hql-and-sql#H-TtMapttVsTtObjecttt"><tt>Map</tt> vs. <tt>Object[]</tt></a></h2>
+
+<p class="wikiPara">
+Since you can also use a transformer that return a Map from alias to
+value/entity (e.g. Transformers.ALIAS<u>TO</u>MAP), you are no longer
+required to mess with index based Object arrays when working with a
+result. 
+</p>
+
+<pre class="wikiPreformatted">
+List iter = s.createQuery(
+  "select e.student.name as studentName," +
+  "       e.course.description as courseDescription" +
+  "from   Enrolment as e")
+  .setResultTransformer( Transformers.ALIAS_TO_MAP )
+  .iterate();
+
+String name = (Map)(iter.next()).get("studentName");</pre>
+
+
+<p class="wikiPara">
+Again, this works equally well for Criteria, HQL and native SQL.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ReachingNirvanaOfNativeSql"><a href="/2006/03/17/hibernate-32-transformers-for-hql-and-sql#H-ReachingNirvanaOfNativeSql">Reaching Nirvana of native sql</a></h2>
+
+<p class="wikiPara">
+We still <a href="http://opensource2.atlassian.com/projects/hibernate/browse/HHH-1359" target="" class="regularLink">miss </a> a <a href="http://opensource2.atlassian.com/projects/hibernate/browse/HHH-1020" target="" class="regularLink">few </a> things, but with the addition of ResultTranformer
+support for SQL and the <a href="http://blog.hibernate.org/cgi-bin/blosxom.cgi/2004/08/23#customsql" target="" class="regularLink">other </a> additions <a href="http://blog.hibernate.org/cgi-bin/blosxom.cgi/Max%20Andersen/lesswiringfornativesql.html" target="" class="regularLink">lately </a> to the native sql
+functionality in Hibernate we are close to reach the Nirvana of
+native sql support.
+</p>
+
+<p class="wikiPara">
+Combined with <a href="http://www.hibernate.org/hib_docs/v3/api/index.html" target="" class="regularLink">StatelessSession </a> you actually now got a very flexible
+and full powered <q>sql executor</q> which transparently can map to and
+from objects with native sql without any ORM overhead.
+</p>
+
+<p class="wikiPara">
+...and when you get tired of managing the sql, objectstate,
+lifecycles, caching etc. of your objects manually and want to benefit
+from the power of an ORM then you got it all readily available to you
+;)
+</p>
+</div>
+

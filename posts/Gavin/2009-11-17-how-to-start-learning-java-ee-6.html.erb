@@ -1,0 +1,54 @@
+---
+title: "How to start learning Java EE 6"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "17-11-2009"
+tags: [Bean Validation,Contexts and Dependency Injection,Hibernate,Java EE 6,JavaServer Faces,Weld]
+
+relative_url: /2009/11/17/how-to-start-learning-java-ee-6
+slug: how-to-start-learning-java-ee-6
+lace: http://in.relation.to/13001.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/11/17/how-to-start-learning-java-ee-6
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+A developer new to Java EE posted in the Weld forum asking for advice on getting started learning EE 6. I've decided to promote part of <a href="http://www.seamframework.org/Community/LeariningJavaEEConfusedNow" target="" class="regularLink">my response in the forum</a> to the blog.
+</p>
+
+<blockquote>
+So, what should I start learning. Java EE 5 and Seam? Java EE 6 and Weld? Is there any learning material about 6 and Weld right now?
+</blockquote>
+
+<p class="wikiPara">
+Unless you plan on putting your system into production inside the next 2-3 months, you should start learning <a href="http://in.relation.to/service/File/12829" target="" class="regularLink">CDI</a> and <a href="http://docs.jboss.org/weld/reference/1.0.0/en-US/pdf/weld-reference.pdf" target="" class="regularLink">Weld</a>. CDI defines the basic infrastructure you'll use to get the various kinds of Java EE components working together (and <a href="http://in.relation.to/Bloggers/ItsNotAboutDependencyInjection" target="" class="regularLink">much more</a>).
+</p>
+
+<p class="wikiPara">
+You also need to decide what web framework to use. This is the hard bit for most people. 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> You could use plain servlets and JSP, which in EE 6 both include out-of-the-box CDI integration. However, most people prefer to use something with more features. But honestly, if you're new to enterprise Java, it's not a bad place to start. The <a href="http://jcp.org/en/jsr/detail?id=315" target="" class="regularLink">latest servlet spec</a> lets you use annotations, which is a big step forward in usability. </li>
+<li class="wikiUnorderedListItem"> JSF2 is included as part of the platform, and is integrated with CDI out of the box. Many people find JSF difficult to learn. We believe that for some kinds of applications, it pays off in the end. Unfortunately, most of the books and articles about JSF make it appear much more complex than it actually is. In particular, the specification is horribly written and not worth reading (so I won't link to it). Take a look at the Weld examples to get a taste of what JSF2 is <i class="wikiEmphasis">really</i> like. </li>
+<li class="wikiUnorderedListItem"> An option we recommend is <a href="http://wicket.apache.org/" target="" class="regularLink">Wicket</a>. Wicket is an alternative to JSF that is easier to learn. Weld comes with Wicket integration.</li>
+<li class="wikiUnorderedListItem"> There are many other possibilities including about a thousand frameworks which are basically alternatives to the servlet API. Struts2 and Stripes seem like popular options. I don't find any of these kinds of frameworks very interesting or sexy, but they're usually easy to learn. It should be very relatively easy to integrate any of them with Weld.</li>
+<li class="wikiUnorderedListItem"> A final option worth mentioning is <a href="http://code.google.com/webtoolkit/" target="" class="regularLink">GWT</a>. GWT is an entirely different beast, with its own Java to JavaScript compiler. It's great for certain kind of application. We should have GWT integration for Weld available very soon.</li>
+</ul>
+
+<p class="wikiPara">
+My personal view is that you should start out by looking at either JSF and/or Wicket, unless you're truly a beginner at this, in which case start with writing some plain servlets. If these options don't suit your needs, cast a wider net.
+</p>
+
+<p class="wikiPara">
+You'll also need a persistence solution. For most people writing EE 6 applications that means <a href="http://jcp.org/en/jsr/detail?id=317" target="" class="regularLink">JPA2</a>. There are at least three excellent implementations of this specification to choose from, including <a href="http://hibernate.org" target="" class="regularLink">ours</a>. You'll probably want to use JPA2 together with <a href="http://people.redhat.com/~ebernard/validation/" target="" class="regularLink">Bean Validation</a>.
+</p>
+
+<p class="wikiPara">
+Once you've got a handle on CDI, JPA2, and whatever web framework you decide to use, take a look at <a href="http://jcp.org/en/jsr/detail?id=318" target="" class="regularLink">EJB 3.1</a>, and the more advanced functionality it offers for integrating with data stores and messaging, and managing asynchronicity. Unfortunately, the EJB spec itself is quite hard to read, so you should probably try to find a good tutorial. Be careful, there is still a lot of information about EJB 2 out there on the web. EJB 3.1 is a quite different beast.</p>
+</div>
+

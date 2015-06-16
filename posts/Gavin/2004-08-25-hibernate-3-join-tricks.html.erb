@@ -1,0 +1,225 @@
+---
+title: "Hibernate3 Join Tricks"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "25-08-2004"
+tags: []
+
+relative_url: /2004/08/25/hibernate-3-join-tricks
+slug: hibernate-3-join-tricks
+lace: http://in.relation.to/1702.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2004/08/25/hibernate-3-join-tricks
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+One of the joys of working on an open source project with commercial competitors
+is having to implement features that our users simply don't ask for, and probably
+won't use in practice, just because those competitors try to spin their useless 
+features as a competitive advantage. We realized ages ago that it's really hard
+to tell people that they don't need and shouldn't use a feature if you don't 
+have it.
+</p>
+
+<p class="wikiPara">
+Multi-table mappings started out as a good example of that kind of features. 
+We have been
+repeating the <q>your object model should be at /least/ as fine-grained as your
+relational schema</q> mantra for years now. Unfortunately, we keep hearing this echo
+back as <q>Hibernate can't do multitable mappings</q>. Nobody has ever once shown me
+a truly compelling usecase for multitable mappings in a real application, but 
+apparently, if our competitors are to be believed, it is common to find schemas 
+with attributes of the same entity scattered randomly across several different 
+physical tables. I'll have to take their word on that one. I'm not saying you 
+will /never/ run into this kind of thing and, indeed, I've seen a few borderline 
+cases, though nothing that wasn't at least arguably better represented as an 
+association. But certainly, to my mind, valid usecases for multitable mappings are 
+not something you run into commonly enough for this to be an important feature.
+Perhaps the difference in perception is due to the fact that only /sane/ 
+organizations use Hibernate.
+</p>
+
+<p class="wikiPara">
+Anyway, we introduced the <tt>&lt;join/&gt;</tt> mapping, just so we could tell people not to 
+use it. Actually, it was fun to implement, and helped me make some really nice 
+refactorings to the EntityPersister hierarchy.
+</p>
+
+<p class="wikiPara">
+Then a funny thing happened. I started to think of all kinds of useful things to
+do with <tt>&lt;join/&gt;</tt>, none of which had anything much to do with multitable mappings,
+as usually understood. And I'm pretty certain that these things were not what the 
+other guys were talking about!
+</p>
+
+<p class="wikiPara">
+The first application I came up with is a mixed inheritance mapping strategy.
+Before, you had a choice between <tt>&lt;subclass/&gt;</tt> and <tt>&lt;joined-subclass/&gt;</tt> (now also 
+<tt>&lt;union-subclass/&gt;</tt>), and you had to stick with that one strategy for the whole 
+hierarchy.
+</p>
+
+<p class="wikiPara">
+It's now possible to write a mapping like this:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Superclass" 
+        table="parent"
+        discriminator-value="0"&gt;
+    &lt;id name="id"&gt;.....&lt;/id&gt;
+    &lt;discriminator column="type" type="int"/&gt;
+    &lt;property ...../&gt;
+    ...
+    
+    &lt;subclass name="Subclass" 
+            discriminator-value="1"&gt;
+        &lt;property .... &gt;
+        ...
+    &lt;/subclass&gt;
+    
+    &lt;subclass name="JoinedSubclass" 
+            discriminator-value="-1"&gt;
+        &lt;join table="child"&gt;
+            &lt;property ...../&gt;
+            ....
+        &lt;/join&gt;
+    &lt;/subclass&gt;
+    
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+That's /really/ useful.
+</p>
+
+<p class="wikiPara">
+The next thing that <tt>&lt;join/&gt;</tt> can be used for required a little tweak. I added
+an inverse attribute to the join element, to declare that the joined table should not be updated by the owning entity. Now, it's possible to map an association (link) table - which usually represents a many-to-many association - with one-to-many multiplicity in the domain model. First, we have a basic many-to-many mapping, on the <q>Parent</q> side:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Parent"&gt;
+    ...
+    &lt;set name="children" table="ParentChild" lazy="true"&gt;
+        &lt;key column="parentId"/&gt;
+        &lt;many-to-many column="childId" class="Child"/&gt;
+    &lt;/set&gt;
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+Now, we use a <tt>&lt;join&gt;</tt> mapping, to <q>hide</q> the association table from the Child end:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Child"&gt;
+    ...
+    &lt;join table="ParentChild" inverse="true"&gt;
+        &lt;key column="childId"/&gt;
+        &lt;many-to-one name="parent" column="parentId"/&gt;
+    &lt;/join&gt;
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+Well, I'm not sure really how useful this is, but I was always jealous of the
+TopLink guys when they bragged how they could do this, and we got it /almost/ for
+free!
+</p>
+
+<p class="wikiPara">
+A third trick was also inspired by TopLink. A number of former TopLink users porting
+code to Hibernate found that Hibernate's table-per-class mapping strategy has 
+significantly different performance characteristics to TopLink's. Hibernate has
+what seems to be a unique implementation of the table-per-class mapping strategy,
+in that no discriminator column is required to achieve polymorphism. Instead, 
+Hibernate performs an outer join across all sublass tables, and checks which 
+primary keys values are null in each returned row of results in order to determine 
+the subclass that the row represents. In most circumstances, this offers an excellent
+performance balance, since it is not vulnerable to the dreaded N+1 selects problem.
+Furthermore, it does not require the addition of a type discriminator column to
+the table of the root class, which really feels extremely unnatural and redundant
+for this relational model.
+</p>
+
+<p class="wikiPara">
+An alternative approach, that TopLink uses, is to perform an initial query, check 
+the value of a discriminator column, and then issue an extra query if the row 
+represents a subclass instance. This isn't usually very efficient for shallow 
+inheritance trees, but what we've seen is that some ex-TopLink users have created 
+very deep or wide inheritance trees, in which case Hibernate's strategy can result 
+in a single query with simply too many joins.
+</p>
+
+<p class="wikiPara">
+So, I added the outer-join attribute to <tt>&lt;join/&gt;</tt>. Its effect is slightly subtle. Consider the following mapping:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Foo" table="foos" discriminator-value="0"&gt;
+    &lt;id name="id"&gt;...&lt;/id&gt;
+    &lt;discriminator column="type" type="int"/&gt;
+    &lt;property name="name"/&gt;
+    &lt;subclass name="Bar" discriminator-value="1"&gt;
+        &lt;join table="bars"&gt;
+            &lt;key column="fooId"/&gt;
+            &lt;property name="amount"/&gt;
+        &lt;/join&gt;
+    &lt;/subclass&gt;
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+When we execute a HQL query against the subclass Bar, Hibernate will generate
+SQL with an inner join between foos and bars. If we query against the superclass
+Foo, Hibernate will use an outer join.
+</p>
+
+<p class="wikiPara">
+(Note that you would not write the above mapping in practice; instead you would
+use <tt>&lt;joined-subclass/&gt;</tt> and eliminate the need for the discriminator.)
+</p>
+
+<p class="wikiPara">
+Suppose we set <tt>outer-join="false"</tt>:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Foo" table="foos" discriminator-value="0"&gt;
+    &lt;id name="id"&gt;...&lt;/id&gt;
+    &lt;discriminator column="type" type="int"/&gt;
+    &lt;property name="name"/&gt;
+    &lt;subclass name="Bar" discriminator-value="1"&gt;
+        &lt;join table="bars" outer-join="false"&gt;
+            &lt;key column="fooId"/&gt;
+            &lt;property name="amount"/&gt;
+        &lt;/join&gt;
+    &lt;/subclass&gt;
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+Now, when we query the subclass, the same SQL inner join will be used. But when
+we query the superclass, Hibernate won't use an outer join. Instead, it will
+issue an initial query against the foos table, and a sequential select against the 
+bars table, whenever it finds a row with a discriminator value of 1.
+</p>
+
+<p class="wikiPara">
+Well, that's not such a great idea in this case. But imagine if Foo had
+a very large number of immediate subclasses. Then we might be avoiding a query 
+with very many outer joins, in favor of several queries with no joins. Well, 
+perhaps some people will find this useful....
+</p>
+</div>
+

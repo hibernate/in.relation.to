@@ -1,0 +1,125 @@
+---
+title: "Bean Validation TCK 1.1.0.CR1 and Hibernate Validator 5.0.0.CR1 Released"
+author: "Gunnar Morling"
+blogger_name: "Gunnar"
+creation_date: "21-02-2013"
+tags: [Bean Validation,Hibernate Validator]
+
+relative_url: /2013/02/21/bean-validation-tck-110-cr-1-and-hibernate-validator-500-cr-1-released
+slug: bean-validation-tck-110-cr-1-and-hibernate-validator-500-cr-1-released
+lace: http://in.relation.to/23951.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/02/21/bean-validation-tck-110-cr-1-and-hibernate-validator-500-cr-1-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+It's my pleasure to announce the availability of <a href="http://docs.jboss.org/hibernate/beanvalidation/tck/1.1/reference/html_single/" target="" class="regularLink">Bean Validation TCK</a> 1.1.0.CR1 and <a href="http://validator.hibernate.org/" target="" class="regularLink">Hibernate Validator</a> 5.0.0.CR1.
+</p>
+
+<p class="wikiPara">
+You can find the TCK
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> as Maven artifact in the <a href="https://repository.jboss.org/nexus/content/groups/public/" target="" class="regularLink">JBoss Maven repository</a> under the coordinates <i class="wikiEmphasis">org.hibernate.beanvalidation.tck:beanvalidation-tck-tests:1.1.0.CR1</i> and</li>
+<li class="wikiUnorderedListItem"> as distribution bundle (ZIP or TAR) on <a href="http://sourceforge.net/projects/hibernate/files/beanvalidation-tck/1.1.0.CR1/" target="" class="regularLink">SourceForge</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+Hibernate Validator can be retrieved
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> from the <a href="https://repository.jboss.org/nexus/content/groups/public/" target="" class="regularLink">JBoss Maven repository</a> under the coordinates <i class="wikiEmphasis">org.hibernate:hibernate-validator:5.0.0.CR1</i> and</li>
+<li class="wikiUnorderedListItem"> as ZIP or TAR distribution from <a href="http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.0.0.CR1/" target="" class="regularLink">SourceForge</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+These releases catch up with the proposed final draft of the <a href="http://beanvalidation.org/" target="" class="regularLink">Bean Validation</a> 1.1 specification, which was handed over to the JCP just yesterday. Check out the <a href="http://beanvalidation.org/news/2013/02/20/bean-validation-1-1-proposed-final-draft/" target="" class="regularLink">announcement</a> for an overview of what has changed feature-wise since the last Beta releases. We addressed <a href="https://hibernate.onjira.com/secure/IssueNavigator.jspa?reset=true&amp;jqlQuery=project+%3D+BVTCK+AND+fixVersion+%3D+%221.1.0.CR1%22+AND+status+%3D+Closed+ORDER+BY+priority+DESC&amp;mode=hide" target="" class="regularLink">4 issues</a> in the TCK and <a href="https://hibernate.onjira.com/secure/IssueNavigator.jspa?reset=true&amp;jqlQuery=project+%3D+HV+AND+fixVersion+%3D+%225.0.0.CR1%22+AND+status+%3D+Closed+ORDER+BY+priority+DESC&amp;mode=hide" target="" class="regularLink">16 issues</a> in Hibernate Validator.
+</p>
+
+<p class="wikiPara">
+As there shall be no blog post without at least a little bit of source code, let's have a closer look at one of the new features, the XML-based configuration of method constraints, implemented with <a href="https://hibernate.onjira.com/browse/HV-373" target="" class="regularLink">HV-373</a>.
+</p>
+
+<p class="wikiPara">
+Let's assume there is a class <tt>OrderService</tt> like this:
+</p>
+
+<pre class="wikiPreformatted">public class OrderService {
+    public Order placeOrder(String customerId, Item item, int quantity) {
+        [...]
+    }
+}</pre>
+
+
+<p class="wikiPara">
+The following shows an XML constraint mapping for adding method constraints to this class:
+</p>
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;constraint-mappings
+    xmlns="http://jboss.org/xml/ns/javax/validation/mapping"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/mapping validation-mapping-1.1.xsd"
+    version="1.1"&gt;
+    
+    &lt;default-package&gt;com.acme.app.domain&lt;/default-package&gt;
+
+    &lt;bean class="OrderService" ignore-annotations="false"&gt;
+        &lt;method name="placeOrder" ignore-annotations="true"&gt;
+            &lt;parameter type="java.lang.String"&gt;
+                &lt;constraint annotation="javax.validation.constraints.NotNull"/&gt;
+                &lt;constraint annotation="javax.validation.constraints.Size"&gt;
+                    &lt;element name="value"&gt;5&lt;/element&gt;
+                &lt;/constraint&gt;
+            &lt;/parameter&gt;
+            &lt;parameter type="Item"&gt;
+                &lt;valid/&gt;
+                &lt;constraint annotation="javax.validation.constraints.NotNull"/&gt;
+            &lt;/parameter&gt;
+            &lt;parameter type="int"&gt;
+                &lt;constraint annotation="javax.validation.constraints.Min"&gt;
+                    &lt;element name="value"&gt;1&lt;/element&gt;
+                &lt;/constraint&gt;
+            &lt;/parameter&gt;
+            &lt;return-value&gt;
+                &lt;valid/&gt;
+            &lt;/return-value&gt;
+        &lt;/method&gt;
+    &lt;/bean&gt;
+&lt;/constraint-mappings&gt;</pre>
+
+
+<p class="wikiPara">
+The following constraints are added here to the <tt>placeOrder()</tt> method:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> The <tt>customerId</tt> parameter must not be <tt>null</tt> and must be at least five characters long</li>
+<li class="wikiUnorderedListItem"> The <tt>item</tt> parameter must not be <tt>null</tt> and it is marked for cascaded validation (equivalent to annotating it with <tt>@Valid</tt>)</li>
+<li class="wikiUnorderedListItem"> The <tt>quantity</tt> parameter must at least be 1</li>
+<li class="wikiUnorderedListItem"> The method return value is marked for cascaded validation</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-WhatsNext"><a href="/2013/02/21/bean-validation-tck-110-cr-1-and-hibernate-validator-500-cr-1-released#H-WhatsNext">What's next?</a></h1>
+
+<p class="wikiPara">
+The final release of Bean Validation 1.1 is coming soon; in the mean time we'll work on more tests for the TCK, fix bugs as required in Hibernate Validator and polish the documentation.
+</p>
+
+<p class="wikiPara">
+You want to help? Nothing easier than that, just check out the <a href="http://beanvalidation.org/1.1/spec/1.1.0.cr1/" target="" class="regularLink">proposed final draft</a> of the specification and play around with all the new features using Hibernate Validator.
+</p>
+
+<p class="wikiPara">
+You found a bug? You think the implementation doesn't correctly obey to the specification? That's great! We look forward to your report in our <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV" target="" class="regularLink">issue tracker</a>. You can also reach us via <a href="https://lists.jboss.org/mailman/listinfo/hibernate-dev" target="" class="regularLink">e-mail</a> or in the <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">commmunity forum</a>.
+</p>
+</div>
+

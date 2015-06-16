@@ -1,0 +1,50 @@
+---
+title: "First Alpha release of Hibernate Validator 5"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "21-06-2012"
+tags: [Hibernate Validator]
+
+relative_url: /2012/06/21/first-alpha-release-of-hibernate-validator-5
+slug: first-alpha-release-of-hibernate-validator-5
+lace: http://in.relation.to/23275.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/06/21/first-alpha-release-of-hibernate-validator-5
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Good news for all of you waiting for an early version of Hibernate Validator 5 in order to experiment with the new Bean Validation 1.1 (<a href="http://jcp.org/en/jsr/detail?id=349" target="" class="regularLink">JSR 349</a>) features. Hibernate Validator 5.0.0.Alpha1 is now available for download in the <a href="http://repository.jboss.org/nexus" target="" class="regularLink">JBoss Maven Repository</a> under the GAV <i class="wikiEmphasis">org.hibernate:hibernate-validator:5.0.0.Alpha1</i> or via <a href="http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.0.0.Alpha1" target="" class="regularLink">SourceForge</a>.
+</p>
+
+<p class="wikiPara">
+The focus of the release was the alignment of Hibernate Validator with the first <a href="http://beanvalidation.org/1.1/" target="" class="regularLink">early draft</a> of Bean Validation 1.1 (1.1.0.Alpha1). The Hibernate Validator <a href="https://hibernate.onjira.com/browse/HV/fixforversion/12051" target="" class="regularLink">changelog</a> circles for this reason around <a href="https://hibernate.onjira.com/browse/HV-571" target="" class="regularLink">HV-571</a> which served as placeholder for those specification changes. Of course the biggest change was the formalization of <a href="http://beanvalidation.org/1.1/spec/#d0e2147" target="" class="regularLink">method validation</a>, but there are other interesting new features as well. For example:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> In conjunction with method validation it is worth having a look at the  <a href="http://beanvalidation.org/1.1/spec/#constraintdeclarationvalidationprocess-methodlevelconstraints-definingparameterconstraints-namingparameters" target="" class="regularLink">ParameterNameProvider</a> interface which helps to identify the parameter of a failing parameter constraint in the resulting ConstraintViolation. The Path API was also extended to provide additional meta information about a failing constraint. You can get the element descriptor via <i class="wikiEmphasis">Path.Node#getElementDescriptor</i> (of course you need to iterate to the leaf node of first).  The element discriptors themselves got extended by <i class="wikiEmphasis">ConstructorDescriptor</i>, <i class="wikiEmphasis">MethodDescriptor</i>, <i class="wikiEmphasis">ParameterDescriptor</i> and <i class="wikiEmphasis">ReturnValueDescriptor</i>.</li>
+<li class="wikiUnorderedListItem"> <a href="http://beanvalidation.org/proposals/BVAL-238/" target="" class="regularLink">Support for container injection in ConstraintValidator</a>. Check out the new life cycle methods <i class="wikiEmphasis">ValidatorFactory#close</i> and <i class="wikiEmphasis">ConstraintValidatorFactory#releaseInstance</i> in this context.</li>
+<li class="wikiUnorderedListItem"> <a href="http://beanvalidation.org/proposals/BVAL-265/" target="" class="regularLink">Expose settings defined in XML in the Configuration API</a>. Refer to the new interface <i class="wikiEmphasis">javax.validation.ConfigurationSource</i>, but be aware that there is a follow up issue (<a href="https://hibernate.onjira.com/browse/BVAL-292" target="" class="regularLink">BVAL-292</a>) as well. </li>
+</ul>
+
+<p class="wikiPara">
+The easiest way to find out more about these new interfaces and classes is to have a look at the Hibernate Validator <a href="https://github.com/hibernate/hibernate-validator/tree/master/engine/src/test" target="" class="regularLink">test suite</a> where you will find tests for all the mentioned new features.
+</p>
+
+<p class="wikiPara">
+There are more <a href="http://beanvalidation.org/proposals" target="" class="regularLink">proposals</a> which are still under active discussion. Feel free to <a href="http://beanvalidation.org/contribute" target="" class="regularLink">contribute</a> :-)
+</p>
+
+<p class="wikiPara">
+Given that this is an early draft there will be further changes to the API. For this reason Hibernate Validator 5.0.0.Alpha1 is not a production release. On the other hand, for integrators and tool developers it makes a lot of sense to have an early evaluation to see whether we are on the right track.
+</p>
+
+<p class="wikiPara">
+Enjoy!
+</p>
+
+</div>
+

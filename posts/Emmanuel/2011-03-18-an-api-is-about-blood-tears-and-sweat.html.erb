@@ -1,0 +1,147 @@
+---
+title: "An API is about blood, tears and sweat"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "18-03-2011"
+tags: []
+
+relative_url: /2011/03/18/an-api-is-about-blood-tears-and-sweat
+slug: an-api-is-about-blood-tears-and-sweat
+lace: http://in.relation.to/18824.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/03/18/an-api-is-about-blood-tears-and-sweat
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+We had an intense two weeks in the Hibernate Search team (well, especially Hardy) while designing the Faceting API. Hardy worked hard one the implementation (not a trivial piece of code in and of itself) but the harder part was the iterative process we did to refine the API:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> to be as user friendly as possible</li>
+<li class="wikiUnorderedListItem"> to be powerful enough</li>
+<li class="wikiUnorderedListItem"> to stay consistent with the rest of the Hibernate Search API</li>
+</ul>
+
+<p class="wikiPara">
+You've heard me talk about fluent APIs <a href="http://in.relation.to/Bloggers/SantaBringsHibernateSearch33" target="" class="regularLink">here</a> and <a href="http://in.relation.to/Bloggers/HibernateSearch32ProgrammaticMappingAPI" target="" class="regularLink">there</a>, but I don't think I've ever shared the why.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Philosophy"><a href="/2011/03/18/an-api-is-about-blood-tears-and-sweat#H-Philosophy">Philosophy</a></h1>
+
+<p class="wikiPara">
+An important goal in Hibernate Search and other Hibernate and JBoss products is ease of use and we work hard on our APIs and configuration to make it a reality.
+</p>
+
+<p class="wikiPara">
+A good API should be:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> made for humans not machines nor klingons nor IDE wizard screens</li>
+<li class="wikiUnorderedListItem"> be usable by beginners and experts (make simple use cases easy, offer advanced features to advanced users)</li>
+<li class="wikiUnorderedListItem"> be easy to use, be easier to read</li>
+<li class="wikiUnorderedListItem"> avoid or limit the potential mistakes someone can fall in when using the API</li>
+</ul>
+
+<p class="wikiPara">
+The API should expose the natural path to use the feature and not simply expose some concepts with no real glue nor guide in between. In a way, your API tells a story, that's what makes it readable. By guiding you, the API limits the amount of errors you can possibly make.
+</p>
+
+<p class="wikiPara">
+The these goals have a price.
+</p>
+
+<h1 class="wikiHeadline1" id="H-Process"><a href="/2011/03/18/an-api-is-about-blood-tears-and-sweat#H-Process">Process</a></h1>
+
+<p class="wikiPara">
+We often work on a first version of the API and its implementation to get the feel of it and then the refinement process happens. We look at the major use cases (simple or complex) and check how the API behaves. It's critically important to write code with the new API to see where it sucks. I can hear a few <q>of course</q> but you would be surprised by how many people skip this step. Frankly I don't blame them, it's hard and long.
+</p>
+
+<p class="wikiPara">
+In the faceting API example, we looked at Amazon.com and literally reimplemented their faceting features to see:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> what was missing in the API (feature-wise)</li>
+<li class="wikiUnorderedListItem"> what steps where clumsy or too verbose when implementing the website</li>
+</ul>
+
+<p class="wikiPara">
+Based on the feedback, we refine or trash the API entirely and start again. 
+</p>
+
+<p class="wikiPara">
+Another trick is to write a how-to style documentation or even better a book. A few of Hibernate Search APIs and features have been improved when I was writing Hibernate Search in Action. There were a few reasons:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> when writing examples, I've found the API or configuration too clumsy (=&gt;fix it)</li>
+<li class="wikiUnorderedListItem"> when writing about a feature, I could not find a decent use case to illustrate it (=&gt;trash it)</li>
+<li class="wikiUnorderedListItem"> when writing examples, I needed to write infrastructure code that should belong to the framework (=&gt;add it)</li>
+</ul>
+
+<p class="wikiPara">
+I call this approach Book Driven Development ;) Note that (good) documentation is not a substitute for a bad API. You need both. Ideally, a user starts to use the API and go to the documentation to learn more advanced use cases.
+</p>
+
+<p class="wikiPara">
+Try and treat APIs as being forever cast in stone before you release them and use Josh Bloch's mantra, <q>When in doubt, leave it out</q>.
+</p>
+
+<p class="wikiPara">
+This whole iterative process is very painful, we massively changed the faceting API three or four time. I'm sure at times, Hardy wished he hadn't volunteered to implement this feature :) Some say that a good developer does 50% impl and 50% test. I'd say a good library developer does 25% impl, 25% test and 50% API (of course to do the API you need to write tests but you get the idea).
+</p>
+
+<p class="wikiPara">
+We use peer reviewing (via GitHub's pull request mode) extensively. All the code that goes into Hibernate Search is reviewed by another member of the team. That's were the other pair of eyes catches:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> bugs or conceptual errors</li>
+<li class="wikiUnorderedListItem"> laziness (missing JavaDoc, interface vs implementation etc - the kind of minor changes you tend to leave for later)</li>
+<li class="wikiUnorderedListItem"> potential missing use cases or API improvements</li>
+</ul>
+
+<p class="wikiPara">
+These systematic peer review have really improved the quality of our software and doc. It hurts when we need to back to the drawing board but the end result is worthwhile.
+</p>
+
+<h1 class="wikiHeadline1" id="H-More"><a href="/2011/03/18/an-api-is-about-blood-tears-and-sweat#H-More">More</a></h1>
+
+<p class="wikiPara">
+Note that Hibernate Search is not the only project around taking good care of its APIs. At JBoss, there is a general trend. Just a few examples:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Seam 3</li>
+<li class="wikiUnorderedListItem"> Arquilian</li>
+<li class="wikiUnorderedListItem"> Shrinkwrap</li>
+</ul>
+
+<p class="wikiPara">
+They all have easy to write and easier to read APIs. Of course that's not limited to JBoss, many projects and specifications treat their APIs with better care these days. That comes from several factors I think:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> people get more mature on Java</li>
+<li class="wikiUnorderedListItem"> RoR's influence went by</li>
+<li class="wikiUnorderedListItem"> Java new features like generics and annotations opened up possibilities</li>
+<li class="wikiUnorderedListItem"> challengers pushed dusty Java APIs to everyone and improve</li>
+</ul>
+
+<p class="wikiPara">
+I wholeheartedly recommend Effective Java by Josh Bloch as well as his talk on <a href="http://www.youtube.com/watch?v=aAb7hSCtvGw" target="" class="regularLink">how to design a good API and why it matters</a>. By the way, I am not claiming my APIs are necessarily great but you know I try hard to. And like in snowboarding:
+</p>
+
+<blockquote class="wikiBlockquote">
+if you don't fall you don't make progress
+</blockquote>
+
+<p class="wikiPara">
+I made a lot of progress :)</p>
+</div>
+

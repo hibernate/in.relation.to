@@ -1,0 +1,86 @@
+---
+title: "Hibernate OGM 4.0.0.Beta4 is out"
+author: "Davide D'Alto"
+blogger_name: "Davide"
+creation_date: "30-10-2013"
+tags: [Hibernate,Hibernate OGM]
+
+relative_url: /2013/10/30/hibernate-ogm-400-beta-4-is-out
+slug: hibernate-ogm-400-beta-4-is-out
+lace: http://in.relation.to/24496.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/10/30/hibernate-ogm-400-beta-4-is-out
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+After one month from the previous release we are happy to announce the new Hibernate OGM 4.0.0.Beta4.
+</p>
+
+<h2 class="wikiHeadline2" id="H-InitialEmbeddedNeo4jIntegration"><a href="/2013/10/30/hibernate-ogm-400-beta-4-is-out#H-InitialEmbeddedNeo4jIntegration">Initial embedded Neo4j integration</a></h2>
+
+<p class="wikiPara">
+Hibernate OGM can now work with <a href="http://www.neo4j.org/" target="" class="regularLink">Neo4j</a>, a fully transactional property graph database.
+</p>
+
+<p class="wikiPara">
+Graph databases represent the data as a system of interconnected nodes and work well when you need to store information like the relationship between people in social networks. In addition, in a property graph, you can also add properties to the elements of the graph.
+</p>
+
+<p class="wikiPara">
+Hibernate OGM maps an entity as a node where the attributes of the entity become properties of the node.
+At the moment we add some additional properties for the conversion of the node into the entity but we are planning to replace them using the label mechanism added in the latest Neo4j versions.
+</p>
+
+<p class="wikiPara">
+The relationship between two nodes represents an association between two entities.
+Currently a bidirectional association requires two relationships but we are going to change this since Neo4j can navigate a relationship in both directions.
+</p>
+
+<p class="wikiPara">
+The integration with Neo4j is experimental but we are planning on improving it soon. Please, let us know what you think or help us improving it.  
+</p>
+
+<h2 class="wikiHeadline2" id="H-NativeQuerySupportForMongoDB"><a href="/2013/10/30/hibernate-ogm-400-beta-4-is-out#H-NativeQuerySupportForMongoDB">Native query support for MongoDB</a></h2>
+
+<p class="wikiPara">
+One missing feature in the previous releases was the ability to retrieve managed entities using the query language of the database of your choice. This is particularly useful if the query language supports specific features unavailable to JP-QL or currently non implemented.
+</p>
+
+<p class="wikiPara">
+We started to work on this feature and it is now possible to execute a MongoDB query using the <tt>org.hibernate.Session</tt> or the <tt>javax.persistence.EntityManager</tt>.
+</p>
+
+<p class="wikiPara">
+Let's look at an example using the session:
+</p>
+
+<pre class="wikiPreformatted brush: java">List&lt;OscarWildePoem&gt; result = session
+    .createSQLQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }" )
+    .addEntity( OscarWildePoem.TABLE_NAME, OscarWildePoem.class )
+    .list();
+</pre>
+
+<p class="wikiPara">
+and one using the entity manager:
+</p>
+
+<pre class="wikiPreformatted brush: java">List&lt;OscarWildePoem&gt; results = entityManager
+    .createNativeQuery( "{ $query : { author : 'Oscar Wilde' }, $orderby : { name : 1 } }", OscarWildePoem.class )
+    .getResultList();
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-HowToTryIt"><a href="/2013/10/30/hibernate-ogm-400-beta-4-is-out#H-HowToTryIt">How to try it</a></h2>
+
+<p class="wikiPara">
+You can take a <a href="http://www.hibernate.org/subprojects/ogm/docs.html" target="" class="regularLink">look at the documentation</a> or check how you can <a href="http://www.hibernate.org/subprojects/ogm/download" target="" class="regularLink">download Hibernate OGM 4.0.0.Beta4</a>.
+</p>
+
+<p class="wikiPara">
+Many thanks to all the contributors that made this release possible whether it be via pull requests, bug reports or feedback on the forum.</p>
+</div>
+

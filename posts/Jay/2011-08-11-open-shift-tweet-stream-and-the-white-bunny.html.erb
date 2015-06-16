@@ -1,0 +1,133 @@
+---
+title: "OpenShift, TweetStream, and the White Bunny"
+author: "Jay Balunas"
+blogger_name: "Jay"
+creation_date: "11-08-2011"
+tags: [Mobile,RichFaces,Seam News,as7_openshift]
+
+relative_url: /2011/08/11/open-shift-tweet-stream-and-the-white-bunny
+slug: open-shift-tweet-stream-and-the-white-bunny
+lace: http://in.relation.to/21533.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/08/11/open-shift-tweet-stream-and-the-white-bunny
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+    <a href="http://richfaces.org" target="blank"> 
+        <img src="http://design.jboss.org/richfaces/logo/final_logo/richfaces_logo_200px.png" alt="">
+    </a>
+</div>
+
+<p class="wikiPara">
+We're going to dive down into the rabbit hole, and follow up on <a href="http://vimeo.com/27534958" target="" class="regularLink">Wesley Hales great video</a> on deploying the mobile web optimized <a href="https://github.com/richfaces/tweetstream" target="" class="regularLink">RichFaces TweetStream</a> application to Red Hat's new, free PaaS offering <a href="https://www.redhat.com/openshift/" target="" class="regularLink">OpenShift Express</a> complete with <a href="http://www.jboss.org/as7.html" target="" class="regularLink">JBoss AS 7</a> under the hood! 
+</p>
+
+<div style="float:left;margin-right:20px;margin-bottom:20px">
+   <p>
+      <a href="http://vimeo.com/27534958" target="blank"> 
+         <img src="/images/21507.png" width="300" height="200" alt="">
+      </a>
+   </p>
+   <p></p>
+<center>
+      <a href="http://vimeo.com/27534958">Mobile to Cloud in 4 Minutes</a>
+      </center>
+   
+</div>
+
+<h3 class="wikiHeadline3" id="H-WhatsBeenCovered"><a href="/2011/08/11/open-shift-tweet-stream-and-the-white-bunny#H-WhatsBeenCovered">Whats Been Covered</a></h3>
+
+<p class="wikiPara">
+There has already been a lot of coverage on OpenShift, and the mobile web optimized TweetStream app.  So I'm not going to cover old ground.  Check out these blogs and videos:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www.jboss.org/openshift" target="" class="regularLink">JBoss &amp; OpenShift Launch Page</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://vimeo.com/24775911" target="" class="regularLink">Video describing TweetStream</a> presented by Wesley Hales and myself</li>
+<li class="wikiUnorderedListItem"> My blog explaining <a href="http://in.relation.to/Bloggers/RichFacesAndTheMobileWebForTheJBossWorld2011Keynote" target="" class="regularLink">TweetStream</a> in more detail</li>
+<li class="wikiUnorderedListItem"> <a href="http://rik-ansikter.blogspot.com/2011/07/richfaces-heading-to-jboss-as7-era.html" target="" class="regularLink">Lukas's blog</a> on getting tweetstream running on JBoss AS 7</li>
+<li class="wikiUnorderedListItem"> Wesley's <a href="http://vimeo.com/27534958" target="" class="regularLink">4 minutes to the cloud</a> video on OpenShift Express, and TweetStream</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-OpenShiftExpressUpdates"><a href="/2011/08/11/open-shift-tweet-stream-and-the-white-bunny#H-OpenShiftExpressUpdates">OpenShift Express Updates</a></h3>
+<p class="wikiPara">
+The RichFaces team is in the process of migrating our <a href="http://richfaces.org/showcase" target="" class="regularLink">RichFaces Showcase</a> application from Google App Engine to OpenShift Express, we'll have it ready soon.  OpenShift offers a number of benefits over GAE, it is a real Java EE container, supports RichFaces push and has a much less restrictive API
+</p>
+
+<p class="wikiPara">
+Like many other free PaaS offerings OpenShift Express does have a few limitations that you need to consider.  The most important ones for our application are limited threads, and JMS support.  <i class="wikiEmphasis">Note</i> that all of these go away when you move up to OpenShift Flex!
+</p>
+
+<h4 class="wikiHeadline4" id="H-RichFacesPushStreamlined"><a href="/2011/08/11/open-shift-tweet-stream-and-the-white-bunny#H-RichFacesPushStreamlined">RichFaces Push streamlined</a></h4>
+<p class="wikiPara">
+When <a href="http://in.relation.to/Bloggers/RichFaces400FinalReleased" target="" class="regularLink">RichFaces 4.0.0.Final</a> was released our push component was tied to JMS.  This provides excellent enterprise level messaging capabilities, but unfortunately requires some setup to use.  Since JMS is not provided by Express out of the box we needed to make some changes.  So for 4.1.0 we are adding in a few options!  
+</p>
+
+<p class="wikiPara">
+Starting with RichFaces 4.1.0.M1 RichFace Push can be <a href="https://issues.jboss.org/browse/RF-11135" target="" class="regularLink">decoupled from JMS</a>.  All that is needed is to set a context param:
+</p>
+
+<pre class="wikiPreformatted">&lt;context-param&gt;
+    &lt;param-name&gt;org.richfaces.push.jms.disable&lt;/param-name&gt;
+    &lt;param-value&gt;true&lt;/param-value&gt;
+&lt;/context-param&gt;
+</pre>
+
+<p class="wikiPara">
+This will switch push to using an internal message queue.  Look for further blogs, and documentation on this in the future.  This is also one step closer to our plan to <a href="https://issues.jboss.org/browse/RF-11110" target="" class="regularLink">support CDI events</a> as part of RichFaces Push.
+</p>
+
+<h4 class="wikiHeadline4" id="H-AtmosphereUpdatesOnTheWay"><a href="/2011/08/11/open-shift-tweet-stream-and-the-white-bunny#H-AtmosphereUpdatesOnTheWay">Atmosphere updates on the way</a></h4>
+<p class="wikiPara">
+Another change that was needed was moving to a snapshot version of <a href="http://atmosphere.java.net/" target="" class="regularLink">Atmosphere</a>.  Atmosphere had a bug where it was <a href="https://issues.jboss.org/browse/RF-11124" target="" class="regularLink">creating a new thread for each request</a> - ouch!  Since OpenShift Express has limited threads available we needed a way around this.  
+</p>
+
+<p class="wikiPara">
+Thankfully this issue was fixed in the Atmosphere 0.8-SNAPSHOT branch.  This version of Atmosphere is due to be released in August, and RichFaces will use it by default once it is (likely in the 4.1.0.M2 release).
+</p>
+
+<p class="wikiPara">
+For now - if you are working on your own RichFaces push application and deploying to Express you'll need to override the Atmosphere version.  This is simple enough with Maven, just add the following to your pom:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;dependency&gt;
+  &lt;groupId&gt;org.atmosphere&lt;/groupId&gt;
+  &lt;artifactId&gt;atmosphere-runtime&lt;/artifactId&gt;
+  &lt;version&gt;0.8-SNAPSHOT&lt;/version&gt;
+&lt;/dependency&gt;
+</pre>
+
+<h4 class="wikiHeadline4" id="H-InfinispanCacheLOCALSupport"><a href="/2011/08/11/open-shift-tweet-stream-and-the-white-bunny#H-InfinispanCacheLOCALSupport">Infinispan cache LOCAL support</a></h4>
+<p class="wikiPara">
+As was discussed in some of the linked blogs, the TweetStream application uses <a href="http://www.jboss.org/infinispan" target="" class="regularLink">Infinispan</a> under the covers to provide caching for the tweet data that we process.  Infinispan in cluster mode uses <a href="http://www.jgroups.org/" target="" class="regularLink">jGroups</a> to provide advanced communication support.  
+</p>
+
+<p class="wikiPara">
+The problem here is the threading that accompanies this.  For TweetStream it is important to make sure that you are using Infinispan in <i class="wikiEmphasis">LOCAL</i> mode.  The latest TweetStream source has been updated to use the LOCAL cache.
+</p>
+
+<h3 class="wikiHeadline3" id="H-WhereToGoFromHere"><a href="/2011/08/11/open-shift-tweet-stream-and-the-white-bunny#H-WhereToGoFromHere">Where to go from here</a></h3>
+
+<p class="wikiPara">
+Now that we've gone over updates that are needed to take advantage of OpenShift Express I encourage you do give it a shot on your own.  The source code is in the  <a href="https://github.com/richfaces/tweetstream" target="" class="regularLink">TweetStream git repo</a>.  Just follow the <a href="https://github.com/richfaces/tweetstream/blob/develop/README" target="" class="regularLink">readme</a> to setup and build it.  Then deploy following the instructions in <a href="http://vimeo.com/27534958" target="" class="regularLink">Wesley's video</a>.
+</p>
+
+<p class="wikiPara">
+There will be more JBoss and OpenShift blogs and videos coming out, so stay tuned and check out <a href="http://www.jboss.org/openshift" target="" class="regularLink">JBoss and OpenShift page</a> for the latest news.  
+</p>
+
+<p class="wikiPara">
+[<a href="https://www.redhat.com/openshift/" target="" class="regularLink">OpenShift Express</a>]
+[<a href="http://www.jboss.org/openshift" target="" class="regularLink">JBoss OpenShift News</a>]
+[<a href="http://twitter.com/#!/openshift" target="" class="regularLink">OpenShift Twitter</a>]
+[<a href="https://github.com/richfaces/tweetstream" target="" class="regularLink">TweetStream git Repo</a>]
+[<a href="http://twitter.com/richfaces" target="" class="regularLink">RichFaces Twitter</a>]
+</p>
+</div>
+

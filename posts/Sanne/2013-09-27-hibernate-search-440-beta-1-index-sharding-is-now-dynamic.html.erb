@@ -1,0 +1,92 @@
+---
+title: "Hibernate Search 4.4.0.Beta1: Index Sharding is now dynamic"
+author: "Sanne Grinovero"
+blogger_name: "Sanne"
+creation_date: "27-09-2013"
+tags: [Hibernate Search,News]
+
+relative_url: /2013/09/27/hibernate-search-440-beta-1-index-sharding-is-now-dynamic
+slug: hibernate-search-440-beta-1-index-sharding-is-now-dynamic
+lace: http://in.relation.to/24398.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/09/27/hibernate-search-440-beta-1-index-sharding-is-now-dynamic
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate Search 4.4.0.Beta1 is ready for downloads!
+You can get it either from Maven repositories or from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-search/4.4.0.Beta1/" target="" class="regularLink">Sourceforge</a>.
+</p>
+
+<h1 class="wikiHeadline1" id="H-IndexSharding"><a href="/2013/09/27/hibernate-search-440-beta-1-index-sharding-is-now-dynamic#H-IndexSharding">Index Sharding</a></h1>
+
+<p class="wikiPara">
+Sharding is a common practice among Apache Lucene users, and Hibernate Search supports it since years. It means that we split the index storage in multiple Lucene indexes, while hiding the logical complexity. This is most commonly used to:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">Keep individual index sizes reasonable: handy for backups and performance</li>
+<li class="wikiUnorderedListItem">Specialize individual indexes for different language / terminology (more on this below)</li>
+<li class="wikiUnorderedListItem">Separate master nodes to scale writing throughput on multiple nodes</li>
+<li class="wikiUnorderedListItem">Legal requirements to store some data in physically independent media</li>
+</ul>
+
+<p class="wikiPara">
+So far however you would need to configure the number of shards you need in the Hibernate Search configuration, basically requiring advance knowledge of which shards your application would use.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DynamicSharding"><a href="/2013/09/27/hibernate-search-440-beta-1-index-sharding-is-now-dynamic#H-DynamicSharding">Dynamic Sharding</a></h2>
+
+<p class="wikiPara">
+With the new feature added in this 4.4.0.Beta1 release you don't have to know in advance which shards you might need at runtime. So for example if you are sharding your entities according to description languages, just storing an entity in a new language can trigger the creation of the new index infrastructure, on the fly.
+</p>
+
+<p class="wikiPara">
+All details can be found on <a href="http://docs.jboss.org/hibernate/search/4.4/reference/en-US/html_single/#advanced-features-sharding" target="" class="regularLink">the reference documentation</a>.
+</p>
+
+<p class="wikiPara">
+With the previous Sharding feature, which we now call <q>static sharding</q> and is deprecated, you might have been used to deal with an array of indexes. Shards where identified by their position in the array. In the new model, shards are identified by a name: a simple String which maps to their IndexManager name.
+</p>
+
+<p class="wikiPara">
+Implementors will need to create a <a href="http://docs.jboss.org/hibernate/search/4.4/api/org/hibernate/search/store/ShardIdentifierProvider.html" target="" class="regularLink">ShardIdentifierProvider</a>, which fullfills the following needs:
+</p>
+
+<h3 class="wikiHeadline3" id="H-DiscoverExistingShardsAtBootTime"><a href="/2013/09/27/hibernate-search-440-beta-1-index-sharding-is-now-dynamic#H-DiscoverExistingShardsAtBootTime">Discover existing shards at boot time</a></h3>
+<p class="wikiPara">
+Since the shards are not defined in the configuration, you need to provide a list of known shards via some code. A new mechanism was setup to allow for example to query the database using an Hibernate Session during the initialization phase.
+See also the <a href="http://docs.jboss.org/hibernate/search/4.4/reference/en-US/html_single/#example-custom-shard-identifier-provider" target="" class="regularLink">AnimalShardIdentifierProvider</a> example implementation.
+</p>
+
+<h3 class="wikiHeadline3" id="H-DiscoverNewShardsAtRuntime"><a href="/2013/09/27/hibernate-search-440-beta-1-index-sharding-is-now-dynamic#H-DiscoverNewShardsAtRuntime">Discover new shards at runtime</a></h3>
+<p class="wikiPara">
+The second operation that a ShardIdentifierProvider needs to provide, is to watch for new shard identifiers and eventually notify the framework.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ListTheKnownShardIdentifiers"><a href="/2013/09/27/hibernate-search-440-beta-1-index-sharding-is-now-dynamic#H-ListTheKnownShardIdentifiers">List the known shard identifiers</a></h3>
+<p class="wikiPara">
+Finally the ShardIdentifierProvider implementation will need to keep the record of known shard names; that requires a bit of concurrent code, hopefully the example is going to be of inspiration.
+</p>
+
+<p class="wikiPara">
+Optionally you can also make your implementation really smart by watching for your custom FullTextFilters being applied to queries, to narrow down to which shards a query should be executed on. See more at <a href="http://docs.jboss.org/hibernate/search/4.4/reference/en-US/html_single/#query-filter-shard" target="" class="regularLink">Using filters in a sharded environment</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-MoreLinks"><a href="/2013/09/27/hibernate-search-440-beta-1-index-sharding-is-now-dynamic#H-MoreLinks">More links</a></h2>
+
+<p class="wikiPara">
+As usual the issue tracker is <a href="https://hibernate.atlassian.net/browse/HSEARCH" target="" class="regularLink">JIRA</a> and all code is on <a href="https://github.com/hibernate/hibernate-search" target="" class="regularLink">GitHub</a>: pull requests and feedback welcome.
+</p>
+
+<p class="wikiPara">
+For a detailed list of all changes in this release, see <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&amp;version=14552" target="" class="regularLink">the release notes</a>.
+</p>
+
+<p class="wikiPara">
+The next goal is to work towards a 4.4.0.Final release. If you can help us getting there fast, then we'll finally branch towards the next mayor release and start the transformations needed to support Apache Lucene version 4.</p>
+</div>
+

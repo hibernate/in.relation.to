@@ -1,0 +1,186 @@
+---
+title: "Seam 1.0 beta 2"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "10-02-2006"
+tags: [Seam]
+
+relative_url: /2006/02/10/seam-10-beta-2
+slug: seam-10-beta-2
+lace: http://in.relation.to/1882.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2006/02/10/seam-10-beta-2
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Seam 1.0 beta 2 has been released:
+</p>
+
+<p class="wikiPara">
+<a href="http://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=163777" target="" class="regularLink">http://sourceforge.net/project/showfiles.php?group_id=22866&amp;package_id=163777</a>
+</p>
+
+<p class="wikiPara">
+There are too many changes and new features for me to list them all here, but
+I'll talk briefly about the three most interesting things.
+</p>
+
+<p class="wikiPara">
+The first is the idea of <q>workspace management</q>. You can see this feature in
+action by trying out the Seam Issue Tracker demo application that is included
+in the Seam distribution. Workspace management is like a Windows taskbar for
+web applications: the user can view a list of active workspaces (Seam conversations),
+switch between them and manage them, all within a single browser window. The
+list of workspaces may be represented as a drop down menu or clickable list.
+If you use Seam's powerful new nested conversation model, you can even have
+Seam automatically manage a meaningful trail of breadcrumbs.
+</p>
+
+<p class="wikiPara">
+You don't have to write any Java code to take advantage of workspace management
+in Seam, just include some standard JSF fragments in your JSP or Facelets pages.
+</p>
+
+<p class="wikiPara">
+For more information about this stuff, refer to the Seam documentation:
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/reference/en/html/conversations.html#d0e2374" target="" class="regularLink">http://docs.jboss.com/seam/reference/en/html/conversations.html#d0e2374</a>
+</p>
+
+<p class="wikiPara">
+The second new feature is tight integration with jBPM. In Seam, jBPM can
+fill two distinctly different roles. 
+</p>
+
+<p class="wikiPara">
+The first role is traditional business process management (workflow). In this case, 
+jBPM and Seam provide management of task lists, task assignment, business process 
+execution, and business process state without any need to write any Java code.
+You can call Seam components from your jPDL file in exactly the same way that
+you call Seam components from a JSF page: by writing a JSF EL expression. 
+</p>
+
+<p class="wikiPara">
+For example, the following trivial Seam/jPDL workflow definition might be used
+to describe a TODO list.
+</p>
+
+<pre class="wikiPreformatted">
+&lt;process-definition name="todo"&gt;
+  
+  &lt;start-state name="start"&gt;
+     &lt;transition to="todo"/&gt;
+  &lt;/start-state&gt;
+  
+  &lt;task-node name="todo"&gt;
+     &lt;task name="todo" description="#{todoList.description}"&gt;
+        &lt;assignment actor-id="#{actor.id}"/&gt;
+     &lt;/task&gt;
+     &lt;transition to="done"&gt;
+        &lt;action expression="#{todoList.sendEmail}"/&gt;
+     &lt;/transition&gt;
+  &lt;/task-node&gt;
+  
+  &lt;end-state name="done"/&gt;
+  
+&lt;/process-definition&gt;
+</pre>
+
+
+<p class="wikiPara">
+Check out the Seam DVD Store or Todo List examples to see exactly how this stuff
+fits together, or refer to the Seam documentation:
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/reference/en/html/jbpm.html#d0e2696" target="" class="regularLink">http://docs.jboss.com/seam/reference/en/html/jbpm.html#d0e2696</a>
+   
+The second application of jBPM in Seam is pageflow definition. A Seam jPDL pageflow
+defines the navigation for a particular conversation. Just like a business process
+definition, we use JSF EL to define the interaction between the pageflow and the
+Seam components. This lets us centralize all information about the flow of the 
+user interaction, and how the different components and pages fit together to 
+implement the user interaction in one place.
+</p>
+
+<p class="wikiPara">
+Here is an example pageflow for a number guessing game:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;pageflow-definition name="numberGuess"&gt;
+  
+  &lt;start-state name="start"&gt;
+     &lt;transition to="displayGuess"/&gt;
+  &lt;/start-state&gt;
+  
+  &lt;page name="displayGuess" view-id="/numberGuess.jsp" redirect="true"&gt;
+     &lt;transition name="guess" to="evaluateGuess"&gt;
+     	&lt;action expression="#{numberGuess.guess}" /&gt;
+     &lt;/transition&gt;
+  &lt;/page&gt;
+  
+  &lt;decision name="evaluateGuess" expression="#{numberGuess.correctGuess}"&gt;
+     &lt;transition name="true" to="win"/&gt;
+     &lt;transition name="false" to="evaluateRemainingGuesses"/&gt;
+  &lt;/decision&gt;
+  
+  &lt;decision name="evaluateRemainingGuesses" expression="#{numberGuess.lastGuess}"&gt;
+     &lt;transition name="true" to="lose"/&gt;
+     &lt;transition name="false" to="displayGuess"/&gt;
+  &lt;/decision&gt;
+  
+  &lt;page name="win" view-id="/win.jsp" redirect="true"&gt;
+     &lt;end-conversation /&gt;
+  &lt;/page&gt;
+  
+  &lt;page name="lose" view-id="/lose.jsp" redirect="true"&gt;
+     &lt;end-conversation /&gt;
+  &lt;/page&gt;
+  
+&lt;/pageflow-definition&gt;
+</pre>
+
+
+<p class="wikiPara">
+Notice how easy it is to get an understanding how the pages and Seam components fit 
+together to solve the business problem.
+</p>
+
+<p class="wikiPara">
+For more information, refer to the Seam DVD Store or Number Guess examples in the
+Seam distribution, or to the Seam documentation:
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/reference/en/html/jbpm.html#d0e2530" target="" class="regularLink">http://docs.jboss.com/seam/reference/en/html/jbpm.html#d0e2530</a>
+</p>
+
+<p class="wikiPara">
+The final interesting new feature is the application reverse engineering functionality
+provided by the latest release of Hibernate Tools. It takes just minutes to create
+a pretty full-featured application with CRUD, Search screens and full association
+navigation. This is a great way to get started with Seam.
+</p>
+
+<p class="wikiPara">
+More information (including screenshots) here:
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.com/seam/reference/en/html/tools.html" target="" class="regularLink">http://docs.jboss.com/seam/reference/en/html/tools.html</a>
+</p>
+
+<p class="wikiPara">
+Over the past few months, Seam has developed a vibrant community and so I've enjoyed
+working on this project more than anything since the early days of Hibernate. Thanks
+to everyone who has been involved!
+</p>
+</div>
+

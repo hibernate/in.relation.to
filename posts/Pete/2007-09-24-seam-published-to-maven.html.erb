@@ -1,0 +1,187 @@
+---
+title: "Seam published to Maven"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "24-09-2007"
+tags: []
+
+relative_url: /2007/09/24/seam-published-to-maven
+slug: seam-published-to-maven
+lace: http://in.relation.to/2467.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/09/24/seam-published-to-maven
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Those of you who keep up with Seam CVS will have noticed a lot of changes recently to the build system.  I'm going to give a brief tour of them here, and discuss how they affect you when you use Seam.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Maven"><a href="/2007/09/24/seam-published-to-maven#H-Maven">Maven</a></h2>
+
+<p class="wikiPara">
+We chose to use Maven to manage Seam dependencies as it offers reasonable support for transitive dependencies, it's emerging as the de-facto standard both in the Java Enterprise world and at JBoss.org, tools like Ant (using <a href="http://maven.apache.org/ant-tasks.html" target="" class="regularLink">Maven Ant Tasks</a>) and Ivy can consume Maven POMs and the 40 odd votes for publishing Seam to Maven pushed us somewhat ;)
+</p>
+
+<h3 class="wikiHeadline3" id="H-UsingSeamWithMaven"><a href="/2007/09/24/seam-published-to-maven#H-UsingSeamWithMaven">Using Seam with Maven</a></h3>
+
+<p class="wikiPara">
+For those Maven pro's among you, here's the essential information to get you started.  If you are considering dabbling with Maven, then you might want to wait for a couple of weeks for Seam 2.0.0.GA which will include a brief tutorial on using Maven with Seam.
+</p>
+
+<p class="wikiPara">
+To checkout the support you'll need to add <a href="http://snapshots.jboss.org/maven2" target="" class="regularLink">http://snapshots.jboss.org/maven2</a> as a snapshot repository to your POM; having done this, you can add Seam to your projects POM:
+</p>
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;jboss-seam&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;jboss-seam-ui&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;jboss-seam-pdf&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;jboss-seam-remoting&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;jboss-seam-ioc&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;jboss-seam-ioc&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p class="wikiPara">
+We'll shortly start publishing snapshots from our continuous integration server.
+</p>
+
+<p class="wikiPara">
+As Seam is an integration framework we spend a lot of time ensuring that the integrated libraries work well, both together and with Seam.  If you want to always use the recommended library versions with Seam you may want to use the Seam root POM (which just declares repositories and dependencyManagement) as your parent POM:
+</p>
+
+<pre class="wikiPreformatted">&lt;parent&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;root&lt;/artifactId&gt;
+  &lt;version&gt;2.0.0.SNAPSHOT&lt;/version&gt;
+&lt;/parent&gt;</pre>
+
+
+<p class="wikiPara">
+You can then just declare your dependencies <q>versionless</q> in your POM:
+</p>
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;jboss-seam&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+  &lt;groupId&gt;org.jboss.seam&lt;/groupId&gt;
+  &lt;artifactId&gt;jboss-seam-ui&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+  &lt;groupId&gt;org.jbpm&lt;/groupId&gt;
+  &lt;artifactId&gt;jbpm-jpdl&lt;/artifactId&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p class="wikiPara">
+You'll then get the SNAPSHOT of Seam core and ui  and jBPM jPDL 3.2.1.
+</p>
+
+<h2 class="wikiHeadline2" id="H-MavenDependencyManagementRoadmap"><a href="/2007/09/24/seam-published-to-maven#H-MavenDependencyManagementRoadmap">Maven/Dependency Management Roadmap</a></h2>
+
+<p class="wikiPara">
+So, what else is on the cards?
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Write some documentation!</li>
+<li class="wikiUnorderedListItem">Release the next version of Seam to <a href="http://repository.jboss.org" target="" class="regularLink">http://repository.jboss.org</a>
+</li>
+<li class="wikiUnorderedListItem">Improve the handling of JBoss Embedded in the build scripts</li>
+<li class="wikiUnorderedListItem">Alter the <tt>seamdiscs</tt> example to use Maven for dependency management</li>
+<li class="wikiUnorderedListItem">Provide an option to use Maven-based dependency management in seam-gen</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-FeedbackAndTroubleshooting"><a href="/2007/09/24/seam-published-to-maven#H-FeedbackAndTroubleshooting">Feedback and Troubleshooting</a></h2>
+
+<p class="wikiPara">
+Whilst this is a good start there a still some bumps to iron out!  I'm really hoping for strong (and fast!) feedback on this one to get it just right for the GA.
+</p>
+
+<p class="wikiPara">
+I've got a couple of questions/discussion points for you maven experts out there:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">Is there a way to read external properties into maven? As we're using Maven Ant Tasks we can't use <tt>-Dproperty=foo</tt> and we need to be able to specify the property file relative to the POM's location.</li>
+<li class="wikiUnorderedListItem">Is there a nice way to provide dependency profiles <i class="wikiEmphasis">without</i> putting empty jars all over the place?</li>
+<li class="wikiUnorderedListItem">Is using the Seam root POM as your parent POM an acceptable alternative?</li>
+</ul>
+
+<p class="wikiPara">
+If you are following Seam CVS and are having problems building Seam:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Grab the latest CVS</li>
+<li class="wikiOrderedListItem"> Make sure your build.properties file /doesn't/ contain any references to <tt>version</tt> or <tt>patchlevel</tt>
+</li>
+<li class="wikiOrderedListItem"> Run <tt>ant clean build</tt>
+</li>
+<li class="wikiOrderedListItem"> If the build fails due to <pre class="wikiPreformatted">The &lt;urn:maven-artifact-ant:dependencies&gt; type doesn't support the "versionsid" attribute.</pre>
+ you probably have an older version of <tt>maven-ant-tasks.jar</tt> on your classpath.  Try running <tt>ant -nouserlib</tt> or update Maven Ant Tasks to 2.0.7.</li>
+<li class="wikiOrderedListItem"> Report your problem on the forum!</li>
+</ol>
+
+<h2 class="wikiHeadline2" id="H-MavenInSeam"><a href="/2007/09/24/seam-published-to-maven#H-MavenInSeam">Maven in Seam</a></h2>
+
+<p class="wikiPara">
+So, how did we use Seam and Maven Ant Tasks to build Seam?
+</p>
+
+<h3 class="wikiHeadline3" id="H-BuildingSeamUsingMaven"><a href="/2007/09/24/seam-published-to-maven#H-BuildingSeamUsingMaven">Building Seam using Maven</a></h3>
+
+<p class="wikiPara">
+However good Maven is at dependency management, we're not in love with using Maven for building software (it seems slow, and incredibly restrictive) so we decided on the half-way house of using Maven Ant Tasks - which are essentially a set of ant tasks that call into Maven.  With this, we can use Ant to load dependencies from Maven POM files and publish artifacts to Maven.
+</p>
+
+<p class="wikiPara">
+In CVS the Seam build uses Maven POM files to declare dependencies.  These pom files are stored in <tt>/build</tt> and, using some Ant substitution filters, are copied to <tt>/classes/poms</tt>.  From these poms, we can build path's (to compile Seam), fileset's (using the Maven Ant Tasks) and can use the handy version mapper (which allows you to copy a dependency fileset stripping off the version information e.g. <tt>org/jboss/seam/jboss-el/2.0.0.BETA1/jboss-el-2.0.0.BETA1.jar</tt> is copied to <tt>/jboss-el.jar</tt>).
+</p>
+
+<p class="wikiPara">
+There is more information in <tt>/build/readme.txt</tt>
+</p>
+
+<h3 class="wikiHeadline3" id="H-ExamplesAndSeamgen"><a href="/2007/09/24/seam-published-to-maven#H-ExamplesAndSeamgen">Examples and Seam-gen</a></h3>
+
+<p class="wikiPara">
+For now we've stuck with using ant for building and declaring the dependencies in the <tt>build.xml</tt>.  To do this we copy Seam and it's dependencies (resolved using Maven) to a staging area, and then building the deployable artifacts against this directory.  This has the advantage of not having to write POM's for every example (non-trivial given the lack of dependency profiles in Maven).
+</p>
+
+</div>
+

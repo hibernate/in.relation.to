@@ -1,0 +1,93 @@
+---
+title: "Hibernate Search 3.2 released: mapping, mass indexing, clustering"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "05-05-2010"
+tags: [Hibernate,Hibernate Search]
+
+relative_url: /2010/05/05/hibernate-search-32-released-mapping-mass-indexing-clustering
+slug: hibernate-search-32-released-mapping-mass-indexing-clustering
+lace: http://in.relation.to/15391.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/05/05/hibernate-search-32-released-mapping-mass-indexing-clustering
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate Search 3.2 has been in development close to a year and now we are releasing it :)
+Instead of giving you a list of new features, let me highlight a couple of use cases we now cover:
+</p>
+
+<h2 class="wikiHeadline2" id="H-DefiningIndexMappingsDependingOnCustomerDeployment"><a href="/2010/05/05/hibernate-search-32-released-mapping-mass-indexing-clustering#H-DefiningIndexMappingsDependingOnCustomerDeployment">Defining index mappings depending on customer / deployment</a></h2>
+<p class="wikiPara">
+The primary way to express index mappings in Hibernate Search is via annotations. This works 95% of the time, but in some cases you want to adjust what gets indexed and how in a more fine grained way. For example:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> you deliver the same application to different customers and want to give them the opportunity to configure some of the available indexed properties</li>
+<li class="wikiUnorderedListItem"> you deploy the same domain model in different apps where each needs specific search capabilities</li>
+</ul>
+
+<p class="wikiPara">
+To achieve this, we have introduced an easy to use, easy to read fluent programmatic API to express index mappings. Check out the programmatic API in the reference documentation or <a href="/Bloggers/HibernateSearch32ProgrammaticMappingAPI" target="" class="regularLink">this blog entry</a>.
+</p>
+
+<h2 class="wikiHeadline2" id="H-IndexreindexMyDataEasyAndFast"><a href="/2010/05/05/hibernate-search-32-released-mapping-mass-indexing-clustering#H-IndexreindexMyDataEasyAndFast">Index/reindex my data easy and fast</a></h2>
+<p class="wikiPara">
+In Hibernate Search, there has been a couple of best practices to initially index your data. You needed to read your data from the database in batch, call the index operation, flush and clear the session and move on to the next batch.
+</p>
+
+<p class="wikiPara">
+Forget that now. We have a super easy API to index or reindex your data (as simple as two method calls). You can also configure how indexing is done via an intuitive fluent API (yes we've catched the fluent API virus and you haven't seen the end of it). Not only is the new approach easy to use but it's also massively faster than the previously recommended best practices. We highly recommend people to move to this new approach.
+</p>
+
+<p class="wikiPara">
+Check out the reference documentation or <a href="/Bloggers/HibernateSearch32FastIndexRebuild" target="" class="regularLink">this blog entry</a> for more info.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ICantUseJMSButINeedIndexClustering"><a href="/2010/05/05/hibernate-search-32-released-mapping-mass-indexing-clustering#H-ICantUseJMSButINeedIndexClustering">I can't use JMS, but I need index clustering</a></h2>
+<p class="wikiPara">
+Let me first state that setting up a JMS queue is super simple and trivial in any of the modern application servers ( esp JBoss AS :) ) and you get tons of benefits from it (reliability etc). Of course, if you like to waste time and build your own stack on top of Tomcat or equivalent, too bad for you.
+</p>
+
+<p class="wikiPara">
+Anyways, you can now use an alternative approach to JMS for clustering. We now support raw JGroups communications between cluster members.
+</p>
+
+<h2 class="wikiHeadline2" id="H-MySysadminNeedsAWayToSeeWhatIndexingOperationHaveFailedAndRestartThem"><a href="/2010/05/05/hibernate-search-32-released-mapping-mass-indexing-clustering#H-MySysadminNeedsAWayToSeeWhatIndexingOperationHaveFailedAndRestartThem">My sysadmin needs a way to see what indexing operation have failed and restart them</a></h2>
+<p class="wikiPara">
+Luckily that does not happen often but when indexing failures happen, we need to do something about them.
+</p>
+
+<p class="wikiPara">
+You now have access to an API to listen to indexing errors and process them as you please. The default implementation logs the error but you can easily decide to push the errors to some queue for display or replay, send a message via SNMP etc etc. The actual error is provided as well as the list of entities that should have been processed (quite handy for replay).
+</p>
+
+<h2 class="wikiHeadline2" id="H-IHaveASingleInstanceUpdatingTheIndexCanIMakeItFaster"><a href="/2010/05/05/hibernate-search-32-released-mapping-mass-indexing-clustering#H-IHaveASingleInstanceUpdatingTheIndexCanIMakeItFaster">I have a single instance updating the index, can I make it faster?</a></h2>
+<p class="wikiPara">
+Yes, if a single instance of Hibernate Search is responsible to update the index, we can speed up things. Simply add
+</p>
+
+<pre class="wikiPreformatted">hibernate.search.[default|index name].exclusive_index_use true</pre>
+
+
+<h2 class="wikiHeadline2" id="H-WhatElse"><a href="/2010/05/05/hibernate-search-32-released-mapping-mass-indexing-clustering#H-WhatElse">What else?</a></h2>
+<p class="wikiPara">
+Hibernate Search 3.2 runs on Hibernate Core 3.5 and JPA 2. And as always we did many more things for this release including various optimizations, bug fixes, simplifying the Hibernate Search settings (especially for dependencies), adding a simpler API for bridges.
+</p>
+
+<p class="wikiPara">
+Check out on the <a href="http://search.hibernate.org" target="" class="regularLink">web site</a>, <a href="http://www.hibernate.org/subprojects/search/download.html" target="" class="regularLink">download Hibernate Search</a> or browse the <a href="http://www.hibernate.org/subprojects/search/docs.html" target="" class="regularLink">reference documentation</a>. We also have a <a href="http://community.jboss.org/wiki/HibernateSearchMigrationGuide" target="" class="regularLink">migration guide</a> from earlier versions of Hibernate Search.
+</p>
+
+<p class="wikiPara">
+PS: For the Maven users, JBoss has migrated to a new maven repository. Read <a href="http://community.jboss.org/wiki/MavenGettingStarted-Users" target="" class="regularLink">this user guide</a> to know more.
+</p>
+
+<p class="wikiPara">
+PPS: We are already on Hibernate Search 3.3. Stay tuned. </p>
+</div>
+

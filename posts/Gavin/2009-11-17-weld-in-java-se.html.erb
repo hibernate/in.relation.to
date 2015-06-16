@@ -1,0 +1,102 @@
+---
+title: "Weld in Java SE"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "17-11-2009"
+tags: [Contexts and Dependency Injection,Weld]
+
+relative_url: /2009/11/17/weld-in-java-se
+slug: weld-in-java-se
+lace: http://in.relation.to/13027.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/11/17/weld-in-java-se
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+One of the really nice things about Weld is how nicely it works in Java SE. Of course, if you run Weld on its own, you won't get nice functionality like EJBs (you'll need an embeddable EJB container for that), but you do get a bunch of great stuff, including:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Managed beans with <tt>@PostConstruct</tt> and <tt>@PreDestroy</tt> lifecycle callbacks</li>
+<li class="wikiUnorderedListItem"> Dependency injection with qualifiers and alternatives</li>
+<li class="wikiUnorderedListItem"> <tt>@ApplicationScoped</tt>, <tt>@Dependent</tt> and <tt>@Singleton</tt> scopes</li>
+<li class="wikiUnorderedListItem"> Interceptors and decorators</li>
+<li class="wikiUnorderedListItem"> Stereotypes</li>
+<li class="wikiUnorderedListItem"> Events</li>
+<li class="wikiUnorderedListItem"> Portable extension support</li>
+</ul>
+
+<p class="wikiPara">
+The Weld distribution comes with an example console application, and an example Swing application.
+</p>
+
+<p class="wikiPara">
+Here's a very simple console application:
+</p>
+
+<pre class="wikiPreformatted brush:java">@Singleton
+public class HelloWorld {
+
+    @PostConstruct
+    void init() {
+        System.out.println("Initializing Hello World application");
+    }
+
+    void printHello(@Observes ContainerInitialized event, 
+                    @Parameters List&lt;String&gt; parameters) {
+        System.out.println("Hello " + parameters.get(0));
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>printHello()</tt> method is a CDI observer method for the <tt>ContainerInitialized</tt> event. This event is fired by the Weld Java SE extension when the console application starts. The command line parameters are available for injection using <tt>@Parameters List&lt;String&gt;</tt>.
+</p>
+
+<p class="wikiPara">
+As usual, we need a file named <tt>META-INF/beans.xml</tt> the the jar or classpath directory containing our <tt>HelloWorld</tt> class.
+</p>
+
+<p class="wikiPara">
+We run the application using:
+</p>
+
+<pre class="wikiPreformatted brush:java">java org.jboss.weld.environments.se.StartMain Gavin</pre>
+
+
+<p class="wikiPara">
+Of course, if you're using CDI you probably want to make much more use of dependency injection, for example:
+</p>
+
+<pre class="wikiPreformatted brush:java">@Singleton
+public class HelloWorld {
+
+    void printHello(@Observes ContainerInitialized event, 
+                    @Parameters List&lt;String&gt; parameters, 
+                    Hello hello) {
+        hello.say(parameters.get(0));
+    }
+
+}</pre>
+
+
+<p class="wikiPara">
+Where <tt>Hello</tt> is a bean:
+</p>
+
+<pre class="wikiPreformatted brush:java">public class Hello {
+    public void say(String name) {
+        System.out.println("Hello " + name);
+    }
+}</pre>
+
+
+<p class="wikiPara">
+The Weld SE extension was created by contributor Peter Royle.</p>
+</div>
+

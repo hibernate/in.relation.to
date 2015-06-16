@@ -1,0 +1,98 @@
+---
+title: "Announcing JBoss Annotations 1.0.0.Alpha1"
+author: "Jesper Pedersen"
+blogger_name: "Jesper"
+creation_date: "07-08-2009"
+tags: []
+
+relative_url: /2009/08/07/announcingjboss-annotations-100-alpha-1
+slug: announcingjboss-annotations-100-alpha-1
+lace: http://in.relation.to/12078.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/08/07/announcingjboss-annotations-100-alpha-1
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm happy to announce the availability of JBoss Annotations 1.0.0.Alpha1.
+</p>
+
+<p class="wikiPara">
+JBoss Annotations is a project that will allow you to do annotation scanning of your project and build a repository for these annotations. Furthermore the project will provide various tools that will help in the annotation parsing phase and integration with other JBoss projects.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Why"><a href="/2009/08/07/announcingjboss-annotations-100-alpha-1#H-Why">Why ?</a></h2>
+
+<p class="wikiPara">
+So why did we choose to start yet another annotation scanning project ? The main reason are that we want to have 
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> A dedicated API for scanning annotations</li>
+<li class="wikiUnorderedListItem"> A repository that is easy to query</li>
+<li class="wikiUnorderedListItem"> Integration with JBoss projects, like the <a href="http://jboss.org/jbossmc/" target="" class="regularLink">JBoss Microcontainer</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+The last bullet is important since it will allow us to provide an uniform annotation platform when running f.ex. the <a href="http://jboss.org/jbossas/" target="" class="regularLink">JBoss Application Server</a>. The project can be used out-side of a JBoss environment, since its dependencies are the <a href="http://jboss.org/javassist/" target="" class="regularLink">Javassist</a> library and JAXB.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Usage"><a href="/2009/08/07/announcingjboss-annotations-100-alpha-1#H-Usage">Usage</a></h2>
+
+<p class="wikiPara">
+The usage of the library is pretty straight forward :)
+</p>
+
+<pre class="wikiPreformatted">
+// Create an annotation scanner with the default annotation scanning strategy
+AnnotationScanner as = AnnotationScannerFactory.getDefault();
+
+// URLs to .class and .jar files
+URL[] urls = ...;
+
+AnnotationReposity ar = as.scan(urls);
+
+if (ar.hasAnnotation(MyAnnotation.class))
+{
+   List&lt;Annotation&gt; l = ar.getAnnotation(MyAnnotation.class);
+   for (Annotation annotation : l)
+   {
+      MyAnnotation myAnnotation = (MyAnnotation)annotation.getAnnotation();
+      AnnotationType type = annotation.getType();
+      if (AnnotationType.CLASS == type)
+      {
+        ...
+   }
+}
+
+</pre>
+
+<p class="wikiPara">
+ 
+You can find out more about the API in the JavaDoc, Users Guide and Developer Guide included in the distribution.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Status"><a href="/2009/08/07/announcingjboss-annotations-100-alpha-1#H-Status">Status</a></h2>
+
+<p class="wikiPara">
+Since this is the first developer snapshot of the project there is a lot to do. So feel free to contact us if you want to help out or to get some of your own ideas into the project :)
+</p>
+
+<p class="wikiPara">
+We plan to release developer snapshots on a regular basis - basically when a couple of new use-cases has been implemented. So stay tuned for updates !
+</p>
+
+<p class="wikiPara">
+For Those About to Rock, We Salute You !
+</p>
+
+<p class="wikiPara">
+[<a href="https://jira.jboss.org/jira/browse/JBANN" target="" class="regularLink">JIRA</a>] [<a href="http://sourceforge.net/projects/jboss" target="" class="regularLink">Download</a>] [<a href="http://viewvc.jboss.org/cgi-bin/viewvc.cgi/jbossas/projects/annotations/trunk/" target="" class="regularLink">ViewVC</a>]
+</p>
+
+</div>
+

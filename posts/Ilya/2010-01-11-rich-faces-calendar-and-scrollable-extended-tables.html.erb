@@ -1,0 +1,123 @@
+---
+title: "RichFaces Calendar and Scrollable\\Extended Tables"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+creation_date: "11-01-2010"
+tags: [ExtendedDataTable,JavaServer Faces,RichFaces,ScrollableDataTable,Seam News,calendar]
+
+relative_url: /2010/01/11/rich-faces-calendar-and-scrollable-extended-tables
+slug: rich-faces-calendar-and-scrollable-extended-tables
+lace: http://in.relation.to/13919.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/01/11/rich-faces-calendar-and-scrollable-extended-tables
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Some time ago I published an <a href="http://www.jroller.com/a4j/entry/richfaces_calendar_component_shared_calendar">article at jroller</a> in order to show how the <b>rich:calendar</b> performance can be improved by using single component instance for all the date inputs on the form. Today I want to use the same workaround to solve another popular problem.
+</p>
+
+<p class="wikiPara">
+Looking through the community forum I see that many people are having issues related to extended/scrollable tables and embedded components with absolute positioning. These components can be cutoff by the tables borders. Unfortunately it's too late for markup redesign for tables components in 3.3.x because only stabilization works planned for the branch.
+</p>
+
+<p class="wikiPara">
+In this entry I want to highlight that for the <b>rich:calendar</b> component you can use the solution described in original article to make it work when embedded in tables. I'll also  add small update for the article code sample in order to make it works with the latest <b>RichFaces 3.3.3</b>. 
+</p>
+
+<p class="wikiPara">
+Lets check this simple table definition:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:extendedDataTable
+	value="#{dataBean.simpleList}" var="list"
+	width="300px" height="400px"
+	rowKeyVar="rowKey"&gt;
+	&lt;rich:column&gt;
+		&lt;f:facet name="header"&gt;
+			&lt;h:outputText value="row number" /&gt;
+		&lt;/f:facet&gt;
+		&lt;h:outputText value="#{rowKey}" /&gt;
+	&lt;/rich:column&gt;
+	&lt;rich:column&gt;
+		&lt;f:facet name="header"&gt;
+			&lt;h:outputText value="calendar" /&gt;
+		&lt;/f:facet&gt;
+	&lt;rich:calendar /&gt;
+	&lt;/rich:column&gt;
+&lt;/rich:extendedDataTable&gt;</pre>
+
+
+
+<p class="wikiPara">
+It will produce the following problematic result:
+</p>
+
+<img alt="" src="http://www.jroller.com/a4j/resource/calendar_table_problem.jpg">
+
+<p class="wikiPara">
+Now lets move rich:calendar component outside the table and replace it in column with simple input and icon which activates it using api:
+</p>
+
+
+<b>Calendar definition (outside the table)</b>
+
+<pre class="wikiPreformatted">&lt;a4j:loadScript src="/scripts/calendarUtils.js"&gt;&lt;/a4j:loadScript&gt;
+
+&lt;rich:calendar id="calendar" 
+onchanged="#{rich:component('calendar')}.customInput.value=event.rich.component.getSelectedDateString();" zindex="1000"/&gt;
+
+&lt;script&gt;
+	#{rich:component('calendar')}.customExpand=customExpand;
+&lt;/script&gt;</pre>
+
+
+<b>definition of date columns</b>
+
+<pre class="wikiPreformatted">&lt;rich:column&gt;
+	&lt;f:facet name="header"&gt;
+		&lt;h:outputText value="calendar" /&gt;
+	&lt;/f:facet&gt;
+	&lt;h:inputText value="#{userBean.name}" id="input2" readonly="true"
+	onclick="#{rich:component('calendar')}.customExpand(event, #{rich:element('input2')}, #{rich:element('button2')});" /&gt;
+	&lt;h:graphicImage
+	value="resource:///org.richfaces.renderkit.html.iconimages.CalendarIcon"
+	onclick="#{rich:component('calendar')}.customExpand(event, #{rich:element('input2')}, #{rich:element('button2')});"
+	id="button2" /&gt;
+&lt;/rich:column&gt;</pre>
+
+
+<p class="wikiPara">
+	This definitions and calendarUtils.js code is explained in detail in the <a href="http://www.jroller.com/a4j/entry/richfaces_calendar_component_shared_calendar">jroller post</a>. The only thing we need to correct is the script for our calendar initialization. The following  lines should be added just after the <b>customExpand</b> function declaration in  <b>calendarUtils.js</b>:
+</p>
+
+
+<pre class="wikiPreformatted">
+function customExpand(e,input,button) {
+	 if (!this.isRendered) {
+		 this.isRendered = true;
+		 this.render();
+	 } 
+
+	 ///the rest part fully the same as in original article
+</pre>
+
+
+
+<p class="wikiPara">
+	This change needed because lazy initialization implemented in calendar in 3.3.3 and without calling render method on the first time calendar call  will produce empty calendar to be shown.
+</p>
+
+<p class="wikiPara">
+And here is expected result for extendedDataTable:
+</p>
+
+<img alt="" src="http://www.jroller.com/a4j/resource/calendar_table_problem_solved.jpg">
+
+<p class="wikiPara">
+It should became the same used with <b>scrollableDataTable</b>.</p>
+</div>
+

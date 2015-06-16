@@ -1,0 +1,79 @@
+---
+title: "Incremental hot deployment with Seam and JBoss Tools"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "07-01-2008"
+tags: [JBoss Tools,Seam]
+
+relative_url: /2008/01/07/incremental-hot-deployment-with-seam-andjboss-tools
+slug: incremental-hot-deployment-with-seam-andjboss-tools
+lace: http://in.relation.to/3388.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2008/01/07/incremental-hot-deployment-with-seam-andjboss-tools
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I learnt a lot about JBoss Tools whilst writing a quick demo for my talk at Javapolis, and I wanted share a favourite feature with you - hot deploy of Seam components. Now, of course, this works with any seam problems if you set it up right, but JBoss Tools makes it /seamless/  :-). It removes the need for calling out to ant to copy the files to the application server - this makes it so quick you don't even see the progress bar pop up!
+</p>
+
+<div style="min-height: 276px">
+
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3389" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+
+<p style="padding-top: 30px">So, how do you get this going in your project?</p>
+
+<p>Well, first, create a new WAR project (you can't currently hot-deploy EJB3s - vote for the issue <a href="http://jira.jboss.com/jira/browse/EJBTHREE-1096" target="" class="regularLink">here</a>!)</p>
+
+<p>You can learn more about creating a new project <a href="http://docs.jboss.org/tools/2.0.0.GA/seam/en/html/create_new_seam.html" target="" class="regularLink">here</a>.</p>
+
+</div>
+
+<div style="min-height: 220px;">
+
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3390" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+
+<p style="padding-top: 30px">Create a new action called <tt>helloworld</tt>.</p>
+
+<p>You can learn more about creating a new action <a href="http://docs.jboss.org/tools/2.0.0.GA/seam/en/html/seam_wizards.html#seam_action" target="" class="regularLink">here</a></p>
+
+</div>
+
+<div style="min-height: 63px">
+
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3391" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+
+<p>Now, run your project on the server - you'll need to wait a few seconds while the server boots.</p>
+
+<p>Find out more about deploying your project <a href="http://docs.jboss.org/tools/2.0.0.GA/as/en/html/modules.html#d0e557" target="" class="regularLink">here</a>.</p>
+
+</div>
+
+<div style="min-height: 306px">
+
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3392" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+
+<p style="padding-top:30px">Finally, add a method (note, we are changing the class signature here!) to one of your actions, and add a <tt>&lt;h:commandLink /&gt;</tt> to your view to call it. Make sure to save both the class and the facelets.</p>
+
+<p>You are restricted to /action/ classes here - you can't hot deploy model classes (entities).</p>
+
+<p>You'll notice that JBoss Tools also provides EL completion in java class files :-)</p>
+
+</div>
+
+<div style="min-height: 103px">
+
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3393" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+
+<p>Seam tells you it has hot deployed the the component.</p>
+
+<p>Refresh the page in your browser, click the button, and the method is called <i class="wikiEmphasis">without having to restart your application</i> - now you need another excuse to get a cup of coffee than <q>I had to restart my application!</q> ;-)</p>
+</div>
+
+<p class="wikiPara">
+Well, that concludes our quick tour of hot deployment with Seam and JBoss Tools. The JBoss Tools <a href="http://docs.jboss.org/tools/2.0.0.GA/" target="" class="regularLink">docs</a> are a great place to learn more.</p>
+</div>
+

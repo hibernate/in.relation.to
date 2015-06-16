@@ -1,0 +1,48 @@
+---
+title: "Hibernate Validator 4.1.0.Beta1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "25-03-2010"
+tags: []
+
+relative_url: /2010/03/25/hibernate-validator-410-beta-1
+slug: hibernate-validator-410-beta-1
+lace: http://in.relation.to/14950.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/03/25/hibernate-validator-410-beta-1
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Time has not been standing still for Hibernate Validator and I am happy to announce the 4.1.0.Beta1 release of <a href="http://validator.hibernate.org" target="" class="regularLink">Hibernate Validator</a>. The focus towards the final 4.1.0 release is to add new custom constraints, provide enhancement which go beyond the Bean Validation specification and give the developers an annotation processor to verify the correct placement of constraints. You can see what is already implemented in this beta release by referring to the Jira <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10060&amp;version=11023" target="" class="regularLink">release notes</a>. The roadmap towards 4.1.0 can be seen <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV/fixforversion/10960" target="" class="regularLink">here</a>.
+On the custom constraint side we added @CreditCardNumber, @NotBlank and @URL and are planning to add <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV-292" target="" class="regularLink">@ScriptAssert</a> for the next release. We also introduced a new interface <i class="wikiEmphasis">ResourceBundleLocator</i> which allows users to make a better use of <i class="wikiEmphasis">ResourceBundleMessageInterpolator</i>. Instead of just loading resource bundles from the classpath using <i class="wikiEmphasis">ResourceBundle.getBundle</i>, you can now provide a custom implementation of <i class="wikiEmphasis">ResourceBundleLocator</i> providing the ResourceBundleMessageInterpolator with the message resource bundles to use:
+</p>
+
+<pre class="wikiPreformatted">
+HibernateValidatorConfiguration configuration = Validation.byProvider(HibernateValidator.class).configure();
+ResourceBundleLocator defaultResourceBundleLocator = configure.getDefaultResourceBundleLocator(); 
+ResourceBundleLocator myResourceBundleLocator = new MyCustomResourceBundleLocator(defaultResourceBundleLocator);
+configuration.messageInterpolator(new ResourceBundleMessageInterpolator(myResourceBundleLocator));
+</pre>
+
+
+<p class="wikiPara">
+Thanks to the great work of Gunnar Morling developers can now also use the new Hibernate Validator Annotation Processor. By adding the jar file hibernate-validator-annotation-processor-4.1.0.Beta1.jar to the classpath of their IDE project, they can get feedback about invalid placements of constraints. For example @Valid on a primitive type or a @Pattern constraint on a non string attribute. Prerequisite for this to work is that you are using a JDK 6. The configuration of the annotation processor is the same as for the <a href="http://www.hibernate.org/subprojects/jpamodelgen.html" target="" class="regularLink">Hibernate Metamodel Generator</a> and can be seen <a href="http://docs.jboss.org/hibernate/stable/jpamodelgen/reference/en-US/html_single/#d0e304" target="" class="regularLink">here</a>. The fully qualified name of the processor is <i class="wikiEmphasis">org.hibernate.validator.ap.ConstraintValidationProcessor</i>.
+</p>
+
+<p class="wikiPara">
+It would be great to get some feedback on the usability of the annotation processor. Also let us know which other custom constraints you would like to see in Hibernate Validator. Use the <a href="http://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a> to discuss your ideas or create a jira issue in <a href="http://opensource.atlassian.com/projects/hibernate/browse/HV" target="" class="regularLink">HV</a>.
+</p>
+
+<p class="wikiPara">
+Enjoy,
+Hardy
+</p>
+
+<p class="wikiPara">
+P.S. Download is of course as usual either from the JBoss Maven <a href="http://repository.jboss.com/maven2/org/hibernate/hibernate-validator/4.1.0.Beta1/" target="" class="regularLink">repo</a> or from <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/4.1.0.Beta1" target="" class="regularLink">SourceForge</a>.</p>
+</div>
+

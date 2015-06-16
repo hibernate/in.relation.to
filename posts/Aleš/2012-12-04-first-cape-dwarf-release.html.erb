@@ -1,0 +1,307 @@
+---
+title: "First CapeDwarf Release!"
+author: "Aleš Justin"
+blogger_name: "Aleš"
+creation_date: "04-12-2012"
+tags: []
+
+relative_url: /2012/12/04/first-cape-dwarf-release
+slug: first-cape-dwarf-release
+lace: http://in.relation.to/23731.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/12/04/first-cape-dwarf-release
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+After a year in the making, I’m finally able to announce first CapeDwarf release!
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://downloads.jboss.org/capedwarf/CapeDwarf_AS7_1.0.0.Beta1.zip" target="" class="regularLink">http://downloads.jboss.org/capedwarf/CapeDwarf_AS7_1.0.0.Beta1.zip</a>
+</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12311321&amp;version=12318735" target="" class="regularLink">JIRA release ref</a>
+</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-ButFirstWhatExactlyIsCapeDwarf"><a href="/2012/12/04/first-cape-dwarf-release#H-ButFirstWhatExactlyIsCapeDwarf">But first, what exactly is CapeDwarf? :-)</a></h2>
+
+<p class="wikiPara">
+As <a href="http://www.jboss.org/capedwarf" target="" class="regularLink">our jboss.org page</a> says, it’s a Google AppEngine (GAE) API implemented with JBoss and other open source libraries. Making it possible to run <i class="wikiEmphasis">unmodified</i> GAE applications directly in JBoss application server.
+</p>
+
+<p class="wikiPara">
+The project is split into few sub-projects:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> CapeDwarf Blue - heart of the project aka actual GAE API implementation (<a href="https://github.com/capedwarf/capedwarf-blue" target="" class="regularLink">https://github.com/capedwarf/capedwarf-blue</a>)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> CapeDwarf JBoss-AS - JBossAS7 extension / subsystem (<a href="https://github.com/capedwarf/capedwarf-jboss-as" target="" class="regularLink">https://github.com/capedwarf/capedwarf-jboss-as</a>)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> CapeDwarf Testsuite - testing environment (<a href="https://github.com/capedwarf/capedwarf-testsuite" target="" class="regularLink">https://github.com/capedwarf/capedwarf-testsuite</a>)</li>
+</ul>
+
+<p class="wikiPara">
+All of the sub-projects are “Mavenized”, and at the moment you also need latest JBossAS upstream binaries in your local Maven repository.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> JBossAS - <a href="https://github.com/jbossas/jboss-as/" target="" class="regularLink">https://github.com/jbossas/jboss-as/</a>
+</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-HowExactlyDoITryThis"><a href="/2012/12/04/first-cape-dwarf-release#H-HowExactlyDoITryThis">How exactly do I try this?</a></h2>
+
+<p class="wikiPara">
+Download <a href="http://www.jboss.org/capedwarf/downloads" target="" class="regularLink">CapeDwarf zip distribution</a> and unpack it to your prefered location - JBOSS_HOME. It contains current JBossAS7 upstream master snapshot binaries, plus CapeDwarf JBossAS7 subsystem and a few extra modules (aka libs or jars).
+</p>
+
+<p class="wikiPara">
+Now simply go to JBOSS_HOME/bin/ directory and run the whole thing.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> on OSX ./standalone.sh -c standalone-capedwarf.xml -b your_ip</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> on Linux ./standalone.sh -c standalone-capedwarf.xml</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> on Windows standalone.bat -c standalone-capedwarf.xml</li>
+</ul>
+
+<p class="wikiPara">
+Now just drop the app to JBOSS_HOME/standalone/deployment/ dir and you should already see the app being deployed.
+Or you could use new JBossAS7 Admin Console or CLI to deploy the app - see JBossAS7 docs on how to do this.
+</p>
+
+<pre class="wikiPreformatted">
+12:49:21,651 INFO  [org.jboss.as.capedwarf.deployment.CapedwarfInitializationProcessor] (MSC service thread 1-12) Found GAE / CapeDwarf deployment: deployment "capedwarf-tests.war”
+</pre>
+
+
+<h2 class="wikiHeadline2" id="H-InWhatFlavorsDoesItCome"><a href="/2012/12/04/first-cape-dwarf-release#H-InWhatFlavorsDoesItCome">In what “flavors” does it come?</a></h2>
+
+<p class="wikiPara">
+As being modular is the way to go these days, we also provide a way to run GAE apps in fully modular fashion. What does this mean? It means that instead of packing all required GAE jars / libs, you can simply not include them in your app - making the app distribution smaller this way. It is CapeDwarf that will recognize the app being a GAE app - via appengine-web.xml descriptor file, and add appropriate modules / jars to you app’ classpath. But this comes with a small gotcha.
+</p>
+
+<p class="wikiPara">
+As we need to do some bytecode enhancement to GAE API jar in order to override some services instantiation behavior, while on the other hand you’re not allowed to ship with modified binaries as per license, you will need to run a script to do this bytecode enhancement before running the application server for the first time. The script is located in usual JBossAS bin/, capedwarf-bytecode.sh or capedwarf-bytecode.bin.
+</p>
+
+<p class="wikiPara">
+Apps that bundle all GAE libs - which is the usual GAE way, do not need to run this script, as the bytecode enhancement will take place during runtime.
+</p>
+
+<h2 class="wikiHeadline2" id="H-HowExactlyDoesCapeDwarfWork"><a href="/2012/12/04/first-cape-dwarf-release#H-HowExactlyDoesCapeDwarfWork">How exactly does CapeDwarf work?</a></h2>
+
+<p class="wikiPara">
+Without going too much into details, let me just mention few main components and how they are roughly implemented.
+</p>
+
+<p class="wikiPara">
+For most of the stuff, we take JBoss’ <a href="http://www.jboss.org/infinispan" target="" class="regularLink">Infinispan</a> and <a href="http://www.hibernate.org" target="" class="regularLink">Hibernate Search</a> projects to their limits. We use them for datastore, memcache, search, prospective search, filestore and blobstore. JMS with <a href="http://www.jboss.org/hornetq" target="" class="regularLink">HornetQ</a> is used to implement taskqueue.
+</p>
+
+<p class="wikiPara">
+Where Infinispan is not just plain cache implementation, but a whole data grid with good distributed task framework. Combine that with Hibernate Search and its nice Lucene extensions, you get a powerful clusterable environment to tackle complex problems that GAE API tries to hide from the user, but of course solve it underneath.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatAboutAdminConsole"><a href="/2012/12/04/first-cape-dwarf-release#H-WhatAboutAdminConsole">What about admin console?</a></h2>
+
+<p class="wikiPara">
+Yes, we also support admin console for each app.
+While we do lack features, we did try to add some useful functionality to this initial version.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DoYouSupportJPAJDO"><a href="/2012/12/04/first-cape-dwarf-release#H-DoYouSupportJPAJDO">Do you support JPA / JDO?</a></h2>
+
+<p class="wikiPara">
+JPA / JDO support is exactly the same as in any GAE app. We went an extra mile to support this, providing patches to <a href="http://www.datanucleus.org" target="" class="regularLink">DataNucleus</a> project, and taking special care of JPA / JDO deployments in our JBossAS7 CapeDwarf subsystem.
+</p>
+
+<h2 class="wikiHeadline2" id="H-DoesGAEMapReduceLibRunOnCapeDwarf"><a href="/2012/12/04/first-cape-dwarf-release#H-DoesGAEMapReduceLibRunOnCapeDwarf">Does GAE MapReduce lib run on CapeDwarf?</a></h2>
+
+<p class="wikiPara">
+At the moment we have a working test for standalone runtime, where we still have some issues in clustered environment. Hint: the test exists, but fails, and CapeDwarf is open source, wink. ;-)
+</p>
+
+<h2 class="wikiHeadline2" id="H-DoYouTestAllOfThisAndHow"><a href="/2012/12/04/first-cape-dwarf-release#H-DoYouTestAllOfThisAndHow">Do you test all of this? And how?</a></h2>
+
+<p class="wikiPara">
+We most certainly do. ;-)
+</p>
+
+<p class="wikiPara">
+We take great pride in trying to test this as much as possible.
+And there is a bunch of interesting things we do to make this happen, trying to squeeze <a href="http://www.arquillian.org" target="" class="regularLink">Arquillian</a> as much as possible.
+</p>
+
+<p class="wikiPara">
+You first need a custom JBossAS + CapeDwarf instance.
+You can either enhance / modify an existing JBossAS instance with CapeDwarf-JBoss-AS sub-project or you can use the JBossAS instance from CapeDwarf-Testsuite sub-project.
+Or of course use the custom distribution you just downloaded. :-)
+</p>
+
+<p class="wikiPara">
+As expected, each sub-module (a sub-module per GAE API split) in CapeDwarf (Blue) has its own set of tests.
+</p>
+
+<p class="wikiPara">
+If you already have a running CapeDwarf-JBoss-AS instance, you can run these tests against it with “mvn clean install -Premote”. This uses JBossAS7 Arquillian Remote container to deploy the tests.
+</p>
+
+<p class="wikiPara">
+CapeDwarf-Testsuite sub-project builds its own JBossAS instance, and then uses JBossAS7 Managed Arquillian container to run the CapeDwarf Blue’ tests.
+</p>
+
+<p class="wikiPara">
+We have all of this setup as TeamCity builds (thanks JetBrains for the license!),
+so drop me an email if you need to test some CapeDwarf pull-request you just hacked. ;-) 
+</p>
+
+<h2 class="wikiHeadline2" id="H-ScalableOrRunningTestingInACluster"><a href="/2012/12/04/first-cape-dwarf-release#H-ScalableOrRunningTestingInACluster">Scalable or running / testing in a cluster?</a></h2>
+
+<p class="wikiPara">
+Whole CapeDwarf implementation tries to be scalable, as is of course GAE, avoiding a single point of contention. There are of course pieces of code where we know could use better approach. And this is definitely something we’ll do before Final release. Which is also where community help is highly appreciated; to either point out the issues or perhaps even contribute some better implementations to some bottleneck problems.
+</p>
+
+<p class="wikiPara">
+At the moment we have separate module in Blue which contains cluster tests. There is a README on how to exactly run those tests.
+</p>
+
+<p class="wikiPara">
+-Pcluster is the Maven profile to enable those tests.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ButHowDoWeKnowThatTheTestsItselfAreOK"><a href="/2012/12/04/first-cape-dwarf-release#H-ButHowDoWeKnowThatTheTestsItselfAreOK">But how do we know that the tests itself are OK?</a></h2>
+
+<p class="wikiPara">
+Good question.
+</p>
+
+<p class="wikiPara">
+What we did here is develop an Arquillian container just for GAE.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/alesj/arquillian-container-gae" target="" class="regularLink">https://github.com/alesj/arquillian-container-gae</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+So what this means is that we can run the <i class="wikiEmphasis">same</i> set of tests against real GAE,
+and all of the (non-impl detailed) tests should pass.
+btw: we only have a handful of impl details tests, all others are impl agnostic
+</p>
+
+<p class="wikiPara">
+So “mvn clean install -Dappengine.sdk.root=Your GAE SKD location” runs Blue’ tests against your local GAE.
+</p>
+
+<p class="wikiPara">
+We also support embedded and remote GAE Arquillian container, but these are to be used with care. :-) Embedded - aka inJVM - is quite hacky, where remote deploys against AppSpot hence it’s a bit slow and less stable to use.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatAboutSomeExistingGAETests"><a href="/2012/12/04/first-cape-dwarf-release#H-WhatAboutSomeExistingGAETests">What about some existing GAE tests?</a></h2>
+
+<p class="wikiPara">
+There aren’t many existing public GAE tests out there.
+The only ones we could find are the ones in GAE DataNucleus (DN) plugin project.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://code.google.com/p/datanucleus-appengine/" target="" class="regularLink">http://code.google.com/p/datanucleus-appengine/</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+And there is a nice hack on how to make these tests run against CapeDwarf. ;-)
+</p>
+
+<p class="wikiPara">
+These GAE DN tests are pure Maven driven JUnit tests, where we need an Arquillian tests to run them against JBossAS instance. What to do? As we’re already bytecode hacking things, it’s obvious what can be done.
+</p>
+
+<p class="wikiPara">
+We add a custom Maven plugin which knows how to transform classes just after they are compiled:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/alesj/maven-transformer-plugin" target="" class="regularLink">https://github.com/alesj/maven-transformer-plugin</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+And it turns a plain JUnit test into an Arquillian GAE DN test:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/alesj/arquillian-transformer/blob/master/src/main/java/org/jboss/maven/arquillian/transformer/AppEngineDataNucleusTransformer.java" target="" class="regularLink">https://github.com/alesj/arquillian-transformer/blob/master/src/main/java/org/jboss/maven/arquillian/transformer/AppEngineDataNucleusTransformer.java</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+This now makes GAE DN tests run against CapeDwarf instead of default GAE API impl.
+</p>
+
+<p class="wikiPara">
+btw: we pass all of the non-impl detailed GAE DN tests ;-)
+</p>
+
+<h2 class="wikiHeadline2" id="H-OpenShift"><a href="/2012/12/04/first-cape-dwarf-release#H-OpenShift">OpenShift?</a></h2>
+
+<p class="wikiPara">
+A custom CapeDwarf OpenShift cartridge is in the making as we speak, so you should be able to develop GAE apps against OpenShift and CapeDwarf in no time. ;-)
+</p>
+
+<h2 class="wikiHeadline2" id="H-Wrapup"><a href="/2012/12/04/first-cape-dwarf-release#H-Wrapup">Wrap-up</a></h2>
+
+<p class="wikiPara">
+CapeDwarf JIRA:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/CAPEDWARF" target="" class="regularLink">https://issues.jboss.org/browse/CAPEDWARF</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+CapeDwarf User forum:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://community.jboss.org/en/capedwarf" target="" class="regularLink">https://community.jboss.org/en/capedwarf</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+CapeDwarf IRC:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> #capedwarf on Freenode</li>
+</ul>
+
+<p class="wikiPara">
+Or shoot me an email directly.
+</p>
+
+<p class="wikiPara">
+Enjoy using CapeDwarf as we enjoy developing it, and do let us know any issues or feedback you might have.</p>
+</div>
+

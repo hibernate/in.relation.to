@@ -1,0 +1,47 @@
+---
+title: "Hibernate Metamodel Generator 1.2.0.CR1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "25-01-2012"
+tags: []
+
+relative_url: /2012/01/25/hibernate-metamodel-generator-120-cr-1
+slug: hibernate-metamodel-generator-120-cr-1
+lace: http://in.relation.to/22807.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/01/25/hibernate-metamodel-generator-120-cr-1
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+It has gone some time since I announced the <a href="http://in.relation.to/Bloggers/HibernateMetamodelGenerator110CR1" target="" class="regularLink">last release</a> of the <a href="http://www.hibernate.org/subprojects/jpamodelgen.html" target="" class="regularLink">Hibernate JPA Metamodel Generator</a>. It is time to announce the release of version 1.2.0.CR1. Just as a reminder, JPA Metamodel Generator is an <a href="http://jcp.org/en/jsr/detail?id=269" target="" class="regularLink">annotation processor</a> which generates the canonical metamodel classes needed for using the strongly typed JPA 2 Criteria queries. 
+</p>
+
+<p class="wikiPara">
+This new release is a maintenance release with a total of <a href="https://hibernate.onjira.com/secure/ReleaseNote.jspa?projectId=10110&amp;version=11207" target="" class="regularLink">20</a> enhancements and bug fixes. Most of these issues have been reported by users and many came even with a patch. Thanks!
+</p>
+
+<p class="wikiPara">
+<a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN-53" target="" class="regularLink">METAGEN-53</a>, <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN-73" target="" class="regularLink">METAGEN-73</a> and <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN-79" target="" class="regularLink">METAGEN-79</a> are worth mentioning explicitly. METAGEN-53 removes the dependencies to the JPA API. This means that the annotation processor is now a standalone jar without any further dependencies which makes integration of the processor into the build process and into the IDE even easier. METAGEN-73 and METAGEN-79 are about the <i class="wikiEmphasis">@Generated</i> annotation. In earlier version you had to explicitly specify the <i class="wikiEmphasis">addGeneratedAnnotation</i> option to add the annotation. Now <i class="wikiEmphasis">@Generated</i> is added by default and you have to explicitly disable it in case you want Java 5 compliant source files. Also the parameter values of the annotation have changed:</p>
+<pre class="wikiPreformatted">
+@Generated(value = "org.hibernate.jpamodelgen.JPAMetaModelEntityProcessor", date = "2012-01-25T22:22:54.850+0100")
+</pre>
+
+The <i class="wikiEmphasis">value</i> is now the fully qualified classname of the annotation processor as suggested by the documentation of <i class="wikiEmphasis">@Generated</i> and you can also add the generation date by providing the processor option <i class="wikiEmphasis">addGenerationDate</i> (per default the date is not added).
+
+
+<p class="wikiPara">
+As usual, you can download the release from the <a href="https://repository.jboss.org/nexus/content/repositories/public/org/hibernate/hibernate-jpamodelgen/1.2.0.CR1" target="" class="regularLink">JBoss Maven repo</a> or from <a href="http://sourceforge.net/projects/hibernate/files/hibernate-jpamodelgen/1.2.0.CR1" target="" class="regularLink">SourceForge</a>. 
+</p>
+
+<p class="wikiPara">
+To report any issues use the Hibernate Jira project <a href="http://opensource.atlassian.com/projects/hibernate/browse/METAGEN" target="" class="regularLink">METAGEN</a>.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>
+

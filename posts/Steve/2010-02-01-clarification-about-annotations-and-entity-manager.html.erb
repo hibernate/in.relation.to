@@ -1,0 +1,53 @@
+---
+title: "Clarification about Annotations and EntityManager"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "01-02-2010"
+tags: [Hibernate,News]
+
+relative_url: /2010/02/01/clarification-about-annotations-and-entity-manager
+slug: clarification-about-annotations-and-entity-manager
+lace: http://in.relation.to/14172.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/02/01/clarification-about-annotations-and-entity-manager
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+There have been numerous questions in regards to the following statement made in a few places on the Hibernate website:
+</p>
+
+<blockquote class="wikiBlockquote">
+Both Hibernate Annotations and Hibernate EntityManager are part of Hibernate Core as of 3.5.x...
+</blockquote>
+
+<p class="wikiPara">
+So I wanted to clarify what is meant by that.  Previously <i class="wikiEmphasis">Hibernate Core</i>, <i class="wikiEmphasis">Hibernate Annotations</i> and <i class="wikiEmphasis">Hibernate EntityManager</i> were all separate projects, meaning
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> they lived in different Subversion projects</li>
+<li class="wikiUnorderedListItem"> they had independent release cycles (and hence independent versioning)</li>
+<li class="wikiUnorderedListItem"> they had different Jira projects</li>
+<li class="wikiUnorderedListItem"> they had different SubjectMatterExperts</li>
+</ul>
+
+<p class="wikiPara">
+Originally this split (initiate back in Hibernate's 3.0 days) was needed because back then Hibernate was on big source tree which needed to remain JDK 1.4 compliant.  Nowadays though, with the modularization of the Hibernate (Core) build it became feasible to pull Annotations and EntityManager back into the same source project since each module can be built with different source and target JDK levels.  The biggest win here from the user perspective I think is making the making of the "<a href="https://www.hibernate.org/6.html#A3" target="" class="regularLink">compatibility matrix</a>" completely obsolete.
+</p>
+
+<p class="wikiPara">
+This does not mean that Annotations and EntityManager are part of the <i class="wikiEmphasis">hibernate-core</i> JAR file as far as the published maven repository artifacts are concerned.  Hibernate is still modularized.  The main reason for this is to isolate the dependences for each module.  This makes it easy for users consuming Hibernate through a maven repo based dependency scheme (Maven, Ivy, Gradle, etc) to manage the <i class="wikiEmphasis">transitive dependency</i> tree.
+</p>
+
+<p class="wikiPara">
+In the distribution bundle (the archives uploaded to the SourceForge File Release System), however, the classes are all combined together into a single jar file.  But this happens across all the modules (caching, etc) because that is how it was always done in these distribution bundles.
+</p>
+
+<p class="wikiPara">
+Hope that clarifies.</p>
+</div>
+

@@ -1,0 +1,66 @@
+---
+title: "Fun wildcard-related problem in Java's typesystem "
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "13-08-2011"
+tags: []
+
+relative_url: /2011/08/13/fun-wildcardrelated-problem-in-javas-typesystem
+slug: fun-wildcardrelated-problem-in-javas-typesystem
+lace: http://in.relation.to/21555.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/08/13/fun-wildcardrelated-problem-in-javas-typesystem
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Haha! Try compiling this Java code:
+</p>
+
+<pre class="wikiPreformatted brush:java">interface Interface&lt;T&gt; {}</pre>
+
+
+<pre class="wikiPreformatted brush:java">class Bang&lt;T&gt; implements Interface&lt;Interface&lt;? super Bang&lt;Bang&lt;T&gt;&gt;&gt;&gt; {
+
+    static void bang() {
+        Interface&lt;? super Bang&lt;Byte&gt;&gt; bang = new Bang&lt;Byte&gt;();
+    }
+	
+}</pre>
+
+
+<p class="wikiPara">
+(For me, the compiler stackoverflows, and Eclipse asks for my permission to crash.) 
+</p>
+
+<p class="wikiPara">
+I'm not sure how widely known this problem is. It's not really a bug in the compiler, more like a bug in Java's type system. I found out about it from <a href="http://cseweb.ucsd.edu/~rtate/publications/tamewild/" target="" class="regularLink">this excellent paper</a>, which also proposes a solution to the problem, but the paper appears to build on work in <a href="http://www.stefanwehr.de/publications/WehrThiemann2009-aplas.html" target="" class="regularLink">this other paper</a>, which I'm also linking because I'm a big fan of Stefan Wehr's work on JavaGI.
+</p>
+
+<p class="wikiPara">
+UPDATE: Here's <a href="http://www.cis.upenn.edu/~bcpierce/papers/variance.pdf" target="" class="regularLink">another paper dealing with this issue</a>, this time from Microsoft guys.
+</p>
+
+<p class="wikiPara">
+And, in case you're wondering, yeah, I can make the Ceylon typechecker stackoverflow with the equivalent code:
+</p>
+
+<pre class="wikiPreformatted brush:ceylon">interface Interface&lt;in T&gt; {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">class Bang&lt;T&gt;() satisfies Interface&lt;Interface&lt;Bang&lt;Bang&lt;T&gt;&gt;&gt;&gt; {}</pre>
+
+
+<pre class="wikiPreformatted brush:ceylon">void bang() {
+    Interface&lt;Bang&lt;String&gt;&gt; bang = Bang&lt;String&gt;();
+}</pre>
+
+
+<p class="wikiPara">
+I guess ima gunna get right on to implementing the solution proposed in Tate et al.
+</p>
+</div>
+

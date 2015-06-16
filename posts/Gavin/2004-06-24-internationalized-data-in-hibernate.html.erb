@@ -1,0 +1,191 @@
+---
+title: "Internationalized data in Hibernate"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "24-06-2004"
+tags: []
+
+relative_url: /2004/06/24/internationalized-data-in-hibernate
+slug: internationalized-data-in-hibernate
+lace: http://in.relation.to/1592.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2004/06/24/internationalized-data-in-hibernate
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+We've seen a few people using internationalized reference data where labels displayed in the user interface depend upon the user's language. It's not immediately obvious how to deal with this in Hibernate, and I've been meaning to write up my preferred solution for a while now.
+</p>
+
+<p class="wikiPara">
+Suppose I have a table which defines labels in terms of a unique code, together with a language.
+</p>
+
+<pre class="wikiPreformatted">
+create table Label (
+    code bigint not null,
+    language char(2) not null,
+    description varchar(100) not null,
+    primary key(code, langauge)
+)
+</pre>
+
+
+<p class="wikiPara">
+Other entities refer to labels by their code. For example, the Category table needs category descriptions.
+</p>
+
+<pre class="wikiPreformatted">
+create table Category (
+    category_id bigint not null primary key,
+    discription_code bigint not null,
+    parent_category_id foreign key references(category)
+)
+</pre>
+
+
+<p class="wikiPara">
+Note that for each description_code, there are potentially many matching rows in the Label table. At runtime, my Java Category instances should be loaded with the correct description for the user's language preference.
+</p>
+
+<p class="wikiPara">
+UI Labels should certainly be cached between transactions. We could implement this cache either in our application, or by mapping a Label class and using Hibernate's second-level cache. How we implement this is not very relevant, we'll assume that we have some cache, and can retrieve a description using:
+</p>
+
+<pre class="wikiPreformatted">
+Label.getDescription(code, language)
+</pre>
+
+
+<p class="wikiPara">
+And get the code back using:
+</p>
+
+<pre class="wikiPreformatted">
+Label.getCode(description, language)
+</pre>
+
+
+<p class="wikiPara">
+Our Category class looks like this:
+</p>
+
+<pre class="wikiPreformatted">
+public class Category {
+    private Long id;
+    private String description;
+    private Category parent;
+    ...
+}
+</pre>
+
+
+<p class="wikiPara">
+The description field holds the String-valued description of the Category in the user's language. But in the database table, all we have is the code of the description. It seems like this situation can't be handled in the a Hibernate mapping.
+</p>
+
+<p class="wikiPara">
+Whenever it seems like you can't do something in Hibernate, you should think <q>UserType</q>! We'll use a UserType to solve this problem.
+</p>
+
+<pre class="wikiPreformatted">
+public class LabelUserType {
+    
+    public int[] sqlTypes() { return Types.BIGINT; }
+    
+    public Class returnedClass() { return String.class; }
+    
+    public boolean equals(Object x, Object y) throws HibernateException {
+        return x==null ? y==null : x.equals(y);
+    }
+    
+    public Object nullSafeGet(ResultSet rs, String[] names, Object owner) 
+        throws HibernateException, SQLException {
+        
+        Long code = (Long) Hibernate.LONG.nullSafeGet(rs, names, owner);
+        return Label.getDescrption( code, User.current().getLanguage() );
+    }
+    
+    public void nullSafeSet(PreparedStatement st, Object value, int index) 
+        throws HibernateException, SQLException {
+        
+        Long code = Label.getCode( (String) value, User.current().getLanguage() );
+        Hibernate.LONG.nullSafeSet(st, code, index);
+    }
+    
+    public Object deepCopy(Object value) throws HibernateException {
+        return value; //strings are immutable
+    }
+    
+    public boolean isMutable() {
+        return false;
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+(We can get the current user's language preference by calling User.current().getLanguage().)
+</p>
+
+<p class="wikiPara">
+Now we can map the Category class:
+</p>
+
+<pre class="wikiPreformatted">
+&lt;class name="Categoy"&gt;
+    &lt;id name="id" column="category_id"&gt;
+        &lt;generator class="native"/&gt;
+    &lt;/id&gt;
+    &lt;property 
+        name="description" 
+        type="LabelUserType" 
+        column="discription_code"
+        not-null="true"/&gt;
+    &lt;many-to-one 
+        name="parent" 
+        column="parent_category_id"/&gt;
+&lt;/class&gt;
+</pre>
+
+
+<p class="wikiPara">
+Note that we can even write queries against Category.description. For example:
+</p>
+
+<pre class="wikiPreformatted">
+String description = ...;
+session.createQuery("from Category c where c.description = :description")
+    .setParameter("description", description, Hibernate.custom(LabelUserType.class))
+    .list();
+</pre>
+
+
+<p class="wikiPara">
+or, to specify the code:
+</p>
+
+<pre class="wikiPreformatted">
+Long code = ...;
+session.createQuery("from Category c where c.description = :code")
+    .setLong("description", code)
+    .list();
+</pre>
+
+
+<p class="wikiPara">
+Unfortunately, we can't perform text-based searching using like, nor can we order by the textual description. We would need to perform sorting of (or by) labels in memory.
+</p>
+
+<p class="wikiPara">
+Notice that this implementation is very efficient, we never need to join to the Label table in our queries - we never need to query that table at all, except at startup time to initialize the cache. A potential problem is keeping the cache up to date if the Label data changes. If you use Hibernate to implement the Label cache, there's no problem. If you implement it in your application, you will need to manually refresh the cache when data changes.
+</p>
+
+<p class="wikiPara">
+This pattern can be used for more than internationalization, by the way!
+</p>
+</div>
+

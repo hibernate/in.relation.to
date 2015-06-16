@@ -1,0 +1,163 @@
+---
+title: "PicketLink 2.5.0.Beta3 Release and Version Change"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+creation_date: "22-05-2013"
+tags: [Contexts and Dependency Injection,News,PicketLink,Seam News]
+
+relative_url: /2013/05/22/picket-link-250-beta-3-release-and-version-change
+slug: picket-link-250-beta-3-release-and-version-change
+lace: http://in.relation.to/24232.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/05/22/picket-link-250-beta-3-release-and-version-change
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm pleased to announce the release of PicketLink 2.5.0.Beta3.  This release is actually the successor to 3.0.0.Beta2 - we've changed the version number to help avoid confusion going forward, if you want the nitty gritty details about this decision then you can find out more below.
+</p>
+
+<p class="wikiPara">
+In case you don't know what it is, PicketLink is a security framework for Java EE applications.  If you are already familiar with Seam Security, then you might consider PicketLink to be its spiritual successor. For more info about its features check out <a href="http://docs.jboss.org/picketlink/2/latest/reference/html/ch01.html#d5e15" target="" class="regularLink">this overview</a>.
+</p>
+
+<p class="wikiPara">
+As always, here's the direct links to the various resources for this release:
+</p>
+
+<p class="wikiPara">
+<a href="https://sourceforge.net/projects/jboss/files/PicketLink/2.5.0.Beta3/" target="" class="regularLink">PicketLink 2.5.0.Beta3 Distribution Zip</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/picketlink/2/2.5.0.Beta3/reference/html/" target="" class="regularLink">Reference Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/picketlink/2/2.5.0.Beta3/api/" target="" class="regularLink">API Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="https://github.com/picketlink/picketlink" target="" class="regularLink">Source on GitHub</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://issues.jboss.org/browse/PLINK" target="" class="regularLink">Report Issues</a>
+</p>
+
+<p class="wikiPara">
+<a href="https://lists.jboss.org/mailman/listinfo/security-dev" target="" class="regularLink">Mailing List</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://lists.jboss.org/pipermail/security-dev/" target="" class="regularLink">Mailing List Archives</a>
+</p>
+
+<p class="wikiPara">
+<a href="https://community.jboss.org/en/picketlink?view=discussions" target="" class="regularLink">Forums</a>
+</p>
+
+<p class="wikiPara">
+For those of you that use Maven, we've made a slight change to the artifact ids - from now on a typical application will only need to declare the following dependencies:
+</p>
+
+
+<pre class="wikiPreformatted">&lt;dependency&gt;
+  &lt;groupId&gt;org.picketlink&lt;/groupId&gt;
+  &lt;artifactId&gt;picketlink-api&lt;/artifactId&gt;
+  &lt;version&gt;2.5.0.Beta3&lt;/version&gt;
+&lt;/dependency&gt;
+
+&lt;dependency&gt;
+  &lt;groupId&gt;org.picketlink&lt;/groupId&gt;
+  &lt;artifactId&gt;picketlink-impl&lt;/artifactId&gt;
+  &lt;version&gt;2.5.0.Beta3&lt;/version&gt;
+  &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;
+
+&lt;!-- Optional database schema when using Identity Management with JPA based Identity Store --&gt;
+&lt;dependency&gt;
+  &lt;groupId&gt;org.picketlink&lt;/groupId&gt;
+  &lt;artifactId&gt;picketlink-idm-schema&lt;/artifactId&gt;
+  &lt;version&gt;2.5.0.Beta3&lt;/version&gt;
+  &lt;scope&gt;runtime&lt;/scope&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p class="wikiPara">
+For this release, the reference documentation has received some special attention and so should be significantly more informative than previous betas.  With that being said, the team is constantly improving the docs and will continue to add more content right up to the final release.  There are also <a href="https://issues.jboss.org/issues/?jql=project%20%3D%20JDF%20AND%20resolution%20%3D%20Unresolved%20AND%20labels%20%3D%20PicketLink%20ORDER%20BY%20priority%20DESC" target="" class="regularLink">numerous quickstarts planned</a> to help you get up and running quickly with the many security features provided by PicketLink - I'll be posting some more info about some of these shortly so keep an eye on this space.
+</p>
+
+<p class="wikiPara">
+There have also been a substantial number of bug fixes, new features and improvements made since the last beta release, the details of which you'll find in the release notes below.
+</p>
+
+<p class="wikiPara">
+As always, the PicketLink team is available to chat with at various times of the day on the #picketlink IRC channel at freenode.net; also feel free to drop them a line at the <a href="https://community.jboss.org/en/picketlink?view=discussions" target="" class="regularLink">PicketLink Forums</a> if you need help using PicketLink in your own application.
+</p>
+
+<h1 class="wikiHeadline1" id="H-VersionChange"><a href="/2013/05/22/picket-link-250-beta-3-release-and-version-change#H-VersionChange">Version Change</a></h1>
+
+<p class="wikiPara">
+If you've been following any PicketLink-related news lately, you'll know that the PicketLink team has been working hard towards releasing PicketLink 3 in the very near future.  It has recently come to the team's attention though that there is some confusion surrounding the versioning of PicketLink, which is due to a couple of reasons; firstly, there is an existing committment to support PicketLink Federation 2.1 in EAP (the supported version of JBoss Application Server, recently renamed to WildFly).  Secondly, there was never an actual 2.x release of PicketLink IDM (it was only ever officially released as version 1.x).  Because of this, and since the PicketLink Federation that was planned to be released as 3.0 is actually backwards compatible with 2.1, the team has decided to rename the 3.0 release to 2.5.  So what does this mean exactly?  Well, besides the change in version number, not much at all really - PicketLink 2.5 will still include all of the next generation security features that the PicketLink team have been working on over the past months.  We apologise for any inconvenience that this change might have caused, however the team felt it was best to resolve this confusion now, <i class="wikiEmphasis">before</i> the final release.
+</p>
+
+
+
+<h2 class="wikiHeadline2" id="H-ReleaseNotes"><a href="/2013/05/22/picket-link-250-beta-3-release-and-version-change#H-ReleaseNotes">Release Notes</a></h2>
+
+<p class="wikiPara">
+ 
+</p>
+
+
+<h1 class="wikiHeadline1" id="H-Bug"><a href="/2013/05/22/picket-link-250-beta-3-release-and-version-change#H-Bug">Bug</a></h1>
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-116" target="" class="regularLink">PLINK-116</a> - Change scope for JBoss Logging dependency in picketlink-common module to provided</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-119" target="" class="regularLink">PLINK-119</a> - DefaultIdentity is considering the User.id when comparing with the DefaultLoginCredentials.userId</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-131" target="" class="regularLink">PLINK-131</a> - Signed logout request does not contain the "Destination" attribute</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-132" target="" class="regularLink">PLINK-132</a> - PicketLink based SP's need to support different login and logout URLs</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-136" target="" class="regularLink">PLINK-136</a> - The IDM subsystem is always initialized even when a custom Authenticator is provided</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-137" target="" class="regularLink">PLINK-137</a> - Change the scope for CDI dependencies in picketlink-api and picketlink-impl to provided</li>
+<li class="wikiUnorderedListItem"> </li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-Enhancement"><a href="/2013/05/22/picket-link-250-beta-3-release-and-version-change#H-Enhancement">Enhancement</a></h1>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-126" target="" class="regularLink">PLINK-126</a> - Introduce individual annotations for JPA schema entities and properties</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-135" target="" class="regularLink">PLINK-135</a> - Add type parameters to CredentialHandler</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-FeatureRequest"><a href="/2013/05/22/picket-link-250-beta-3-release-and-version-change#H-FeatureRequest">Feature Request</a></h1>
+
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-113" target="" class="regularLink">PLINK-113</a> - Users should be able to use a IdentityManager for any of the configured realms.</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-117" target="" class="regularLink">PLINK-117</a> - The API documentation should aggregate the javadocs for the modules</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-118" target="" class="regularLink">PLINK-118</a> - Update documentation with the File and LDAP stores configuration</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-120" target="" class="regularLink">PLINK-120</a> - Login logic is not considering when the user is disabled/locked</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-121" target="" class="regularLink">PLINK-121</a> - Throw a specific exception when the user tries to authenticate twice using the same credentials</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-124" target="" class="regularLink">PLINK-124</a> - Add credential storage retrieval methods to IdentityManager</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-127" target="" class="regularLink">PLINK-127</a> - CredentialHandler implementations should check if the Agent is disabled</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-128" target="" class="regularLink">PLINK-128</a> - Refactor the Configuration API to provide a Fluent API using the build pattern</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-142" target="" class="regularLink">PLINK-142</a> - Provide more examples about how to mix identity stores</li>
+</ul>
+
+<h1 class="wikiHeadline1" id="H-Task"><a href="/2013/05/22/picket-link-250-beta-3-release-and-version-change#H-Task">Task</a></h1>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-92" target="" class="regularLink">PLINK-92</a> - Container Bindings Project</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-122" target="" class="regularLink">PLINK-122</a> - Provide test cases for the base module</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-125" target="" class="regularLink">PLINK-125</a> - Umbrella task for 2.5.0.Beta3 documentation issues</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-129" target="" class="regularLink">PLINK-129</a> - Import the container bindings modules from PicketLink v2</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-133" target="" class="regularLink">PLINK-133</a> - Use getAgent() instead of getUser() throughout authentication API</li>
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/browse/PLINK-138" target="" class="regularLink">PLINK-138</a> - Change project version from 3.0.0 to 2.5.0</li>
+</ul>
+</div>
+

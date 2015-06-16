@@ -1,0 +1,62 @@
+---
+title: "Hibernate Validator 4 unleashed"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "13-10-2009"
+tags: [Bean Validation,Hibernate Validator]
+
+relative_url: /2009/10/13/hibernate-validator-4-unleashed
+slug: hibernate-validator-4-unleashed
+lace: http://in.relation.to/12566.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/10/13/hibernate-validator-4-unleashed
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+After many months of polishing, we are happy to release Hibernate Validator 4.
+This is a major milestone for Hibernate Validator with tons of new features and a spec compliance.
+</p>
+
+<h1 class="wikiHeadline1" id="H-ForTheNewcomers"><a href="/2009/10/13/hibernate-validator-4-unleashed#H-ForTheNewcomers">For the newcomers</a></h1>
+
+<p class="wikiPara">
+Hibernate Validator let's you declare constraints on your domain model using annotations like <tt>@NotNull</tt> or <tt>@Size</tt> and returns the list of constraint failures found in an object graph. Instead of duplicating constraint declarations in various application layers, constraints are centralized on your domain model and shared by all layers and frameworks: declared once, validate anywhere if you will.
+</p>
+
+<h1 class="wikiHeadline1" id="H-WhatsNewAndCool"><a href="/2009/10/13/hibernate-validator-4-unleashed#H-WhatsNewAndCool">What's new and cool?</a></h1>
+
+<p class="wikiPara">
+Hibernate Validator is a complete rewrite and has <i class="wikiEmphasis">many many many</i> new features. Let me describe a handful of them:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> constraint composition: a custom constraint can be composed of smaller constraints, avoiding code duplication, improving readability and increasing portability especially when combined with the set of built-in constraints.</li>
+<li class="wikiUnorderedListItem"> groups: groups allow you to define a subset of the constraints you want to see validated at a given time. Useful in many situations like partially filled data, check the state of an object (can this user buy in one click?), order constraint validations. Oh and groups are not mere strings, they are a type-safe construct build on top of Java interfaces.</li>
+<li class="wikiUnorderedListItem"> type-safe constraint declaration: Hibernate Validator 4 ensures that constraints set on a property are compatible with the property's type. This can even be theoretically checked at compile time.</li>
+<li class="wikiUnorderedListItem"> more powerful custom constraints: as easy as before, more powerful than before. You can now customize the constraint violation messages reported by custom constraints and potentially return several violations if needed. A violation can point to a sub-property (useful for cross-property validations).</li>
+<li class="wikiUnorderedListItem"> native integration with JPA 2 and JSF 2: Hibernate Validator 4 natively integrates with Java Persistence 2 and Java Server Faces 2 due to it's Bean Validation compliance. This integration is in the work in JBoss AS 5.2. People using Seam and Hibernate Core are already familiar with these style of integration since Hibernate Validator 3.</li>
+<li class="wikiUnorderedListItem"> fluent type-safe bootstrap API: you can refine many aspects of Hibernate Validator like the message interpolation logic using the new bootstrap API.</li>
+<li class="wikiUnorderedListItem"> metadata API: frameworks in need to query the constraints on a domain model can use the metadata API. This is for example used by Hibernate Core to propagate constraints to the database schema.</li>
+<li class="wikiUnorderedListItem"> XML:  XML configuration can be used in combination with or instead of annotations allowing for example redefinition of some constraints depending on the deployment environment.</li>
+<li class="wikiUnorderedListItem"> a much improved test suite: we have completely rewritten the test suite which is now the base of the specification TCK.</li>
+<li class="wikiUnorderedListItem"> compliance with JSR-303 Bean Validation: last but not least, Hibernate Validator 4 is the reference implementation, we couldn't make it more compliant ;) Practically, for you, it means you code against the specification API making your code more portable and your constraints will be visible by the whole Java ecosystem provided that they integrate Bean Validation (like Java EE 6 did for example).</li>
+</ul>
+
+
+<p class="wikiPara">
+Of course there are many other new features, check out the documentation <a href="http://docs.jboss.org/hibernate/stable/validator/reference/en/html_single/" target="" class="regularLink">here</a>. You can download Hibernate Validator 4 from <a href="https://www.hibernate.org/6.html" target="" class="regularLink">there</a> and reach us in our <a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a>.
+</p>
+
+<p class="wikiPara">
+The second good news is that the Bean Validation specification is now finished. I will hand it over to the JCP for final approval ballot today. More on that in a few days.
+</p>
+
+<p class="wikiPara">
+Many thanks to Hardy, the person behind Hibernate Validator 4's implementation for coping with last month/day/minute/second enhancements to the specification. A special thanks to Gunnar Morling and Alaa Nassef for their contribution despite a few administrative hiccups :)
+</p>
+</div>
+

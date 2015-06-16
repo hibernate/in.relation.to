@@ -1,0 +1,46 @@
+---
+title: "Integration Testing Seam Mail"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "10-10-2007"
+tags: []
+
+relative_url: /2007/10/10/integration-testing-seam-mail
+slug: integration-testing-seam-mail
+lace: http://in.relation.to/2578.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/10/10/integration-testing-seam-mail
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Here's a quick overview of a feature I've been wanting to add to Seam for ages.  It's really easy to use - just create a standard <tt>SeamTest</tt> and inside the <tt>invokeApplication()</tt> call <tt>getRenderedMailMessage(viewIdOfMailMessageToRender)</tt>.  You can then make assertion's against the returned <tt>MimeMessage</tt>.
+</p>
+
+<pre class="wikiPreformatted">public class MailTest extends SeamTest {
+    
+   @Test
+   public void testSimpleMessage() throws Exception {
+        
+      new FacesRequest() {
+
+         @Override
+         protected void invokeApplication() throws Exception {
+            MimeMessage renderedMessage = getRenderedMailMessage("/simple.xhtml");
+            assert renderedMessage.getAllRecipients().length == 1;
+            InternetAddress to = (InternetAddress) renderedMessage.getAllRecipients()[0];
+            assert to.getAddress().equals("test@example.com");
+         }
+            
+      }.run();       
+   }
+}</pre>
+
+
+<p class="wikiPara">
+This is still a feature under development so if you try it out and can't get it working, post on the <a href="http://www.jboss.com/index.html?module=bb&amp;op=viewforum&amp;f=231" target="" class="regularLink">forum</a></p>
+</div>
+

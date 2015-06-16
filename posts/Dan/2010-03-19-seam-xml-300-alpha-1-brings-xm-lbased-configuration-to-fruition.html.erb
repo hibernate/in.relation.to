@@ -1,0 +1,159 @@
+---
+title: "Seam XML 3.0.0 Alpha 1 brings XML-based configuration to fruition"
+author: "Dan Allen"
+blogger_name: "Dan"
+creation_date: "19-03-2010"
+tags: [Contexts and Dependency Injection,Seam,Seam 3,Seam News,Web Beans]
+
+relative_url: /2010/03/19/seam-xml-300-alpha-1-brings-xm-lbased-configuration-to-fruition
+slug: seam-xml-300-alpha-1-brings-xm-lbased-configuration-to-fruition
+lace: http://in.relation.to/14897.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/03/19/seam-xml-300-alpha-1-brings-xm-lbased-configuration-to-fruition
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+As promised, we're happy to announce another early release of a Seam 3 module, Seam XML 3.0.0 Alpha 1. The <a href="http://seamframework.org/Documentation/Seam3Modules#H-XMLLedByStuartDouglas" target="" class="regularLink">Seam XML module</a>, contributed and led by <a href="http://seamframework.org/user/swd847" target="" class="regularLink">Stuart Douglas</a>, is a CDI portable extension that allows you to add, modify and extend CDI-discovered beans using XML as an alternative to annotations.
+</p>
+
+<p class="wikiPara">
+But not just any XML. It's a typesafe XML format heavily based on an <a href="/Bloggers/XMLConfigurationInWebBeans" target="" class="regularLink">early revision</a> of the JSR-299 (then Web Beans) specification.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TryItOnForSize"><a href="/2010/03/19/seam-xml-300-alpha-1-brings-xm-lbased-configuration-to-fruition#H-TryItOnForSize">Try it on for size</a></h3>
+
+<p class="wikiPara">
+Let's assume you have defined the following <tt>ProducerBean</tt> class:
+</p>
+
+<pre class="wikiPreformatted brush: java;">package org.jboss.seam.xml.test.injection;
+
+public class ProducerBean {
+   private String message = "Hello, annotation fans!";
+}</pre>
+
+
+<p class="wikiPara">
+and the following <a href="http://atinject.googlecode.com/svn/tags/1/javadoc/javax/inject/Qualifier.html" target="" class="regularLink">qualifier</a> annotation:
+</p>
+
+<pre class="wikiPreformatted brush: java;">package org.jboss.seam.xml.test.injection;
+
+@Qualifier
+@Retention(RUNTIME)
+@Target({TYPE, METHOD, FIELD, PARAMETER})
+public @interface ProducerQualifer {}</pre>
+
+
+<p class="wikiPara">
+You want to expose the <tt>message</tt> field of <tt>ProducerBean</tt> using a CDI producer. You could take an annotation approach:
+</p>
+
+<pre class="wikiPreformatted brush: java;">package org.jboss.seam.xml.test.injection;
+
+public class ProducerBean {
+   @Produces
+   @ProducerQualifier
+   private String message = "Hello, annotation fans!";
+}</pre>
+
+
+<p class="wikiPara">
+But what if the class isn't under your control, or you are more of a fan of XML tag soup? You can apply the same bean metadata using XML:
+</p>
+
+<pre class="wikiPreformatted brush: xml;">&lt;test:ProducerBean&gt;
+   &lt;test:message&gt;
+      &lt;s:Produces/&gt;
+      &lt;test:ProducerQualifier/&gt;
+      &lt;s:value&gt;Hello, XML fans!&lt;/s:value&gt;
+   &lt;/test:message&gt;
+&lt;/test:ProducerBean&gt;</pre>
+
+
+<p class="wikiPara">
+That snippet may take a while for your mind to parse, but observe closely how the XML tags map to the annotated version of the <tt>ProducerBean</tt> class. Notice we've also overridden the value of the <tt>message</tt> field in XML to say <q>Hello, XML fans!</q> rather than <q>Hello, annotation fans!</q> Assigning field values in XML is a very useful feature which cannot (easily) be addressed with annotations alone.
+</p>
+
+<p class="wikiPara">
+What's with all the namespace prefixes? The namespace prefix <tt>s</tt> is for the Seam XML schema and <tt>test</tt> represents the Java package of the bean class being configured. Here's the complete configuration file with the XML root and namespace declarations included. Also notice that an additional bean is being configured, <tt>ReceiverBean</tt>, this one through metadata extension.
+</p>
+
+<pre class="wikiPreformatted brush: xml;">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;beans xmlns="http://java.sun.com/xml/ns/javaee"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:s="urn:java:seam:core"
+   xmlns:test="urn:java:org.jboss.seam.xml.test.injection"&gt;
+
+   &lt;test:ProducerBean&gt;
+      &lt;s:override/&gt;
+      &lt;test:message&gt;
+         &lt;s:Produces/&gt;
+         &lt;test:ProducerQualifier/&gt;
+         &lt;s:value&gt;Hello, XML fans!&lt;/s:value&gt;
+      &lt;/test:message&gt;
+   &lt;/test:ProducerBean&gt;
+
+   &lt;test:RecieverBean&gt;
+      &lt;s:extends/&gt;
+      &lt;test:anotherField&gt;
+         &lt;test:ProducerQualifier/&gt;
+         &lt;s:Inject/&gt;
+      &lt;/test:anotherField&gt;
+   &lt;/test:RecieverBean&gt;
+
+&lt;/beans&gt;</pre>
+
+
+<p class="wikiPara">
+To give you the complete picture, this example wires up two beans, a bean with a producer field that produces <q>Hello, XML fans!</q> and a bean that injects the produced value. The <tt>ProducerBean</tt> overrides the existing bean, while <tt>RecieverBean</tt> extends the existing bean, so annotations physically present on the class will be merged with those defined in the XML file. For more information please consult the docs and exmaple that are bundled with the distribution.
+</p>
+
+<h3 class="wikiHeadline3" id="H-RevUpYourXMLEditor"><a href="/2010/03/19/seam-xml-300-alpha-1-brings-xm-lbased-configuration-to-fruition#H-RevUpYourXMLEditor">Rev up your XML editor!</a></h3>
+
+<p class="wikiPara">
+Now that you've seen a glimpse of what this module offers, it's time to go get it. Here are the links you need to get started.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://sourceforge.net/projects/jboss/files/JBoss%20Seam/XML%20Configuration/3.0.0.Alpha1/seam-xml-3.0.0-Alpha1.zip/download" target="" class="regularLink">Download</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://docs.jboss.org/seam/xml/3.0.0.Alpha1/reference/html_single/" target="" class="regularLink">Reference Guide</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://jira.jboss.org/jira/browse/SEAMXML" target="" class="regularLink">Issue Tracker</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+As with all Seam 3 modules releases, the Seam XML module is <a href="http://repo2.maven.org/maven2/org/jboss/seam/xml/" target="" class="regularLink">published</a> to the central Maven 2 repository. Here's the dependency declaration you need to add to your POM to include this module in your project (note the hyphen in the version):
+</p>
+
+<pre class="wikiPreformatted brush: xml;">&lt;dependency&gt;
+   &lt;groupId&gt;org.jboss.seam.xml&lt;/groupId&gt;
+   &lt;artifactId&gt;seam-xml-core&lt;/artifactId&gt;
+   &lt;version&gt;3.0.0-Alpha1&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+
+<p class="wikiPara">
+As this is an early release, there is no guarentee that the syntax is set in stone. It all depends on your feedback, which we are very interested in receiving!
+</p>
+
+<h3 class="wikiHeadline3" id="H-PleaseJoinUs"><a href="/2010/03/19/seam-xml-300-alpha-1-brings-xm-lbased-configuration-to-fruition#H-PleaseJoinUs">Please join us!</a></h3>
+
+<p class="wikiPara">
+We are hoping that all JSR-299 implementations can join us in our effort to get XML configuration into the next version of the spec. You can help by adopting this XML schema and helping us to define, refine and improve on it.
+</p>
+
+<p class="wikiPara">
+A tremendous thanks to Stuart Douglas for putting this module together. The XML configuration lays a key foundation for the entire Seam 3 project! Also thanks to Shane Bryzak for preparing the release.
+</p>
+
+<p class="wikiPara">
+Stay tuned for alpha releases of additional Seam modules in the near future, such as <a href="http://seamframework.org/Documentation/Seam3Modules#H-Il8nl10nLedByLincolnBaxterAndKenFinnigan" target="" class="regularLink">Seam International</a> (i18n), which will give you enhanced language support for Java EE 6 applications, and <a href="http://seamframework.org/Documentation/Seam3Modules#H-FacesLedByLincolnBaxterAndDanAllen" target="" class="regularLink">Seam Faces</a>, an appetizing collection of extensions and enhancements for JSF 2. Keep in mind that everything is on the drafting table right now. <a href="http://seamframework.org/Documentation/Seam3Overview" target="" class="regularLink">Join us</a>!</p>
+</div>
+

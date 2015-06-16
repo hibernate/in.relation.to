@@ -1,0 +1,98 @@
+---
+title: "Do interfaces have semantics?"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "16-12-2007"
+tags: []
+
+relative_url: /2007/12/16/do-interfaces-have-semantics
+slug: do-interfaces-have-semantics
+lace: http://in.relation.to/3307.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/12/16/do-interfaces-have-semantics
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Several times, I've encountered the following view:
+</p>
+
+<blockquote class="wikiBlockquote">
+Interfaces in Java don't have any semantics attached. Only a
+concrete class can define the semantics of a method.
+</blockquote>
+
+<p class="wikiPara">
+I've always thought that this was a very strange thing to 
+believe. The /semantics/ of an object or operation are whatever 
+a human user understands the object or operation to represent.
+The /implementation/ of an operation is primarily a set of 
+instructions to the machine - and of course the machine has
+no use for semantics.
+</p>
+
+<p class="wikiPara">
+So if the semantics of an object or operation do not reside 
+in the implementation of the object or method, exactly where
+are the semantics defined?
+</p>
+
+<p class="wikiPara">
+Well, I would argue that the semantics are declared in two
+places:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> The names of things</li>
+<li class="wikiOrderedListItem"> The JavaDoc</li>
+</ol>
+
+<p class="wikiPara">
+These are the places where we find /English/ words in our code;
+therefore, they are meant for /human/ consumption, not machine
+consumption. The machine is every bit as confortable with a
+method called <tt>A$_128__()</tt> of a class named <tt>a$aaBxw</tt> as it is 
+with the <tt>submit()</tt> method of <tt>Order</tt>. Only semantics need to
+be expressed in English.
+</p>
+
+<p class="wikiPara">
+And when we look at a Java interface, we see that it contains
+very little extra information beyond a list of names and
+JavaDoc. So, in fact, an interface is as close to a <q>pure</q>
+declaration of semantics as you're ever going to find in Java 
+source code! If interfaces don't have semantics:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> How would we know what to call them?</li>
+<li class="wikiOrderedListItem"> What would we write in the JavaDoc?</li>
+</ol>
+
+<p class="wikiPara">
+Of course, an implementation of an interface can add additional
+semantics - indeed, any subtype of an abstract type /must/, by
+definition, add additional semantics. But that doesn't mean that
+the most abstract type in a type heirarchy has /no/ semantics.
+</p>
+
+<p class="wikiPara">
+Well, except, perhaps, for <tt>Object</tt>. Does <tt>Object</tt> have 
+semantics? It's operations certainly do, but what about the class
+itself? Let's pretend for a second that Java's type system is not 
+completely broken: there are no primitive types, so all types
+extend <tt>Object</tt>. Then does it /mean/ anything to know that 
+something is an <tt>Object</tt>? I'm not sure. Let's leave that as an 
+exercise for the comment thread ;-)
+</p>
+
+<p class="wikiPara">
+But one thing I /am/ certain about: when we declare that our 
+object implements an interface, we're definitely saying something 
+/meaningful/ about what kind of thing it is.
+</p>
+</div>
+

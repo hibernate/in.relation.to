@@ -1,0 +1,220 @@
+---
+title: "Data Grid, Why?"
+author: "Strong Liu"
+blogger_name: "StrongLiu"
+creation_date: "08-11-2012"
+tags: [Infinispan]
+
+relative_url: /2012/11/08/data-grid-why
+slug: data-grid-why
+lace: http://in.relation.to/23654.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/11/08/data-grid-why
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+
+<p class="wikiPara">
+NOTE: this post is translated from <a href="http://howtojboss.com/2012/11/07/data-grid-why/" target="" class="regularLink">howtojboss.com</a> and author is <a href="http://howtojboss.com/author/skjwp/" target="" class="regularLink">Shane K Johnson</a>.
+</p>
+
+<p class="wikiPara">
+(本文翻译自<a href="http://howtojboss.com/2012/11/07/data-grid-why/" target="" class="regularLink">howtojboss.com</a>, 原文作者为<a href="http://howtojboss.com/author/skjwp/" target="" class="regularLink">Shane K Johnson</a>.)
+</p>
+
+
+
+<p class="wikiPara">
+为什么需要使用数据网格呢? 本文旨在回到这个问题.
+</p>
+
+<p class="wikiPara">
+首先, 它是进化的产物.
+</p>
+
+<p class="wikiPara">
+本地缓存 &gt; 集群缓存 &gt; 分布式缓存(数据网格)
+</p>
+
+<img src="https://raw.github.com/stliu/random-data/master/blog/data-grid-why/cache_evolution3.png">
+
+<p class="wikiPara">
+使用分布式缓存的原因中包括了为什么使用缓存集群, 而使用缓存集群的原因中包括了为什么使用本地缓存.(译注: 这句话感觉上真怪.)
+</p>
+
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/data-grid-why#H-">性能</a></h2>
+
+<p class="wikiPara">
+访问本地缓存中的一个对象比直接访问远端数据存储引擎(例如数据库)要快很多.
+</p>
+
+<p class="wikiPara">
+直接访问一个已经存在的对象比从数据创建一个对象要快.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> 数据可能已经被存储在某(几)个地方了</li>
+<li class="wikiUnorderedListItem"> 数据可能需要通过多条查询来被获取</li>
+<li class="wikiUnorderedListItem"> 数据可能很复杂</li>
+</ul>
+
+<p class="wikiPara">
+另外, 数据网格支持一些性能调优特性 可能不被集群缓存所支持. 例如, 应用程序可以根据数据之间关联关系的紧密程度来确保相互关联的对象被保存在相同的缓存节点上.
+</p>
+
+<p class="wikiPara">
+更进一步, JBoss Data Grid还有一些自己所特有的性能调优方法, 例如, 它可以被配置成使用异步通讯并且提供了一个异步API.
+</p>
+
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/data-grid-why#H-">一致性</a></h2>
+
+<p class="wikiPara">
+本地缓存只有在应用程序被部署到单一的应用服务器上的时候才有意义, 如果它被部署到了多台应用服务器上的话, 那么本地缓存一点意义都没有, 问题出在过期数据. 集群缓存通过复制和让缓存数据失效来解决这个问题的.
+</p>
+
+<p class="wikiPara">
+除了支持JTA事物之外, 数据网格还支持XA(分布式)和两阶段提交事物.
+</p>
+
+<p class="wikiPara">
+最后, JBoss Data Grid还支持额外支持某些其它数据网格产品可能不支持的保证数据一致性的特性, 例如它支持事物处理恢复, 和基于版本号的更新或删除.
+</p>
+
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/data-grid-why#H-">可伸缩性</a></h2>
+
+<p class="wikiPara">
+集群缓存和数据网格的区别就在于可伸缩性. 数据网格是可伸缩的. 缓存数据是通过动态的分区被分发的. 结果就是, 增加一个缓存节点即提高了吞吐量也提高了容量.
+</p>
+
+<p class="wikiPara">
+JBoss Data Grid通过使用一致性Hash算法, 最小化的降低了增加或者删除一个结点所带来的结点(译注: 推荐阅读<a href="http://www8.org/w8-papers/2a-webserver/caching/paper2.html" target="" class="regularLink">这篇文章</a>, 或者<a href="http://blog.csdn.net/sparkliang/article/details/5279393" target="" class="regularLink">这篇, 是中文的</a>), 当增加或者删除一个结点的时候, 只有一部分数据被重新移动已达到平衡. 所以, 增加或者删除一个结点只会对数据网格中的一部分结点产生影响, 而别的算法就很可能会影响到数据网格中的所有结点了.
+</p>
+
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/data-grid-why#H-">独立性</a></h2>
+
+<p class="wikiPara">
+另外一个集群缓存和数据网格之间的不同点即是否支持独立访问了.
+</p>
+
+<p class="wikiPara">
+如果把一个数据网格集成进应用程序里面的话, 那么它就和应用程序耦合在一起了, 也就是, 当扩展这个内置的数据网格的时候, 同事也需要扩展应用程序, 结果, 扩展网格的同时, 增加了与之关联的应用程序(和应用服务器)的管理成本.
+</p>
+
+<p class="wikiPara">
+如下面的例子, 一个web应用被部属到了多个应用服务器, 并且它使用了内置的数据网格系统, 当这个数据网格缓存了足够多的内容的时候, 它就需要被扩容了.
+</p>
+
+<img src="https://raw.github.com/stliu/random-data/master/blog/data-grid-why/embedded_orig1.png" height="300" width="500">
+
+<p class="wikiPara">
+这意味着什么呢?
+</p>
+
+<p class="wikiPara">
+需要安装并配置一个新的应用服务器, 然后把应用也部属到这个新的应用服务器中.
+</p>
+
+<img src="https://raw.github.com/stliu/random-data/master/blog/data-grid-why/embedded_new1.png">
+
+<p class="wikiPara">
+这意味着?
+</p>
+
+<p class="wikiPara">
+IT人员需要多管理一个应用服务器, 增加了管理成本.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> 如果应用被重新部署, 内置的数据网格结点就被重新部署.*</li>
+<li class="wikiUnorderedListItem"> 如果数据网格升级, 应用升序也得跟着升级(并且重新部署)</li>
+</ul>
+
+<p class="wikiPara">
+* 一个数据网格结点被重新部署的话, 那么整个数据网格的拓扑结构是会变化两次的: 一次是当结点被移出的时候, 另外一次是结点被部属的时候. 并且, 一旦数据网格拓扑结构发生变化, 网格内的数据会在结点之间被移动已达到平衡的(尽管只是一部分数据).  所以, 重新部属一个应用程序会对其它节点上运行着的数据网格产生影响, 并且是两次.
+</p>
+
+<p class="wikiPara">
+如果数据网格需要被调整的运行更快而应用不需要呢?
+</p>
+
+<p class="wikiPara">
+部属应用到额外的应用服务器, 尽管瓶颈并不在应用这里的话, 这样合理么? 考虑了资源利用率了么? 仅仅为了增加数据网格的吞吐量就增加应用服务器, 尽管会出现应用服务器空载, 这样又合理么?
+</p>
+
+<p class="wikiPara">
+解决方案就是使用独立的数据网格.
+</p>
+
+<p class="wikiPara">
+如下面的例子. 同样的, 一个web应用被部署到多个应用服务器, 但是, 这里, 它使用一个独立的数据王哥系统. 这时候, 数据网格达到了它所支持的最大容量, 需要被扩容.
+</p>
+
+<img src="https://raw.github.com/stliu/random-data/master/blog/data-grid-why/remote_orig1.png">
+
+<p class="wikiPara">
+这又意味着?
+</p>
+
+<p class="wikiPara">
+一个新的数据网格结点被安装并且配置, 就这么简单.
+</p>
+
+<img src="https://raw.github.com/stliu/random-data/master/blog/data-grid-why/remote_new1.png">
+
+<p class="wikiPara">
+这样的架构允许数据网格能够独立于应用服务器而被独立的扩展. 也让数据网格的服务器能够被指派与应用服务器不同的资源. 例如, 一个数据网格结点服务器可能需要更多的内存但是更少的CPU, 相比于应用服务器的服务器.
+</p>
+
+<p class="wikiPara">
+这样的架构也让数据网格的基础架构能够独立于应用服务器的被惯例和调整.
+</p>
+
+<p class="wikiPara">
+数据网格能够独立于应用而被升级, 应用的重新部署也不会对数据网格本身产生任何影响.
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-"><a href="/2012/11/08/data-grid-why#H-">基础架构</a></h2>
+
+<p class="wikiPara">
+对比在基础架构中作为顶级系统的独立数据网格和内置于其它系统之中的二级数据网格服务.
+</p>
+
+<p class="wikiPara">
+举个例子, 一个企业有一个应用程序部属于应用服务器集群当中, 并且这个应用程序内置了一个数据网格系统. 接着, 这个企业有…
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> 增加了一个基于ESB的服务, 这个服务内部也内置了一个数据网格系统</li>
+<li class="wikiUnorderedListItem"> 增加了一个门户, 部属于Portal平台, 它也内置了数据网格</li>
+<li class="wikiUnorderedListItem"> 增加了业务流程服务跑在规则管理系统之上, 同样的, 它也内置了数据网格</li>
+</ul>
+
+<img src="https://raw.github.com/stliu/random-data/master/blog/data-grid-why/second_level_comp.png">
+
+<p class="wikiPara">
+能看出问题吧.
+</p>
+
+<p class="wikiPara">
+现在, 这个企业拥有多个独立的(内置)数据网格需要被管理, 也就增加了管理成本. 如果它们缓存的相同的数据(例如客户信息), 那么, 如同使用本地缓存的应用被部署到多台应用服务器一样, 面临着数据过期的风险. 如果数据被一个数据网格更新了, 那么, 在别的数据网格当中的相同数据也就没有意义了, 并且, 如果都存储的一样的数据的话, 那么数据网格的效率也是个问题, 这样, 只有他们容量总和的一部分是有效被利用的, 如同缓存集群一样, 重复的数据.
+</p>
+
+<p class="wikiPara">
+解决方案就是使用在基础架构中作为顶级系统的独立数据网格服务.
+</p>
+
+<img src="https://raw.github.com/stliu/random-data/master/blog/data-grid-why/top_level_comp.png">
+
+<p class="wikiPara">
+当然, 使用内置的数据网格服务也有其自身的优点, 可能会也可能不会超过使用独立缓存服务所带来的好处.
+</p>
+
+<p class="wikiPara">
+最后, 扼要重述, 使用数据网格的好处是它的可扩展性, 和独立性, 并且, 作为顶级基础设施组件, 它能够同时提供本地缓存和集群缓存所能够提供的性能和一致性.
+</p>
+</div>
+

@@ -1,0 +1,56 @@
+---
+title: "Hibernate ORM 4.3.0.Beta5 Release"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "09-10-2013"
+tags: [Core Release,Hibernate,ORM,jpa21]
+
+relative_url: /2013/10/09/hibernate-orm-430-beta-5-release
+slug: hibernate-orm-430-beta-5-release
+lace: http://in.relation.to/24442.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/10/09/hibernate-orm-430-beta-5-release
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Version 4.3.0.Beta5 release of the Hibernate ORM project has just been released.  This is a step closer towards JPA 2.1 compliance, but also lots of other goodies.  JPA 2.1 work of note includes:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8478" target="" class="regularLink">HHH-8478</a> - which should complete AttributeConverter support.</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8445" target="" class="regularLink">HHH-8445</a> - which adds support for <tt>REF_CURSOR</tt> parameters and should complete StoredProcedureQuery support.</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8276" target="" class="regularLink">HHH-8276</a> - which was the major prerequisite step for entity graph support.  You'll be using that anytime you load entities directly or by to-one association.</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8523" target="" class="regularLink">HHH-8523</a> - which improves support for parameters and returns using an explicit TemporalType and defined as Calendar</li>
+</ul>
+
+<p class="wikiPara">
+Entity graph support is still not complete, but as mentioned above most of the necessary prerequisite work has been covered now under <a href="https://hibernate.atlassian.net/browse/HHH-8276" target="" class="regularLink">HHH-8276</a> and <a href="https://hibernate.atlassian.net/browse/HHH-7841" target="" class="regularLink">HHH-7841</a>.
+</p>
+
+<p class="wikiPara">
+Non JPA 2.1 work of note includes:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8476" target="" class="regularLink">HHH-8476</a> - which now manages associated many-to-many table rows with bulk deletes (HQL/JPQL) </li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-7689" target="" class="regularLink">HHH-7689</a> - which implements better clean up of JDBC batches during failed transactions.  The previous behavior led to problems in the way Spring attempts to reuse Sessions after exceptions (which is technically not supported, but this was a good change to make anyway)</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8354" target="" class="regularLink">HHH-8354</a> - which adds on top of the new <q>bytecode enhancement</q> work to weave in <q>in line dirty checking</q>.  In other word, we now have the ability to have entities and embeddables track their own state changes (via enhancement) and for Hibernate to leverage that knowledge during flush.  This is still very young, but promises to significantly reduce flush times in many use-cases.  We'll have more announcements about all the <q>bytecode enhancement</q> enhancements later.</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/HHH-8520" target="" class="regularLink">HHH-8520</a> - ability to use the <tt>hibernate.globally_quoted_identifiers</tt> with HBM mappings</li>
+</ul>
+
+<p class="wikiPara">
+The full changelog can be found in Jira at <a href="https://hibernate.atlassian.net/browse/HHH/fixforversion/14250" target="" class="regularLink">https://hibernate.atlassian.net/browse/HHH/fixforversion/14250</a>. Artifacts can be found in the usual places.
+</p>
+
+<p class="wikiPara">
+Beta6 is scheduled in Jira already following the normal 4 week time box, however be aware that that release is likely to not happen on that particular day; its more likely to be the week before or the week after as I am traveling that particular week.  I'll keep Jira up to date as we go along.
+</p>
+
+<p class="wikiPara">
+Thanks for the support and contributions!</p>
+</div>
+

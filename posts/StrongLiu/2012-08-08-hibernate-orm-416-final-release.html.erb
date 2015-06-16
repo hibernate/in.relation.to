@@ -1,0 +1,60 @@
+---
+title: "Hibernate ORM 4.1.6.Final Release"
+author: "Strong Liu"
+blogger_name: "StrongLiu"
+creation_date: "08-08-2012"
+tags: [Core Release,Hibernate,News]
+
+relative_url: /2012/08/08/hibernate-orm-416-final-release
+slug: hibernate-orm-416-final-release
+lace: http://in.relation.to/23439.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/08/08/hibernate-orm-416-final-release
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate ORM version 4.1.6.Final has just been released. This is a minor bug fix release containing 16 bug fixes, See <a href="https://hibernate.onjira.com/browse/HHH/fixforversion/12154" target="" class="regularLink">the changelog</a> for the complete list of fixes. Specific fixes of note include:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-6130" target="" class="regularLink">HHH-6130</a> - The join map key was not correctly handled in the Criteria query, it was impossible to use criteria query by MapJoin#key, thanks the pull reuqest provided by <a href="https://github.com/mjiderhamn" target="" class="regularLink">Mattias Jiderhamn</a> now it is fixed.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-2808" target="" class="regularLink">HHH-2808</a> - This is a <i class="wikiEmphasis">five</i> years old issue, and I fixed it in this release :D, <a href="https://github.com/tsabirgaliev" target="" class="regularLink">Tair Sabirgaliev</a> contributed the test case. </li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-7108" target="" class="regularLink">HHH-7108</a> - This issue is fixed by pull request from <a href="https://github.com/Janario" target="" class="regularLink">Janario Oliveira</a>. With this fix, now it is possible to use @TypeDef with enums, and even a enum type property doesn't have @EnumType annotated, hibernate will still found the correct enum type by the implicitly type resolution. see the JIRA for more details.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-7520" target="" class="regularLink">HHH-7431</a> - Multi-Tenancy is an important feature that first introduced into hibernate since 4.0, and we're continue improving it based on feedback from community. Now the CacheKey's hashcode generation also considers tenant id (if there is any) and the equals method is also checking the tenant id. So it is possible to do some 2L cache optimization for different tenancy.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-7493" target="" class="regularLink">HHH-7426</a> - Using Dom4j as entity mode was an experimental feature in Hibernate and it had been removed in <a href="https://hibernate.onjira.com/browse/HHH-6330" target="" class="regularLink">HHH-6330</a>, sorry for the long delay of remove the relative content from Hibernate document.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-7385" target="" class="regularLink">HHH-7385</a> - We have upgraded to Gradle 1.1 as build tool, but you can still use the wrapper <q>./gradlew</q> :)</li>
+</ul>
+
+<p class="wikiPara">
+As usual, the artifacts have been uploaded to the <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate/" target="" class="regularLink">JBoss Nexus repository</a> (and will be synchronized to Maven Central in a day or two) and the release bundles have been uploaded to the Hibernate SourceForge in both <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.1.6.Final/hibernate-release-4.1.6.Final.zip/download" target="" class="regularLink">ZIP</a> and <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.1.6.Final/hibernate-release-4.1.6.Final.tgz/download" target="" class="regularLink">TGZ</a> formats.
+</p>
+
+
+<p class="wikiPara">
+Btw, the master branch has moved to JDK 7 in compile time and 4.1 branch remains using JDK 6, so if you want to contribute to hibernate (which is very welcome) please aware of this.
+</p>
+
+<p class="wikiPara">
+Thanks &amp; Enjoy!
+</p>
+</div>
+

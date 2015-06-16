@@ -1,0 +1,80 @@
+---
+title: "Seam 3.0 CR3 released"
+author: "Shane Bryzak"
+blogger_name: "Shane"
+creation_date: "22-03-2011"
+tags: [Seam,Seam News]
+
+relative_url: /2011/03/22/seam-30-cr-3-released
+slug: seam-30-cr-3-released
+lace: http://in.relation.to/18847.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/03/22/seam-30-cr-3-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+It's time for another Seam release!  This one wasn't actually planned (we had hoped to go straight to final after CR2), however with a number of last minute API changes I thought it would be best to run Seam through the testing wringer one last time before we put our stamp of approval on it.  The good news is that the 3.0 Final release is very close behind, and if all goes to plan it will be out before the end of the month just like I promised.
+</p>
+
+<p class="wikiPara">
+Let's get the links out of the way first, then look at what has changed.
+</p>
+
+<p class="wikiPara">
+<a href="http://sourceforge.net/projects/jboss/files/Seam/3/3.0.0.CR3/" target="" class="regularLink">Download</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/seam/3/latest/reference/en-US/html/" target="" class="regularLink">Reference Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://docs.jboss.org/seam/3/latest/api/" target="" class="regularLink">API Documentation</a>
+</p>
+
+<p class="wikiPara">
+<a href="http://issues.jboss.org/browse/SEAM" target="" class="regularLink">Report issues</a>
+</p>
+
+
+<h2 class="wikiHeadline2" id="H-CR3Changes"><a href="/2011/03/22/seam-30-cr-3-released#H-CR3Changes">CR3 Changes</a></h2>
+
+<b>@SeamManaged moved, renamed to @ExtensionManaged</b>
+
+<p class="wikiPara">
+One of the first things we changed was the <tt>@SeamManaged</tt> annotation, which was provided by the persistence module.  After various feedback from team members, it was decided that this was a generally useful annotation that applied to more than just persistence.  With that in mind we moved it into Seam Solder, a module containing a general set of useful annotations and utility features used by many of the other modules.  The new annotation is <tt>@org.jboss.seam.solder.core.ExtensionManaged</tt>.  Make sure that you update any instances of <tt>@SeamManaged</tt> in your application (most certainly to be found on EntityManager producer methods) to the new <tt>@ExtensionManaged</tt>.
+</p>
+
+<b>Refactoring of transaction-related classes</b>
+
+<p class="wikiPara">
+Our next change was also in the persistence module.  This module deals with two main concerns, <i class="wikiEmphasis">persistence</i> and <i class="wikiEmphasis">transactions</i>.  After discussions within the team we decided that the <i class="wikiEmphasis">transactions</i> part of the module may one day become worthy of its own module (which would be called Seam Transaction, obviously).  With that in mind, we refactored all the transaction-related classes so that they were in their own package.  
+</p>
+
+<p class="wikiPara">
+The greatest affect that this will have on users is for beans or bean methods annotated with <tt>@Transactional</tt>.  If you're using this annotation to provide transactional support to your beans then the import for this class will need to be changed from <tt>org.jboss.seam.persistence.transaction.Transactional</tt> to just <tt>org.jboss.seam.transaction.Transactional</tt>.
+</p>
+
+<b>Typesafe logging</b>
+
+<p class="wikiPara">
+This is a feature that we had on the cards for the while, but was put on the backburner for the Seam 3.0 release because of some implementation difficulties with the annotation processing.  I'm extremely pleased to say though that the guys responsible for this feature came through in a major way and got it hammered out just in time, so a huge thanks goes to <a href="http://community.jboss.org/people/jamezp" target="" class="regularLink">James Perkins</a> and <a href="http://community.jboss.org/people/kenfinni" target="" class="regularLink">Ken Finnigan</a> and  for making this happen, and to David Lloyd for making himself available for consultation.  These guys are a real credit to the open source community.  I'll try to encourage one of them to write up a blog entry about this very cool feature in the near future.
+</p>
+
+<b>Glassfish</b>
+
+<p class="wikiPara">
+Leading up to this release, support for Glassfish has been a great challenge for us.  However I'm happy to say that it seems all the known issues have now been addressed, thanks to the huge research effort made by Dan Allen.  If you are using Seam on Glassfish, then I strongly recommend you bookmark <a href="http://in.relation.to/Bloggers/IsSeam3GoingToBePortableOrWhat" target="" class="regularLink">Dan's blog post on the subject</a>, as this is the definitive source for Seam/Glassfish compatibility issues.
+</p>
+
+<b>Summary</b>
+
+<p class="wikiPara">
+Besides the major changes listed above, there have also been numerous other bug fixes and improvements to documentation and examples.  I encourage you to try out this release, and let us know what you think in the comments section below.  At this point in time the Seam API is locked in, so there won't be any more breaking API changes before the final release, I promise :).  Over the next week we'll be finishing off the last few tasks remaining (such as finishing up documentation, testing all the examples, etc) to get everything prepared for the 3.0.0.Final release.  We'd love to hear from you if you think there are any last minute improvements that we've missed, so any and all feedback is appreciated.
+</p>
+</div>
+

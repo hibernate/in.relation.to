@@ -1,0 +1,267 @@
+---
+title: "Multi-table Bulk Operations"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "20-07-2005"
+tags: []
+
+relative_url: /2005/07/20/multitable-bulk-operations
+slug: multitable-bulk-operations
+lace: http://in.relation.to/2072.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2005/07/20/multitable-bulk-operations
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+As I mentioned in my previous blog about 
+<a href="http://blog.hibernate.org/cgi-bin/blosxom.cgi/Steve%20Ebersole/dml-basic.html" target="" class="regularLink">Bulk Operations </a>, 
+both UPDATE and DELETE statements are challenging to handle against single 
+entities contained across multiple tables (not counting associations), which 
+might be the case with:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> inheritence using <tt>&lt;joined-subclass/&gt;</tt>
+</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> inheritence using <tt>&lt;union-subclass/&gt;</tt>
+</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> entity mapping using the <tt>&lt;join/&gt;</tt> construct</li>
+</ul>
+
+<p class="wikiPara">
+For illustration purposes, lets use the following inheritance hierarchy:
+</p>
+
+<pre class="wikiPreformatted">
+Animal
+  /   \
+ /     \
+Mammal   Reptile
+   / \
+  /   \
+Human   Dog
+</pre>
+
+
+<p class="wikiPara">
+all of which is mapped using the joined-subclass strategy.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Deletes"><a href="/2005/07/20/multitable-bulk-operations#H-Deletes">Deletes</a></h2>
+
+<p class="wikiPara">
+There are three related challenges with deletes.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> deletes against a multi-table entity need to <q>recursively cascade</q> to:</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> all sub-class(es) row(s) matched by primary key (PK) value</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> its super-class row</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> all these orchestrated deletes need to occur in an order to avoid constraint violations</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> which rows need to get deleted?</li>
+</ul>
+
+
+<p class="wikiPara">
+Consider the following code:
+</p>
+
+<pre class="wikiPreformatted">
+session.createQuery( "delete Mammal m where m.age &gt; 150" ).executeUpdate();
+</pre>
+
+
+<p class="wikiPara">
+Obviously we need to delete from the MAMMAL table.  Additionally, every row
+in the MAMMAL table has a corresponding row in the ANIMAL table; so for any
+row deleted from the MAMMAL table, we need to delete that corresponding
+ANIMAL table row.  This fulfills cascading to the super-class.  If the Animal
+entity itself had a super-class, we'd need to delete that row also, etc.
+</p>
+
+<p class="wikiPara">
+Next, rows in the MAMMAL table might have corresponding rows in either the HUMAN
+table or the DOG table; so, again, for each row deleted from the MAMMAL table,
+we need to make sure that any corresponding row gets deleted from the HUMAN
+or DOG table.  This fulfills cascading to the sub-class.  If either the Human or 
+Dog entities had further sub-classes, we'd need to delete any of those rows also,
+etc.
+</p>
+
+<p class="wikiPara">
+The other challenge I mentioned is proper ordering of the deletes to avoid
+violating any constraints.  The typical foreign key (FK) set up in our example
+structure is to have the FKs pointing <q>up</q> the hierarchy.  Thus, the MAMMAL
+table has a FK from its PK to the PK of the ANIMAL table, etc.  So we need
+to be certain that we order the deletes:
+</p>
+
+<pre class="wikiPreformatted">
+( HUMAN | DOG ) -&gt; MAMMAL -&gt; ANIMAL
+</pre>
+
+
+<p class="wikiPara">
+Here, it does not really matter whether we delete from the HUMAN table first,
+or from the DOG table first.
+</p>
+
+<p class="wikiPara">
+So exactly which rows need to get deleted (a lot of this discussion applies to
+update statements as well)?  Most databases do not support joined deletes, so
+we definitely need to perform the deletes seperately against the individual
+tables involved.  The naive approach is to simply use a subquery returning the
+restricted PK values with the user-defined restriction as the restriction for
+the delete statement.  That actually works in the example given before.  But 
+consider another example:
+</p>
+
+<pre class="wikiPreformatted">
+session.createQuery( "delete Human h where h.firstName = 'Steve'" ).executeUpdate();
+</pre>
+
+
+<p class="wikiPara">
+I said before that we need to order the deletes so as to avoid violating defined
+FK constraints.  Here, that means that we need to delete from the HUMAN table
+first; so we'd issue some SQL like:
+</p>
+
+<pre class="wikiPreformatted">
+delete from HUMAN where ID IN (select ID from HUMAN where f_name = 'Steve')
+</pre>
+
+
+<p class="wikiPara">
+So far so good; perhaps not the most efficient way, but it works.  Next we
+need to delete the corresponding row from the MAMMAL table; so we'd issue some
+more SQL:
+</p>
+
+<pre class="wikiPreformatted">
+delete from MAMMAL where ID IN (select ID from HUMAN where f_name = 'Steve')
+</pre>
+
+
+<p class="wikiPara">
+Oops!  This won't work because we previously deleted any such rows from the HUMAN table.
+</p>
+
+<p class="wikiPara">
+So how do we get around this?  Definitely we need to pre-select and store the 
+PK values matching the given where-clause restriction.  One approach is to 
+select the PK values through JDBC and store them within the JVM memory space;
+then later the PK values are bound into the individual delete statements.
+Something like:
+</p>
+
+<pre class="wikiPreformatted">
+PreparedStatement ps = connection.prepareStatement( 
+        "select ID from HUMAN where f_name = 'Steve'"
+);
+ResultSet rs = ps.executeQuery();
+HashSet ids = extractIds( rs );
+int idCount = ids.size();
+
+rs.close();
+ps.close();
+
+....
+
+// issue the delete from HUMAN
+String sql = 
+
+ps = connection.prepareStatement(
+        "delete from HUMAN where ID IN (" +
+        generateCommaSeperatedParameterHolders( idCount ) +
+        ")"
+);
+bindParameters( ps, ids );
+ps.executeUpdate();
+
+...
+</pre>
+
+
+<p class="wikiPara">
+The other approach, the one taken by Hibernate, is to utilize temporary tables;
+where the matching PK values are stored on the database server itself.  This is
+far more performant in quite a number of ways, which is the main reason this approach 
+was chosen.  Now we have something like:
+</p>
+
+<pre class="wikiPreformatted">
+// where HT_HUMAN is the temporary table (varies by DB)
+PreparedStatement ps = connection.prepareStatement( 
+        "insert into HT_HUMAN (ID) select ID from HUMAN where f_name = 'Steve'"
+);
+int idCount = ps.executeUpdate();
+ps.close();
+
+....
+
+// issue the delete from HUMAN 
+ps = connection.prepareStatement(
+        "delete from HUMAN where ID IN (select ID from HT_HUMAN)"
+);
+ps.executeUpdate();
+</pre>
+
+
+<p class="wikiPara">
+In the first step, we avoid the overhead of potential network communication associated with returning the results; we also avoid some JDBC overhead; we also avoid the memory overhead of needing to store the id values.  In the second step, we again minimized the amount of data traveling between us and the database server; the driver and server can also recognize this as a <q>repeatable</q> prepared statement and avoid execution plan creation overhead.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Updates"><a href="/2005/07/20/multitable-bulk-operations#H-Updates">Updates</a></h2>
+
+<p class="wikiPara">
+There are really only two challenges with multi-table update statements:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <q>partitioning</q> the assignments from the set-clause</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> which rows need to get updated?  This one was already discussed above...</li>
+</ul>
+
+
+<p class="wikiPara">
+Consider the following code:
+</p>
+
+<pre class="wikiPreformatted">
+session.createQuery( "update Mammal m set m.firstName = 'Steve', m.age = 20" )
+        .executeUpdate();
+</pre>
+
+
+<p class="wikiPara">
+We saw from before that the age property is actually defined on the Animal super-class and thus is mapped to the ANIMAL.AGE column; whereas the firstName property is defined on the Mammal class and thus mapped to the MAMMAL.F_NAME column.  So here, we know that we need to perform updates against both the ANIMAL and MAMMAL tables (no other tables are touched, even though the Mammal might further be a Human or a Dog). <q>Partitioning</q> the assignments really just means identifying which tables are affected by the individual assignments and then building approppriate update statements.  A minor challenge here was accounting for this fact when actually binding user-supplied parameters.  Though, for the most part, 
+partitioning the assignments and parameters was fairly academic exercise.
+</p>
+</div>
+

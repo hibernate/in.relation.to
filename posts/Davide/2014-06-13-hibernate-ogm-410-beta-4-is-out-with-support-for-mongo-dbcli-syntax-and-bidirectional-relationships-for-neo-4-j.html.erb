@@ -1,0 +1,83 @@
+---
+title: "Hibernate OGM 4.1.0.Beta4 is out, with support for MongoDB CLI syntax and bidirectional relationships for Neo4j"
+author: "Davide D'Alto"
+blogger_name: "Davide"
+creation_date: "13-06-2014"
+tags: [Hibernate,Hibernate OGM,news]
+
+relative_url: /2014/06/13/hibernate-ogm-410-beta-4-is-out-with-support-for-mongo-dbcli-syntax-and-bidirectional-relationships-for-neo-4-j
+slug: hibernate-ogm-410-beta-4-is-out-with-support-for-mongo-dbcli-syntax-and-bidirectional-relationships-for-neo-4-j
+lace: http://in.relation.to/26432.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2014/06/13/hibernate-ogm-410-beta-4-is-out-with-support-for-mongo-dbcli-syntax-and-bidirectional-relationships-for-neo-4-j
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm happy to announce a new release of Hibernate OGM.
+</p>
+
+<p class="wikiPara">
+The MongoDB backend now supports the MongoDB CLI syntax for native queries. In Neo4j, we have solved a bug related to the way we store embedded collections (<a href="https://hibernate.atlassian.net/browse/OGM-549" target="" class="regularLink">OGM-549</a>) and we now create only one relationship for bidirectional associations. We have also worked on the compatibility with WildFLy 8.1.
+You can find <a href="https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&amp;version=16850" target="" class="regularLink">more details about this release on JIRA</a>.
+</p>
+
+<p class="wikiPara">
+As always, you can either download a <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.1.0.Beta4/" target="" class="regularLink">release bundle</a> from SourceForge or retrieve the JARs from the JBoss Nexus <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate/ogm/" target="" class="regularLink">repository server</a> using Maven, Gradle etc. The GAV coordinates are:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-core:4.1.0.Beta4</i> for the OGM engine and</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-&lt;datastore&gt;:4.1.0.Beta4</i>, depending on the backend you want to use.</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-SupportForMongoDBCLISyntax"><a href="/2014/06/13/hibernate-ogm-410-beta-4-is-out-with-support-for-mongo-dbcli-syntax-and-bidirectional-relationships-for-neo-4-j#H-SupportForMongoDBCLISyntax">Support for MongoDB CLI syntax</a></h2>
+
+<p class="wikiPara">
+You can now specify queries using the MongoDB CLI syntax as shown in the following example:
+</p>
+
+<pre class="wikiPreformatted brush: java">    @Entity
+    class Poem {
+       ...
+       String name;
+       String author;
+       ...
+    }
+
+    String poemsQuery = "db.Poem.find({'$query': { 'author': 'Oscar Wilde' }, '$orderby': { 'name': 1 }})";
+
+    EntityManager em = ...
+    List&lt;Poem&gt; oscarWildePoems = (List&lt;Poem&gt;)em.createNativeQuery( poemsQuery, Poem.class )
+                                 .getResultList();
+</pre>
+
+
+<p class="wikiPara">
+Currently only find() and count() queries are supported via the CLI syntax.
+</p>
+
+<h2 class="wikiHeadline2" id="H-OneRelationshipForBidirectionalAssociations"><a href="/2014/06/13/hibernate-ogm-410-beta-4-is-out-with-support-for-mongo-dbcli-syntax-and-bidirectional-relationships-for-neo-4-j#H-OneRelationshipForBidirectionalAssociations">One relationship for bidirectional associations</a></h2>
+
+<p class="wikiPara">
+In Neo4j, it is possible to navigate a relationship in both directions at the same speed. We moved to a more natural mapping using one relationship (instead of two) for a bidirectional association.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatsNext"><a href="/2014/06/13/hibernate-ogm-410-beta-4-is-out-with-support-for-mongo-dbcli-syntax-and-bidirectional-relationships-for-neo-4-j#H-WhatsNext">What's next?</a></h2>
+
+<p class="wikiPara">
+For the Neo4j backend, we plan to make the mapping for one-to-one relationships more natural, remove redundant properties and translate JP-QL queries into native Cypher queries.  
+</p>
+
+<p class="wikiPara">
+We will also work on the generation of <a href="https://hibernate.atlassian.net/browse/OGM-465" target="" class="regularLink">error reports with the failed operations on non-transactional db</a>.
+</p>
+
+<p class="wikiPara">
+You're very welcome to raise your voice on the <a href="https://lists.jboss.org/mailman/listinfo/hibernate-dev" target="" class="regularLink">mailing list</a>, ask questions in <a href="https://forum.hibernate.org/viewforum.php?f=31" target="" class="regularLink">the forum</a> or report any bugs or feature requests in the <a href="https://hibernate.atlassian.net/browse/OGM-526" target="" class="regularLink">issue tracker</a>.
+</p>
+</div>
+

@@ -1,0 +1,99 @@
+---
+title: "Daniel Responds"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "19-09-2007"
+tags: []
+
+relative_url: /2007/09/19/daniel-responds
+slug: daniel-responds
+lace: http://in.relation.to/2362.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/09/19/daniel-responds
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Daniel Spiewak <a href="http://www.javalobby.org/java/forums/t101596.html" target="" class="regularLink">responded</a> to <a href="/Bloggers/MoreXMLThanCode" target="" class="regularLink">More XML than code?</a>
+</p>
+
+<p class="wikiPara">
+First, kudos to Daniel for coming straight out and admitting that <q>I don't have very much experience with Hibernate</q> and that:
+</p>
+
+<blockquote class="wikiBlockquote">
+I <i class="wikiEmphasis">am</i> comparing ActiveObjects and ActiveRecord to an annotations-less Hibernate. After all, that's what the default download is, right?
+</blockquote>
+
+<p class="wikiPara">
+(Um, well, I guess the default download is whatever you decide to download by default...?)
+</p>
+
+<p class="wikiPara">
+And finally:
+</p>
+
+<blockquote class="wikiBlockquote">
+Ok, that little blurb does deserve an apology; or rather a clarification. I had no intention of saying that AO is inherently faster than Hibernate under all circumstances. In fact, I think I've said a few times that AO is inherently <i class="wikiEmphasis">less</i> performant than Hibernate, just by design.
+</blockquote>
+
+<p class="wikiPara">
+However, Daniel again complains that Hibernate is difficult to configure:
+</p>
+
+<blockquote class="wikiBlockquote">
+I've never been able to actually wade through the configuration to get it running.
+</blockquote>
+
+<p class="wikiPara">
+Well, Daniel, let me help you get started with this. If you already have a JCA datasource configured, the following is usually all the extra configuration you need to use Hibernate inside the application server:
+</p>
+
+<pre class="wikiPreformatted">&lt;persistence&gt;
+   &lt;persistence-unit name="bookingDatabase"&gt;
+      &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;
+      &lt;jta-data-source&gt;java:/MyDatasource&lt;/jta-data-source&gt;
+      &lt;properties&gt;
+         &lt;property name="hibernate.transaction.manager_lookup_class" 
+             value="org.hibernate.transaction.JBossTransactionManagerLookup"/&gt;
+      &lt;/properties&gt;
+   &lt;/persistence-unit&gt;
+&lt;/persistence&gt;</pre>
+
+
+<p class="wikiPara">
+If you're not in an application server environment, the following should be enough to get you started:
+</p>
+
+<pre class="wikiPreformatted">&lt;persistence&gt;
+   &lt;persistence-unit name="bookingDatabase"&gt;
+      &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;
+      &lt;properties&gt;
+         &lt;property name="hibernate.jdbc.url" value="jdbc:hsqldb:."/&gt;
+         &lt;property name="hibernate.jdbc.driver_class" value="org.hsqldb.jdbcDriver"/&gt;
+         &lt;property name="hibernate.jdbc.username" value="sa"/&gt;
+      &lt;/properties&gt;
+   &lt;/persistence-unit&gt;
+&lt;/persistence&gt;</pre>
+
+
+<p class="wikiPara">
+I hope that helps.
+</p>
+
+<p class="wikiPara">
+Finally, Daniel points to an error in my previous post. It turns out that ActiveObjects /does/ have a way to add business logic to your domain model. All you need to do is write an additional class (that does not implement the AO interface) with the methods and accessors that you want to customize.
+</p>
+
+<p class="wikiPara">
+OMG, OMG, OMG! I'm so excited: /the EJB 2 programming model lives again! Entity beans are reborn!/
+</p>
+
+<p class="wikiPara">
+The sad part about this is that in non-trivial cases, AO will often require /more/ code than Hibernate, since you will need to write two artifacts for each domain model class instead of just one.
+</p>
+</div>
+

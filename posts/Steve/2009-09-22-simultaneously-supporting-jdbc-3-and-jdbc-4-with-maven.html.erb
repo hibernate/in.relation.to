@@ -1,0 +1,46 @@
+---
+title: "Simultaneously Supporting JDBC3 and JDBC4 with Maven"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "22-09-2009"
+tags: [Hibernate,Maven]
+
+relative_url: /2009/09/22/simultaneously-supporting-jdbc-3-and-jdbc-4-with-maven
+slug: simultaneously-supporting-jdbc-3-and-jdbc-4-with-maven
+lace: http://in.relation.to/12371.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/09/22/simultaneously-supporting-jdbc-3-and-jdbc-4-with-maven
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Per <a href="http://hibernate.onjira.com/browse/HHH-2412" target="" class="regularLink">HHH-2412</a> and its <a href="http://www.jboss.org/community/wiki/Hibernate-JDBC4support" target="" class="regularLink">design discussion</a> I have been working on supporting JDBC4 in Hibernate.  <i class="wikiEmphasis">Initially I had planned on adding this in 3.6, but now leaning toward 3.5</i>  Anyway, as outlined on the design wiki, I initially thought to add this support as separate modules.  However, I quickly came to the realization that using separate modules would actually require users make an explicit choice wrt an <q>extra</q> jar.  Especially considering that I could make Hibernate code make this determination programatically, I really did not like that aspect to using modules here.  So I started looking for alternatives.
+</p>
+
+<p class="wikiPara">
+As I normally do, I started by thinking of just the ideal outside of any build structure or tool.  So to my mind the best option here seemed to include compiling JDBC4 support targeting JDK 1.6 and JDBC3 support targeting JDK 1.4 and then bundling all that code into a single jar.  The code which decides which feature-set to use uses reflection anyway, so there is no issue with having both in the same jar as long as only the correct classes actually get loaded (and anything else would be a bug in this determination code).
+</p>
+
+<p class="wikiPara">
+Well unfortunately it turns out that Maven does not really support such a setup.  In the common case I think you'd set up multiple source directories within that main module and run different compilation executions against them with different compiler settings (source/target).  This Maven explicitly disallows (see <a href="http://jira.codehaus.org/browse/MCOMPILER-91" target="" class="regularLink">MCOMPILER-91</a> and <a href="http://www.nabble.com/Re%3A-svn-commit%3A-r753302---in--maven-plugins-trunk-maven-compiler-plugin-src%3A-it-alt-src-output-directories-MCOMPILER-91--it-alt-src-output-directories-MCOMPILER-91-src--it-alt-src-output-directories-MCOMPILER-91-src-my-classes--it-alt-src-output-directorie...-tt22501259.html#a22501259" target="" class="regularLink">its discussion</a> for details).
+</p>
+
+<p class="wikiPara">
+Two <q>workable</q> solutions were presented to me (workable in that Maven could handle these):
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Use a single source directory, but configure 2 executions of the compiler plugin taking advantage of includes/excludes to define what to compile targeting 1.6 and 1.4.  The issue here is that this is not good fit for IDEs.</li>
+<li class="wikiOrderedListItem"> Split this into 3 modules (one each for JDB3 and JDBC4 support plus another for <q>commonality</q> to avoid circular dependencies with core).  Core would then pull the compiled classes from these 3 modules into its jar.  Seems overly complicated to me just to work around a self-imposed limitation of Maven.  And sorry, I just don't see how this constitutes a <q>messed up system</q> as indicated in that Maven discussion.</li>
+</ol>
+
+<p class="wikiPara">
+Anyway, I really hope someone has other suggestions on better ways to handle this with Maven.  Anyone?
+</p>
+
+
+</div>
+

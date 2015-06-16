@@ -1,0 +1,285 @@
+---
+title: "Web Beans Sneak Peek Part IV: Scopes, contexts and resolver methods"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "23-09-2007"
+tags: [Web Beans,Web Beans Sneak Peek]
+
+relative_url: /2007/09/23/web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods
+slug: web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods
+lace: http://in.relation.to/2448.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/09/23/web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+/This is the fourth installment of a series of articles describing the current status of the Web Beans specification. Please read the 
+<a href="/Bloggers/WebBeansSneakPeekPartIIntroducingWebBeans" target="" class="regularLink">first</a>,  
+<a href="/Bloggers/WebBeansSneakPeekPartIIInjectionBindingAnnotationsAndComponentTypes" target="" class="regularLink">second</a> and <a href="/Bloggers/WebBeansSneakPeekPartIIIDeclaringComponentsUsingXML" target="" class="regularLink">third</a> installments first./
+</p>
+
+<p class="wikiPara">
+So far, we've seen a few examples of /scope type annotations/. The scope of a component determines the lifecycle of the component instances, and makes a particular instance visible to all components executing in a particular context.
+</p>
+
+<p class="wikiPara">
+For example, if we have a session scoped component, <tt>CurrentUser</tt>, all components that are called in the context of the same <tt>HttpSession</tt> will see the same instance of <tt>CurrentUser</tt>. This instance will be automatically created the first time a <tt>CurrentUser</tt> is needed in that session, and automatically destroyed when the session ends.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ScopeTypes"><a href="/2007/09/23/web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods#H-ScopeTypes">Scope types</a></h2>
+
+<p class="wikiPara">
+Web Beans features an /extensible context model/. It is possible to define new scopes by creating a new scope type annotation:
+</p>
+
+<pre class="wikiPreformatted">@Retention(RUNTIME)
+@Target({TYPE, METHOD})
+@ScopeType
+public @interface ClusterScoped {}</pre>
+
+
+<p class="wikiPara">
+Of course, that's the easy part of the job. For this scope type to be useful, we will also need to define a <tt>Context</tt> object that implements the scope! Implementing a <tt>Context</tt> is usually a very technical task, intended for framework development only.
+</p>
+
+<p class="wikiPara">
+We can apply a scope type annotation to a Web Bean implementation class to specify the scope of the component:
+</p>
+
+<pre class="wikiPreformatted">@ClusterScoped @Component
+public class SecondLevelCache { ... }</pre>
+
+
+<p class="wikiPara">
+We can even use the scope type to obtain an instance of the <tt>Context</tt> object for the scope:
+</p>
+
+<pre class="wikiPreformatted">Component&lt;SecondLevelCache&gt; cacheComponent = container.resolveByType(SecondLevelCache.class);
+SecondLevelCache cache = container.getContext(ClusterScoped.class).get(cacheComponent);</pre>
+
+
+<h2 class="wikiHeadline2" id="H-BuiltinScopes"><a href="/2007/09/23/web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods#H-BuiltinScopes">Built-in scopes</a></h2>
+
+<p class="wikiPara">
+Web Beans defines four built-in scopes:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <tt>@RequestScoped</tt>
+</li>
+<li class="wikiUnorderedListItem"> <tt>@SessionScoped</tt>
+</li>
+<li class="wikiUnorderedListItem"> <tt>@ApplicationScoped</tt>
+</li>
+<li class="wikiUnorderedListItem"> <tt>@ConversationScoped</tt>
+</li>
+</ul>
+
+<p class="wikiPara">
+For a web application that uses Web Beans:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> any servlet has access to active request, session and application contexts</li>
+<li class="wikiOrderedListItem"> any JSF request has access to an active conversation context</li>
+</ol>
+
+<p class="wikiPara">
+If the application tries to use a component with a scope that does not have an active context, a <tt>ContextNotActive</tt> exception is thrown by the Web Beans container at runtime.
+</p>
+
+<h2 class="wikiHeadline2" id="H-TheDependentPsuedoscope"><a href="/2007/09/23/web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods#H-TheDependentPsuedoscope">The dependent psuedo-scope</a></h2>
+
+<p class="wikiPara">
+In addition, there is the notion of the /dependent psuedo-scope/. We use the term <q>psuedo-scope</q> because there is no <tt>Context</tt> for this special scope.
+</p>
+
+<p class="wikiPara">
+A Web Bean may be declared to be a <tt>@Dependent</tt> component:
+</p>
+
+<pre class="wikiPreformatted">@Dependent @Component
+public class Calculator { ... }</pre>
+
+
+<p class="wikiPara">
+If this case, a new instance of the component is created each time the Web Beans container injects it. This means that any instance of a dependent component is bound to the object into which it was injected. Different clients always see different instances of a dependent component, no matter what context they execute in.
+</p>
+
+<p class="wikiPara">
+A open issue that currently exists in the Web Beans specification is the question of the default scope for
+a Web Bean component that does not explicitly declare a scope type. We've narrowed the options down to
+<tt>@RequestScoped</tt> and <tt>@Dependent</tt>, each of which has advantages and disadvantages.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ImplicitDependentComponents"><a href="/2007/09/23/web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods#H-ImplicitDependentComponents">Implicit dependent components</a></h2>
+
+<p class="wikiPara">
+The built-in <tt>@New</tt> binding annotation allows /implicit/ definition of a dependent component at an injection point. Suppose we declare the following injected attribute:
+</p>
+
+<pre class="wikiPreformatted">@In @New Calculator calculator</pre>
+
+
+<p class="wikiPara">
+Then a component with component type <tt>@Component</tt>, scope <tt>@Dependent</tt>, binding annotation <tt>@New</tt>, API type <tt>Calculator</tt> and implementation class <tt>Calculator</tt> is implicitly defined. 
+</p>
+
+<p class="wikiPara">
+This is true even if <tt>Calculator</tt> is /already/ declared as a Web Beans component, for example:
+</p>
+
+<pre class="wikiPreformatted">@ConversationScoped @Component
+public class Calculator { ... }</pre>
+
+
+<p class="wikiPara">
+So the following injected attributes each get a different instance of Calculator:
+</p>
+
+<pre class="wikiPreformatted">@Component 
+public class PaymentCalc {
+
+    @In Calculator calculator;
+    @In @New Calculator newCalculator;
+
+}</pre>
+
+
+<p class="wikiPara">
+The <tt>calculator</tt> field has a conversation-scoped instance of <tt>Calculator</tt> injected. The <tt>newCalculator</tt> field has a new instance of <tt>Calculator</tt> injected, with a lifecycle that is bound to the owning <tt>PaymentCalc</tt>.
+</p>
+
+<p class="wikiPara">
+This feature is particularly useful with resolver methods.
+</p>
+
+<h2 class="wikiHeadline2" id="H-ResolverMethods"><a href="/2007/09/23/web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods#H-ResolverMethods">Resolver methods</a></h2>
+
+<p class="wikiPara">
+According to the spec:
+</p>
+
+<blockquote class="wikiBlockquote">
+A Web Beans resolver method acts as a source of objects to be injected, where:
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> the objects to be injected are not required to be instances of Web Beans components,</li>
+<li class="wikiUnorderedListItem"> the concrete type of the objects to be injected may vary at runtime or</li>
+<li class="wikiUnorderedListItem"> the objects require some custom initialization that is not performed by the Web Bean constructor</li>
+</ul>
+
+
+</blockquote>
+
+<p class="wikiPara">
+For example, resolver methods let us:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> expose a JPA entity as a Web Bean component</li>
+<li class="wikiUnorderedListItem"> expose a JDK class as a Web Bean component</li>
+<li class="wikiUnorderedListItem"> define multiple Web Bean components, with different scopes or initialization, for the same implementation class</li>
+<li class="wikiUnorderedListItem"> vary a Web Bean component implementation class at runtime</li>
+</ul>
+
+<p class="wikiPara">
+In particular, resolver methods let us use runtime polymorphism with Web Beans. As we've seen, component types
+are a powerful solution to the problem of deployment-time polymorphism. But once the system is deployed, the
+component implementation is fixed. A resolver method has no such limitation:
+</p>
+
+<pre class="wikiPreformatted">@SessionScoped @Component
+public class Preferences {
+    
+    private PaymentStrategyType paymentStrategy;
+    
+    ...
+    
+    @Resolves @Preferred @ApplicationScoped
+    public PaymentStrategy getPaymentStrategy() {
+        switch (paymentStrategy) {
+            case CREDIT_CARD: return new CreditCardPaymentStrategy();
+            case CHEQUE: return new ChequePaymentStrategy();
+            case PAYPAL: return new PayPalPaymentStrategy();
+            default: return null;
+        } 
+    }
+    
+}</pre>
+
+
+<p class="wikiPara">
+Consider this injection point:
+</p>
+
+<pre class="wikiPreformatted">@In @Preferred PaymentStrategy paymentStrat;</pre>
+
+
+<p class="wikiPara">
+When the container injects this field, the resolver method will be called and the returned <tt>PaymentStrategy</tt> 
+will be injected into the field and bound to the application context. The resolver method won't be called
+again in the same application context. On the other hand, if we were to remove the <tt>@ApplicationScoped</tt>
+annotation:
+</p>
+
+<pre class="wikiPreformatted">@Resolves @Preferred
+public PaymentStrategy getPaymentStrategy() {
+    ...
+}</pre>
+
+
+<p class="wikiPara">
+Then the resolver method defaults to dependent scope, and it will be called /every time/ the field
+is injected!
+</p>
+
+<h2 class="wikiHeadline2" id="H-InjectionIntoResolverMethods"><a href="/2007/09/23/web-beans-sneak-peek-part-iv-scopes-contexts-and-resolver-methods#H-InjectionIntoResolverMethods">Injection into resolver methods</a></h2>
+
+<p class="wikiPara">
+There's one problem with this code. If <tt>CreditCardPaymentStrategy</tt> is a Web Bean component, it should
+be created by the Web Beans container, not by calling <tt>new</tt>. We can solve this problem by using 
+injection into the resolver method:
+</p>
+
+<pre class="wikiPreformatted">@Resolves @Preferred @ApplicationScoped
+public PaymentStrategy getPaymentStrategy(CreditCardPaymentStrategy ccps,
+                                          ChequePaymentStrategy cps,
+                                          PayPalPaymentStrategy ppps) {
+    switch (paymentStrategy) {
+        case CREDIT_CARD: return ccps;
+        case CHEQUE: return cps;
+        case PAYPAL: return ppps;
+        default: return null;
+    } 
+}</pre>
+
+
+<p class="wikiPara">
+Wait, what if <tt>CreditCardPaymentStrategy</tt> is a request scoped component? Then the resolver method has
+the effect of <q>promoting</q> the current request scoped instance into application scope. This is almost
+certainly a bug. We can fix the bug using the special <tt>@New</tt> binding annotation described above:
+</p>
+
+<pre class="wikiPreformatted">@Resolves @Preferred @ApplicationScoped
+public PaymentStrategy getPaymentStrategy(@New CreditCardPaymentStrategy ccps,
+                                          @New ChequePaymentStrategy cps,
+                                          @New PayPalPaymentStrategy ppps) {
+    switch (paymentStrategy) {
+        case CREDIT_CARD: return ccps;
+        case CHEQUE: return cps;
+        case PAYPAL: return ppps;
+        default: return null;
+    } 
+}</pre>
+
+
+<p class="wikiPara">
+Then a new /dependent/ instance of <tt>CreditCardPaymentStrategy</tt> will be created, passed to the resolver method, returned by the resolver and finally bound to the application context.
+</p>
+</div>
+

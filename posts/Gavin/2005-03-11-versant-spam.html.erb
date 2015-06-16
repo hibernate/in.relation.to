@@ -1,0 +1,710 @@
+---
+title: "Versant Spam"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "11-03-2005"
+tags: []
+
+relative_url: /2005/03/11/versant-spam
+slug: versant-spam
+lace: http://in.relation.to/1801.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2005/03/11/versant-spam
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+For several months, Versant, an old-school OODBMS vendor with a collapsing market cap, has been
+making any number of false claims about Hibernate in online webinars and sales presentations.
+I went so far as to write a blog refuting their claims, but then held back on publishing it
+because I thought they didn't deserve the attention. They've now resorted to mass emailings
+of a document with many false claims about Hibernate, and we've decided we need to respond for
+the record.
+</p>
+
+<p class="wikiPara">
+(If you haven't been bothered by Versant's spam, or knew to treat it with extreme suspicion, you
+probably don't need to bother reading any further.)
+</p>
+
+<p class="wikiPara">
+I'll answer the claims of the document, point by point. I won't bother arguing that Hibernate
+is better or Versant is better or whatever. Instead, as always, I encourage potential users to 
+try out both products, and see which one works best for them.
+</p>
+
+<p class="wikiPara">
+A caveat: some of the claims were true of Hibernate 2.1 but not of Hibernate 3.0 (UPDATE: about 10 of ca. 40 false statements). But the
+document I am responding to was sent out a full two weeks after the release of Hibernate
+3.0 rc1, the first production-ready release of Hibernate3. I think it is a reasonable 
+expectation that competitive material refer to the latest current production ready release,
+and not to previous versions, especially given that all of the new features were available
+for the past six months in beta releases of Hibernate, and are fully documented in the 
+Hibernate3 feature list, which has also been available for months. If Versant were curious, 
+it would have been easy to establish the existence of these new features. Projects performing
+product evaluations now are interested in the capabilities of Hibernate 3.0, not Hibernate 
+2.1.
+</p>
+
+<pre class="wikiPreformatted">
+Hibernate has drawn a lot of attention in the Java community as a solution for transparent 
+persistence with Java based applications. The big deal seems to be that it is free...
+</pre>
+
+
+<p class="wikiPara">
+No, the big deal is that It Works. In practice.
+</p>
+
+<p class="wikiPara">
+Hibernate was responsible for popularizing ORM technology in Java, and helped create a market
+which Versant now hopes to exploit as it's bread and butter object database technology continues
+to fail in the marketplace. However, it is unlikely that a company which has spent many years
+trying to convince the world that relational technology is broken will now be able to reinvent
+itself as a credible vendor of object/relational mapping technology. Especially when there
+are at least three vendors who are already far, far better positioned in this space and have
+products with greater maturity and much larger user bases - none of whom has a history of hating
+relational databases.
+</p>
+
+<pre class="wikiPreformatted">
+This paper points out the pitfalls of the Hibernate solution while showing how JDO implementations,
+specifically Versant Open Access JDO, addresses those pitfalls. Where appropriate, it discusses the
+strong points of Hibernate in order to give a fair analysis for the informed reader.
+</pre>
+
+
+<p class="wikiPara">
+Oh, puh-lease. Hibernate has oodles of features that Versant Open Access JDO does not have, none
+of which are mentioned in the document that follows.
+</p>
+
+<pre class="wikiPreformatted">
+More importantly, the tools available to the developer using Versant Open Access - JDO and/or most
+other JDO vendors, are several orders of magnitude better than what's available with Hibernate
+</pre>
+
+
+<p class="wikiPara">
+How did they measure <q>several orders of magnitude better</q>? With a tape measure? Did they actually
+research the efficiency of a Hibernate team vs. a Versant team and discover that the Versant team
+was a thousand or thousands of times faster at creating a domain model? Or is the author simply
+making stuff up?
+</p>
+
+<p class="wikiPara">
+I'll actually concede the point that our toolset can be improved. That's why we now have a fulltime
+development team led by Max Andersen working on building an ambitious suite of open source Eclipse 
+plugins for Hibernate and EJB 3.0. A preview release of some of the plugins is available here:
+</p>
+
+<p class="wikiPara">
+<a href="http://www.hibernate.org/Projects/HibernateTools" target="" class="regularLink">http://www.hibernate.org/Projects/HibernateTools</a>
+</p>
+
+<p class="wikiPara">
+This is a major strategic initiative for JBoss, so expect this stuff to get very slick, very fast.
+</p>
+
+<pre class="wikiPreformatted">
+In fact, if you go to the Middlegen website and look at their ( online Middlegen demonstration ) , 
+you will see that they are showing CMP, JDO &amp; Struts not Hibernate. So, you can imagine the amount 
+of support you get from the technical leads of those open source initiatives for the Hibernate 
+integration.
+</pre>
+
+
+<p class="wikiPara">
+David Channon, a member of the Hibernate team, has been responsible for maintaining and supporting
+the Hibernate middlegen plugin. I'm sure that Hibernate users will vouch for the value of David's
+helpful support. His current Hibernate Forum posting count is about 1300 - most of this is free support related to Middlegen. (David's posting count is a quarter of 
+the total postings on the Versant JDO forum.)
+</p>
+
+<p class="wikiPara">
+(Actually, Middlegen based reverse engineering is being end of lifed, and a brand new eclipse-based 
+reverse engineering plugin is now available, in the Hibernate Tools preview release.)
+</p>
+
+<pre class="wikiPreformatted">
+When it comes to things like monitoring and performance tuning, you are left completely to your own
+devices because Hibernate offers nothing to help.
+</pre>
+
+
+<p class="wikiPara">
+This is not true, Hibernate 3.0 offers sophisticated JMX monitoring functionality, and oodles of
+options for performance tuning.
+</p>
+
+<pre class="wikiPreformatted">
+In Hibernate, there are no visual tools for editing meta data or relational mapping that come out of 
+the box. 
+</pre>
+
+
+<p class="wikiPara">
+Hibernate Tools provides a Hibernate mapping file editor with auto-completion for class, property, 
+table and column names as an eclipse plugin. This is the fastest and most efficient way to create
+mapping documents available, much more efficient than the clunky visual tools we have tried. In 
+addition Hibernate now supports EJB 3.0 annotation-based mappings, which are even easier to use.
+</p>
+
+
+<pre class="wikiPreformatted">
+The lifecycle states in Hibernate are not only insufficient, but also incomplete in their
+implementation. 
+</pre>
+
+
+<p class="wikiPara">
+Oh really? Got any argument to back this up?
+</p>
+
+<p class="wikiPara">
+Oh, here we go, one <q>example</q>...
+</p>
+
+<pre class="wikiPreformatted">
+For example, the update callback in Hibernate which is used to notify when an
+objects state has changed and is going to be updated in the database is only called when the object is
+a transient object and being sent back for update. It is not called on any change of a persistent object
+that will cause an update to the database. 
+</pre>
+
+
+<p class="wikiPara">
+This shows that the writer of the document does not really know Hibernate. The Lifecycle.onUpdate() 
+callback is used to notify the application when a detached object is becoming managed via a call
+to update(). There is a completely different callback - Interceptor.onFlushDirty() - which is used to 
+notify the application that a SQL UPDATE is about to occur. I'm not sure why the author could not
+find this callback, which is heavily documented and well-understood in the community.
+</p>
+
+<p class="wikiPara">
+To clear up any doubts about the lifecycle model defined by Hibernate: the model is identical to the 
+lifecycle used by TopLink and standardized by JSR-220 (EJB 3.0).
+</p>
+
+<pre class="wikiPreformatted">
+Also, the create callback is not called when identity is managed by the database's native key generation 
+which is the most common form of key generation (for example: Identity tables in DB2 and Sequences in 
+Oracle).
+</pre>
+
+
+<p class="wikiPara">
+This is simply not true. The author obviously never tried it.
+</p>
+
+<pre class="wikiPreformatted">
+The following summarizes the Hibernate coding impositions.
+1. You need to add an identity attribute and methods to your classes ( getId( ) , setId( ) ). Note
+that this is not strictly mandatory, but you must implement these if using the Hibernate
+disconnected model capabilities. 
+</pre>
+
+
+<p class="wikiPara">
+It is always useful to be able to get access to the primary key of a persistent instance. This
+is not a limitation, it's a feature.
+</p>
+
+<pre class="wikiPreformatted">
+The disconnected model in Hibernate is a limited form of the attach/detach capabilities found 
+in JDO.
+</pre>
+
+
+<p class="wikiPara">
+The capabilities found in JDO 2.0 (which did not exist in JDO 1.0) were inspired by Hibernate,
+and by my criticisms of JDO. To describe Hibernate's capabilities as a <q>limited form</q> is 
+disingeneous and misleading. The detach/reattach model is slightly different, but we think that
+our capabilities are more powerful and easier to use.
+</p>
+
+<pre class="wikiPreformatted">
+2. Your classes must implement Java Beans style accessors for all persistent attributes. There
+are no such restrictions in JDO.
+</pre>
+
+
+<p class="wikiPara">
+This is simply not true. Hibernate does not require getters and setters, as is clearly described
+in many places on the Hibernate website.
+</p>
+
+<pre class="wikiPreformatted">
+3. Because of Hibernates runtime proxy generation through the use of CGLIB, calls to getClass
+can return the wrong type, so if you need to access the class of an object you have to use
+Hibernate static methods. Hibernate.getClass( foo ) instead of the traditional foo.getClass( )
+</pre>
+
+
+<p class="wikiPara">
+Big deal. How is this an <q>imposition</q>?
+</p>
+
+<p class="wikiPara">
+If you /really/ want to be able to use getClass(), you can use instance variable interception
+instead of proxying for lazy fetching in Hibernate 3.0. Of course, we do not expect any Hibernate 
+users to go this route, since proxies are simply more convenient for most people.
+</p>
+
+<pre class="wikiPreformatted">
+4. Application Identity classes with composite id's must implement Serializable. This is only
+required if you want the class itself to manage identity rather than creating an identity class.
+This is also a restriction in Versant Open Access JDO. The common practice is to use an
+application identity class and this bullet is included mainly for completeness.
+</pre>
+
+
+<p class="wikiPara">
+Wow, is this possible? Does Versant Open Access JDO have limitations? Surely not!
+</p>
+
+<pre class="wikiPreformatted">
+5. Polymorphic classes should implement hashcode and equals methods. This is only required if
+the objects are going to be accessed by multiple sessions and the shared cache is enabled. If
+you do not plan for this up front and then decide to scale later on and add application servers
+and clustering, something that should be an administrative task, suddenly your business logic
+might not be working properly and you won't even know it's a problem until you have many
+logical errors in your data.
+</pre>
+
+
+<p class="wikiPara">
+This is all either incorrect or incomprehensible. The only time you need to implement equals() and
+hashCode() on persistent classes is if you plan to put instances in a HashSet, and this is
+a requirement of the Java Set contract, not of Hibernate.
+</p>
+
+<pre class="wikiPreformatted">
+6. Collections must be referenced as Interface types only. You cannot refer to a concrete
+implementation class of the interface. Versant Open Access JDO does not have this
+restriction.
+</pre>
+
+
+<p class="wikiPara">
+This <q>restriction</q> is a good coding practice. There is no reason to code to ArrayList instead
+of List; good OO practice exhorts us to code to interfaces.
+</p>
+
+<p class="wikiPara">
+If, for some bizarre reason, you need to code to concrete collection implementations, Hibernate3
+provides an extension point so you can do this. No Hibernate user has ever asked for support for
+concrete collection classes, so we did not bother implementing this as a standard feature.
+</p>
+
+<p class="wikiPara">
+You would think that Versant would actually try to discover real problems that real Hibernate
+users experience in practice, instead of coming up with red herrings like this.
+</p>
+
+<pre class="wikiPreformatted">
+7. Hibernate does not guarantee the order of loading attributes in your class, so your setter
+methods cannot reference other attributes within your class. This is because the setter
+methods are used at runtime when loading an object from the database and it is possible that
+you are accessing a field that is not loaded yet.
+</pre>
+
+
+<p class="wikiPara">
+This is not correct, Hibernate guarantees that attributes are populated (either via setters, or
+direct instance variable access) in the order they are listed in the mapping document.
+</p>
+
+<pre class="wikiPreformatted">
+It is worth pointing out that Hibernate uses checked exceptions. 
+</pre>
+
+
+<p class="wikiPara">
+Hibernate 3.0 has an unchecked exception model.
+</p>
+
+<pre class="wikiPreformatted">
+However, it is not clear why there is any exception handling at all in Hibernate. The
+reason is as stated in the Hibernate documentation, Hibernate cannot guarantee the state of the
+Hibernate Session if any kind of exception occurs.
+</pre>
+
+
+<p class="wikiPara">
+Correct, this is the same as TopLink, and different to some JDO implementations. I'm currently
+discussing with Mike Keith (Oracle) and Patrick Linskey (Solarmetric) to understand if there are 
+any good cases for allowing recoverable exceptions in the EJB 3.0 spec, and if we find some (Patrick 
+seems to believe there are some), we will of course implement that in Hibernate.
+</p>
+
+<p class="wikiPara">
+I'm open minded about this; I realise that there are some complex and subtle issues here. However,
+it is useful to observe that the two most mature, most used, non-designed-by-committee ORM solutions 
+in the world (Hibernate and TopLink), never found a compelling need to support recoverable exceptions.
+On occasion, users have asked that certain exceptions be recoverable, but I have always been able
+to offer satisfactory alternative approaches to their problem.
+</p>
+
+<pre class="wikiPreformatted">
+If you want to move a deterministic set of objects to another tier, you have to resolve these yourself.
+Each object must have been loaded from the database before you can detach (close the Hibernate
+session), so you must touch each object to cause it to initialize. For collections, you would have to
+use a static method Hibernate.initialize(). 
+</pre>
+
+
+<p class="wikiPara">
+This is not correct, all Hibernate query facilities give you a way to easily specify which associations
+will be fetched before detaching the object graph. You most certainly do not need to traverse the object
+graph calling initialize().
+</p>
+
+<pre class="wikiPreformatted">
+Once you've sent the objects to the disconnected tier, you need to be very careful not to traverse 
+relationships outside of the disconnected graph or you will get a fatal exception. 
+</pre>
+
+
+<p class="wikiPara">
+On the contrary, the exception is not fatal, hence this behavior is exactly the same as Versant's.
+</p>
+
+<pre class="wikiPreformatted">
+Once you've changed the objects, then when you send them back you must either
+individually call update( ) on each object or configure cascading meta data. 
+Once again, using cascading meta data does not work through collections. 
+</pre>
+
+
+<p class="wikiPara">
+This is not correct. You can easily enable cascade on a collection.
+</p>
+
+<pre class="wikiPreformatted">
+So, in most cases you will be forced to implement this yourself. In addition, Hibernate does not know which 
+fields have changed or if the object has really been updated. By default, when you call update( ) it will 
+perform an UPDATE operation of the object even if it has not changed. This means that configuring meta data to
+automatically call the update will ALWAYS do an update operation even if the object has not
+changed. If you have triggers defined in the database this will lead to false triggers. 
+</pre>
+
+
+<p class="wikiPara">
+There is an option called select-before-update which apparently the writer was not aware of, even though
+it is thoroughly documented.
+</p>
+
+<pre class="wikiPreformatted">
+Hibernate provides a way to work around this inadequacy ONLY if you are using optimistic transactions with
+the version/timestamp option.  You can call a method to check if the object has changed prior to
+actually doing the update. However, since Hibernate does not track dirty fields, it must do a field by
+field comparison of all fields to determine what needs to be updated. This has obvious performance
+implications. 
+</pre>
+
+
+<p class="wikiPara">
+None of this is correct, and I have no idea what the author is talking about. Hibernate does not have any
+such functionality. Instead it has the simple switch mentioned above.
+</p>
+
+<pre class="wikiPreformatted">
+To say that the Hibernate detach behavior is flawed is an understatement. 
+</pre>
+
+
+<p class="wikiPara">
+To say that the author of this document does not understand Hibernate's detach behavior is a massive
+understatement.
+</p>
+
+<p class="wikiPara">
+Note that Hibernate 3.0 fully supports the persist()/merge() lifecycle defined by JSR-220 (EJB 3.0).
+</p>
+
+<pre class="wikiPreformatted">
+Hibernate, out of the box, uses EHCache for their level 2 cache which is not clusterable. This is
+another open source product that has difficulty staying in sync with product updates. 
+</pre>
+
+
+<p class="wikiPara">
+This is absolutely not true. EHCache (which stood for Easy Hibernate Cache) was established at my
+urging by Greg Luck from Thoughtworks. Greg heavily tests EHCache against the latest release of
+Hibernate before every release of EHCache, and we are in regular email contact. There has never, 
+ever been a problem with <q>staying in sync</q>. I'm not even sure what <q>staying in sync</q> means; perhaps
+the author is not aware of the software development notion of a <q>published API</q>, which helps
+different software components work together.
+</p>
+
+<pre class="wikiPreformatted">
+They used to support JCS cache, but have deprecated it's use and who knows how long EHCache will last.
+</pre>
+
+
+<p class="wikiPara">
+EHCache is a fork of Apache JCS, and was created to fix several bugs in JCS. JCS was deprecated a full
+two years ago! This is pure dishonest FUD. There are no plans at all to drop support for EHCache. And 
+even if there were, what exactly is the problem here? The whole point of the pluggable cache architecture 
+is that the application has no dependency to the cache implementation, which is completely swappable at 
+deployment time.
+</p>
+
+<pre class="wikiPreformatted">
+Hibernate does support two different cluster caches ( SwarmCache and JBoss TreeCache ). However,
+none of their clustered cache implementations support query caching, so by introducing these
+clustered caching solutions you introduce a potential performance degradation.
+</pre>
+
+
+<p class="wikiPara">
+This is not true, the Hibernate query cache works with JBoss Cache, as per the Hibernate documentation.
+</p>
+
+<pre class="wikiPreformatted">
+Hibernate does query caching by using a system level caching option must be enabled, and then in
+addition, individual queries must be configured to cache their results. Also, no referenced objects are
+cached, only their OIDs. So far, this is pretty consistent with Versant Open Access JDO. However,
+since only oids are cached, query caching is really only useful if using the second level shared cache.
+In fact this is stated explicitly in the Hibernate documentation. However, the only shared caches that
+support clustering do not support query caching. Versant Open Access JDO does not have this
+restriction.
+</pre>
+
+
+<p class="wikiPara">
+Except for JBoss Cache, which supports query caching. Oh, woops, that explodes the whole claim.
+</p>
+
+<pre class="wikiPreformatted">
+CGLIB Side effects:
+Hibernate cannot not properly implement polymorphism due to it's runtime byte code generation.
+</pre>
+
+
+<p class="wikiPara">
+This is simply not correct, all Hibernate queries and association mappings fully support polymorphism.
+</p>
+
+<pre class="wikiPreformatted">
+What is meant here is that you cannot query on a super class and then cast to the subclass type or a
+similar type of operation. Subclass casting is not allowed. 
+</pre>
+
+
+<p class="wikiPara">
+This is not correct, it is trivial to use the get() method to perform a typecast in the very rare 
+case that business logic needs to perform typecasts.
+</p>
+
+<p class="wikiPara">
+By the way, the whole point of polymorphism is that you do not need to do typecasts, so the author
+has a mistaken understanding of what polymorphism is all about if he/she thinks that support for
+polymorphism means support for typecasting.
+</p>
+
+<pre class="wikiPreformatted">
+Also, you cannot use any Final class or any class that has Final methods. Of course, if these things 
+are important to you then you can get them back by not using the runtime proxies and reverting to 
+the old reflection model.
+</pre>
+
+
+<p class="wikiPara">
+What is a capitalized <q>Final</q>? Does the author mean the Java <q>final</q> keyword? If so, he/she is partially
+correct: a final class cannot be proxied (unless it implements an interface), in which case you can use
+instance variable interception for lazy loading (just like Versant) if you really want to. In practice,
+no Hibernate users care about this.
+</p>
+
+<p class="wikiPara">
+(We actually implemented instance variable interception, not in response to requests from users, but
+rather to neutralize this as point of FUD by commercial vendors like Versant.)
+</p>
+
+<pre class="wikiPreformatted">
+Finally, something that I have not fully comprehended the implications of: If any resources are 
+initialized in a constructor or initializer method, then those resources will also be held by the 
+proxy. I think that there may be no way to release these resources when the actual object is flushed 
+or committed/evicted from the cache.
+</pre>
+
+
+<p class="wikiPara">
+What is this person on about here? Apparently the author drifted into pure la la speculation land at
+this point!
+</p>
+
+<pre class="wikiPreformatted">
+Does not support semantics of the collection like iteration ordering on LinkedLists, but it does
+not go into detail and list which of these semantics are unsupported in the documentation.
+</pre>
+
+
+<p class="wikiPara">
+Hibernate certainly does support the <q>iteration order of a List</q>, apparently the author
+misunderstood some comment in the Hibernate documentation.
+</p>
+
+<p class="wikiPara">
+Hibernate3 provides the UserCollectionType extension point which may be used to support any damn 
+collection and collection semantics you like.
+</p>
+
+
+<pre class="wikiPreformatted">
+One to many associations that do not use a JOIN table and have a NOT_NULL constraint on the
+key will fail on commit if there is no bi-directional association defined in the model. So, you
+must have a bi-directional association if the key has a NOT_NULL constraint.
+</pre>
+
+
+<p class="wikiPara">
+Not true in Hibernate 3.0.
+</p>
+
+<pre class="wikiPreformatted">
+Hibernate does not support one to many collections where the many is an indexed collection.
+Also a restriction in Versant Open Access JDO.
+</pre>
+
+
+<p class="wikiPara">
+Not true in Hibernate 3.0. 
+</p>
+
+<p class="wikiPara">
+Ooops, did we just spot a feature of Hibernate that Versant does not have? How could that possibly be?
+</p>
+
+
+<pre class="wikiPreformatted">
+Hibernate supports Flat, Vertical and Horizontal inheritance mapping. 
+Flat mapping has a restriction that none of the columns in a subclass can have a NOT_NULL constraint. 
+</pre>
+
+
+<p class="wikiPara">
+Yes, this is true in every ORM implementation.
+</p>
+
+<pre class="wikiPreformatted">
+We do not have any restrictions on constraints for Flat mapping. 
+</pre>
+
+
+<p class="wikiPara">
+On the contrary, it is simply impossible that a subclass attribute could be non-null in the single
+table or <q>Flat</q> mapping strategy. Apparently the author does not even know his own 
+product. It /is/ possible to enforce correct nullability semantics using a 
+database CHECK constraint, and Hibernate supports this in its DDL export functionality.
+</p>
+
+<pre class="wikiPreformatted">
+Horizontal mapping does not support polymorphic associations which would necessitate multiple 
+queries across concrete tables. 
+</pre>
+
+
+<p class="wikiPara">
+Not true in Hibernate 3.0, Hibernate3 can use an SQL UNION, and this allows, among other things,
+polymorphic associations.
+</p>
+
+<pre class="wikiPreformatted">
+Also, Hibernate uses a top down approach to inheritance mapping. This means that
+subclasses inherit their supers mapping strategy. The implications are that you cannot combine
+mapping strategies for a set of subclasses from a common superclass. For example, a class that drives
+two subclasses cannot map one of the subclasses vertically and the other flat.
+</pre>
+
+
+<p class="wikiPara">
+Not true in Hibernate 3.0. <q>Flat</q> and <q>Vertical</q> can be chosen freely selected for particular 
+subclasses.
+</p>
+
+<pre class="wikiPreformatted">
+Today, Versant Open Access JDO supports Flat and Vertical mapping only.
+</pre>
+
+
+<p class="wikiPara">
+Ah, so, Hibernate's inheritance support is more flexible. Imagine that.
+</p>
+
+<pre class="wikiPreformatted">
+Versant Open Access JDO supports polymorphic associations in all supported mapping strategies.
+</pre>
+
+
+<p class="wikiPara">
+As does Hibernate3, and, as we have observed, Hibernate supports a whole extra inheritance 
+mapping strategy that Versant does not yet have.
+</p>
+
+<pre class="wikiPreformatted">
+Database Constraints:
+Hibernate does not know how to order insert statements to deal with NOT_NULL constraints on
+foreign key columns. 
+</pre>
+
+
+<p class="wikiPara">
+This is not correct. When cascade persist or cascade save is enabled, Hibernate correctly
+orders INSERTs.
+</p>
+
+<pre class="wikiPreformatted">
+We did not specifically address performance in the above, except to reference the Hibernate
+move from a purely reflective to a runtime byte code enhancement model. The issues of taking
+this later approach due to performance problems in the former is something well documented in
+the Hibernate manuals. If you crawl the web looking for more information on performance, you
+will find that there are several benchmarks done where JDO vendors out perform Hibernate.
+</pre>
+
+
+<p class="wikiPara">
+Blah blah. I've seen benchmarks where Hibernate wins. I've seen benchmarks where TopLink wins.
+I've seen benchmarks where CMP wins. In our experience, the winning solution is usually the 
+one which is best understood by the benchmarkers. (My own benchmarks against a leading JDO
+solution show Hibernate winning on most measures, but I don't claim this as a general 
+result.)
+</p>
+
+<p class="wikiPara">
+Besides this vague claim, the author does not have the courage to actually come out and claim 
+that Versant Open Access JDO is actually faster than Hibernate, which presumably means that 
+Versant does not actually believe it is. This is one point where we are in agreement.
+</p>
+
+<pre class="wikiPreformatted">
+The above has addressed many of the misconceptions found in the Hibernate community
+regarding Hibernates superiority over JDO. I think that from a technical perspective, there is a
+strong case that those misconceptions are completely unfounded.
+</pre>
+
+
+<p class="wikiPara">
+Actually, the above was a long list of false statements and half-truths, written by someone who did
+not know very much about Hibernate, beyond some apparently superficial reading of the user 
+manual.
+</p>
+
+<p class="wikiPara">
+Furthermore, I have to ask, are any of these issues to do with real problems managing real
+data in real enterprise applications? Very few of the interesting questions in ORM are even
+addressed in this document. What facilities does Versant have for dealing with
+complex legacy data? For working with temporal, regional or permissioned data? For allowing
+full overriding of any generated SQL? For calling database-specific functionality from the
+query language? For handling dynamic queries on search screens? For producing XML or mapping <q>dynamic</q> entity definitions? For extensibility? For efficient association fetching? How many
+users are really using Versant Open Access JDO in anger? Hibernate can boast tens of
+thousands of satisfied users; why should they start paying for a closed source solution to
+a problem which is now very effectively solved by free software?
+</p>
+</div>
+

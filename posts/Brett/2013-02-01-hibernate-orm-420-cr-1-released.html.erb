@@ -1,0 +1,63 @@
+---
+title: "Hibernate ORM 4.2.0.CR1 Released"
+author: "Brett Meyer"
+blogger_name: "Brett"
+creation_date: "01-02-2013"
+tags: [Core Release,Hibernate,News]
+
+relative_url: /2013/02/01/hibernate-orm-420-cr-1-released
+slug: hibernate-orm-420-cr-1-released
+lace: http://in.relation.to/23923.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/02/01/hibernate-orm-420-cr-1-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Hibernate ORM 4.2.0.CR1 was just released. The full changelog can be viewed here: <a href="https://hibernate.onjira.com/secure/ReleaseNote.jspa?projectId=10031&amp;version=12651" target="" class="regularLink">https://hibernate.onjira.com/secure/ReleaseNote.jspa?projectId=10031&amp;version=12651</a>
+</p>
+
+<p class="wikiPara">
+This release included a few notable bug fixes and improvements:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-465" target="" class="regularLink">HHH-465</a>: <q>nulls first</q> and <q>nulls last</q> syntax in HQL ordering</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-1917" target="" class="regularLink">HHH-1917</a>: automatically delete orphaned JoinTable rows on a bulk delete affecting a Many-To-Many association</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-2448" target="" class="regularLink">HHH-2448</a>: deterministic column aliases, regardless of mapping ordering -- mainly affects clustering environments</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-7797" target="" class="regularLink">HHH-7797</a>: the logic handling unique columns and constraints was entirely re-written and improved</li>
+</ul>
+
+<p class="wikiPara">
+In addition, a handful of performance improvements went in.  So far, we have seen dramatic improvements in JBoss benchmarking.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-7746" target="" class="regularLink">HHH-7746</a>: additional batch loading algorithms (use "hibernate.batch_fetch_style" in your settings -- see the new Enum for choices)</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-7872" target="" class="regularLink">HHH-7872</a>: improves L2 caching of reference data (enable with "hibernate.cache.use_reference_entries")</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.onjira.com/browse/HHH-7902" target="" class="regularLink">HHH-7902</a>: Originally, JDBC types (Connection, Statement, ResultSet, etc.) were wrapped with Java Proxies to introduce resource management, logging, etc.  The proxying was shown to be a performance hotspot, so they were entirely removed.  The functionality was replaced with a new set of internal contracts/helpers.</li>
+</ul>
+
+<p class="wikiPara">
+As usual, thank you to the community for all the support and hard work!
+</p>
+
+<p class="wikiPara">
+JBoss Nexus: <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate" target="" class="regularLink">https://repository.jboss.org/nexus/content/groups/public/org/hibernate</a>
+</p>
+
+<p class="wikiPara">
+Maven Central: <a href="http://repo1.maven.org/maven2/org/hibernate/hibernate-core" target="" class="regularLink">http://repo1.maven.org/maven2/org/hibernate/hibernate-core</a> (should update in a couple of days)
+</p>
+
+<p class="wikiPara">
+SourceForge: <a href="https://sourceforge.net/projects/hibernate/files/hibernate4" target="" class="regularLink">https://sourceforge.net/projects/hibernate/files/hibernate4</a>
+</p>
+
+<p class="wikiPara">
+Downloads: <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.2.0.CR1/hibernate-release-4.2.0.CR1.zip/download" target="" class="regularLink">ZIP</a> or <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.2.0.CR1/hibernate-release-4.2.0.CR1.tgz/download" target="" class="regularLink">TGZ</a></p>
+</div>
+

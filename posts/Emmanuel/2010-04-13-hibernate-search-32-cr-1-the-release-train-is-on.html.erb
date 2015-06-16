@@ -1,0 +1,44 @@
+---
+title: "Hibernate Search 3.2 CR1: the release train is on"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "13-04-2010"
+tags: [Hibernate,Hibernate Search]
+
+relative_url: /2010/04/13/hibernate-search-32-cr-1-the-release-train-is-on
+slug: hibernate-search-32-cr-1-the-release-train-is-on
+lace: http://in.relation.to/15136.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2010/04/13/hibernate-search-32-cr-1-the-release-train-is-on
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I am happy to announce the release of Hibernate Search 3.2 CR1.
+Crossing fingers, this is the latest release before the final version targeted in a few days.
+</p>
+
+<p class="wikiPara">
+A good 75% of our time has been spent on bug fixes fresh and old (some even fossilized). But we have also added a few interesting new features:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> we have polished the one we introduced in <a href="/Bloggers/HibernateSearch320Beta1" target="" class="regularLink">3.2 Beta1</a>
+</li>
+<li class="wikiUnorderedListItem"> we moved to Lucene 2.9 APIs as a first step towards Lucene 3.0's migration and we also have upgraded to Solr 1.4 for the declarative analyzer framework</li>
+<li class="wikiUnorderedListItem"> Amin, Sanne and I have been working on a new API to catch and process indexing errors: the default implementation logs the errors but you can write your own custom callback. You could log the failing indexing process to a DB, send a message to a sysadmin, queue the issues for automatic reprocessing etc).</li>
+<li class="wikiUnorderedListItem"> Hibernate Search 3.2 targets Hibernate Core 3.5 and use some of the new APIs</li>
+<li class="wikiUnorderedListItem"> a simpler API is at your disposal to add fields to a Lucene document in your custom bridges (thanks Sanne!)</li>
+</ul>
+
+<p class="wikiPara">
+You can download the <a href="http://hibernate.org/subprojects/search/download.html" target="" class="regularLink">release from sourceforce or our maven repository</a> and <a href="http://docs.jboss.org/hibernate/search/3.2/reference/en/html/" target="" class="regularLink">read the documentation</a>. Try it out!
+</p>
+
+<p class="wikiPara">
+Many thanks for the bug reports / feature requests you have send us: they helped polish this release. Atop the usual suspects, I would like to thank Gustavo Nalle Fernandez and Amin Mohammed-Coleman for their contribution.</p>
+</div>
+

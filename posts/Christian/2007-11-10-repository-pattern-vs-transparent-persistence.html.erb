@@ -1,0 +1,79 @@
+---
+title: "Repository Pattern vs. Transparent Persistence"
+author: "Christian Bauer"
+blogger_name: "Christian"
+creation_date: "10-11-2007"
+tags: []
+
+relative_url: /2007/11/10/repository-pattern-vs-transparent-persistence
+slug: repository-pattern-vs-transparent-persistence
+lace: http://in.relation.to/2815.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/11/10/repository-pattern-vs-transparent-persistence
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I've recently read the book <q>Domain Driven Design</q>, which apparently is now the new bible for some folks who <q>totally think in objects</q>. I even mentioned it in HiA and JPwH - unfortunately I didn't read it before.
+</p>
+
+<p class="wikiPara">
+I now think that quite a few of the patterns promoted by this book are actually a step backwards. I also miss a list of Pros and Cons of each pattern (like in the GoF book). So readers have to guess why and when a pattern might be applicable and when not. Or, when the Cons bullet items would outweigh the Pros.
+</p>
+
+<p class="wikiPara">
+One example would be the /Repository/ pattern. If I understand it correctly, this is how it works (the <a href="http://tech.groups.yahoo.com/group/domaindrivendesign/message/309" target="" class="regularLink">DDD author says that this similar summary</a> is correct):
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Developers don't want to decide if they should call <tt>order.getLineItems()</tt> or rather <tt>lineItemDAO.findAllForOrderId(order.getId())</tt> if they need a bunch of line items from the data store. (I completely agree that this is a typical and common issue  - however, I don't agree with the proposed solution.)</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> We can restrict that and take away that decision by forcing access to always go through a <q>repository</q>. For example, there is only an <tt>OrderRepository</tt> and the only way to get line items would be <tt>OrderRepository.getLineItems(order)</tt>. This repository thing uses DAOs internally to actually get the data. So we wrap DAOs in repositories, creating an additional layer. You are not supposed to call the DAO anymore.</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Now, we generalize the <tt>OrderRepository</tt> into an interface and put the DAO access into <tt>OrderRepositoryImpl</tt>. </li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://debasishg.blogspot.com/2007/02/domain-driven-design-inject.html" target="" class="regularLink">And finally</a>: We then inject this concrete <tt>OrderRepository</tt> instance into the <tt>Order</tt> class, so that when you call <tt>order.getLineItems()</tt>, it will internally access the repository. This requires interception of domain model instance creation but that is easy enough to do these days with containers/factories/services everywhere. Nobody creates a /new/ instance anymore, right?</li>
+</ul>
+
+<p class="wikiPara">
+The advantages seem to be that <q>repositories speak the language of the domain</q> (eh, what? This seems to be related to passing IDs as DAO finder arguments...) and that, well, you no longer have to make these difficult choices when you want to access a data store, because there is only one way to get the stuff.
+</p>
+
+<p class="wikiPara">
+I think this pattern is a step backwards and should not be recommended:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> If you do not want to have to decide between <tt>order.getLineItems()</tt> and <tt>lineItemDAO.findAllForOrderId(order.getId())</tt> - kick out one of these methods! Nobody forces you to map a persistent <tt>lineItems</tt> collection on your <tt>Order</tt> class. You did that because you like the features you get when you load data that way (in Hibernate: transparent pre-fetching of other <tt>lineItems</tt> collections with batches or subselects, can't do that nicely in DAO finders). If you don't need that, don't create it. The same is true for any other association in your domain model. Or, vice versa, if there is no difference between a DAO finder method and a domain model traversal, remove the DAO method.</li>
+<li class="wikiOrderedListItem"> If there really is a difference between <tt>order.getLineItems()</tt> and <tt>lineItemDAO.findAllForOrderId(order.getId())</tt> - for example, one returns <q>more</q> associated stuff, like the product for each line item - keep them both. I do that all the time. I document it properly, saying <q>this finder method does eager fetching of the product for each line item</q> and on the getter method I write <q>this returns line items, the products are unloaded proxies</q>. And of course I need them both. Actually, I rename the DAO finder to <tt>lineItemDAO.findAllForOrderIdWithProducts(order.getId())</tt> or, if I want to speak <q>the language of the domain</q> nothing stops me from defining it as <tt>lineItemDAO.findAllForOrderWithProducts(order)</tt>. Because I don't like repeating myself, I finally end up with <tt>lineItemDAO.findWithProducts(order)</tt>. It's now quite easy to decide if I call this, or rather <tt>order.getLineItems()</tt> - they have a different fetch strategy and fetch plan.</li>
+<li class="wikiOrderedListItem"> You could argue that it would be nice if everything would /look/ the same. That is, following this repository pattern I would end up with an API like <tt>order.getLineItems()</tt> and <tt>order.getLineItemsWithProducts()</tt>. But the price I'd have to pay is <i class="wikiEmphasis">A)</i> a completely new layer in my application that is at least as complex as the DAO layer (conceptually there really is not much difference between them) and <i class="wikiEmphasis">B)</i> coupling my domain model to these repositories. And because I think there is really no difference between a generic, interface-based DAO architecture and these repositories, it means injecting DAOs into my domain model instances at runtime. That means they don't run anymore without DAOs (mock or real). Wrapping the DAOs again and again does not change that.</li>
+<li class="wikiOrderedListItem"> If you do not inject and call repositories in your domain model classes, you gained nothing. You created a layer on top of the DAOs that looks like the DAOs, albeit with funny new names.</li>
+</ol>
+
+<p class="wikiPara">
+My personal best practices, when you have to decide how the persistence layer and services are integrated with the rest of the system, would be these:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Optimize access paths and simplify data access by carefully designing the domain model associations and persistence layer API (the latter following some good DAO pattern and related best practices - yes, there are books about this). Use the features of your transparent persistence service to make sure that all these access paths do the right thing, depending on what you need. </li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Document the access paths properly, and when each should be used. I adopt some simple conventions, for example: Never map a persistent collection unless it is absolutely necessary - this already makes things a lot easier. </li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Keep the domain model implementation clean, testable, and reusable: no security checks, transaction demarcation, or explicit data store access in any of these classes.</li>
+</ul>
+
+</div>
+

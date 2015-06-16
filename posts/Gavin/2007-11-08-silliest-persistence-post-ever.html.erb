@@ -1,0 +1,240 @@
+---
+title: "Silliest persistence post. Ever."
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "08-11-2007"
+tags: []
+
+relative_url: /2007/11/08/silliest-persistence-post-ever
+slug: silliest-persistence-post-ever
+lace: http://in.relation.to/2764.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/11/08/silliest-persistence-post-ever
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Somehow</i>, <a href="http://blog.objectmentor.com/articles/2007/11/02/active-record-vs-objects" target="" class="regularLink">this silliness</a> got <a href="http://www.infoq.com/news/2007/11/oop-vs-active-record" target="" class="regularLink">linked</a> by InfoQ. It's not really worth the effort of fisking this post, but I'm bored so I'll go ahead and do it anyway.
+</p>
+
+<blockquote class="wikiBlockquote">
+Active Record is a well known data persistence pattern. It has been adopted by Rails, Hibernate, and many other ORM tools.
+</blockquote>
+
+<p class="wikiPara">
+Actually Hibernate does not implement the ActiveRecord pattern. If you really feel the need to classify it according to Fowler's taxonomy, Hibernate is a <i class="wikiEmphasis">DataMapper</i>.
+</p>
+
+<blockquote class="wikiBlockquote">
+There is a 1:1 correspondence between tables and classes, columns and fields. (Or very nearly so).
+
+It is this 1:1 correspondence that bothers me. Indeed, it bothers me about all ORM tools. Why? Because this mapping presumes that tables and objects are isomorphic.
+</blockquote>
+
+<p class="wikiPara">
+Well, this may be the case with ActiveRecord, but Hibernate and most other ORM solutions are a good deal more flexible in this regard. Indeed, one of the primary goals of any ORM solution is to allow objects and tables to be non-isomorphic to the extent that this makes sense.
+</p>
+
+<blockquote class="wikiBlockquote">
+From the beginning of OO we learned that the data in an object should be hidden, and the public interface should be methods. In other words: objects export behavior, not data. An object has hidden data and exposed behavior.
+</blockquote>
+
+<p class="wikiPara">
+Bizarre statement. Objects are stateful, and one of the main purposes of the methods of an object is to export that state (<q>data</q>) to the world.
+</p>
+
+<blockquote class="wikiBlockquote">
+Data structures, on the other hand, have exposed data, and no behavior. In languages like C++ and C# the <tt>struct</tt> keyword is used to describe a data structure with public fields. If there are any methods, they are typically navigational. They don’t contain business rules.
+</blockquote>
+
+<p class="wikiPara">
+I don't believe that the word <q>data structure</q> implies anything at all about <q>behavior</q>. Certainly it does not imply <q>no behavior</q>.
+</p>
+
+<blockquote class="wikiBlockquote">
+Thus, data structures and objects are diametrically opposed. They are virtual opposites. One exposes behavior and hides data, the other exposes data and has no behavior. But that’s not the only thing that is opposite about them.
+</blockquote>
+
+<p class="wikiPara">
+Whoah! <q>Diametrically opposed</q>! Really?
+</p>
+
+<p class="wikiPara">
+On the contrary, most people I know would view an object as a package of:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> a data structure, and</li>
+<li class="wikiOrderedListItem"> functionality that operates upon that data structure.</li>
+</ol>
+
+<p class="wikiPara">
+The data is an intrinsic part of the object; not its <q>diametric opposite</q>.
+</p>
+
+<blockquote class="wikiBlockquote">
+Algorithms that deal with objects have the luxury of not needing to know the kind of object they are dealing with.
+</blockquote>
+
+<p class="wikiPara">
+This is not true.
+</p>
+
+<blockquote class="wikiBlockquote">
+The old example: shape.draw(); makes the point. The caller has no idea what kind of shape is being drawn. 
+</blockquote>
+
+<p class="wikiPara">
+Correct; the old example makes the point perfectly: the caller knows very precisely that the type of thing it is drawing is a <tt>Shape</tt>.
+</p>
+
+<blockquote class="wikiBlockquote">
+algorithms that employ objects are immune to the addition of new types ... objects are not immune to the addition of new functions ... Algorithms that use data structures are immune to the addition of new functions ... algorithms that employ data structures are not immune to the addition of new types ... Those portions of the system that are likely to be subject to new types, should be oriented around objects. On the other hand, any part of the system that is likely to need new functions ought to be oriented around data structures.
+</blockquote>
+
+<p class="wikiPara">
+This is all predicated upon a false dichotomy between <q>Objects</q> and <q>Data structures</q>. In truth, there is no need to <q>orient</q> ourselves toward one view or the other in any particular <q>part of the system</q>.
+</p>
+
+<p class="wikiPara">
+Rather, we take advantage of subtyping (inheritance/polymorphism) when we design our object model. By carefully design of the type hierarchy, we allow our system to accommodate the introduction of new types and new behaviors.
+</p>
+
+<blockquote class="wikiBlockquote">
+Again, note the almost diametrical opposition. Objects and Data structures convey nearly opposite immunities and vulnerabilities.
+</blockquote>
+
+<p class="wikiPara">
+Repeatedly <i class="wikiEmphasis">asserting</i> a false dichotomy does not make it true.
+</p>
+
+<blockquote class="wikiBlockquote">
+The problem I have with Active Record is that it creates confusion about these two very different styles of programming.
+</blockquote>
+
+<p class="wikiPara">
+There is only one style of programming.
+</p>
+
+<blockquote class="wikiBlockquote">
+A database table is a data structure. It has exposed data and no behavior.
+</blockquote>
+
+<p class="wikiPara">
+Correct.
+</p>
+
+<blockquote class="wikiBlockquote">
+But an Active Record appears to be an object.
+</blockquote>
+
+<p class="wikiPara">
+Correct. An ActiveRecord <i class="wikiEmphasis">is</i> an object.
+</p>
+
+<blockquote class="wikiBlockquote">
+It has "hidden data", and exposed behavior. I put the word "hidden" in quotes because the data is, in fact, not hidden. Almost all ActiveRecord derivatives export the database columns through accessors and mutators.
+</blockquote>
+
+<p class="wikiPara">
+There appears to be a deep confusion here about exactly what is supposed to be <q>hidden</q>. It is not state, nor <q>data</q>, that must be hidden, it is <i class="wikiEmphasis">implementation details</i>. Not the same thing at all.
+</p>
+
+<p class="wikiPara">
+And products like Hibernate certainly do not require that <q>database columns</q> be exported via accessors and mutators. Persistent attributes may be private if appropriate. State (<q>data</q>) can be hidden or exposed depending upon what is required by client code.
+</p>
+
+<blockquote class="wikiBlockquote">
+Indeed, the Active Record is meant to be used like a data structure. On the other hand, many people put business rule methods in their Active Record classes; which makes them appear to be objects.
+</blockquote>
+
+<p class="wikiPara">
+Again with the false dichotomy.
+</p>
+
+<blockquote class="wikiBlockquote">
+This leads to a dilemma. On which side of the line does the Active Record really fall? Is it an object? Or is it a data structure?
+</blockquote>
+
+<p class="wikiPara">
+It is both. There is no line.
+</p>
+
+<blockquote class="wikiBlockquote">
+This dilemma is the basis for the oft-cited impedance mismatch between relational databases and object oriented languages. Tables are data structures, not classes. Objects are encapsulated behavior, not database rows.
+</blockquote>
+
+<p class="wikiPara">
+The <q>impedence mismatch</q> is between the different modelling constructs available in the two paradigms.
+</p>
+
+<blockquote class="wikiBlockquote">
+The problem is that Active Records are data structures. Putting business rule methods in them doesn’t turn them into true objects.
+</blockquote>
+
+<p class="wikiPara">
+On the contrary, a data structure, together with business rule methods is the very <i class="wikiEmphasis">definition</i> of an <q>object</q>.
+</p>
+
+<blockquote class="wikiBlockquote">
+In the end, the algorithms that employ Active Records are vulnerable to changes in schema, and changes in type. They are not immune to changes in type, the way algorithms that use objects are.
+</blockquote>
+
+<p class="wikiPara">
+Any object-oriented code is vulnerable to changes in the type system. To argue that <q>algorithms that use objects</q> are invulnerable to <q>changes in type</q> is absurd in the extreme.
+</p>
+
+<blockquote class="wikiBlockquote">
+You can prove this to yourself by realizing how difficult it is to implement an polymorphic hierarchy in a relational database. It’s not impossible of course, but every trick for doing it is a hack. The end result is that few database schemae, and therefore few uses of Active Record, employ the kind of polymorphism that conveys the immunity of changes to type.
+</blockquote>
+
+<p class="wikiPara">
+Nonsense. Traditional data modelling has powerful, elegant methodologies for modelling subtyping, and modern ORM solutions like Hibernate are easily able to map between the relational and object-oriented approaches to subtyping.
+</p>
+
+<blockquote class="wikiBlockquote">
+So applications built around ActiveRecord are applications built around data structures. And applications that are built around data structures are procedural—they are not object oriented. The opportunity we miss when we structure our applications around Active Record is the opportunity to use object oriented design.
+</blockquote>
+
+<p class="wikiPara">
+Persistent classes embody inheritance relationships and subtyping. There are many opportunities to take advantage of object oriented design priniciples. If <i class="wikiEmphasis">your</i> ORM solution doesn't support inheritance, <a href="http://hibernate.org" target="" class="regularLink">get one that does</a>.
+</p>
+
+<blockquote class="wikiBlockquote">
+Applications should be designed and structured around objects, not data structures. Those objects should expose business behaviors, and hide any vestige of the database. The fact that we have <tt>Employee</tt> tables in the database, does not mean that we must have <tt>Employee</tt> classes in the application proper.
+</blockquote>
+
+<p class="wikiPara">
+The fact that we have employees in the <i class="wikiEmphasis">business domain</i>, and a notion of <tt>Employee</tt> in our <i class="wikiEmphasis">business domain model</i> implies that we will almost certainly have an <tt>EMPLOYEE</tt> table and <tt>Employee</tt> class in the object-oriented and relational realizations of this model.
+</p>
+
+<blockquote class="wikiBlockquote">
+We may have Active Records that hold <tt>Employee</tt> rows in the database interface layer, but by the time that information gets to the application, it may be in very different kinds of objects.
+</blockquote>
+
+<p class="wikiPara">
+This is <i class="wikiEmphasis">extremely</i> unlikely. Both the relational schema and the object model are representations of the same entities that exist in the business domain. These entities exist in <i class="wikiEmphasis">all</i> layers of the application, from the user interface, all the way back to the database.
+</p>
+
+<blockquote class="wikiBlockquote">
+I am not recommending against the use of Active Record. As I said in the first part of this blog I think the pattern is very useful. What I am advocating is a separation between the application and Active Record.
+
+Active Record belongs in the layer that separates the database from the application. It makes a very convenient halfway-house between the hard data structures of database tables, and the behavior exposing objects in the application.
+</blockquote>
+
+<p class="wikiPara">
+Oh <i class="wikiEmphasis">wonderful</i>. This stuff was all just an excuse for more useless <i class="wikiEmphasis">layerism?</i> Please, enough layers already!
+</p>
+
+<blockquote class="wikiBlockquote">
+So, in the end, I am not against the use of Active Record. I just don’t want Active Record to be the organizing principle of the application. It makes a fine transport mechanism between the database and the application; but I don’t want the application knowing about Active Records. I want the application oriented around objects that expose behavior and hide data. I generally want the application immune to type changes; and I want to structure the application so that new features can be added by adding new types.
+</blockquote>
+
+<p class="wikiPara">
+The application should be <q>oriented</q> around the business domain model. <q>Objects</q> are an implementation detail.
+</p>
+</div>
+

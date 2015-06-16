@@ -1,0 +1,213 @@
+---
+title: "par-tition your application"
+author: "Emmanuel Bernard"
+blogger_name: "Emmanuel"
+creation_date: "05-08-2005"
+tags: []
+
+relative_url: /2005/08/05/partition-your-application
+slug: partition-your-application
+lace: http://in.relation.to/2164.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2005/08/05/partition-your-application
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Packaging has always been a manual operation in ORM world. In Hibernate, you have to
+list the mapped entities either through the configuration API or through the hibernate.cfg.xml
+file. For a while now, JBoss AS has introduced the notion of .har, basically an archive scanned
+by the deployer to discover the Hibernate configuration and the hbm.xml files in it.
+</p>
+
+<h2 class="wikiHeadline2" id="H-PackagingInsideAnEJB3Container"><a href="/2005/08/05/partition-your-application#H-PackagingInsideAnEJB3Container">Packaging inside an EJB3 container</a></h2>
+<p class="wikiPara">
+The EJB3 expert group has introduced the same notion in the EJB3 public draft. A PAR 
+archive is basically a jar file having the .par extension. All you have to do is put all 
+your annotated entities in the archive and the container has the responsibility to scan 
+it and find all annotated entities. A PAR archive is a persistence unit definition
+that will be used to create an EntityManagerFactory (aka SessionFactory in the Hibernate
+world).
+You will then be able to use your persistence unit (by looking up or injecting an
+<tt>EntityManager</tt> or an <tt>EntityManagerFactory</tt>) named by the name of the PAR file
+without the extension (ie mypersistenceunit.par will be referred as mypersistenceunit).
+</p>
+
+<p class="wikiPara">
+Since you might want to customize your persistence unit configuration, a persistence.xml
+file can be added in the META-INF directory.
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;entity-manager&gt;
+   &lt;name&gt;FinancialPU&lt;/name&gt;
+   &lt;provider&gt;org.hibernate.ejb.HibernatePersistence&lt;/provider&gt;
+   &lt;jta-data-source&gt;jdbc/MyDB&lt;/jta-data-source&gt;
+   &lt;class&gt;com.acme.MyClass&lt;/class&gt;
+   &lt;jar-file&gt;externalEntities.jar&lt;/jar-file&gt;
+   &lt;properties&gt;
+       &lt;property name="hibernate.max_fetch_depth" value="4"/&gt;
+   &lt;/properties&gt;
+&lt;/entity-manager&gt;
+</pre>
+
+
+<p class="wikiPara">
+Let's analyze this small but comprehensive example. 
+</p>
+
+<p class="wikiPara">
+The <tt>name</tt> element allows you to override the persistence unit name (defaulted to 
+the PAR file name minor the .par suffix).
+</p>
+
+<p class="wikiPara">
+The <tt>provider</tt> element allows you to express the Entity Manager implementation you want
+to use for this persistence unit. The value is defaulted to Hibernate Entity Manager
+if none is specified. This is a interesting one, this basically means that you can
+use several Entity Manager implementations in the same application or use the Hibernate
+Entity Manager implementation in lieu of your vendor EJB3 persistence implementation in
+a standard way!
+</p>
+
+<p class="wikiPara">
+The <tt>jta-data-source</tt> aside with the <tt>non-jta-data-source</tt> let you specify the 
+datasource the persistence unit will work onto.
+</p>
+
+<p class="wikiPara">
+The <tt>class</tt> element, allows you to add explicitly some entities to be mapped. These
+entities are typically outside of the PAR archive and the Entity Manager will 
+search them in the EAR classpath. This is particularly convenient to be able to share 
+the same entity definition across several persistence unit.
+</p>
+
+<p class="wikiPara">
+The <tt>jar-file</tt> element, allows you to ask the entity manager implementation to add 
+all the entities contained in a particular JAR and include them in the configuration.
+In the case of the Hibernate Entity Manager, it will also look at the hbm.xml files.
+This is particularly convenient to share a certain amount of entities definitions
+across several persistence units.
+</p>
+
+<p class="wikiPara">
+There is also a <tt>mapping-file</tt> element currently not supported in Hibernate Entity
+Manager's implementation.
+</p>
+
+<p class="wikiPara">
+The <tt>properties</tt> elements is a way to provide some implementation specific properties
+to your entity manager. In the case of Hibernate you can add most of the hibernate.*
+properties. You can also define the second level cache informations using 
+<tt>hibernate.ejb.classcache.*</tt> and <tt>hibernate.ejb.collectioncache.*</tt>, please refer to
+the reference documentation for more information. 
+</p>
+
+<p class="wikiPara">
+This is good news for JBoss users, the .har archive is now standardized.
+The packaging that has always been a strong concept in J2EE is now extended to the 
+ORM world in a very ease of use manner.
+</p>
+
+<h2 class="wikiHeadline2" id="H-PackagingInJ2SEEnvironment"><a href="/2005/08/05/partition-your-application#H-PackagingInJ2SEEnvironment">Packaging in J2SE environment</a></h2>
+<p class="wikiPara">
+The very new point is that the PAR packaging simplicity works in the exact same manner
+in the J2SE world. The only difference is that you'll need to define your datasource
+not through the <tt>jta-data-source</tt> element but through the classic <tt>hibernate.*</tt>
+connection properties. The PAR archive is still scanned to find its contained entities and
+hbm.xml files. In order to let the Hibernate Entity Manager discover the PAR files, 
+they need to have a persistence.xml file in the META-INF directory (Hibernate Entity Manager
+basically request any resources named <q>META-INF/persistence.xml</q> and deduces the PAR
+archive location from it).
+</p>
+
+<p class="wikiPara">
+Let's imagine the following acmedomainmodel.par archive structure
+</p>
+
+<pre class="wikiPreformatted">
+com/acme/model/Animal.class (an @Entity annotated class)
+com/acme/model/Dog.class (an @Entity annotated class)
+com/acme/model/Cat.class (an @Entity annotated class)
+com/acme/model/Customer.class (a non annotated POJO)
+com/acme/model/Customer.hbm.xml (the metadata definitions of Customer)
+META-INF/persistence.xml
+</pre>
+
+
+<p class="wikiPara">
+where persistence.xml is
+</p>
+
+<pre class="wikiPreformatted">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;entity-manager&gt;
+   &lt;properties&gt;
+       &lt;property name="hibernate.max_fetch_depth" value="4"/&gt;
+       &lt;property name="hibernate.dialect" value="org.hibernate.dialect.MySQLInnoDBDialect"/&gt;
+       &lt;property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/&gt;
+       &lt;property name="hibernate.connection.username" value="emmanuel"/&gt;
+       &lt;property name="hibernate.connection.password" value="secret"/&gt;
+       &lt;property name="hibernate.connection.url" value="[=&gt;jdbc:mysql:///test]"/&gt;
+       &lt;property name="hibernate.cache.provider_class" value="org.hibernate.cache.EhCacheProvider"/&gt;
+   &lt;/properties&gt;
+&lt;/entity-manager&gt;
+</pre>
+
+
+<p class="wikiPara">
+My persistence unit named acmedomainmodel will then contains automatically <tt>Animal</tt>,
+<tt>Dog</tt>, <tt>Cat</tt>, <tt>Customer</tt>. Note that the <tt>Customer</tt> class don't really have to be in 
+the PAR archive, it just need to be in the classpath as long as its hbm.xml definition itself
+is inside the PAR archive.
+</p>
+
+<p class="wikiPara">
+Note that you can tune the discovery mechanism through the <tt>hibernate.ejb.autodetection</tt>.
+The possible values are <tt>none</tt> (no auto detection), <tt>class</tt> (auto detection of the
+annotated entities), <tt>hbm</tt> (auto detection of the hbm files) and <tt>class,hbm</tt> 
+(auto detection of both annotated entities and hbm files).
+</p>
+
+<p class="wikiPara">
+With a simple ant task you can then create a PAR archive which contains automatically
+your persistent domain model. No need to manually add the mapped entities inside the
+hibernate.cfg.xml file anymore.
+</p>
+
+<h2 class="wikiHeadline2" id="H-SeveralPersistentUnitInMyApplication"><a href="/2005/08/05/partition-your-application#H-SeveralPersistentUnitInMyApplication">Several persistent unit in my application</a></h2>
+<p class="wikiPara">
+You can of course use several PARs archive in your application. The appropriate 
+PAR archive will be processed based on the name your provide.
+</p>
+
+<pre class="wikiPreformatted">
+//create a keep the emf for later entity manager creations
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("acmedomainmodel");
+...
+EntityManager em = emf.createEntityManager();
+em.getTransaction().begin();
+em.persist(customer);
+wolfy = em.find(Dog.class, wolfyId);
+em.getTransaction().commit();
+em.close();
+</pre>
+
+
+<p class="wikiPara">
+Note that if there is only one PAR archive in your classpath, you don't have to pass
+the name to the createEntityManagerFactory() method, but is considered good practice 
+however.
+</p>
+
+<p class="wikiPara">
+The PAR archive mechanism offers a very convenient and standard way to package your ORM
+persistent units. By its autodiscovery mechanism, the packaging setting up scales in a 
+very elegant manner.
+</p>
+</div>
+

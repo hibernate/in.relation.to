@@ -1,0 +1,90 @@
+---
+title: "Pagination in Hibernate and EJB3"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "14-08-2004"
+tags: []
+
+relative_url: /2004/08/14/pagination-in-hibernate-and-ejb-3
+slug: pagination-in-hibernate-and-ejb-3
+lace: http://in.relation.to/1677.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2004/08/14/pagination-in-hibernate-and-ejb-3
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Just had an interesting discussion on ejb3-feedback@sun.com, started by David Cherryhomes, which saw me stupidly insistingthat something can't be done  when in fact, now that I think about it, /I realize I've actually done it before/, and that even the Hibernate <a href="http://www.hibernate.org/Documentation/OnlineDocumentation" target="" class="regularLink">AdminApp</a> example uses this pattern!
+</p>
+
+<p class="wikiPara">
+So, just so I don't forget this pattern again, I'm going to write it down, and also write a reuseable class implementing it.
+</p>
+
+<p class="wikiPara">
+The basic problem is pagination. I want to display <q>next</q> and <q>previous</q> buttons to the user, but disable them if there are
+no more, or no previous query results. But I don't want to retrieve all the query results in each request, or execute a 
+separate query to count them. So, here's the correct approach: 
+</p>
+
+<pre class="wikiPreformatted">
+public class Page {
+   
+   private List results;
+   private int pageSize;
+   private int page;
+   
+   public Page(Query query, int page, int pageSize) {
+       
+       this.page = page;
+       this.pageSize = pageSize;
+       results = query.setFirstResult(page * pageSize)
+           .setMaxResults(pageSize+1)
+           .list();
+   
+   }
+   
+   public boolean isNextPage() {
+       return results.size() &gt; pageSize;
+   }
+   
+   public boolean isPreviousPage() {
+       return page &gt; 0;
+   }
+   
+   public List getList() {
+       return isNextPage() ?
+           results.subList(0, pageSize-1) :
+           results;
+   }
+
+}
+</pre>
+
+
+<p class="wikiPara">
+You can return this object to your JSP, and use it in
+Struts, WebWork or JSTL tags. Getting a page in your
+persistence logic is as simple as:
+</p>
+
+<pre class="wikiPreformatted">
+public Page getPosts(int page) {
+    return new Page( 
+        session.createQuery("from Posts p order by p.date desc")
+        page,
+        40
+    );
+}
+</pre>
+
+
+<p class="wikiPara">
+The Page class works in both Hibernate and EJB 3.0.
+ 
+</p>
+</div>
+

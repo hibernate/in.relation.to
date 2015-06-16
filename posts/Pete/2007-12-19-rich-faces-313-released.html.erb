@@ -1,0 +1,162 @@
+---
+title: "RichFaces 3.1.3 released"
+author: "Pete Muir"
+blogger_name: "Pete"
+creation_date: "19-12-2007"
+tags: [RichFaces]
+
+relative_url: /2007/12/19/rich-faces-313-released
+slug: rich-faces-313-released
+lace: http://in.relation.to/3338.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2007/12/19/rich-faces-313-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+<i class="wikiEmphasis">Updated</i> - added in <tt>&lt;rich:orderingList /&gt;</tt> and specify the locale for the calendar
+</p>
+
+<p class="wikiPara">
+The <a href="http://labs.jboss.com/jbossrichfaces/" target="" class="regularLink">RichFaces</a> team have released <a href="http://labs.jboss.com/jbossrichfaces/downloads/" target="" class="regularLink">RichFaces 3.1.3.GA</a>. This is the first release since 3.1.0 back in September to include any new components (both 3.1.1 and 3.1.2 were bug fix releases) so I wanted to highlight the key improvements for you.
+</p>
+
+<h3 class="wikiHeadline3" id="H-TimePicker"><a href="/2007/12/19/rich-faces-313-released#H-TimePicker">Time Picker</a></h3>
+
+<div style="min-height: 238px">
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3339" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+
+What's really great about the RichFaces timepicker is that it is integrated into the calendar control - you can easily choose to provide a graphical control for the date, the time or the date /and/ the time
+
+This is really easy to use - just bind the calendar control to the model as usual
+
+<pre class="wikiPreformatted">&lt;rich:calendar value="#{flight.departureDate}"
+               locale="#{locale}"
+               datePattern="dd/M/yy hh:mm" /&gt;</pre>
+
+
+As you can see, it's also fully internationalisable!
+</div>
+
+<h3 class="wikiHeadline3" id="H-ControllingOneComponentFromAnother"><a href="/2007/12/19/rich-faces-313-released#H-ControllingOneComponentFromAnother">Controlling one component from another</a></h3>
+
+<p class="wikiPara">
+<tt>&lt;rich:componentControl /&gt;</tt> allows you to fire an action on another component when a javascript event occurs on your current component. This is very powerful, and perhaps hard to understand until you need it, so lets look at a very simple example. Here we have a modal panel (a bit like a css/div based popup), which we want to launch from somewhere in our page:
+</p>
+
+<pre class="wikiPreformatted">&lt;rich:modalPanel id="panel" width="350" height="100"&gt;
+  &lt;f:facet name="header"&gt;
+    &lt;h:outputText value="Modal Panel" /&gt;
+  &lt;/f:facet&gt;
+  &lt;h:outputText value="This panel is called using rich:componentControl"/&gt;
+&lt;/rich:modalPanel&gt;</pre>
+
+
+<pre class="wikiPreformatted">&lt;h:outputLink value="#"&gt;
+  Show Modal Panel
+  &lt;rich:componentControl for="panel" attachTo="link" operation="show" event="onclick"/&gt;
+&lt;/h:outputLink&gt;</pre>
+
+
+<p class="wikiPara">
+Rather than having to call some JS function, we can just attach a component controller to the link, and tell it what operation to call on what component.
+</p>
+
+<p class="wikiPara">
+<tt>&lt;rich:componentControl /&gt;</tt> can do a lot more than this - take a look at the <a href="http://livedemo.exadel.com/richfaces-demo/richfaces/componentControl.jsf" target="" class="regularLink">online demo</a> for ideas.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ShuttleList"><a href="/2007/12/19/rich-faces-313-released#H-ShuttleList">Shuttle list</a></h3>
+
+<div style="min-height: 189px">
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3340" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+
+As I've come to expect from the RichFaces guys, a really slick looking control, it's also simple to use:
+
+<pre class="wikiPreformatted">&lt;rich:listShuttle sourceValue="#{items.availableItems}"
+            targetValue="#{items.selectedItems}" 
+            var="item"
+            sourceCaptionLabel="Available Items"
+            targetCaptionLabel="Currently Active Items"&gt;
+
+  &lt;rich:column width="18"&gt;
+    &lt;h:graphicImage value="#{item.icon}"/&gt;
+  &lt;/rich:column&gt;
+  &lt;rich:column&gt;
+    &lt;h:outputText value="#{item.label}"/&gt;
+  &lt;/rich:column&gt;
+
+&lt;/rich:listShuttle&gt;</pre>
+
+
+Notice how we've embedded other <tt>rich</tt> components to layout the lists!
+
+</div>
+
+
+<h3 class="wikiHeadline3" id="H-OrderableList"><a href="/2007/12/19/rich-faces-313-released#H-OrderableList">Orderable list</a></h3>
+
+<div style="min-height: 233px">
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3354" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+
+Another similar component is the orderable list. Here's how you use it:
+
+<pre class="wikiPreformatted">&lt;rich:orderingList value="#{myMusic}" var="album"&gt;
+
+  &lt;rich:column&gt;
+    &lt;f:facet name="header"&gt;
+      Song Name
+    &lt;/f:facet&gt; 
+    &lt;h:outputText value="#{album.title}"/&gt;
+  &lt;/rich:column&gt;
+
+  &lt;rich:column&gt;
+    &lt;f:facet name="header"&gt;
+      Artist Name
+    &lt;/f:facet&gt;
+    &lt;h:outputText value="#{album.artist.name}" /&gt;
+  &lt;/rich:column&gt;
+
+&lt;/rich:orderingList&gt;</pre>
+
+
+</div>
+<h3 class="wikiHeadline3" id="H-ContextSensitiveMenu"><a href="/2007/12/19/rich-faces-313-released#H-ContextSensitiveMenu">Context sensitive menu</a></h3>
+
+<div style="min-height: 146px">
+<img src="http://in.relation.to/servlets/files/download.seam?fileId=3337" style="padding-left: 10px; padding-right: 25px; padding-top: 5px; padding-bottom: 0px;float:right;">
+RichFaces already has components for rendering a menu bar, and 3.1.3 adds a right-click menu.
+
+<pre class="wikiPreformatted">&lt;s:div id="flower"&gt;
+  &lt;h:graphicImage value="flower.jpg"/&gt;
+  &lt;rich:contextMenu event="oncontextmenu" 
+                    attached="true" 
+                    submitMode="none"&gt;
+    &lt;rich:menuItem value="Zoom In" 
+                   onclick="enlarge();"/&gt;
+    &lt;rich:menuItem value="Zoom Out" 
+                   onclick="decrease();"/&gt;
+  &lt;/rich:contextMenu&gt;
+&lt;/s:div&gt;</pre>
+
+
+Here we've attached the context menu to the parent <tt>&lt;s:div /&gt;</tt> component, so any right click on it causes the menu to show.
+
+</div>
+
+<h3 class="wikiHeadline3" id="H-TheresAlso"><a href="/2007/12/19/rich-faces-313-released#H-TheresAlso">There's also</a></h3>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem">Big improvements to Portal support (we are just finishing off support for Seam and RichFaces in a portlet)</li>
+<li class="wikiUnorderedListItem">
+<a href="http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;p=4114033" target="" class="regularLink">A system</a> for customising how styles are loaded (one big lump, or on demand)</li>
+<li class="wikiUnorderedListItem">Over 180 bug fixes (see the <a href="http://labs.jboss.com/wiki/RichFacesWhatIsNewIn3_1_3" target="" class="regularLink">release notes</a>)</li>
+</ul>
+
+<p class="wikiPara">
+Congratulations to the RichFaces team!</p>
+</div>
+

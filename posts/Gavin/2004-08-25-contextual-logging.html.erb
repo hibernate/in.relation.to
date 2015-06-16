@@ -1,0 +1,65 @@
+---
+title: "Contextual logging"
+author: "Gavin King"
+blogger_name: "Gavin"
+creation_date: "25-08-2004"
+tags: []
+
+relative_url: /2004/08/25/contextual-logging
+slug: contextual-logging
+lace: http://in.relation.to/1707.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2004/08/25/contextual-logging
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+We were doing some work with a customer with a very large project recently, and they were concerned about traceability of the SQL issued by Hibernate. Their problem is one that I guess is common: suppose I see something wong in the Hibernate log (say, some N+1 selects problem), how do I know which of my business classes is producing this? All I've got in the Hibernate log is org.hibernate.SQL, line 224 as the source of the log message!
+</p>
+
+<p class="wikiPara">
+I started to explain how Hibernate3 can embed comments into the generated SQL, so you could at least track the problem back to a particular HQL query. But then Steve remembered that log4j provides the /nested diagnostic context/. Now, I've seen a lot of projects using log4j, but I've never actually seen this used anywhere. I think it might be a better alternative to adding entry and exit logging everywhere, since we can see this context even if the entry/exit log categories are disabled. It's a good way to track the source of SQL in the Hibernate log. All you need to do is add calls to push() and pop() in your DAO:
+</p>
+
+<pre class="wikiPreformatted">
+public List getCustomersByName(String pattern) {
+    NDC.push("CustomerDAO.getCustomersByName()");
+    try {
+        return getSession()
+            .createQuery("from Customer c where c.name like :pattern")
+            .setString("pattern", pattern)
+            .list();
+    }
+    finally {
+        NDC.pop();
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+Then, if I set my pattern right:
+</p>
+
+<pre class="wikiPreformatted">
+log4j.appender.stdout.layout.ConversionPattern=%d{ABSOLUTE} %5p %c{1}:%L - %m (%x)%n
+</pre>
+
+
+<p class="wikiPara">
+I'll get a log message like this:
+</p>
+
+<pre class="wikiPreformatted">
+20:59:38,249 DEBUG [=&gt;SQL:244] - select .... like ? (CustomerDAO.getCustomersByName())
+</pre>
+
+
+<p class="wikiPara">
+Just thought I'd mention it, in case it helps someone.
+</p>
+</div>
+

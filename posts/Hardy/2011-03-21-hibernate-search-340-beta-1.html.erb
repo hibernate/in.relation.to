@@ -1,0 +1,121 @@
+---
+title: "Hibernate Search 3.4.0.Beta1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "21-03-2011"
+tags: [Hibernate Search]
+
+relative_url: /2011/03/21/hibernate-search-340-beta-1
+slug: hibernate-search-340-beta-1
+lace: http://in.relation.to/18845.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2011/03/21/hibernate-search-340-beta-1
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Moving from Alpha1 to Beta1, I am happy to announce the release of Hibernate Search 3.4.0.Beta1. The release includes an upgrade to Hibernate Core 3.6.2 and the usual bug fixes (see <a href="http://opensource.atlassian.com/projects/hibernate/secure/ReleaseNote.jspa?projectId=10061&amp;version=11210" target="" class="regularLink">Jira release notes</a> for all the gory details). 
+</p>
+
+<p class="wikiPara">
+The main focus, however, lies on the refinement of the faceting API. This time we even provide some <a href="http://docs.jboss.org/hibernate/search/3.4/reference/en-US/html_single/#d0e5541" target="" class="regularLink">documentation</a>. There are three steps to the usage of the faceting API. First you create the faceting request itself. This is done via the <i class="wikiEmphasis">QueryBuilder</i> and the faceting DSL. At the moment we support discrete faceting and range faceting. Here are some examples based on the example entity <i class="wikiEmphasis">Cd</i>:</p>
+<pre class="wikiPreformatted">
+@Entity
+@Indexed
+public class Cd {
+    @Id
+    @GeneratedValue
+    private int id;
+
+    @Fields( {
+        @Field,
+        @Field(name = "name_un_analyzed", index = Index.UN_TOKENIZED)
+    })
+    private String name;
+
+    @Field(index = Index.UN_TOKENIZED)
+    @NumericField
+    private int price;
+
+    Field(index = Index.UN_TOKENIZED)
+    @DateBridge(resolution = Resolution.YEAR)
+    private Date releaseYear;
+
+    @Field(index = Index.UN_TOKENIZED)
+    private String label;
+
+// setter/getter
+...</pre>
+
+Given the Cd entity, creating faceting request could look like this: <pre class="wikiPreformatted">QueryBuilder builder = fullTextSession.getSearchFactory().buildQueryBuilder().forEntity( Cd.class ).get();
+FacetingRequest labelFacetingRequest = builder.facet()
+    .name( "labelFaceting" )
+    .onField( "label")
+    .discrete()
+    .orderedBy( FacetSortOrder.COUNT_DESC )
+    .includeZeroCounts( false )
+    .maxFacetCount( 10 )
+    .createFacetingRequest();
+
+FacetingRequest priceacetingRequest = queryBuilder( Cd.class ).facet()
+    .name( "priceFaceting" )
+    .onField( "price" )
+    .range()
+    .below( 1000 )
+    .from( 1001 ).to( 1500 )
+    .above( 1500 ).excludeLimit()
+    .createFacetingRequest();</pre>
+
+As a second step you have to apply the created faceting request on a query. After executing the query, you can then access the faceting results. Both tasks are achieved via the <i class="wikiEmphasis">FacetManager</i> API:<pre class="wikiPreformatted">
+// create a fulltext query
+QueryBuilder builder = queryBuilder( Cd.class );
+Query luceneQuery = builder.all().createQuery(); // match all query
+FullTextQuery fullTextQuery = fullTextSession.createFullTextQuery( luceneQuery, clazz );
+
+// retrieve facet manager and apply faceting request
+FacetManager facetManager = query.getFacetManager();
+facetManager.enableFaceting( priceFacetingRequest );
+
+// get the list of Cds
+List&lt;Cd&gt; cds = fullTextQuery.list();
+assertTrue(cds.size() == 10);
+
+// retrieve the faceting results
+List&lt;Facet&gt; facets = facetManager.getFacets( "priceFaceting" );
+assertTrue(facets.get(0).getCount() == 2)
+
+</pre>
+
+Last but not least you can apply a given <i class="wikiEmphasis">Facet</i> onto the query itself using the <i class="wikiEmphasis">FacetSelection</i> interface. Once the additional criteria is applied you can re-execute the query and use the new result set and faceting results.<pre class="wikiPreformatted">
+// everything as in the previous example
+...
+
+// apply first facet as additional search criteria
+facetManager.getFacetGroup( "priceFaceting" ).selectFacets( facets.get( 0 ) );
+
+// re-execute the query
+cds = fullTextQuery.list();
+assertTrue(cds.size() == 2);
+
+// deselect the facet
+facetManager.getFacetGroup( "priceFaceting" ).deselectFacets( facets.get( 0 ) );
+
+// re-execute the query
+cds = fullTextQuery.list();
+assertTrue(cds.size() == 10);
+</pre>
+
+We hope this faceting API covers most of the use cases while still nicely fitting into the overall Hibernate Search architecture, but of course we won't know until you provide us some feedback :-) 
+
+
+<p class="wikiPara">
+As always, download of the release is via the <a href="http://repository.jboss.org/nexus/content/repositories/public/org/hibernate//hibernate-search/3.4.0.Beta1" target="" class="regularLink">JBoss Maven Repository</a> or via <a href="http://sourceforge.net/projects/hibernate/files/hibernate-search/3.4.0.Beta1" target="" class="regularLink">SourceForge</a>. The documentation can be found <a href="http://docs.jboss.org/hibernate/search/3.4/reference/en-US" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+--Hardy</p>
+</div>
+

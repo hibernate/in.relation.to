@@ -1,0 +1,200 @@
+---
+title: "Using dynamically created RichFaces TabPanel for search results"
+author: "Ilya Shaikovsky"
+blogger_name: "Ilya"
+creation_date: "29-05-2009"
+tags: []
+
+relative_url: /2009/05/29/using-dynamically-created-rich-faces-tab-panel-for-search-results
+slug: using-dynamically-created-rich-faces-tab-panel-for-search-results
+lace: http://in.relation.to/11633.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/05/29/using-dynamically-created-rich-faces-tab-panel-for-search-results
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<div style="float:right;margin-left:20px;margin-bottom:20px;">
+ <a href="http://labs.jboss.com/jbossrichfaces" target="blank"> 
+ <img src="http://www.jroller.com/a4j/resource/richfaces_logo_200px.gif" alt="">
+ </a>
+</div>
+
+<p class="wikiPara">
+The aim of this post is the same as for the previous one - to cover some component specific questions in <b>RichFaces</b> which frequently asked at <a href="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=261" target="" class="regularLink">RichFaces User Forum</a>. Some points (or maybe all of them) could be already known for you... But do not forget that everybody sometimes starts something from scratch :) Thus, my intention is to help the guys who just start <b>RichFaces</b> usage with some kickstart samples like this.
+</p>
+
+<p class="wikiPara">
+Here I will create simple search/results form. Let's imagine the case where every search result object contains a lot of similar information and should be entirely shown. Hence, we will use the <b>tabbed results representation</b>. 
+</p>
+
+<p class="wikiPara">
+From the beggining we create a simple project with RichFaces support. I've used JSF 1.2 with Facelets 1.1.14 and RichFaces 3.3.1 and deployed under Tomcat 6. The process of simple project creation described fine at <a href="http://www.jboss.org/file-access/default/members/jbossrichfaces/freezone/docs/devguide/en/html/GettingStarted.html" target="" class="regularLink">RichFaces Developer Guide. Section 3</a>.
+</p>
+
+<p class="wikiPara">
+If you've already visited our <a href="http://livedemo.exadel.com/richfaces-demo/welcome.jsf" target="" class="regularLink">richfaces-demo</a> you've probably seen simple <b>Capital</b> objects list in lot's of samples(<a href="http://livedemo.exadel.com/richfaces-demo/richfaces/suggestionBox.jsf" target="" class="regularLink">suggestionBox</a>, <a href="http://livedemo.exadel.com/richfaces-demo/richfaces/sortingFeature.jsf" target="" class="regularLink">table sorting sample</a> and so on...). Thus, let's re-use the existed Java code for that case. Just download the <a href="http://anonsvn.jboss.org/repos/richfaces/branches/community/3.3.X/samples/richfaces-demo/src/main/java/org/richfaces/demo/capitals" target="" class="regularLink">classes</a> and <a href="http://anonsvn.jboss.org/repos/richfaces/branches/community/3.3.X/samples/richfaces-demo/src/main/resources/org/richfaces/demo/capitals%20" target="" class="regularLink">resources</a> and place into some sources package in the created project. Then register the <b>CapitalsBean</b> at faces-config:
+</p>
+
+
+<pre class="wikiPreformatted"> &lt;managed-bean&gt;
+  &lt;managed-bean-name&gt;capitalsBean&lt;/managed-bean-name&gt;
+  &lt;managed-bean-class&gt;org.richfaces.demo.capitals.CapitalsBean&lt;/managed-bean-class&gt;
+  &lt;managed-bean-scope&gt;session&lt;/managed-bean-scope&gt;
+ &lt;/managed-bean&gt;
+</pre>
+
+
+<p class="wikiPara">
+Look through the bean code. We have <b>capitals</b> list which contains all the capitals. We need to add one more list which will store the capitals that satisfies search conditions. Let's name it <b>foundCapitals</b>. And also let's add the property which will store the search conditions. In this case I've used <b>simple search</b> by capital name using <b>startsWith</b> method. Thus, next code should be added:
+</p>
+
+<pre class="wikiPreformatted">
+private ArrayList&lt;Capital&gt; foundCapitals = new ArrayList&lt;Capital&gt;();
+private String searchValue = "";
+
+// Do not forget to add getters and setters</pre>
+
+
+<p class="wikiPara">
+Now it's time to work on <b>page source code</b> for this case. Next piece represent a <b>search panel</b>.
+</p>
+
+<img src="http://jroller.com/a4j/resource/searchPAnel.jpg" alt="">
+
+<pre class="wikiPreformatted">&lt;ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:a4j="http://richfaces.org/a4j"
+	xmlns:rich="http://richfaces.org/rich"
+	xmlns:c="http://java.sun.com/jstl/core"&gt;
+	&lt;h:form&gt;
+		&lt;rich:panel header="Simple Search"&gt;
+			&lt;h:outputText value="Enter the first letters of the capitals:" /&gt;
+
+			&lt;h:inputText id="searchField" value="#{capitalsBean.searchValue}"/&gt;
+
+			&lt;rich:hotKey selector="##{rich:clientId('searchField')}" key="return" 
+                            handler="#{rich:element('search')}.onclick();return false;"/&gt;
+
+			&lt;a4j:commandButton action="#{capitalsBean.search}" value="Search" 
+			    reRender="output" id="search"/&gt;
+		&lt;/rich:panel&gt;
+	&lt;/h:form&gt;
+&lt;/ui:composition&gt;
+</pre>
+
+
+<p class="wikiPara">
+There, I want to pay your attetion to the <b>rich:hotKey</b> component. It implements a common requirement of <b>sending ajax request when a user presses Enter</b> in inputs. <b>#{rich:clientId}</b> function returns clientId of the search input to which the hot key will be attached. And after Enter key is pressed in the input search button will be clicked via JS defined in <b>handler</b> attribute (#{rich:element} returns button DOM element by its Id).
+</p>
+
+<p class="wikiPara">
+Now let's define the <b>tabPanel</b> that should be created dynamically using <b>foundCapitals</b> list. 
+</p>
+
+<img src="http://jroller.com/a4j/resource/tabPanel.jpg" alt="">
+<p class="wikiPara">
+ 
+Add the next code just after the panel code: 
+</p>
+
+<pre class="wikiPreformatted">&lt;a4j:outputPanel id="output"&gt;
+	&lt;rich:tabPanel id="tapPanel" width="700" rendered="#{not empty capitalsBean.foundCapitals}"&gt;
+		&lt;c:forEach items="#{capitalsBean.foundCapitals}" var="cap"&gt;
+			&lt;rich:tab name="#{cap.name}" &gt;
+				&lt;f:facet name="label"&gt;
+				&lt;h:panelGrid columns="2"&gt;
+					&lt;h:outputText value="#{cap.name}" /&gt;
+					&lt;h:graphicImage value="/images/icons/delete.gif" 
+					    style="width:12px; height:12px;" 
+					    onclick="myFunc('#{cap.name}'); Event.stop(event);"/&gt;
+				&lt;/h:panelGrid&gt;
+				&lt;/f:facet&gt;
+				&lt;h:panelGrid columns="2" style="margin:20"&gt;
+					&lt;h:outputText value="State Name" /&gt;
+					&lt;h:inputText value="#{cap.state}" /&gt;
+					&lt;h:outputText value="State Capital" /&gt;
+					&lt;h:inputText value="#{cap.name}" /&gt;
+					&lt;h:outputText value="State TimeZone" /&gt;
+					&lt;h:inputText value="#{cap.timeZone}" /&gt;
+				&lt;/h:panelGrid&gt;
+			&lt;/rich:tab&gt;
+		&lt;/c:forEach&gt;
+	&lt;/rich:tabPanel&gt;
+	&lt;h:outputText value="No active search results." 
+		style="font-style:italic" rendered="#{empty capitalsBean.foundCapitals}"/&gt;
+&lt;/a4j:outputPanel&gt;
+&lt;a4j:jsFunction action="#{capitalsBean.remove}" name="myFunc"
+	ajaxSingle="true" reRender="output"&gt;
+	&lt;a4j:actionparam name="current"/&gt;
+&lt;/a4j:jsFunction&gt;</pre>
+
+
+<p class="wikiPara">
+The <b>following point needs to be highlighted</b>: We will use <b>c:forEach</b> in order to create the <b>tabs dynamically</b>. It is a common place where RichFaces newcomers made a mistake. You could <b>not use repeat components</b>(neither ui:repeat nor a4j:repeat) for that because they work during page render time and do not create components in JSF tree but just iterate the same instance. We <b>should use c:forEach tag</b> instead which works at view build phase and causes actual tabs components to be added to JSF tree. For more details refer to <a href="http://www.ilikespam.com/blog/c:foreach-vs-ui:repeat-in-facelets" target="" class="regularLink">c:forEach vs ui:repeat in Facelets</a> article.
+</p>
+
+<p class="wikiPara">
+Inside <b>c:forEach</b> we define the tab which content is depend on iteration variable properties. Every tab will contain info about every Capital object which found using search.
+</p>
+
+<p class="wikiPara">
+ <b>Label facet</b> contains text label for the tab and closure control which calls <b>jsFunction</b> with the current tab name as a parameter. Thus, <b>a4j:jsFunction</b> will rise <b>ajax request</b> after a removal control is clicked and Capital name for that tab will be put to request parameters by <b>actionparam</b>.
+</p>
+
+<p class="wikiPara">
+After tab removal and after the search we should <b>update the tab panel</b> and render the tabs if objects found or some label if search gave no results. As you could see we are using <b>rendered attribute</b> on the tabPanel and outputText component to define what should be rendered depending on whether some objects where found or not. And there is one more place to highlight one of the RichFaces limitations. We <b>should not reRender conditionally rendered elements</b> (outputText and tabPanel) directly. Ajax mechanism of RichFaces <b>does not allow to insert any content</b>. We should update some existent DOM nodes. <b>a4j:outputPanel</b> should be added around conditionally rendered elements and we will update this outputPanel.
+</p>
+
+<p class="wikiPara">
+And the last step is to implement search and remove methods in our <b>CapitalsBean</b>:
+</p>
+
+
+<pre class="wikiPreformatted">public void search() {
+	foundCapitals.clear();
+	for (Capital currentCapital : capitals) 
+		if (currentCapital.getName().startsWith(searchValue)) 
+			foundCapitals.add(currentCapital);
+}
+
+public Capital getCapitalIdByName(String name) {
+	for (Capital currentCapital : capitals) {
+		if (currentCapital.getName().equals(name))
+			return currentCapital;
+	}
+	return null;
+}
+
+public void remove() throws Exception {
+	Capital currentCapital = getCapitalIdByName(FacesContext
+			.getCurrentInstance().getExternalContext()
+			.getRequestParameterMap().get("current"));
+	if (null != currentCapital)
+		foundCapitals.remove(currentCapital);
+	else
+		throw new Exception("capital name parameter is null");
+}</pre>
+
+
+<p class="wikiPara">
+Now let's deploy the application and start the server to see the results.
+</p>
+
+<u>No results found</u>
+<br>
+<img src="http://jroller.com/a4j/resource/noResults.jpg" alt="">
+<br>
+<u>TabPanel with results</u>
+<br>
+<img src="http://jroller.com/a4j/resource/searchRes.jpg" alt="">
+
+
+<p class="wikiPara">
+I hope that some details which you should keep in mind during RichFaces usage that already present in our documentation and highlighted again at this post will help the developers to spend less time to build similar functionality. </p>
+</div>
+

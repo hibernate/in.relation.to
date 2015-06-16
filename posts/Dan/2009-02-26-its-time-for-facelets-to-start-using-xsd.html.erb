@@ -1,0 +1,240 @@
+---
+title: "It's time for Facelets to start using XSD"
+author: "Dan Allen"
+blogger_name: "Dan"
+creation_date: "26-02-2009"
+tags: [Facelets,JavaServer Faces,Proposal]
+
+relative_url: /2009/02/26/its-time-for-facelets-to-start-using-xsd
+slug: its-time-for-facelets-to-start-using-xsd
+lace: http://in.relation.to/10752.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/02/26/its-time-for-facelets-to-start-using-xsd
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I've had <a href="http://seamframework.org/Documentation/JSF2#H-ViewSyntaxP1" target="" class="regularLink">this idea</a> for a while now about using XSDs in Facelets templates. I believe we should stop pretending that Facelets templates are XHTML documents and start treating them as unrestricted XML. This would give us the freedom to extend the XML dialect with XML Schema and take full advantage of the type enforcement, syntax recognition, and tooling support that XML Schema provides.
+</p>
+
+<p class="wikiPara">
+I tried to communicate this idea to the JSF EG at JSFOne, but I fear that I did not articulate it well enough as it never took hold. I want to explain the approach here in detail to see if others agree it has merit. In this entry, I outline a way to take better advantage of Facelets' strengths today and propose a change in JSF 2.1 to support this usage. Right now, all I'm doing is putting the idea out there in the open. 
+</p>
+
+<h2 class="wikiHeadline2" id="H-ABriefIntroToFacelets"><a href="/2009/02/26/its-time-for-facelets-to-start-using-xsd#H-ABriefIntroToFacelets">A brief intro to Facelets</a></h2>
+
+<p class="wikiPara">
+Anyone familiar with JSF <i class="wikiEmphasis">must</i> have heard about Facelets by now. <a href="https://facelets.dev.java.net/nonav/docs/dev/docbook.html" target="" class="regularLink">Facelets</a> is the alternative view handler and view definition language to JSP for JSF, and a far superior one at that. But Facelets is more than just an alternative. I truly believe that Facelets saved JSF, for if it weren't for something elegant like Facelets to come along and give developers a reason to give JSF a chance, they would have abandoned the framework long ago. Facelets really is that significant. As a recognition of its influence, Facelets is set to become the standard <q>page declaration language</q> in JSF 2.0--so if you have been living under a rock, you'll have to come out of hiding soon enough.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatMakesFaceletsSuccessful"><a href="/2009/02/26/its-time-for-facelets-to-start-using-xsd#H-WhatMakesFaceletsSuccessful">What makes Facelets successful</a></h2>
+
+<p class="wikiPara">
+There are two features of Facelets that make it a more palatable choice than JSP for UI development:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> The XML markup gets translated directly into JSF UI components</li>
+<li class="wikiOrderedListItem"> The XML markup must be well-formed</li>
+</ol>
+
+<p class="wikiPara">
+The first point is important because it means that the middleman in the view template to component tree build process has been ousted. JSF was originally designed so that it could leverage JSP pages and in turn JSP tag handlers. Each JSF component was mapped one-to-one with a JSP tag handler. That meant JSF didn't have to be in the business of consuming and parsing XML (or pseudo-XML in the case of classic JSP syntax). Instead, JSP would feed UI components to the JSF component tree build process.
+</p>
+
+<p class="wikiPara">
+While this sounded good from a reuse perspective, it turned out to be a terrible nightmare for developers. The JSP tag handlers duplicated the properties of the combined UIComponent and component renderer classes for each component. This meant one more class for the developer to write and one more class to maintain. Not to mention the burden of having to keep the tag library descriptor (TLD) metadata in sync with the class to make the JSP parser happy. To minimize the effort, many developers turned towards code generation, in this case an indication of a badly broken design.
+</p>
+
+<p class="wikiPara">
+Enter Facelets. Facelets offers its own XML compiler and tag handlers. Only in this case, the tag handlers are generic and require minimal configuration. Facelets can introspect the UIComponent and component renderer classes to determine how to map the information from the XML document into objects in the JSF component tree, both of which the Facelets builder creates. Facelets effectively cuts out the middleman. What's more, by having control over the compile process, Facelets was able to introduce its own advanced templating mechanism (called compositions) that allow one Facelets template to become the template of another, almost resembling a LISP dialect.
+</p>
+
+<p class="wikiPara">
+While building direct is an important reason for Facelets' success, the second point listed above is the one most relevant to this entry. Facelets put its foot down by enforcing valid XML syntax, <i class="wikiEmphasis">finally</i> doing away with that ridiculous pseudo-XML syntax that classic JSP supported. Even the JSP taglib directives were removed in favor of using XML namespace declarations to import a component set.
+</p>
+
+<blockquote class="wikiBlockquote">
+
+Facelets == XML
+
+</blockquote>
+
+<p class="wikiPara">
+If you have so much as an undeclared entity in your template, Facelets will abort processing and throw up a pretty (no, really!) error page. And when Facelets reports the error, it can do so with precision (e.g., line number and column) since it uses a SAX compiler to parse the template prior to building the component tree.
+</p>
+
+<p class="wikiPara">
+Now I'll convince you why using valid XML is a good thing.
+</p>
+
+<h2 class="wikiHeadline2" id="H-LeveragingTheXMLEcosystem"><a href="/2009/02/26/its-time-for-facelets-to-start-using-xsd#H-LeveragingTheXMLEcosystem">Leveraging the XML ecosystem</a></h2>
+
+<p class="wikiPara">
+XML is ubiquitous. As a result, there are probably as many XML editors available as there are e-mail clients. By Facelets enforcing valid XML syntax, it means I don't have to wait around for a vendor to create me an editor to support a proprietary syntax, as was the case with JSP. Instead, Facelets opens the door to using any one of the available XML tools to create/modify/translate a Facelets view template. That's a very important benefit.
+</p>
+
+<p class="wikiPara">
+But there's a catch...well, really just a snag. In an attempt to support an experimental design-time technique, Facelets veered off course and did not take full advantage of the tooling benefit that XML has to offer. Let me explain what <a href="http://weblogs.java.net/blog/jhook" target="" class="regularLink">Facelets' creator</a> was going for and then show you how to take advantage of what he missed.
+</p>
+
+<p class="wikiPara">
+By parsing the template directly, Facelets is able to work around one of the most horrible monstrosities of the early JSF-JSP integration, the <tt>&lt;f:verbatim&gt;</tt> tag. You see, every character in a JSF response must be yielded by a JSF component. That means that all static HTML markup must somehow get attached to a component. The only way to accomplish this in JSP was to introduce a wrapper tag, <tt>&lt;f:verbatim&gt;</tt>. However, this tag not only makes the template look ugly and verbose, it also makes creating valid XML nearly impossible because it ignores the HTML structure.
+</p>
+
+<p class="wikiPara">
+Once again, Facelets saved the day. Any time Facelets comes across static markup, it automatically creates a UIComponent to wrap the markup and output it during encoding. This also means that Facelets templates can match the recipe of JSP pages: static HTML markup with dynamic parts intermixed. 
+</p>
+
+<p class="wikiPara">
+But Facelets goes a little too far by assuming (in the general case) that the document itself is an HTML template interspersed with JSF components. It became conventional to include an XHTML DOCTYPE at the top of the page (at least the top-level template), which Facelets then passes on to the response when the component tree is encoded. Facelets even takes measure to hide the JSF components by allowing them to be defined on a standard XHTML tag using the proprietary jsfc attribute (the name of the JSF component tag is defined as the value of the attribute). The theory here is that when the template is opened in an HTML viewer, it renders just like any other static HTML document, thus allowing the designer to preview the page. In theory.
+</p>
+
+<pre class="wikiPreformatted">
+&lt;ul jsfc="ui:repeat" var="_name" value="#{bean.names}"&gt;
+    &lt;li&gt;#{_name}&lt;/li&gt;
+&lt;/ul&gt;
+</pre>
+
+
+<p class="wikiPara">
+In reality, this theory simply doesn't scale. Unless all you are doing is developing a mostly static website with a handful of dynamic parts scattered across a subset of pages, you eventually get to the point where the <q>pretend</q> HTML documents become a handicap for both the page designer and the developer. It especially hurts the developer because it limits his/her ability to reuse template logic or roll it up into a custom component. I have done a lot of web development and the only way that this relationship works is if you are using a tool, such as the <a href="http://docs.jboss.org/tools/3.0.0.CR2/en/jsf/html/editors.html#visual_source" target="" class="regularLink">JBoss Tools visual designer</a>, which can provide a runtime view of the page at design time. Otherwise, the designer should simply work on his/her own mockups and deliver them to the developer when they are ready to be integrated into the application.
+</p>
+
+<h2 class="wikiHeadline2" id="H-CuttingTheXHTMLShackles"><a href="/2009/02/26/its-time-for-facelets-to-start-using-xsd#H-CuttingTheXHTMLShackles">Cutting the XHTML shackles</a></h2>
+
+<p class="wikiPara">
+While Facelets templates are valid XML, most developers treat them as XHTML documents. The problem is, the XHTML vocabulary is not extensible, particularly when the document is tied to a DOCTYPE. That means all those JSF component tags in the document are seen as foreign bodies and cause the XHTML parser to complain loudly. Once again, you have to wait on that vendor to create an editor which supports this proprietary syntax. And what does that support look like? Well, likely the editor is going to have to parse the TLD files and provide some sort of code assistance (i.e., tag auto-completion) based on that metadata. Proprietary, proprietary, proprietary. Yuck.
+</p>
+
+<p class="wikiPara">
+But wait, didn't we just finish emphasizing that a Facelets template is valid XML? Of course! Well, there's a perfectly good vocabulary extension system for XML called XML Schema. XML Schema associates an XML dialect with an XML namespace. Unlike DTD, this contract permits multiple vocabularies to be imported into a single document, thus allowing it to be extended infinitely. In addition, the specificity of XML Schema goes way beyond what DTD allows. In fact, XML Schema is so detailed that with its support, you could call XML a <q>type-safe</q> language. This type system translates into code assistance and validation, drastically reducing the pain involved with using XML.
+</p>
+
+<p class="wikiPara">
+And guess what? Many of the configuration files for the Java frameworks you use today rely on XML Schema Documents (XSDs) to describe, extend, modularize, and document the permissible elements and attributes. Here are a couple of examples:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Seam's component descriptor (components.xml, .component.xml)</li>
+<li class="wikiUnorderedListItem"> Seam's page descriptor (pages.xml, .page.xml)</li>
+<li class="wikiUnorderedListItem"> Faces configuration resources (faces-config.xml)</li>
+<li class="wikiUnorderedListItem"> Web application descriptor (web.xml)</li>
+<li class="wikiUnorderedListItem"> Spring configuration file</li>
+</ul>
+
+<p class="wikiPara">
+So why not add Facelets to this list? Nothing is stopping us! All we have to do is author an XSD for each JSF component library we use (e.g., Facelets UI, JSF core, HTML basic, etc) and <q>import</q> the types defined in the XSD by associating it with the component library's XML namespace.
+</p>
+
+<p class="wikiPara">
+Creating XSDs for each component library sure would be a tedious task. You'd have to define an element for each component tag and then list all of the component-specific and renderer-specific attributes. We'll, don't throw away those TLD files just yet! As Mark Ziesemer <a href="http://blogger.ziesemer.com/2008/03/facelets-and-xsd-converted-tlds.html" target="" class="regularLink">points out</a>, a TLD file is XML too. So you can work smarter, not harder, by writing an XSLT document to transpose the TLD into an XSD. And fortunately for us, Mark did that for us already! I used <a href="https://ziesemer.dev.java.net/files/documents/8573/91522/facelets-xsd.jar" target="" class="regularLink">his XSLT script</a> to create XSDs for the standard JSF component sets. Once created, I match them up with namespaces in the xsi:schemaLocation attribute as shown below. Note that to use this attribute, it's necessary to declare the namespace for XML Schema.
+</p>
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;f:view xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://java.sun.com/jsf/facelets facelets-ui-2.0.xsd
+        http://java.sun.com/jsf/core jsf-core-2.0.xsd
+        http://java.sun.com/jsf/html html-basic-2.0.xsd"&gt;
+    &lt;html&gt;
+        &lt;body&gt;
+            &lt;h2&gt;My name is Duke. What's yours?&lt;/h2&gt;
+            &lt;h:form id="helloForm" prependId="false"&gt;
+                &lt;h:graphicImage url="/wave.png"/&gt;
+                &lt;h:inputText id="name" value="#{HelloBean.name}"/&gt;
+                &lt;h:commandButton id="submit" action="success" value="Submit"/&gt;
+            &lt;/h:form&gt;
+            &lt;h2&gt;Folks who stopped by to say "Hi!"&lt;/h2&gt;
+            &lt;ul&gt;
+                &lt;ui:repeat var="_name" value="#{GuestBook.names}"&gt;
+                    &lt;li&gt;#{_name}&lt;/li&gt;
+                &lt;/ui:repeat&gt;
+            &lt;/ul&gt;
+        &lt;/body&gt;
+    &lt;/html&gt;
+&lt;/f:view&gt;</pre>
+
+
+<p class="wikiPara">
+If you were to open this document in any XML editor that is capable of digesting XSD and providing code assistance (which is pretty much any XML editor) you now get tag completion for standard JSF component elements and attributes in addition to standard HTML attributes! Try it out for yourself by downloading the <a href="#its-time-for-facelets-to-start-using-xsd_attachment1" target="" class="regularLink">sample code[1]</a> attached.
+</p>
+
+<blockquote class="wikiBlockquote">
+
+The only slight drawback is that the root tag is not <tt>&lt;html&gt;</tt>, so you don't get the out of the box preview with a standard HTML viewer. Assuming that matters to you, the problem with making <tt>&lt;html&gt;</tt> the root tag is that HTML does not accommodate other vocabularies in the document. The schema for HTML lacks <tt>&lt;xs:any&gt;</tt> declarations that would allow foreign tags to be present. And unfortunately, the HTML schema is pretty much fixed in stone. There is an effort for <a href="http://www.w3.org/TR/xhtml11/" target="" class="regularLink">modularizing XHTML</a>, but it still isn't widely adopted. For now, it's easier just to interweave HTML tags into the <tt>&lt;f:view&gt;</tt> document root than it is the other way around.
+
+</blockquote>
+
+<p class="wikiPara">
+Now, you might be thinking that creating the XSDs is just one more step in a long process to create a JSF component library. I'm here to say that the transformation from TLD to XSD should be a migration away from TLD in favor of XSD. XML Schema is an incredibly comprehensive at defining XML dialects and there is absolutely nothing that TLD can describe that XML Schema cannot. Unlike TLD, XSD even has the ability to declare which facet names a component supports. <u>Scrap TLDs</u>!
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhatsYourTypeDoc"><a href="/2009/02/26/its-time-for-facelets-to-start-using-xsd#H-WhatsYourTypeDoc">What's your type, Doc?</a></h2>
+
+<p class="wikiPara">
+There's one shortcoming in this setup. We had to remove the DOCTYPE definition at the top of the document so that the XML editor doesn't complain about the presence of the JSF component tags (which are obviously not declared in the XHTML DOCTYPE). XML Schema is a replacement for DOCTYPE and as such, the two are mutually exclusive. But if you think about it, the DOCTYPE is not there to validate the syntax of the template. It's really part of the output, meant to instruct the browser how to render the page. Therefore, the DOCTYPE should be rendered by a component tag just like any other markup-producing area of the template.
+</p>
+
+<p class="wikiPara">
+Unfortunately, the standard HTML component library does not include a tag that outputs a DOCTYPE. But you can quickly define a prototype of this tag using a JSF 2.0 composite component (or you can go all the way and create a real UIComponent). The following fragment from the file resources/meta/doctype.xhtml defines the <tt>&lt;meta:doctype&gt;</tt> tag as a composite component:
+</p>
+
+<pre class="wikiPreformatted">&lt;comp:interface name="doctype" 
+    displayName="XHTML DOCTYPE"
+    shortDescription="Produces an XHTML DOCTYPE declaration"&gt;
+    &lt;comp:attribute name="type" required="true"/&gt;
+&lt;/comp:interface&gt;
+&lt;comp:implementation&gt;
+    &lt;h:outputText value='&amp;lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 #{
+        fn:toUpperCase(fn:substring(compositeComponent.attrs.type, 0, 1))}#{fn:substring(compositeComponent.attrs.type, 1, -1)
+        }//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-#{compositeComponent.attrs.type}.dtd"&amp;gt;' escape="false"/&gt;
+&lt;/comp:implementation&gt;</pre>
+
+
+<p class="wikiPara">
+Then you simply add this tag directly inside of <tt>&lt;f:view&gt;</tt>.
+</p>
+
+<pre class="wikiPreformatted">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;f:view xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:ui="http://java.sun.com/jsf/facelets"
+    xmlns:meta="http://java.sun.com/jsf/composition/meta"
+    xmlns:f="http://java.sun.com/jsf/core"
+    xmlns:h="http://java.sun.com/jsf/html"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="
+        http://java.sun.com/jsf/facelets facelets-ui-2.0.xsd
+        http://java.sun.com/jsf/core jsf-core-2.0.xsd
+        http://java.sun.com/jsf/html html-basic-2.0.xsd"&gt;
+    &lt;meta:doctype type="strict"/&gt;
+    &lt;html&gt;
+        ...
+    &lt;/html&gt;
+&lt;/f:view&gt;</pre>
+
+
+<p class="wikiPara">
+It's pretty clear that the standard HTML component library should include a component tag capable of producing all of the valid HTML and XHTML doctypes. There's no reason a developer should have to assume the burden of something that is so fundamental to web page development.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Breakout"><a href="/2009/02/26/its-time-for-facelets-to-start-using-xsd#H-Breakout">Breakout</a></h2>
+
+<p class="wikiPara">
+Tell me what you think of this idea. Do you think it will help development? Do you think it will lead to better tooling? If it's worth pursuing, I think the XSDs should be built automatically from the metadata in the standard faces-config.xml and through reflection of the component classes/renderers so that you, the developer, don't have to worry about creating them and making them available on the file system. And of course, the tooling should help you get the XSDs added to the template.
+</p>
+</div>
+
+<div class="attachments">
+<h4>Attachments</h4>
+<ol class="wikiOrderedList"><li class="wikiOrderedListItem"><a name="its-time-for-facelets-to-start-using-xsd_attachment1" href="/assets/facelets-xsd.zip">facelets-xsd.zip</a></li>
+</ol>
+</div>
+
