@@ -6,7 +6,7 @@ I18n.enforce_available_locales = false
 # Class encapsulating the bits and pieces of a single post
 class BlogEntry
 
-  attr_accessor :title, :content, :author, :blogger_name, :tags, :assets, :slug, :date, :lace, :relative_url,:disqus_thread_id
+  attr_accessor :title, :content, :author, :assets, :blogger_name, :original_tags, :tags, :slug, :date, :lace, :relative_url,:disqus_thread_id
 
   def slug=(camel_case_slug)
     @slug = pretty_print_slug(camel_case_slug)
@@ -24,9 +24,8 @@ class BlogEntry
     escaped_title = @title.gsub(/\\/, '\&\&').gsub(/\"/, '\"')
 
   	# prepare comma separated list of tags
-    tag_string = ""
-    tags.each { |tag| tag_string = tag_string + tag + "," }
-    tag_string = tag_string.gsub(/,$/, '')
+    tag_string = tags_to_string(tags);
+    original_tag_string = tags_to_string(original_tags);
 
     # prepare list of attachments
     if !assets.nil? && !assets.empty?
@@ -45,6 +44,7 @@ class BlogEntry
     "author: \"#{@author}\"\n" <<
     "blogger_name: \"#{@blogger_name}\"\n" <<
     "creation_date: \"#{@date.strftime( "%d-%m-%Y" )}\"\n" <<
+    "original_tags: [#{original_tag_string}]\n" <<
     "tags: [#{tag_string}]\n" <<
     "\n" <<
     "relative_url: #{@relative_url}\n" <<
@@ -58,6 +58,13 @@ class BlogEntry
     "#{content}\n" <<
     "\n" <<
     "#{assets_content}"
+  end
+
+  def tags_to_string(tags)
+    tag_string = ""
+    tags.each { |tag| tag_string = tag_string + tag + "," }
+    tag_string = tag_string.gsub(/,$/, '')
+    return tag_string
   end
 
   def file_name
