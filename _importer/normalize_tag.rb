@@ -106,9 +106,6 @@ def convert_tag(tag)
   when /(design)|(git)|(gradle)|(maven)|(persistence)|(proposal)|(review)|(jdocbook)/i
     "Discussion"
 
-  when /news/i
-    "News"
-
   when /eclipse/i
     "Eclipse"
 
