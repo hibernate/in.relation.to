@@ -1,0 +1,89 @@
+= Multitenancy and current session
+Emmanuel Bernard
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+Today let's discuss the interaction between multitenancy and the _current session_ feature.
+
+Multitenancy let's you isolate `Session` operations between different tenants.
+This is useful to create a single application isolating different customers from one another.
+
+The _current session_ feature returns the same session for a given context, typically a (JTA) transaction.
+This facilitates the one session per view/transaction/conversation pattern and avoids the one session per operation anti-pattern.
+
+[source,java]
+----
+Session session = sessionFactory.getCurrentSession();
+// do some other work
+[...]
+// later in the same context (e.g. JTA Transaction)
+Session session2 = sessionFactory.getCurrentSession();
+
+// semantically we have
+assert session == session2
+----
+
+The two features work well together,
+ simply implement
+http://docs.jboss.org/hibernate/orm/4.3/devguide/en-US/html_single/#d5e4871[CurrentTenantIdentifierResolver].
+That will give Hibernate ORM the expected tenant id when the current session is created.
+
+== How current is current?
+
+When discussing with Florian and the http://www.toulousejug.org[ToulouseJUG],
+we exchanged on a small case where things might not work as you expect.
+Hibernate ORM considers that, for a given context (e.g. transaction),
+there can only be a single current `Session`.
+
+So if in the same context (e.g. transaction):
+
+* your `CurrentTenantIdentifierResolver` implementation returns different values of tenant id,
+* you use `getCurrentSession()`
+
+you will get a `TenantIdentifierMismatchException`.
+
+However, it is sometimes useful to be able to reach several tenants from the same context.
+You have two options:
+
+* Manually create the `Session`
+* Implement a custom `CurrentSessionContext`
+
+== Manually create the `Session`
+
+You can use the `SessionFactory` API to create a `Session` for the tenant id you are looking for.
+
+[source,java]
+----
+Session session1 = sessionFactory.withOptions()
+        .tenantIdentifier( tenant1 )
+        ...
+        .openSession();
+Session session2 = sessionFactory.withOptions()
+        .tenantIdentifier( tenant2 )
+        ...
+        .openSession();
+----
+
+But you have to make sure to close these sessions.
+If you are used to CDI or Spring handling sessions for you,
+or if you rely on the current session feature to propagate the session across your stack,
+this might be annoying.
+
+== Implement a custom `CurrentSessionContext`
+
+The alternative is to implement your own version of `CurrentSessionContext`,
+avoid raising the `TenantIdentifierMismatchException`,
+and keep `Session` instances per both context and tenant id.
+
+In practice, current sessions are stored in a `ConcurrentHashMap` keyed by context identifier,
+you just need to improve that part.
+Start with https://github.com/hibernate/hibernate-orm/blob/d0c2c31ab7217da32eee2a82457eb321a3aebbaa/hibernate-core/src/main/java/org/hibernate/context/internal/JTASessionContext.java[JTASessionContext]
+and hack away!
+
+== What now?
+
+We are currently discussing whether the default `CurrentSessionContext` implementations
+should partition by tenant id or raise the exception.
+If you have your opinion, https://hibernate.atlassian.net/browse/HHH-9766[chime in]!
+
+In the mean time, use one of the options above.
