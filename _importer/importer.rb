@@ -15,6 +15,8 @@ require 'fileutils'
 require 'net/http'
 require 'uri'
 
+require_relative 'normalize_tag'
+
 Choice.options do
   header 'Application options:'
 
@@ -202,7 +204,8 @@ class Importer
     blog_entry.date = DateTime.parse( published_string )
 
     # tags
-    blog_entry.tags = doc.css('div.documentTags  a').map {|link| link.text.to_s}
+    tags = doc.css('div.documentTags  a').map {|link| link.text.to_s}
+    blog_entry.tags = normalize_tags(blog_entry.slug, tags)
 
     # misc
     blog_entry.relative_url = "/#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}"
