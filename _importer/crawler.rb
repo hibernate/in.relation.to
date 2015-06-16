@@ -16,7 +16,7 @@ Choice.options do
 
   separator 'Required:'
 
-  option :url, :required => true do
+  option :urls, :required => true do
     short '-u'
     long '--url=<file>'
     desc 'The base url'
@@ -34,6 +34,12 @@ Choice.options do
     desc 'The name of the output-file'
   end
 
+  option :depth, :required => false do
+    short '-d'
+    long '--depth=<n>'
+    desc 'The depth of links to follow-up'
+  end
+
   separator 'Common:'
 
   option :help do
@@ -45,45 +51,50 @@ end
 
 class Crawler
 
-  def initialize(base_url, pattern, output_file)
+  def initialize(base_urls, pattern, output_file, depth)
     #puts ARGV
-    @base_url = base_url
+    @base_urls = base_urls.split(",")
     @pattern = Regexp.new(pattern)
     @output_file = output_file
+    @depth = depth.nil? ? false : depth.to_i
   end
 
   def crawl
     store = PStore.new(@output_file)
     reindex = Array.new
     saved_posts = 0
-    Anemone.crawl(@base_url) do |anemone|
-      anemone.on_pages_like(@pattern) do |page|
 
-        if(page.code != 200)
-          puts "INFO: #{page.url.to_s} scheduled for re-indexing, since it returned with HTTP error #{page.code}."
-          reindex.push page.url.to_s
-          next
+    @base_urls.each do |base_url|
+      Anemone.crawl(base_url, :depth_limit => @depth) do |anemone|
+        anemone.on_pages_like(@pattern) do |page|
+
+          if(page.code != 200)
+            puts "INFO: #{page.url.to_s} scheduled for re-indexing, since it returned with HTTP error #{page.code}."
+            reindex.push page.url.to_s
+            next
+          end
+
+          if(too_many_active_users(page))
+            reindex.push page.url.to_s
+            next
+          end
+
+          store.transaction do
+            store[page.url] = page.doc.to_s
+            saved_posts += 1
+            page_title = page.doc.css('title').text.gsub("\n","") unless page.doc.nil?
+            puts "Persisted #{page.url.to_s} - #{page_title}"
+          end
+
+          #sleep(10)
         end
 
-        if(too_many_active_users(page))
-          reindex.push page.url.to_s
-          next
+        anemone.after_crawl do
+          reindex_failed_posts(reindex, store, saved_posts )
         end
-
-        store.transaction do
-          store[page.url] = page.doc.to_s
-          saved_posts += 1
-          page_title = page.doc.css('title').text.gsub("\n","")
-          puts "Persisted #{page.url.to_s} - #{page_title}"
-        end
-
-        #sleep(10)
-      end
-
-      anemone.after_crawl do
-        reindex_failed_posts(reindex, store, saved_posts )
       end
     end
+
     puts "Total of #{saved_posts} posts persisted"
   end
 
@@ -113,7 +124,7 @@ class Crawler
   # Sometimes the site returns 200 OK, but the content of the page is not the blog entry, but the messge
   # "Too many active users". In this case the page must be re-indexed.
   def too_many_active_users(page)
-    if(!page.doc.css.nil? && page.doc.css('title').text =~ /Too many active users/)
+    if(!page.doc.nil? && !page.doc.css.nil? && page.doc.css('title').text =~ /Too many active users/)
       puts "INFO: #{page.url.to_s} scheduled for re-indexing. The page reported: '#{page.doc.css('title').text}'"
       return true
     else
@@ -121,5 +132,5 @@ class Crawler
     end
   end
 
-  crawler = Crawler.new( Choice.choices.url, Choice.choices.pattern, Choice.choices.out )
+  crawler = Crawler.new( Choice.choices.urls, Choice.choices.pattern, Choice.choices.out, Choice.choices.depth )
   crawler.crawl
