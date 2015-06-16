@@ -5,6 +5,13 @@ class BlogEntry
 
   attr_accessor :title, :content, :author, :blogger_name, :tags, :assets, :slug, :date, :lace, :relative_url,:disqus_thread_id
 
+  def slug=(camel_case_slug)
+    @slug = pretty_print_slug(camel_case_slug)
+#    open('slugs.txt', 'a') { |f|
+#      f.puts "#{@slug}\n"
+#    }
+  end
+
   def to_erb
   	# quotes in title must be escaped, also backslash with double backslash
     escaped_title = @title.gsub(/\\/, '\&\&').gsub(/\"/, '\"')
@@ -15,7 +22,7 @@ class BlogEntry
     tag_string = tag_string.gsub(/,$/, '')
 
     # prepare list of attachments
-    if !assets.empty?
+    if !assets.nil? && !assets.empty?
       assets_content = '<div class="attachments">' <<
                      "\n" <<
                      '<h4>Attachments</h4>' <<
@@ -49,5 +56,18 @@ class BlogEntry
   def file_name
   	date_string = date.strftime( "%Y-%m-%d" )
   	return File.join( @blogger_name, "#{date_string}-#{slug}.html.erb" )
+  end
+
+  private
+
+  def pretty_print_slug(camel_case_slug)
+    camel_case_slug.gsub(/JBoss/,'jboss').    # handling some special cases
+    gsub(/JBug/,'jbug').
+    gsub(/JUDCon/,'judcon').
+    gsub(/(\D+)([0-9]+)/,'\1-\2').            # dash before a sequence of numbers
+    gsub(/([0-9]+)(\D+)/,'\1-\2').            # dash after a sequence of numbers
+    gsub(/([A-Z]+)([A-Z][a-z])/,'\1-\2').     # dash before a new uppercase word
+    gsub(/([a-z])([A-Z])/,'\1-\2').           # dash after a word
+    downcase
   end
 end
