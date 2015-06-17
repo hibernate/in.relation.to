@@ -82,7 +82,7 @@ task :gen, [:profile, :options] => :init do |task, args|
   run_awestruct "-P #{profile} -g --force #{options}"
 end
 
-desc 'Clean out generated site and temporary files, using [all] will also delete local gem files'
+desc 'Clean out generated site and temporary files, using [all-keep-deps] removes caches as well, using [all] will also delete local gem files'
 task :clean, :option do |task, args|
   require 'fileutils'
   dirs = ['.awestruct', '.sass-cache', '_site', '_tmp']
