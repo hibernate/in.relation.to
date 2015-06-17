@@ -48,8 +48,11 @@ end
 desc 'Setup the environment to run Awestruct using Bundler'
 task :setup do |task, args|
   bundle_command = 'bundle install --binstubs=.bin --path=.bundle'
-  msg bundle_command
-  system bundle_command
+  msg "Executing '#{bundle_command}' in clean Bundler environment"
+  Bundler.with_clean_env do
+    system bundle_command
+  end
+
   msg 'Bundle installed'
   # Don't execute any more tasks, need to reset env
   exit 0
@@ -82,13 +85,11 @@ end
 desc 'Clean out generated site and temporary files, using [all] will also delete local gem files'
 task :clean, :option do |task, args|
   require 'fileutils'
-  dirs = ['.awestruct', '.sass-cache', '_site']
+  dirs = ['.awestruct', '.sass-cache', '_site', '_tmp']
   if args[:option] == 'all-keep-deps'
-    dirs << '_tmp'
     dirs << '.wget-cache'
   end
   if args[:option] == 'all'
-    dirs << '_tmp'
     dirs << '.wget-cache'
     dirs << '.bin'
     dirs << '.bundle'
