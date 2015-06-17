@@ -8,6 +8,7 @@ gem 'cssminify'        # CSS compression using YUI compressor
 gem 'htmlcompressor'   # Adds in HTML minification, helps remove the warning on awestruct startup
 gem 'redcarpet'        # Markdown processing
 gem 'asciidoctor'      # Asciidoc renderer
+gem 'i18n'             # Deal with non Ascii names
 
 ## Non Windows
 gem 'libv8', '3.16.14.7'

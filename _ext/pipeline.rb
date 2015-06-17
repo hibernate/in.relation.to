@@ -22,6 +22,9 @@ require 'posts'
 
 require 'legacy_post_code_highlighter'
 
+require 'i18n'
+I18n.enforce_available_locales = false
+
 # hack to add asciidoc support in HAML
 # remove once haml_contrib has accepted the asciidoc registration patch
 # :asciidoc

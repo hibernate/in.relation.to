@@ -181,7 +181,7 @@ class Importer
     end
 
     blog_entry.title = title_link.text
-    printf "Importing %-32s - %s\n", blog_entry.lace, blog_entry.title
+    printf "Importing   %-32s - %s\n", blog_entry.lace, blog_entry.title
     #puts "Importing #{blog_entry.lace} - #{blog_entry.title}"
     blog_entry.slug = title_link.attr('href').to_s.sub('/Bloggers/', '')
 

@@ -1,4 +1,7 @@
 # encoding: UTF-8
+require 'i18n'
+
+I18n.enforce_available_locales = false
 
 # Class encapsulating the bits and pieces of a single post
 class BlogEntry
@@ -10,6 +13,10 @@ class BlogEntry
 #    open('slugs.txt', 'a') { |f|
 #      f.puts "#{@slug}\n"
 #    }
+  end
+
+  def blogger_name=(name)
+    @blogger_name = I18n.transliterate(name)
   end
 
   def to_erb

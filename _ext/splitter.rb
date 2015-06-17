@@ -36,7 +36,7 @@ module Awestruct
       def execute(site)
         @splits ||= {}
         all = site.send( @split_items_property )
-        return if ( all.nil? || all.empty? ) 
+        return if ( all.nil? || all.empty? )
 
         all.each do |page|
           splits = page.send( @split_property )
@@ -45,7 +45,7 @@ module Awestruct
             if not splits.kind_of?(Array)
               splits = [splits]
             end
-            
+
             splits.each do |split|
               # first pass is a string, second passes is a SplitStat
               split = split.to_s
@@ -74,7 +74,7 @@ module Awestruct
         end
 
         span = max - min
-        
+
         if span > 0
           slice = span / 6.0
           ordered_splits.each do |split|
@@ -92,7 +92,7 @@ module Awestruct
           ## Optionally sanitize split URL
           output_prefix = File.join( @output_path, sanitize(split.to_s) )
           options = { :remove_input=>false, :output_prefix=>output_prefix, :collection=>split.pages }.merge( @pagination_opts )
-          
+
           paginator = Awestruct::Extensions::Paginator.new( @split_items_property, @input_path, options )
           primary_page = paginator.execute( site )
           split.primary_page = primary_page
@@ -104,7 +104,7 @@ module Awestruct
       def sanitize(string)
         #replace accents with unaccented version, go lowercase and replace and space with dash
         if @sanitize
-          string.to_s.urlize({:convert_spaces=>true})
+          I18n.transliterate(string.to_s).urlize({:convert_spaces=>true})
         else
           string
         end
