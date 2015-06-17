@@ -78,17 +78,18 @@ class Importer
 
     if(has_posts && !name.nil? && !name.empty? && !author.nil? && !author.empty?)
       redirects.write "# #{name}\n"
-      redirects.write "RewriteRule ^#{blogger_name}$ /author/#{author}/ [R=301,L,E=nocache:1]\n"
-      redirects.write "RewriteRule ^#{home}$ /author/#{author}/ [R=301,L,E=nocache:1]\n"
-      redirects.write "RewriteRule ^#{home}/Page/.*$ /author/#{author}/ [R=301,L,E=nocache:1]\n"
+      redirects.write "RewriteRule ^#{blogger_name}$ /#{author}/ [R=301,L,E=nocache:1]\n"
+      redirects.write "RewriteRule ^#{home}$ /#{author}/ [R=301,L,E=nocache:1]\n"
+      redirects.write "RewriteRule ^#{home}/Page/.*$ /#{author}/ [R=301,L,E=nocache:1]\n"
 
       redirects.write "RewriteCond %{REQUEST_URI} ^/dirDisplay_d\.seam$\n"
       redirects.write "RewriteCond %{QUERY_STRING} ^directoryId=#{dir_id}$\n"
-      redirects.write "RewriteRule ^(.*)$ /author/#{author}/? [R=301,L,E=nocache:1]\n"
+      redirects.write "RewriteRule ^(.*)$ /#{author}/? [R=301,L,E=nocache:1]\n"
 
       if(!user.nil? && !user.empty?)
-        redirects.write "RewriteRule ^#{user}$ /author/#{author}/ [R=301,L,E=nocache:1]\n"
+        redirects.write "RewriteRule ^#{user}$ /#{author}/ [R=301,L,E=nocache:1]\n"
       end
+
       redirects.write "RewriteRule ^service/Feed/atom/Area/Bloggers/Node/#{name.gsub(' ', '')}(/Comments/.*)? #{@feed_url} [R=301,L,E=nocache:1]\n"
       redirects.write "\n"
     end

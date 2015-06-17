@@ -260,7 +260,7 @@ class Importer
     # Tags
     redirects.write "### Tags\n\n"
     tags.sort_by{|tag| tag.downcase}.each do |tag|
-      redirects.write "RewriteRule ^tag/" + tag.gsub(' ', "\\\\+") + "$ /tag/#{tag.downcase.gsub(' ', '-')}/ [R=301,L,E=nocache:1]\n"
+      redirects.write "RewriteRule ^tag/" + tag.gsub(' ', "\\\\+") + "$ /#{tag.downcase.gsub(' ', '-')}/ [R=301,L,E=nocache:1]\n"
     end
 
     redirects.close
