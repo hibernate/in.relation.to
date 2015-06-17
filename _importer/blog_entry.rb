@@ -6,9 +6,10 @@ I18n.enforce_available_locales = false
 # Class encapsulating the bits and pieces of a single post
 class BlogEntry
 
-  attr_accessor :title, :content, :author, :assets, :blogger_name, :original_tags, :tags, :slug, :date, :lace, :relative_url,:disqus_thread_id
+  attr_accessor :title, :content, :author, :assets, :blogger_name, :original_tags, :tags, :camel_case_slug, :slug, :date, :lace, :relative_url,:disqus_thread_id
 
   def slug=(camel_case_slug)
+    @camel_case_slug = camel_case_slug
     @slug = pretty_print_slug(camel_case_slug)
 #    open('slugs.txt', 'a') { |f|
 #      f.puts "#{@slug}\n"

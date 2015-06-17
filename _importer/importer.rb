@@ -253,7 +253,7 @@ class Importer
         tags << tag.strip
       end
 
-      redirects.write "RewriteRule ^Bloggers/#{blog_entry.slug}$ /#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}/ [R=301,L,E=nocache:1]\n"
+      redirects.write "RewriteRule ^Bloggers/#{blog_entry.camel_case_slug}$ /#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}/ [R=301,L,E=nocache:1]\n"
       redirects.write "RewriteRule ^#{blog_entry.lace.path[1..-1]}$ /#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}/ [R=301,L,E=nocache:1]\n\n"
     end
 
