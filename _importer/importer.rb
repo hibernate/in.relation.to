@@ -34,7 +34,9 @@ Choice.options do
     desc 'The name of the output directory'
   end
 
-  option :redirects_file, :required => true do
+  separator 'Optional:'
+
+  option :redirects_file, :required => false do
     short '-rf'
     long '--redirects-file=<file>'
     desc 'The name of file to which write HTTP redirect rules'
@@ -94,6 +96,7 @@ class Importer
   def initialize(import_file, output_dir, redirects_file, wxr_file_name, skip_image_processing, skip_asset_processing, log_errors, limit=-1, lace=nil)
     @import_file = import_file
     @output_dir = output_dir
+    @skip_redirect_file_creation = redirects_file.nil? ? true : false
     @redirects_file = redirects_file
 
     @skip_wxr_export = wxr_file_name.nil? ? true : false
@@ -153,7 +156,9 @@ class Importer
       @wxr_exporter.write_wxr
     end
 
-    create_redirects(blog_entries)
+    unless @skip_redirect_file_creation
+      create_redirects(blog_entries)
+    end
 
     if(@log_errors == true)
       failures.each_pair do |k,v|
