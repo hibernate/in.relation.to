@@ -28,7 +28,7 @@
 #  rake -T
 #
 # Now you're Awestruct with rake!
-
+require 'bundler'
 task :default => :preview
 
 #####################################################################################
