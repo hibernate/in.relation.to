@@ -74,8 +74,9 @@ class Importer
     user = doc.xpath("//div[@id='documentDisplay']//div[@class='boxHeader']/span/a/@href").to_s[1..-1]
     author = doc.xpath("//div[@id='documentDisplay']//div[@class='boxHeader']/span/a/text()").to_s.gsub(' ', '-').downcase.gsub('š', 's')
     dir_id = doc.xpath("//a[@id='browseDir']/@href").to_s.split('=')[1]
+    has_posts = !doc.xpath("//div[@class='title']").empty?
 
-    if(!name.nil? && !name.empty? && !author.nil? && !author.empty?)
+    if(has_posts && !name.nil? && !name.empty? && !author.nil? && !author.empty?)
       redirects.write "# #{name}\n"
       redirects.write "RewriteRule ^#{blogger_name}$ /author/#{author}/ [R=301,L,E=nocache:1]\n"
       redirects.write "RewriteRule ^#{home}$ /author/#{author}/ [R=301,L,E=nocache:1]\n"
