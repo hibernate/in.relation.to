@@ -1,0 +1,77 @@
+---
+title: "CapeDwarf optimizations and bug fixes aka 1.0.0.Beta2"
+author: "Aleš Justin"
+blogger_name: "Ales"
+creation_date: "14-01-2013"
+tags: []
+
+relative_url: /2013/01/14/cape-dwarf-optimizations-and-bug-fixes-aka-100-beta-2
+slug: cape-dwarf-optimizations-and-bug-fixes-aka-100-beta-2
+lace: http://in.relation.to/23900.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/01/14/cape-dwarf-optimizations-and-bug-fixes-aka-100-beta-2
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+With <a href="http://in.relation.to/Bloggers/FirstCapeDwarfRelease" target="" class="regularLink">first CapeDwarf release out of the way</a>, it’s now time to address initial user issues. Since setting up CapeDwarf environment has become so simple -- just unzip the distribution, and CapeDwarf already running on <a href="https://openshift.redhat.com/community/blogs/google-app-engine-on-your-own-paas" target="" class="regularLink">OpenShift</a>, we got a few useful feedbacks; keep ‘em coming!
+</p>
+
+<p class="wikiPara">
+Quick look at profiling showed we’re too eager on our logging. GAE has a LogService, hence we need to tap into JBoss Application Server logging in order to properly catch all application’ logs. But if you do this too eagerly, you might end-up catching all logs -- which is exactly what happened here. Well, this is now all fixed, resulting in huge performance boost on GAE logging now.
+</p>
+
+<p class="wikiPara">
+As expected, another very useful source of information are actual user applications. Either users themselves tried to deploy the app and failed or we actually got our hands on their .war binaries. This helped flush out some OAuth, JDO, threading, backends and web components initialization bugs.
+</p>
+
+<p class="wikiPara">
+<i class="wikiEmphasis">API Versioning</i>
+</p>
+
+<p class="wikiPara">
+Something I forgot to mention in previous CapeDwarf blog, and it’s quite important, is that at the moment, we only support latest version of GAE API (and/or any that is 100% compatible with it; at the time of writing this blog, this is GAE 1.7.4).
+</p>
+
+<p class="wikiPara">
+So, if you haven’t yet updated to the latest GAE API version, you might run into some issues. In order to flush them out easily, I created a new CapeDwarf sub-project over the holidays.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/capedwarf/capedwarf-versions" target="" class="regularLink">CapeDwarf Versions</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+As you can see, this allows for Blue tests to run against selected GAE API version.
+</p>
+
+<p class="wikiPara">
+I also added initial support for API versioning to CapeDwarf AS integration, <i class="wikiEmphasis">but</i> the actual support is not there (yet) -- due to how we intend to support this. Each non-latest GAE API version requires a new CapeDwarf Blue branch, from which you get the compatible binaries to distribute them with CapeDwarf distribution. Then you simply place these compatible binaries into JBoss Application Server’ modules/ dir - under org/jboss/capedwarf/&lt;version&gt; directory. But this is more of a task for contributors, as we encourage people to update their GAE API jars.
+</p>
+
+<p class="wikiPara">
+Also a slight update on MapReduce tests in cluster. They work, but you have to make CapeDwarf’ default cache execute operations SYNC, instead of ASYNC. We have a workaround for this in place now. ;-)
+</p>
+
+<p class="wikiPara">
+To cut the long story short, here is the new 1.0.0.Beta2 release:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://downloads.jboss.org/capedwarf/CapeDwarf_AS7_1.0.0.Beta2.zip" target="" class="regularLink">CapeDwarf 1.0.0.Beta2</a>
+</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12311321&amp;version=12318738" target="" class="regularLink">JIRA release ref</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+Feedback welcome as always!!</p>
+</div>
+

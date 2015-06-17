@@ -1,0 +1,160 @@
+---
+title: "Modules, Endpoints, SQL, GCS, new Channel impl, … aka new CapeDwarf 1.0.0.Beta6"
+author: "Aleš Justin"
+blogger_name: "Ales"
+creation_date: "11-09-2013"
+tags: []
+
+relative_url: /2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6
+slug: modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6
+lace: http://in.relation.to/24362.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+As you can see from the title, and from a bit late release, we’ve again been very busy.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://downloads.jboss.org/capedwarf/CapeDwarf_AS7_1.0.0.Beta6.zip" target="" class="regularLink">CapeDwarf 1.0.0.Beta6</a>
+</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12311321&amp;version=12318736" target="" class="regularLink">Release Notes</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+Let’s just go over all new features.
+</p>
+
+<h2 class="wikiHeadline2" id="H-Modules"><a href="/2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6#H-Modules">Modules</a></h2>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://developers.google.com/appengine/docs/java/modules/" target="" class="regularLink">Modules spec</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+There is a bit of limitation on our end here, as there is no (easy / nice) dynamic way (to my knowledge) to scale up / down virtual servers (at runtime during deployment phase) in JBossWeb that comes with JBossAS7 (which is what we use). In order to use Modules with CapeDwarf, you must use “standalone-capedwarf-modules.xml” configuration when you startup CapeDwarf AS instance.
+</p>
+
+<p class="wikiPara">
+You must also configure the number of virtual servers to match your application’s modularization. See web subsystem configuration in “standalone-capedwarf-modules.xml” for more details.
+</p>
+
+<p class="wikiPara">
+(or simply ping me for any Modules questions - via forums, email, Twitter or Freenode IRC #capedwarf)
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/GoogleCloudPlatform/appengine-tck/tree/master/core/modules" target="" class="regularLink">Modules TCK tests</a>
+</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-Endpoints"><a href="/2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6#H-Endpoints">Endpoints</a></h2>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://developers.google.com/appengine/docs/java/endpoints/" target="" class="regularLink">Endpoints spec</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+We’ve managed to map GAE’s Endpoints annotations to JAXRS/RestEasy annotations, and 
+we also support custom serialization.
+</p>
+
+<p class="wikiPara">
+In our case / implementation we only need .api files as markers, and not to read any information from it -- you can have a single .api dummy file if you like.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/GoogleCloudPlatform/appengine-tck/tree/master/core/endpoints" target="" class="regularLink">Endpoints TCK tests</a>
+</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-SQL"><a href="/2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6#H-SQL">SQL</a></h2>
+
+<p class="wikiPara">
+SQL was of course supported out-of-the-box for us.
+We we just had to hack GAE’s Driver class to connect against selected DataSource:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/capedwarf/capedwarf-blue/blob/master/sql/src/main/java/org/jboss/capedwarf/sql/JndiDataSource.java" target="" class="regularLink">DataSource lookup</a>
+</li>
+</ul>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/GoogleCloudPlatform/appengine-tck/tree/master/core/sql" target="" class="regularLink">SQL TCK tests</a>
+</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-GCS"><a href="/2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6#H-GCS">GCS</a></h2>
+
+<p class="wikiPara">
+FileService is being deprecated in favor of Google Cloud Storage (GCS) API. At the moment dev / local implementation of the GCS client library still goes against FileService implementation, so supporting this was easy, as we already fully implemented FileService API.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/GoogleCloudPlatform/appengine-tck/tree/master/ext/gcs-client" target="" class="regularLink">GCS TCK tests</a>
+</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-Channel"><a href="/2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6#H-Channel">Channel</a></h2>
+
+<p class="wikiPara">
+We re-implemented Channel API.
+</p>
+
+<p class="wikiPara">
+Big thanks to <a href="https://github.com/chrisritter" target="" class="regularLink">@chrisritter</a> for kicking our butt to do this, and contributing a simple but cool chat app for testing purposes: <a href="https://github.com/chrisritter/simplechat" target="" class="regularLink">SimpleChat</a>.
+</p>
+
+<p class="wikiPara">
+Also thanks to <a href="https://github.com/kpiwko" target="" class="regularLink">Karel</a> for stepping up and fixing Arquillian Drone so we can finally automagically test this.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://github.com/GoogleCloudPlatform/appengine-tck/tree/master/tests/appengine-tck-channel" target="" class="regularLink">Channel TCK tests</a>
+</li>
+</ul>
+
+<h2 class="wikiHeadline2" id="H-JavaOne2013"><a href="/2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6#H-JavaOne2013">JavaOne 2013</a></h2>
+
+<p class="wikiPara">
+Don’t miss my presentation at JavaOne -- Tuesday 24th September at 11:30am, Parc55. ;-)
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://oracleus.activeevents.com/2013/connect/sessionDetail.ww?SESSION_ID=2117" target="" class="regularLink">Implementing Your Own Google App Engine</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+Or my previously mentioned DC JBUG talk: <a href="http://www.meetup.com/DC-JBug/events/128068042/" target="" class="regularLink">http://www.meetup.com/DC-JBug/events/128068042/</a>
+</p>
+
+<h2 class="wikiHeadline2" id="H-Blogs"><a href="/2013/09/11/modules-endpoints-sqlgcs-new-channel-impl-aka-new-cape-dwarf-100-beta-6#H-Blogs">Blogs</a></h2>
+
+<p class="wikiPara">
+<a href="https://twitter.com/myfear" target="" class="regularLink">Markus Eisele</a> posted a nice overview of CapeDwarf:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://blog.eisele.net/2013/09/capedwarf-google-app-engine-on-java-ee.html" target="" class="regularLink">CapeDwarf - Google App Engine on Java EE</a>
+</li>
+</ul>
+
+
+<p class="wikiPara">
+Anyway, enjoy the new release! Feedback welcome as always.
+</p>
+</div>
+

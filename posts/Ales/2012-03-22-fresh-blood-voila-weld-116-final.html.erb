@@ -1,0 +1,99 @@
+---
+title: "Fresh blood, voila Weld 1.1.6.Final"
+author: "Aleš Justin"
+blogger_name: "Ales"
+creation_date: "22-03-2012"
+tags: [weld]
+
+relative_url: /2012/03/22/fresh-blood-voila-weld-116-final
+slug: fresh-blood-voila-weld-116-final
+lace: http://in.relation.to/23026.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2012/03/22/fresh-blood-voila-weld-116-final
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I'm happy to announce a new Weld 1.1.6.Final release. It's probably the biggest bug squashing fest since I took over the project.
+</p>
+
+
+<p class="wikiPara">
+Big thanks to <a href="https://community.jboss.org/people/luksa" target="" class="regularLink">Marko</a> for stepping up and doing most of the work.
+</p>
+
+<p class="wikiPara">
+Here is the <a href="https://issues.jboss.org/secure/ReleaseNote.jspa?projectId=12310891&amp;version=12318492" target="" class="regularLink">impressive list</a> of handled issues:
+</p>
+
+<pre class="wikiPreformatted">
+[WELD-580] - Around-Invoke Interceptors with wrong signature should cause DefinitionException
+[WELD-627] - Clarify the implementation and usage of WeldClass.getWeldMethods, WelldClass.getDeclaredWeldMethods
+[WELD-665] - Servlet injection not working on EAP 5.1
+[WELD-680] - Weld tests fail on IBM JDK
+[WELD-687] - Refactoring InstantiatorFactory to allow per-deployment configuration
+[WELD-820] - When invoking a method that is not intercepted, invocations on this are intercepted/decorated
+[WELD-853] - @AroundInvoke annotations added by SPI are ignored
+[WELD-909] - Dual faces mapping and cid parameter for conversational redirect
+[WELD-910] - Wrong example code - refering non-existent Weld#shutdown()
+[WELD-911] - Shared dependent instance injection with circular reference through decorator
+[WELD-926] - Weld Servlet still uses old Google Collections instead of Guava
+[WELD-930] - Producer is made an alternative if the declaring bean class is an alternative
+[WELD-937] - Documentation issue - Instantiating abstract class
+[WELD-954] - URIs escaped twice in URLScanner
+[WELD-967] - @ThreadScope documentation bug
+[WELD-977] - Specialized bean does not disable producer method of its parent
+[WELD-986] - Interceptors and decorators may not declare observer methods
+[WELD-989] - #{conversation.id} instead of #{javax.enterprise.context.conversation.id} mentioned in the reference guide
+[WELD-997] - Custom implementation of Interceptor never invoked
+[WELD-999] - Interceptor binding transitivity broken
+[WELD-1007] - Weld SE startup fails.
+[WELD-1016] - Weld creates multiple interceptor instances per target instance
+[WELD-1024] - Missing check that specializing bean has all the bean types of specialized bean
+[WELD-1026] - @New session beans created eagerly
+[WELD-1028] - CLONE - URLScanner can not handle paths containing spaces
+[WELD-1036] - ArrayIndexOutOfBoundsException destroying Stateful SessionBean
+[WELD-1044] - ConversationPropagationFilter active for non-JSF requests
+[WELD-1048] - Decorated dependent bean not passivation capable
+[WELD-1056] - Weld-servlet brings transitive dependency on weld-build-config
+[WELD-1062] - Superclass of a modified AnnotatedType is ignored
+[WELD-1067] - Thread safety issue in BeansClosure
+[WELD-1068] - Weld conversation crash when used in portlet
+[WELD-1075] - Ambiguous dependencies when only one correct dependency exists
+[WELD-1077] - java.lang.VerifyError when applying an interceptor on a method in a class with final equals
+[WELD-1083] - Weld only detects conflicting interceptor bindings on classes, but not on methods
+[WELD-1091] - Test failures on JDK7
+
+[WELD-1055] - Exception when deploying EJB with duplicated Interceptors-annontation is not informative enough
+
+[WELD-731] - Bind BeanManager to JNDI when naming context is read/write (as in JBoss AS/EAP 5)
+[WELD-894] - Around-Invoke interceptors should not wrap RuntimeException into WeldException
+[WELD-1000] - Pass extension instances to bootstrap
+[WELD-1043] - Convert Weld example ftests to Ajocado
+
+[WELD-27] - Consider using JBoss maven plugin, not ant for example builds
+[WELD-398] - Unable to run translator example with settings for cluster
+[WELD-494] - Add Arquillian test to the dist examples
+[WELD-655] - maven-jetty-plugin not configured correctly
+[WELD-1005] - Upgrade surefire plugin to 2.10
+[WELD-1064] - Upgrade dependency jboss-interceptors-api from 1.0.0.Beta1 to 1.0.0.Final
+[WELD-1084] - Introduce class InterceptorBindingType
+[WELD-1092] - Configure m2e to ignore Checkstyle Plugin
+</pre>
+
+
+<p class="wikiPara">
+This is (probably) the last 1.1.x release, as it's high time to finally get Mathieu's OSGi integration in (which requires API changes, hence bumping the minor version).
+</p>
+
+<p class="wikiPara">
+Give it a spin. Feedback welcome as always.
+</p>
+
+<p class="wikiPara">
+ </p>
+</div>
+
