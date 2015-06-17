@@ -1,6 +1,13 @@
 #!/usr/bin/env ruby 
 # encoding: UTF-8
 
+def normalize_tag(tag)
+#  puts tag
+  tags = Array.new
+  tags << tag
+  normalize_tags(nil, tags)[0]
+end
+
 def normalize_tags(slug, tags)
 
   if (tags.nil? || tags.empty?)
