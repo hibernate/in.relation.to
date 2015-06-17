@@ -39,13 +39,13 @@ def convert_tag(tag)
   when /Shards/i
     "Hibernate Shards"
 
-  when /release/i
+  when /(release)|(Development)/i
     "Release"
 
   when /JBoss Tools Eclipse/i
     "JBoss Tools"
 
-  when /seam/i
+  when /(seam)|(REST)|(Solder)/i
     "Seam"
 
   when /ceylon/i
@@ -63,7 +63,7 @@ def convert_tag(tag)
   when /hv51/i
     "Hibernate Validator"
 
-  when /(Injection)|(Web Beans)|(cdi)|(ioc)/i
+  when /(Injection)|(Web Beans)|(cdi)|(ioc)|(Portable Extensions)|(Interceptors)/i
     "CDI"
 
   when /validation/i
@@ -75,7 +75,7 @@ def convert_tag(tag)
   when /jboss tools eclipse/i
     "JBoss Tools"
 
-  when /Rich ?Faces/i
+  when /(Rich ?Faces)|(Ajax)/i
     "Rich Faces"
 
   when /OGM/i
@@ -100,7 +100,10 @@ def convert_tag(tag)
   when /asylum/i
     "JBoss Asylum"
 
-  when /(Event)|(conference)|(EclipseCon)|(openblend)|(jbug)|(keynote)|(jug)|(jbve)/i
+  when /EventListeners/i
+    "Hibernate ORM"
+
+  when /(Event)|(conference)|(EclipseCon)|(openblend)|(jbug)|(keynote)|(jug)|(jbve)|(JUDCon)|(JavaOne)|(Devoxx)|(London)/i
     "Event"
 
   when /(design)|(git)|(gradle)|(maven)|(persistence)|(proposal)|(review)|(jdocbook)/i
@@ -111,6 +114,9 @@ def convert_tag(tag)
 
   when /(jsf)|(Java ?Server ?Faces)|(PartialViewContext)|(Mojara)/i
     "JSF"
+
+  when /mobile/i
+    "AeroGear"
 
   else
     tag
