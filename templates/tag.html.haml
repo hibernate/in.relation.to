@@ -38,7 +38,14 @@ layout: project
           %a{:href => "#{relative("#{href}")}"}
             %i{:class => "icon-home menu-icon"}
             Home
-       
+
+        - href = "/blog.atom"
+        - active = false
+        %li{:class => "#{(active ? "active" : "")}"}
+          %a{:href => "#{relative("#{href}")}"}
+            %i{:class => "icon-rss menu-icon"}
+            Feed
+
       %hr.divider
       .cloud-authors
         %h2 Authors
