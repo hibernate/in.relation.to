@@ -2,4 +2,12 @@
 name: Aslak Knutsen
 photo:
 level: 10
+website: http://twitter.com/aslakknutsen
+location: Oslo, Norway
+occupation: Senior Software Engineer
 ---
+Aslak Knutsen is currently a Senior Software Engineer for the JBoss Seam team at
+Red Hat, Inc. where he is the project lead for Arquillian and works on projects
+such as ShrinkWrap, Weld and Seam 3. Previously, Aslak was a Senior Consultant
+at Conduct AS (working with JBoss related technologies) and Senior Developer at
+EDB ASA (working with electronic billing/banking systems).
