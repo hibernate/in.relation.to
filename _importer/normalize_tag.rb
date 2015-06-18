@@ -190,6 +190,6 @@ def remove_tags(tags)
                 "deployers", "vfs", "microcontainer", "dirtiness", "feature", "java",
                 "jbosscentral", "jdf" ].map(&:downcase)
 
-  return tags.reject {|tag| tag.nil? || tag.empty? || blacklist.include?(tag.downcase)}
+  return tags.reject {|tag| tag.nil? || tag.empty? || blacklist.include?(tag.strip.downcase)}
 end
 
