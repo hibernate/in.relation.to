@@ -75,20 +75,25 @@ rake preview
 ----
 
 Point your browser to http://localhost:4242. Per default the site is generated with
-the _editor_ profile enabled. In this profile posts per tag and author are not
-generated. The main purpose of this mode is to generate a new blog entry.
-If you want the full site generated you should use:
+the _editor_ profile enabled.
+In this profile, posts per tag and author are not
+generated and only the last 12 months of blog entries are used.
+The main purpose of this mode is to generate a new blog entry.
+
+If you are developing the blog, you might want to use the _development_ profile.
+It creates tags and author pages and only considers the last 12 months of blog entries.
 
 [source]
 ----
 rake preview[development]
 ----
 
-or
+If you want the full site generated for example to see the full list of tags or authors,
+you should use:
 
 [source]
 ----
-rake preview[production]
+rake preview[staging]
 ----
 
 == Preview changes on staging.in.relation.to
@@ -98,7 +103,7 @@ You might need to use "git push --force" to overwrite previous experiments;
 possibly check when doing so to not interfere with someone else also looking to publish a preview.
 
 Pushing on this branch will trigger a build at http://ci.hibernate.org/view/Website/job/staging.in.relation.to/[the CI Server],
-if the build is successfull your changes should be visibile on http://staging.in.relation.to.org/[the staging website].
+if the build is successful your changes should be visible on http://staging.in.relation.to.org/[the staging website].
 
 == Publish changes to production
 
@@ -108,7 +113,7 @@ In this case, never use "--force" !
 If you have a push error, please rebase first, and possibly repeat the staging phase.
 
 Also in this case a build is triggered on http://ci.hibernate.org/view/Website/job/in.relation.to/[the CI Server],
-and if successfull the content is then visible on http://in.relation.to.org/[the public blog].
+and if successful the content is then visible on http://in.relation.to.org/[the public blog].
 
 
 == Tips & Tricks
@@ -211,4 +216,3 @@ agree to license your contribution under the respective licenses mentioned above
 == Acknowledgements
 
 This website uses https://github.com/jbossorg/bootstrap-community[JBoss Community Bootstrap].
-
