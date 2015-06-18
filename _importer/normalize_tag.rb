@@ -125,6 +125,9 @@ def convert_tag(tag)
   when /mobile/i
     "AeroGear"
 
+  when /filters/i
+    "Hibernate ORM"
+
   else
     tag
 
