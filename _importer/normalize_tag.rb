@@ -182,7 +182,7 @@ def remove_tags(tags)
                 "Book", "Books", "Code Coverage", "Comet", "Community", "ConnectionProvider",
                 "Cordova", "DeltaSpike", "Dependency Management", "Development", "Devoxx", 
                 "Dukes Choice Award", "EJB", "EclEmma", "Embedded JBoss", "Errai", "EventListeners",
-                "ExtendedDataTable", "Facelets", "Geeky Java Stuff", "Granite DS", "HTML5", "Hibernate", "Hints",
+                "ExtendedDataTable", "Flex", "Filters", "Facelets", "Geeky Java Stuff", "Granite DS", "HTML5", "Hibernate", "Hints",
                 "Interceptors", "Interoperability", "JBoss", "JBoss Portlet Bridge", "JDO", "JMS",
                 "JUDCon", "JavaOne", "Jigsaw", "Jokre", "Linux", "London", "Lucene", "Maintenance", "Marshalling",
                 "Mockup", "Media", "Metawidget", "Mobile", "Modules", "News", "OpenJDK", "OpenShift",
