@@ -4,18 +4,20 @@ module Awestruct
 
       attr_accessor :path_prefix, :assign_to, :archive_template, :archive_path
 
-      def initialize(path_prefix='', assign_to=:posts, archive_template=nil, archive_path=nil)
+      def initialize(path_prefix='', assign_to=:posts, archive_template=nil, archive_path=nil, ignore_older_than=nil)
         @archive_template = archive_template
         @archive_path     = archive_path
         @path_prefix      = path_prefix
         @assign_to        = assign_to
         @handle_subdirs    = true
+        @ignore_older_than = ignore_older_than
       end
 
       def execute(site)
         posts   = []
         archive = Archive.new
 
+        pages_to_remove = []
         site.pages.each do |page|
           year, month, day, slug = nil
 
@@ -54,13 +56,18 @@ module Awestruct
 
             # if a date was found create a post
             if( year and month and day)
-              page.slug ||= slug
-              context = page.create_context
-              page.output_path = "#{@path_prefix}/#{year}/#{month}/#{day}/#{page.slug}/index.html"
-              posts << page
+              if @ignore_older_than and page.date < @ignore_older_than
+                pages_to_remove.push(page)
+              else
+                page.slug ||= slug
+                context = page.create_context
+                page.output_path = "#{@path_prefix}/#{year}/#{month}/#{day}/#{page.slug}/index.html"
+                posts << page
+              end
             end
           end
         end
+        site.pages = site.pages - pages_to_remove
 
         posts = posts.sort_by{|each| [each.date, each.sequence || 0, File.mtime( each.source_path ), each.slug ] }.reverse
 

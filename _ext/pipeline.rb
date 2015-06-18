@@ -56,7 +56,13 @@ Awestruct::Extensions::Pipeline.new do
   extension Awestruct::Extensions::DataDir.new
 
   # blog
-  extension Awestruct::Extensions::Posts.new( '', :posts )
+
+  ignore_older_than=nil
+  if Engine.instance.site.profile == 'editor' or Engine.instance.site.profile == 'development'
+    ignore_older_than = Time.now - 366*24*60*60
+  end
+
+  extension Awestruct::Extensions::Posts.new( '', :posts, nil, nil, ignore_older_than )
   extension Awestruct::Extensions::SplitFilterer.new( :posts,
                                                      'tags',
                                                      :sanitize=>true,
@@ -64,11 +70,7 @@ Awestruct::Extensions::Pipeline.new do
                                                       'page', 'javascripts', 'images', 'readme', 'templates']
                                                     )
 
-  if Engine.instance.site.profile == 'editor'
-    # make very few paginated pages
-    pagination = 100
-  else
-    pagination = 10
+  if Engine.instance.site.profile != 'editor'
     extension Awestruct::Extensions::Splitter.new( :posts,
                                                    'tags',
                                                    'templates/tag',
@@ -97,7 +99,7 @@ Awestruct::Extensions::Pipeline.new do
                                                    :feed_title=>'In Relation To Blog')
   end
 
-  extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>pagination, :per_page_init=>pagination )
+  extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>10, :per_page_init=>10 )
 
 
   # register extensions and transformers
