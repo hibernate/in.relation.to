@@ -5,6 +5,15 @@ layout: project
 -# display menu on the left
 -# handles title display
 
+// find the tag name based on the page output path and the tag url
+- identifier = page.output_path.split("/")[-2].to_s
+- if not page.posts.nil?
+  - post = page.posts[0]
+  - for tag in post.tags
+    - tag_identifier = tag.primary_page.url.split("/")[-1].to_s
+    - if tag_identifier == identifier
+      - page_tag = tag
+
 - if not page.posts.nil?
   - member = site.people.values.detect{|member| member.name == page.posts[0].tags[0].to_s}
   - sanitized_member = page.posts[0].tags[0].primary_page.url.split("/")[-1].to_s
@@ -35,12 +44,14 @@ layout: project
         .expandable
           %h2 Bio
           #{member.content}
-        
+
   .span10
     -# Title
     = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
     %h1
-      In relation to 
+      In relation to
+      -if page_tag
+        = page_tag
     - if not page.posts.nil?
       - for post in page.posts
         .blogpost
