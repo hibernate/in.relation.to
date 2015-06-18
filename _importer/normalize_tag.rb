@@ -64,7 +64,7 @@ def convert_tag(tag)
   when /validator/i
     "Hibernate Validator"
 
-  when /validation/i
+  when /(validation)|(flex)/i
     "Bean Validation"
 
   when /hv51/i
