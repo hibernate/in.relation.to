@@ -5,6 +5,7 @@ level: 10
 website: https://twitter.com/#!/plmuir
 location: Edinburgh, Scotland
 occupation: Principal Software Engineer, Red Hat, Inc.
+gravatar_hash: 4ebf34d2cbe74a29138a6d1e477ab4c8
 ---
 I am leading the CDI 1.1 specification, and work on JBoss Developer Framework, a
 set of tutorials and examples for all JBoss users. Previously, I've worked on

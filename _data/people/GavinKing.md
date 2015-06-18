@@ -2,6 +2,7 @@
 name: Gavin King
 photo: /images/team/GavinKing.jpg
 level: 1
+gravatar_hash: 77987db6d7dd75abd4a14651641b3d46
 ---
 Gavin King leads the Ceylon project at Red Hat. Gavin is the creator of 
 [Hibernate](http://hibernate.org), a popular object/relational persistence 
