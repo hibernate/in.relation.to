@@ -5,6 +5,7 @@ level: 10
 website: http://aerogear.org
 location: Upstate New York USA
 occupation: JBoss core developer at Red Hat Inc.
+gravatar_hash: 083df806b14f0df14278ad7072d2bcfb
 ---
 I'm a JBoss core developer at Red Hat, and the AeroGear project lead. I
 previously lead the RichFaces project, and have been involved in many other open

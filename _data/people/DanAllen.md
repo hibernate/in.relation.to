@@ -5,6 +5,7 @@ level: 10
 website: http://mojavelinux.com
 location: Laurel, MD
 occupation: Senior Software Engineer
+gravatar_hash: dcccd96c499963133f7f95e7ffa20c4e
 ---
 Dan Allen is the author of [Seam in
 Action](http://mojavelinux.com/seaminaction), the comprehensive guide to the

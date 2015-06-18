@@ -5,6 +5,7 @@ level: 10
 website: http://lightguard-jp.blogspot.com
 location: Salt Lake City, UT
 occupation: Senior Software Engineer, Red Hat
+gravatar_hash: c4ffa13c27fbb20c8404bd296e274007
 ---
 Jason Porter has been involved in software development since the mid 90's. He
 has worked in e-Government (since before the term was coined), financial, and
