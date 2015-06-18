@@ -22,7 +22,7 @@ def normalize_tags(slug, tags)
   # Split "Core Relase" into "Hibernate ORM" and "Release"
   if temp.map(&:downcase).include?("core release")
     temp.push("Hibernate ORM")
-    temp.push("Release")
+    temp.push("Releases")
   end
 
   # Normalize the tags
@@ -47,7 +47,7 @@ def convert_tag(tag)
     "Hibernate Shards"
 
   when /(release)|(Development)/i
-    "Release"
+    "Releases"
 
   when /JBoss Tools Eclipse/i
     "JBoss Tools"
@@ -110,11 +110,11 @@ def convert_tag(tag)
   when /EventListeners/i
     "Hibernate ORM"
 
-  when /(Event)|(conference)|(EclipseCon)|(openblend)|(jbug)|(keynote)|(jug)|(jbve)|(JUDCon)|(JavaOne)|(Devoxx)|(London)/i
-    "Event"
+  when /(event)|(conference)|(EclipseCon)|(openblend)|(jbug)|(keynote)|(jug)|(jbve)|(JUDCon)|(JavaOne)|(Devoxx)|(London)/i
+    "Events"
 
-  when /(design)|(git)|(gradle)|(maven)|(persistence)|(proposal)|(review)|(jdocbook)/i
-    "Discussion"
+  when /(discussion)|(design)|(git)|(gradle)|(maven)|(persistence)|(proposal)|(review)|(jdocbook)/i
+    "Discussions"
 
   when /eclipse/i
     "Eclipse"
