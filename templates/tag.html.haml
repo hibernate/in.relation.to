@@ -38,8 +38,17 @@ layout: project
           %a{:href => "#{relative("#{href}")}"}
             %i{:class => "icon-home menu-icon"}
             Home
+       
       %hr.divider
+      .cloud-authors
+        %h2 Authors
+        = site.posts_author_cloud
 
+      %hr.divider
+      .cloud-tags
+        %h2 Tags
+        = site.posts_tags_cloud
+ 
   .span10
     -# Title
     = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
