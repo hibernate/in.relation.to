@@ -1,4 +1,4 @@
-= How to build in.relation.to
+= How to build and blog on in.relation.to
 :awestruct-layout: title-nocol
 :toc:
 :toc-placement: preamble
@@ -95,6 +95,119 @@ you should use:
 ----
 rake preview[staging]
 ----
+
+== Write a blog
+
+Blogs are written in http://asciidoctor.org[Asciidoctor].
+
+Create a file in the directory named after you: for example `posts/Emmanuel`.
+The file should be named as followed: `yyyy-mm-dd-your-lowercase-dash-separated-slug.adoc`.
+For example `2015-06-30-multitenancy-and-current-session.adoc`.
+
+Here is a sample blog template you can start with:
+
+[source]
+.An Asciidoctor blog post
+....
+= Let me tell you about...
+:author: Emmanuel Bernard
+:awestruct-tags: ["Blog", "Test"]
+:awestruct-layout: blog-post
+
+Today let's discuss blogging.
+
+== Metadata
+
+You can see that the metadata is made of:
+
+* `author`: put your first and lastname
+* `awestruct-tags`: a list of tags
+* `awestruct-layout`: don't change this one
+
+The title is the first line and starts with =.
+
+=== Tags
+
+Here is a curated list of tags that you can look at http://in.relation.to/tags/.
+Try to use that list, we do not want tag proliferation.
+In particular, the general rule is to have tags representing:
+
+* projects, products and podcasts: e.g. `Hibernate ORM`
+* specifications: e.g. `CDI` or `Bean Validation`
+* a tag representing a release announcement: `Releases`
+* a tag representing conferences, JUGs etc: `Events`
+* a tag representing discussions: `Discussions`. This one covers development methods, dev tooling, build, etc.
+* a tag representing off topic: `Off topic`
+
+== Headers
+
+Sections of a blog post start at level 2 i.e. `==`.
+Level 1 is the blog post title.
+
+== Code samples
+
+Code can be highlighted
+
+[source,java]
+----
+public class Test {
+    public String name;
+}
+----
+
+== More info
+
+You can read more on the Asciidoctor syntax at http://asciidoctor.org.
+
+Happy blogging.
+....
+
+=== Metadata
+
+You can see that the metadata is made of:
+
+* `author`: put your first and lastname
+* `awestruct-tags`: a list of tags
+* `awestruct-layout`: don't change this one
+
+The title is the first line and starts with =.
+
+==== Tags
+
+Here is a curated list of tags that you can look at http://in.relation.to/tags/.
+Try to use that list, we do not want tag proliferation.
+In particular, the general rule is to have tags representing:
+
+* projects, products and podcasts: e.g. `Hibernate ORM`
+* specifications: e.g. `CDI` or `Bean Validation`
+* a tag representing a release announcement: `Releases`
+* a tag representing conferences, JUGs etc: `Events`
+* a tag representing discussions: `Discussions`. This one covers development methods, dev tooling, build, etc.
+* a tag representing off topic: `Off topic`
+
+=== Sections
+
+Sections of a blog post start at level 2 i.e. `==`.
+Level 1 is the blog post title.
+
+=== Code samples
+
+Code can be highlighted
+
+[source,java]
+----
+public class Test {
+    public String name;
+}
+----
+
+=== More info
+
+You can read more on the Asciidoctor syntax at http://asciidoctor.org.
+
+Happy blogging.
+
+
 
 == Preview changes on staging.in.relation.to
 
