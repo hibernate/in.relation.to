@@ -90,64 +90,40 @@ asciidoctor:
 ####################################################################################################
 # Update resource URLs based on the profile
 profiles:
-  editor:
-    jborg_fonts_url: http://static.jboss.org/theme/fonts
-    jborg_images_url: http://static.jboss.org/theme/images
-    jborg_js_url: http://static.jboss.org/theme/js
-    project_images_url: /cache/static.jboss.org/images/hibernate
-    bootstrap_css_url: http://static.jboss.org/theme/css/bootstrap-community/2.3.1.3/bootstrap-community
-    bootstrap_js_url: /javascripts/bootstrap-community
-    #bootstrap_js_url: http://static.jboss.org/theme/js/libs/bootstrap-community/2.3.1.3/bootstrap-community
-    legacy_post_syntax_highlighting: disabled
-  development:
-    jborg_fonts_url: http://static.jboss.org/theme/fonts
-    jborg_images_url: http://static.jboss.org/theme/images
-    jborg_js_url: http://static.jboss.org/theme/js
-    project_images_url: /cache/static.jboss.org/images/hibernate
-    bootstrap_css_url: http://static.jboss.org/theme/css/bootstrap-community/2.3.1.3/bootstrap-community
-    bootstrap_js_url: /javascripts/bootstrap-community
-    #bootstrap_js_url: http://static.jboss.org/theme/js/libs/bootstrap-community/2.3.1.3/bootstrap-community
-  test:
-    jborg_fonts_url: http://static.jboss.org/theme/fonts
-    jborg_images_url: http://static.jboss.org/theme/images
-    jborg_js_url: http://static.jboss.org/theme/js
-    project_images_url: /cache/static.jboss.org/images/hibernate
-    bootstrap_css_url: http://static.jboss.org/theme/css/bootstrap-community/2.3.1.3/bootstrap-community
-    bootstrap_js_url: /javascripts/bootstrap-community
-    #bootstrap_js_url: http://static.jboss.org/theme/js/libs/bootstrap-community/2.3.1.3/bootstrap-community
-    # base_url: http://hibernate.org.beanvalidation.org
-  staging:
+  editor: &base
     minified: .min
     css_minifier: disabled
     js_minifier: disabled
     html_minifier: disabled
+    legacy_post_syntax_highlighting: disabled
+
     jborg_fonts_url: http://static.jboss.org/theme/fonts
     jborg_images_url: http://static.jboss.org/theme/images
     jborg_js_url: http://static.jboss.org/theme/js
-    project_images_url: http://static.jboss.org/images/hibernate
+    project_images_url: /cache/static.jboss.org/images/hibernate
     bootstrap_css_url: http://static.jboss.org/theme/css/bootstrap-community/2.3.1.3/bootstrap-community
     bootstrap_js_url: /javascripts/bootstrap-community
-    #bootstrap_js_url: http://static.jboss.org/theme/js/libs/bootstrap-community/2.3.1.3/bootstrap-community
+
+  development:
+    << : *base
+
+  staging:
+    << : *base
+    legacy_post_syntax_highlighting: enabled
+    project_images_url: http://static.jboss.org/images/hibernate
     wget:
-      #we don't need to download cached resources when in production
+      #we don't need to download cached resources when on staging
       enabled: false
     base_url: http://staging.in.relation.to/
+
   production:
-    minified: .min
-    css_minifier: disabled
-    js_minifier: disabled
-    html_minifier: disabled
-    jborg_fonts_url: http://static.jboss.org/theme/fonts
-    jborg_images_url: http://static.jboss.org/theme/images
-    jborg_js_url: http://static.jboss.org/theme/js
+    << : *base
+    legacy_post_syntax_highlighting: enabled
     project_images_url: http://static.jboss.org/images/hibernate
-    bootstrap_css_url: http://static.jboss.org/theme/css/bootstrap-community/2.3.1.3/bootstrap-community
-    bootstrap_js_url: /javascripts/bootstrap-community
-    #bootstrap_js_url: http://static.jboss.org/theme/js/libs/bootstrap-community/2.3.1.3/bootstrap-community
     wget:
-      #we don't need to download cached resources when in production
+      #we don't need to download cached resources when on staging
       enabled: false
-    base_url: http://in.relation.to
+    base_url: http://in.relation.to/
 
 google_analytics:
   account: UA-45270411-1
