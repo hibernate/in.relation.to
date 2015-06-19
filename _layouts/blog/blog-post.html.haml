@@ -15,7 +15,7 @@ layout: project
           %i.icon-circle.icon-stack-base.icon-fixed-width
           %i{:class => "icon icon-light icon-fixed-width icon-quote-right"}
           /icon-rss icon-signal
-    %hr.divider
+
     %ul.nav.nav-list
       -# removes index.html and then replace download.html to download/
       - current_path = page.output_path.sub(/index\.html$/, "").sub(/\.html$/,"/")
@@ -34,26 +34,6 @@ layout: project
           %i{:class => "icon-rss menu-icon"}
           Feed
     %hr.divider
-    .blogtagbar
-      .single_blog_author
-        - authors = page.author
-        - # when splitting are disabled in the pipeline, authors is a string
-        - if not authors.kind_of?(Array)
-          - authors = [ authors ]
-        - authors.each do |author|
-          - url = author.kind_of?(String) ? '' : author.primary_page.url
-          %a{:href=>url}
-            = author
-      .single_blog_date
-        #{page.date.strftime( '%Y-%m-%d' )}
-      .single_blog_tags
-        - page.tags.each do |tag|
-          - # when splitting are disabled in the pipeline, tag is a string
-          - url = tag.kind_of?(String) ? '' : tag.primary_page.url
-          %a.label{:href=>url}
-            = tag
-          &nbsp;
-    %hr.divider
     .cloud-tags
       %h2 Tags
       = site.posts_tags_cloud
@@ -66,6 +46,25 @@ layout: project
   .span8
     -# Title
     = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
+    .blogtagbar
+      - authors = page.author
+      - # when splitting are disabled in the pipeline, authors is a string
+      - if not authors.kind_of?(Array)
+        - authors = [ authors ]
+      - authors.each do |author|
+        - url = author.kind_of?(String) ? '' : author.primary_page.url
+        %a{:href=>url}
+          = author
+        &nbsp;
+      |&nbsp;
+      #{page.date.strftime( '%Y-%m-%d' )}
+      &nbsp;|&nbsp;
+      - page.tags.each do |tag|
+        - # when splitting are disabled in the pipeline, tag is a string
+        - url = tag.kind_of?(String) ? '' : tag.primary_page.url
+        %a.label{:href=>url}
+          = tag
+    %p
     ~ content
     #disqus_thread
     %script{:src=>javascript, :type=>'text/javascript'}
