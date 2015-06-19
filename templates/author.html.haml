@@ -6,7 +6,9 @@ layout: project
 -# handles title display
 
 - if not page.posts.nil?
+  - puts page.posts[0].author[0].to_s
   - member = site.people.values.detect{|member| member.name == page.posts[0].author[0].to_s}
+  - puts member
   - sanitized_member = page.posts[0].author[0].primary_page.url.split("/")[-1].to_s
 
 -# Project specific navigation menu
@@ -36,10 +38,10 @@ layout: project
           %a{:href => "#{relative("#{href}")}"}
             %i{:class => "icon-rss menu-icon"}
             Feed
- 
-      %hr.divider
-      .bio
-      - if member
+
+      - if member && member.content && !member.content.empty?
+        %hr.divider
+        .bio
         .expandable
           %h2 Bio
           - if member.gravatar_hash
