@@ -111,7 +111,7 @@ class Importer
     @single_lace = lace
 
     # images and assets/attachments go into subdirectories
-    @image_dir = @output_dir + '/../images'
+    @image_dir = @output_dir + '/../images/legacy'
     FileUtils.mkdir_p( @image_dir )
     @asset_dir = @output_dir + '/../assets'
     FileUtils.mkdir_p( @asset_dir )
@@ -400,7 +400,7 @@ class Importer
         write_resource(image_data, File.join( @image_dir, image_name ))
 
         # adjust the image target
-        image['src'] = "/images/" + image_name
+        image['src'] = "/images/legacy/" + image_name
       end
     end
   end

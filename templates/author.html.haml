@@ -6,9 +6,7 @@ layout: project
 -# handles title display
 
 - if not page.posts.nil?
-  - puts page.posts[0].author[0].to_s
   - member = site.people.values.detect{|member| member.name == page.posts[0].author[0].to_s}
-  - puts member
   - sanitized_member = page.posts[0].author[0].primary_page.url.split("/")[-1].to_s
 
 -# Project specific navigation menu
@@ -65,7 +63,7 @@ layout: project
     -# Title
     = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
     %h1
-      In relation to 
+      In relation to
       -if member
         = member.name
     - if not page.posts.nil?
