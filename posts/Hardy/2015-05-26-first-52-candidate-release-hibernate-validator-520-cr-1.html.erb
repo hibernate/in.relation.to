@@ -1,0 +1,80 @@
+---
+title: "First 5.2 Candidate Release - Hibernate Validator 5.2.0.CR1"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "26-05-2015"
+original_tags: [Hibernate Validator]
+tags: [Hibernate Validator]
+
+relative_url: /2015/05/26/first-52-candidate-release-hibernate-validator-520-cr-1
+slug: first-52-candidate-release-hibernate-validator-520-cr-1
+lace: http://in.relation.to/42796.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/05/26/first-52-candidate-release-hibernate-validator-520-cr-1
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Moving along towards a 5.2 Final, we are happy to announce
+the release of Hibernate Validator 5.2.0.CR1. The main goal of this release was to fix
+bugs and polish some of the new features. For example, we reviewed the
+<tt>Optional</tt> validation support and made sure its behavior is (what we think)
+consistent in all cases. You can find the full change log on
+<a href="https://hibernate.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10060&amp;version=19254" target="" class="regularLink">JIRA</a>.
+</p>
+
+<p class="wikiPara">
+Despite the focus on bug fixes, we still managed to sneak in a couple of new features.
+Hibernate Validator offers now a <a href="http://docs.jboss.org/hibernate/validator/5.2/reference/en-US/html_single/#section-time-provider" target="" class="regularLink">TimeProvider</a> contract, as well
+as an <a href="http://docs.jboss.org/hibernate/validator/5.2/reference/en-US/html_single/#section-extensions-path-api" target="" class="regularLink">extension</a> of the
+<a href="http://docs.jboss.org/hibernate/beanvalidation/spec/1.1/api/javax/validation/Path.html" target="" class="regularLink">Path API</a> which allows to obtain the value of the represented property. Refer to the online documentation for more information.
+</p>
+
+<p class="wikiPara">
+Another more general question, which created quite a bit of discussion, revolved around
+the validation of Java 8 date/time types (JSR 310) (see
+<a href="https://hibernate.atlassian.net/browse/HV-874" target="" class="regularLink">HV-874</a>). The question is, whether
+we can/should provide default <tt>ConstraintValidator</tt> implementations for
+<tt>@Past</tt> and <tt>@Future</tt> validating <tt>LocalDate</tt> (or any of the other date/time types which
+do not represent a instant in time). The Javadocs tells us:
+</p>
+
+<blockquote class="wikiBlockquote">
+This class does not store or represent a time or time-zone. Instead, it is a description
+of the date, as used for birthdays. It cannot represent an instant on the time-line without
+additional information such as an offset or time-zone.
+</blockquote>
+
+<p class="wikiPara">
+Without a instant in time, however, past and future are undefined. One can only validate
+such an instant by associating a timezone with it. But which one? The time zone of the
+current JVM? That could lead to unexpected behavior for example in client-server
+applications. If you have an opinion on this or an idea on how to solve this, please leave a
+comment or use any of the other means listed below to get into touch with us. 
+We would love to hear from you.
+For now, Hibernate Validator will not support <tt>LocalDate</tt> out of the box. We will see how
+this pans out.
+</p>
+
+<h2 class="wikiHeadline2" id="H-WhereDoIGetTheRelease"><a href="/2015/05/26/first-52-candidate-release-hibernate-validator-520-cr-1#H-WhereDoIGetTheRelease">Where do I get the release?</a></h2>
+
+<p class="wikiPara">
+Maven artifacts can be found in the JBoss Maven repository
+(GAV <a href="https://repository.jboss.org/nexus/index.html#nexus-search;gav~org.hibernate~hibernate-validator~5.2.0.CR1~" target="" class="regularLink">org.hibernate:hibernate-validator:5.2.0.CR1</a>) and will
+within a short time also be synced to <a href="http://search.maven.org/" target="" class="regularLink">Maven Central</a>.
+Distribution bundles are as usual available on <a href="https://sourceforge.net/projects/hibernate/files/hibernate-validator/5.2.0.CR1" target="" class="regularLink">SourceForge</a>.
+</p>
+
+<p class="wikiPara">
+Feedback and questions are welcome via the Hibernate Validator
+<a href="https://forum.hibernate.org/viewforum.php?f=9" target="" class="regularLink">forum</a> or on stackoverflow using the
+<a href="http://stackoverflow.com/questions/tagged/hibernate-validator" target="" class="regularLink">hibernate-validator</a> tag.
+</p>
+
+<p class="wikiPara">
+Enjoy!</p>
+</div>
+

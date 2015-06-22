@@ -106,11 +106,11 @@ class WxrExporter
       return
     end
 
-    spam_regexp = $spam_keywords.join('|')
-    if content =~ /#{spam_regexp}/i
-      @spam << comment.to_s
-      return
-    end
+    # spam_regexp = $spam_keywords.join('|')
+    # if content =~ /#{spam_regexp}/i
+    #   @spam << comment.to_s
+    #   return
+    # end
 
     # Disqus does not allow longer comments and they are most likely spam anyways
     if content.length > 25000
@@ -120,7 +120,7 @@ class WxrExporter
 
     # Not sure whether id there is a limit in theory, but Disqus does not even
     # allow that long emails
-    if email.length > 75
+    if email.length >= 75
       @spam << comment.to_s
       return
     end
