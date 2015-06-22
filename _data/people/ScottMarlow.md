@@ -2,6 +2,7 @@
 name: Scott Marlow
 photo:
 level: 10
+gravatar_hash: ce9572f319e848be149196b772776981
 ---
 Core developer on the JBoss AS team. Spent a number of years building various
 enterprise development software, from database server to developer tools (such

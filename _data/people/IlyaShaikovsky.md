@@ -4,6 +4,7 @@ photo:
 level: 10
 location: Minsk
 occupation: Products engineer
+gravatar_hash: ce9572f319e848be149196b772776981
 ---
 Ilya Shaikovsky is the Exadel products engineer working on the RichFaces project
 since Exadel began Ajax4jsf. He’s responsible for requirements gathering,

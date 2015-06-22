@@ -5,6 +5,7 @@ level: 10
 website: http://in.relation.to/Bloggers/David
 location: Madison, WI
 occupation: Senior Software Engineer at JBoss, a division of Red Hat
+gravatar_hash: ce9572f319e848be149196b772776981
 ---
 I am the lead of several close-to-the metal projects at JBoss, including JBoss
 Marshalling, JBoss Modules, the JBoss Modular Service Container, and others. I
