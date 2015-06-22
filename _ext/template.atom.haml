@@ -33,8 +33,12 @@
             - else
               %name= entry.author
         - if ( not entry.tags.nil? )
-          - for tag in entry.tags
-            %category{:term=>"#{tag}"}
+          - if entry.tags.is_a? String
+            - for tag in entry.tags.split(",").map(&:strip)
+              %category{:term=>"#{tag}"}
+          - else
+            - for tag in entry.tags
+              %category{:term=>"#{tag}"}
         %summary
           #{summarize( html_to_text( entry.content.force_encoding("UTF-8") ), 100 )}
         %content{:type=>'html'}
