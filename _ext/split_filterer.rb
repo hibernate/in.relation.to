@@ -32,6 +32,9 @@ module Awestruct
 
         all.each do |page|
           splits = page.send( @split_property )
+          if splits.is_a? String 
+            splits = splits.split(",").map(&:strip)
+          end
           #to_s.urlize({:convert_spaces=>true})
           if ( splits && ! splits.empty? )
             filtered_out_splits = splits.find_all { |split| blacklist.include? sanitize(split) }
