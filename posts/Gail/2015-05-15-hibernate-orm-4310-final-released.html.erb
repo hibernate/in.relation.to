@@ -1,0 +1,49 @@
+---
+title: "Hibernate ORM 4.3.10.Final Released"
+author: "Gail Badner"
+blogger_name: "Gail"
+creation_date: "15-05-2015"
+original_tags: [Core Release,Hibernate,News]
+tags: [Hibernate ORM,Releases]
+
+relative_url: /2015/05/15/hibernate-orm-4310-final-released
+slug: hibernate-orm-4310-final-released
+lace: http://in.relation.to/42754.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/05/15/hibernate-orm-4310-final-released
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+The primary reason for this release is to add support for running Hibernate ORM with Infinispan 7.2.1.Final as a runtime dependency. Hibernate still uses Infinispan 6.0.0.Final by default.
+</p>
+
+<p class="wikiPara">
+The plan is for WildFly 9 to include Hibernate ORM 4.3.10.Final. Since WildFly 9 uses Infinispan 7.2.1.Final, we had to make some corrections so that Hibernate ORM works properly with Infinispan 7.2.1.Final (as well as 6.0.0.Final) as a cache provider. To avoid backward-compatibility issues, Hibernate still uses an Infinispan 6.0.0.Final configuration by default. 
+</p>
+
+<p class="wikiPara">
+In order to use Hibernate ORM with Infinispan 7.2.1.Final, it is necessary to specify an Infinispan 7.2 configuration using the environment variable, hibernate.cache.infinispan.cfg. An example of an Infinispan 7.2 configuration has been added as a test resource <a href="https://github.com/hibernate/hibernate-orm/blob/4.3/hibernate-infinispan/src/test/resources/infinispan-7-configs.xml" target="" class="regularLink">here</a>.
+</p>
+
+<p class="wikiPara">
+For more information about changes to support Infinispan 7.2.1.Final, see: <a href="https://hibernate.atlassian.net/browse/HHH-9776" target="" class="regularLink">HHH-9776</a> and <a href="https://hibernate.atlassian.net/browse/HHH-9781" target="" class="regularLink">HHH-9781</a>.
+</p>
+
+<p class="wikiPara">
+Other changes were minor. For more information, please see: <a href="https://hibernate.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10031&amp;version=19650" target="" class="regularLink">https://hibernate.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10031&amp;version=19650</a>
+</p>
+
+<p class="wikiPara">
+JBoss Nexus: <a href="https://repository.jboss.org/nexus/content/groups/public/org/hibernate" target="" class="regularLink">https://repository.jboss.org/nexus/content/groups/public/org/hibernate</a><br>
+Maven Central: <a href="http://repo1.maven.org/maven2/org/hibernate/hibernate-core" target="" class="regularLink">http://repo1.maven.org/maven2/org/hibernate/hibernate-core</a> (should update in a couple of days)<br>
+</p>
+
+<p class="wikiPara">
+SourceForge: <a href="https://sourceforge.net/projects/hibernate/files/hibernate4" target="" class="regularLink">https://sourceforge.net/projects/hibernate/files/hibernate4</a><br>
+4.3.10.Final Downloads: <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.3.10.Final/hibernate-release-4.3.10.Final.zip/download" target="" class="regularLink">4.3.10.Final ZIP</a>, <a href="http://sourceforge.net/projects/hibernate/files/hibernate4/4.3.10.Final/hibernate-release-4.3.10.Final.tgz/download" target="" class="regularLink">4.3.10.Final TGZ</a><br></p>
+</div>
+

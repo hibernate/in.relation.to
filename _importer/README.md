@@ -35,6 +35,12 @@ awestruct files. The data is stored in a [PStore](http://ruby-doc.org/stdlib-2.1
 
     > bundle exec ./crawler.rb -u http://in.relation.to -p ".*\.lace" -o posts.pstore | tee crawl.log
 
+The version used for creating the awestruct site is added to this directory and
+called [posts.pstore.bz2](./posts.pstore.bz2). It is BZIP2 compressed and can be
+uncompressed via
+
+    > bunzip2 posts.pstore.bz2
+
 ### Creating ERB files
 
 Once you have the PStore file you can run the importer to create the [ERB](http://www.stuartellis.eu/articles/erb/) files. Using ERB we can keep the original HTML and don't
@@ -47,7 +53,7 @@ have to parse it to for example create Markdown.
 Blog comments are also part of the data stored in the PStore file. The comments can be extracted into a XML file which is suited for
 [importing into Disqus](https://help.disqus.com/customer/portal/articles/472150-custom-xml-import-format).
 
-    > bundle exec ./importer.rb -s ~/tmp/hibernate/in.relation.to/posts.pstore -o ../posts -wxr wxr.xml -e
+    > bundle exec ./importer.rb -s posts.pstore -o ../posts -wxr wxr.xml -e
 
 ### Creating Apache re-directs
 

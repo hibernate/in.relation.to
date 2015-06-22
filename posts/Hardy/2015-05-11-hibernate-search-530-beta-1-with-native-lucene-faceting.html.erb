@@ -1,0 +1,81 @@
+---
+title: "Hibernate Search 5.3.0.Beta1 with native Lucene faceting"
+author: "Hardy Ferentschik"
+blogger_name: "Hardy"
+creation_date: "11-05-2015"
+original_tags: [Hibernate Search]
+tags: [Hibernate Search]
+
+relative_url: /2015/05/11/hibernate-search-530-beta-1-with-native-lucene-faceting
+slug: hibernate-search-530-beta-1-with-native-lucene-faceting
+lace: http://in.relation.to/42732.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/05/11/hibernate-search-530-beta-1-with-native-lucene-faceting
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Following on the heels of 5.2.0.Final, Hibernate Search 5.3.0.Beta1 is now out. This time the faceting engine got an overhaul.
+</p>
+
+<p class="wikiPara">
+This work was long overdue, because there were several shortcomings with the existing implementation. For example, there were limitations with <i class="wikiEmphasis">*ToMany</i> associations. Also, the implementation was based on a custom Lucene <tt>Collector</tt> making use of the <tt>FieldCache</tt> API. <tt>FieldCache</tt> will be removed in Lucene 5, so updating the faceting API was also a requirement for upgrading to Lucene 5 in the near future.
+</p>
+
+<p class="wikiPara">
+What has changed? Actually not much when it comes to the API Hibernate Search exposes. You still create your <tt>FacetingRequest</tt> using <tt>QueryBuilder.facet()...</tt>. You then enable the facet search by passing it to the <tt>FacetManager</tt> from which you also then retrieve the list of <tt>Facet</tt> instances after the query was executed. All this is unchanged and documented in the <a href="http://docs.jboss.org/hibernate/search/5.3/reference/en-US/html_single/#query-faceting" target="" class="regularLink">online documentation</a>.
+</p>
+
+<p class="wikiPara">
+A few things have changed though. Most notably, you will need to tell Hibernate Search now which properties are used for faceting. You do so by adding <tt>@Facet</tt> (resp. <tt>@Facets</tt>) to these properties. The reason for this is, that under the hood the implementation is now based on Lucene's <a href="http://blog.mikemccandless.com/2013/05/dynamic-faceting-with-lucene.html" target="" class="regularLink">dynamic faceting</a> capabilties. For this to work, we need to index the facet values using the appropriate <tt>DocValues</tt> type (<tt>SortedSetDocValuesFacetField</tt>, <tt>NumericDocValuesField</tt> or <tt>DoubleDocValuesField</tt>). Below we see the use of the <tt>@Facet(s)</tt> annotation: </p>
+<pre class="wikiPreformatted brush:java">    @Indexed
+    public class Quux {
+        @DocumentId
+        private Integer id;
+        
+        @Field(analyze = Analyze.NO),
+        @Facets({
+                @Facet,
+                @Facet(name = "string_facet_value", encoding = FacetEncodingType.STRING)
+        })
+        private double value;
+    }
+</pre>
+
+Notice that in this example the <tt>value</tt> field is configured with two facet annotations. The reason is, that per default numbers will be stored using numeric <tt>DocValues</tt> types (<tt>NumericDocValuesField</tt> and <tt>DoubleDocValuesField</tt>), whereas all other types use string based <tt>SortedSetDocValuesFacetField</tt>. Numeric values can then only be used with a range facet whereas discrete facets require string values. In the case where you want to use discrete faceting on a numeric field (for example if the field only contains a fixed number of possible values) <tt>FacetEncodingType.STRING</tt> needs to be used.
+
+
+<p class="wikiPara">
+This is inline with the fact that Hibernate Search 5.x indexes numbers now per default numerically (see this <a href="http://in.relation.to/Bloggers/HibernateSearch500CandidateRelease1SpottedInTheWild" target="" class="regularLink">blog</a>).
+</p>
+
+<p class="wikiPara">
+A final caveat - there was a change in the default behaviour of <tt>includeZeroCounts</tt> as part of a facet request. The default was to include zero counts, but has changed now to not include it. Instead it must be explicitly specified (calculating zero counts for discrete facets comes with a performance penalty!):</p>
+<pre class="wikiPreformatted brush:java">    FacetingRequest request = queryBuilder( Car.class ).facet()
+            .name( "quuxFacetRequest" )
+            .onField( "string_facet_value" )
+            .discrete()
+            .includeZeroCounts( true )
+            .createFacetingRequest();
+</pre>
+
+
+
+<h2 class="wikiHeadline2" id="H-ReleaseInfoForHibernateSearch530Beta1"><a href="/2015/05/11/hibernate-search-530-beta-1-with-native-lucene-faceting#H-ReleaseInfoForHibernateSearch530Beta1">Release info for Hibernate Search 5.3.0.Beta1</a></h2>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> Full change log is available on <a href="https://hibernate.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10061&amp;version=19951" target="" class="regularLink">JIRA</a>
+</li>
+<li class="wikiUnorderedListItem"> Artefact jars are available on Maven Central under the GAV <u>org.hibernate:hibernate-search-orm:5.3.0.Beta1</u>
+</li>
+<li class="wikiUnorderedListItem"> Zip and tar bundles on <a href="http://sourceforge.net/projects/hibernate/files/hibernate-search/5.3.0.Beta1" target="" class="regularLink">SourceForge</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+Happy faceting!</p>
+</div>
+
