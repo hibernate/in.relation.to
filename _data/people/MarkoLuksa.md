@@ -3,6 +3,7 @@ name: Marko Lukša
 photo:
 level: 10
 location: Ljubljana, Slovenia
+gravatar_hash: ce9572f319e848be149196b772776981
 ---
 I joined JBoss in February '12. I'm currently working on two projects: CapeDwarf
 (JBoss' open-source implementation of the Google AppEngine API) and Weld (the
