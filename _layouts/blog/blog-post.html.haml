@@ -45,28 +45,8 @@ title_partial: project/blog/title-post.html.haml
       = site.posts_author_cloud
 
   .span8
-    -# Title
-    = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
-    .blogtagbar
-      - authors = page.author
-      - # when splitting are disabled in the pipeline, authors is a string
-      - if not authors.kind_of?(Array)
-        - authors = [ authors ]
-      - authors.each do |author|
-        - url = author.kind_of?(String) ? '' : author.primary_page.url
-        %a{:href=>url}
-          = author
-        &nbsp;
-      |&nbsp;
-      #{page.date.strftime( '%Y-%m-%d' )}
-      &nbsp;|&nbsp;
-      - page.tags.each do |tag|
-        - # when splitting are disabled in the pipeline, tag is a string
-        - url = tag.kind_of?(String) ? '' : tag.primary_page.url
-        %a.label{:href=>url}
-          = tag
-    %p
-    ~ content
+    .blogpost
+      = partial( 'project/blog/post.html.haml', {"post" => page} )
     #disqus_thread
     %script{:src=>javascript, :type=>'text/javascript'}
       var disqus_shortname = '#{site.disqus_shortname}';
