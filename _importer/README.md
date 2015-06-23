@@ -21,7 +21,7 @@ old to new URLs.
     > bundle exec ./crawler.rb -u http://in.relation.to -p ".*\.lace" -o posts.pstore | tee crawl.log
 
     # run the importer (creates erb files, Apache redirects and Disqus WXR import file)
-    > bundle exec ./importer.rb -s posts.pstore -o ../posts
+    > bundle exec ./importer.rb -s posts.pstore -o ../posts -rf ../redirects/.htaccess_posts -wxr wxr.xml
 
     # for experiments when you don't want to download images (-ni) and assets (-na)
     > bundle exec ./importer.rb -s posts.pstore -o ../posts -ni -na
@@ -74,7 +74,13 @@ To merge the fragments into one .htaccess or include file for the main HTTPD con
 
     > cat ../redirects/.htaccess_misc ../redirects/.htaccess_bloggers ../redirects/.htaccess_posts > .htaccess
 
-To create the users.pstore file, run the crawler like so:
+The users.pstore file used for creating the awestruct site is added to this directory and
+called [users.pstore.bz2](./users.pstore.bz2). It is BZIP2 compressed and can be
+uncompressed via
+
+    > bunzip2 users.pstore.bz2
+
+To re-create the file from the existing blog, run the crawler like so:
 
     bundle exec ./crawler.rb -u "http://in.relation.to/Bloggers/Ales, \
     http://in.relation.to/Bloggers/Aslak, \
