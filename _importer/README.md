@@ -59,10 +59,16 @@ Blog comments are also part of the data stored in the PStore file. The comments 
 
 Some information around Disqus.
 
+* The JavaScript needed to integrate Disqus is described here - https://help.disqus.com/customer/portal/articles/472097-universal-embed-code
 * Import of the generated WXR XML file is via https://\<disqus-id\>.disqus.com/admin/discussions/import/platform/wordpress/, where `disqus-id` is the unique identifier
 used to integrate the Disqus threads into the blog posts. The `disqus-id` is configured
 in `_config/site.yml` and must match the one generated via the Disqus admin tool.
 * Imports can be checked after the completed under the URL - https://import.disqus.com.
+* Under https://\<disqus-id\>.disqus.com/admin/settings/advanced/ the trusted domains need to be configured. The entry should look like:
+
+        in.relation.to
+        staging.in.relation.to
+        localhost
 
 ### Creating Apache re-directs
 
