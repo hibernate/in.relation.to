@@ -44,16 +44,17 @@ module Awestruct
       end
 
       def initialize(prop_name, input_path, opts={})
-        @prop_name    = prop_name
-        @input_path   = input_path
-        @per_page     = opts[:per_page] || 20
-        @per_page_init = opts[:per_page_init] || @per_page
-        @window_size  = opts[:window_size] || 2
-        @remove_input = opts.has_key?( :remove_input ) ? opts[:remove_input] : true
-        @output_prefix = opts[:output_prefix] || File.dirname( @input_path )
+        @prop_name        = prop_name
+        @input_path       = input_path
+        @per_page         = opts[:per_page] || 20
+        @per_page_init    = opts[:per_page_init] || @per_page
+        @window_size      = opts[:window_size] || 2
+        @remove_input     = opts.has_key?( :remove_input ) ? opts[:remove_input] : true
+        @output_prefix    = opts[:output_prefix] || File.dirname( @input_path )
         @output_home_file = opts[:output_home_file] || File.basename( @input_path )
-        @page_name     = opts[:page_name] || 'page/'
-        @collection    = opts[:collection]
+        @page_name        = opts[:page_name] || 'page/'
+        @collection       = opts[:collection]
+        @title            = opts[:title]
       end
 
       def execute(site)
@@ -75,6 +76,9 @@ module Awestruct
             page.output_path = File.join( @output_prefix, "#{@page_name}#{i}.html" )
           end
           page.paginate_generated = true
+          if !@title.nil?
+            page.title = @title
+          end
           site.pages << page
           paginated_pages << page
           i = i + 1

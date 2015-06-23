@@ -7,6 +7,8 @@ module Awestruct
         attr_accessor :pages
         attr_accessor :group
         attr_accessor :primary_page
+        attr_accessor :split
+
         def initialize(split, pages)
           @split = split
           @pages = pages
@@ -14,13 +16,6 @@ module Awestruct
 
         def to_s
           @split
-        end
-      end
-
-      module SplitLinker
-        def split_links(delimiter = ', ', style_class = nil)
-          class_attr = (style_class ? ' class="' + style_class + '"' : '')
-          splits.map{|split| %Q{<a#{class_attr} href="#{split.primary_page.url}">#{split}</a>}}.join(delimiter)
         end
       end
 
@@ -57,7 +52,6 @@ module Awestruct
 
         all.each do |page|
           page.send( "#{@split_property}=", ( Array( page.send( @split_property ) ) ).collect{|t| @splits[t.to_s]} )
-          page.extend( SplitLinker )
         end
 
         ordered_splits = @splits.values
@@ -88,10 +82,15 @@ module Awestruct
           end
         end
 
-        @splits.values.each do |split|
+        @splits.each do |split_key, split|
           ## Optionally sanitize split URL
           output_prefix = File.join( @output_path, sanitize(split.to_s) )
-          options = { :remove_input=>false, :output_prefix=>output_prefix, :collection=>split.pages }.merge( @pagination_opts )
+          options = {
+           :remove_input=>false,
+           :output_prefix=>output_prefix,
+           :collection=>split.pages,
+           :title=>"#{site.title} #{split_key}"
+          }.merge( @pagination_opts )
 
           paginator = Awestruct::Extensions::Paginator.new( @split_items_property, @input_path, options )
           primary_page = paginator.execute( site )
