@@ -55,6 +55,15 @@ Blog comments are also part of the data stored in the PStore file. The comments 
 
     > bundle exec ./importer.rb -s posts.pstore -o ../posts -wxr wxr.xml -e
 
+#### Disqus
+
+Some information around Disqus.
+
+* Import of the generated WXR XML file is via https://\<disqus-id\>.disqus.com/admin/discussions/import/platform/wordpress/, where `disqus-id` is the unique identifier
+used to integrate the Disqus threads into the blog posts. The `disqus-id` is configured
+in `_config/site.yml` and must match the one generated via the Disqus admin tool.
+* Imports can be checked after the completed under the URL - https://import.disqus.com.
+
 ### Creating Apache re-directs
 
 The scripts also generates redirect instructions for Apache to map old URLs to new ones.
@@ -171,7 +180,9 @@ To re-create the file from the existing blog, run the crawler like so:
 ## Resources
 
 * [Bundler](http://gembundler.com/)
-* [Encoding problems](http://talk-archive.awestruct.org/Stumbling-onto-an-encoding-problem-right-from-the-start-td39.html)
+*  If you see the error message below:
 
         incompatible character encodings: ASCII-8BIT and UTF-8
+
+   You might be dealing with [encoding problems](http://talk-archive.awestruct.org/Stumbling-onto-an-encoding-problem-right-from-the-start-td39.html)
 
