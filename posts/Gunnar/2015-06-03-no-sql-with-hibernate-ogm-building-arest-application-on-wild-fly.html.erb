@@ -1,0 +1,450 @@
+---
+title: "NoSQL with Hibernate OGM: Building a REST application on WildFly"
+author: "Gunnar Morling"
+blogger_name: "Gunnar"
+creation_date: "03-06-2015"
+original_tags: [Hibernate,Hibernate OGM,Hibernate OGM 101]
+tags: [Hibernate OGM]
+
+relative_url: /2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly
+slug: no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly
+lace: http://in.relation.to/42824.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Welcome back to our tutorial series “NoSQL with Hibernate OGM”!
+</p>
+
+<p class="wikiPara">
+In this part you will learn how to use Hibernate OGM from within a Java EE application running on the WildFly server. Using the <a href="http://in.relation.to/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-TheDomainModel" target="" class="regularLink">entity model</a> you already know from the previous parts of this tutorial, we will build a small REST-based application for managing hikes. In case you haven’t read the first two installments of this series, you can find them here:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities" target="" class="regularLink">Persisting your first entities</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/NoSQLForHibernateOGMQueryingForYourData" target="" class="regularLink">Querying for your data</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+In the following you will learn how to prepare WildFly for using it with Hibernate OGM, configure a JPA persistence unit, create repository classes for accessing your data and providing REST resources on top of these. In this post we will primarily focus on the aspects related to persistence, so some basic experience with REST/JAX-RS may help. The <a href="https://github.com/hibernate/hibernate-demos/tree/master/hibernate-ogm/nosql-with-hibernate-ogm-101/hibernate-ogm-demo-nosql-with-hibernate-ogm-101-part-3" target="" class="regularLink">complete source code</a> of this tutorial is hosted on GitHub.
+</p>
+
+<h3 class="wikiHeadline3" id="H-PreparingWildFly"><a href="/2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly#H-PreparingWildFly">Preparing WildFly</a></h3>
+
+<p class="wikiPara">
+The <a href="http://wildfly.org/" target="" class="regularLink">WildFly</a> server runtime is based on the <a href="https://docs.jboss.org/author/display/MODULES/Home" target="" class="regularLink">JBoss Modules</a> system. This provides a modular class-loading environment where each library (such as Hibernate OGM) is its own module, declaring the list of other modules it depends on and only “seeing” classes from those other dependencies. This isolation provides an escape from the dreaded “classpath hell”.
+</p>
+
+<p class="wikiPara">
+ZIP files containing all the required modules for Hibernate OGM are provided on SourceForge. Hibernate OGM 4.2 - which <a href="http://in.relation.to/Bloggers/HibernateOGM42FinalIsOut" target="" class="regularLink">we released yesterday</a> - supports WildFly 9, so download <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.2.0.Final/hibernate-ogm-modules-wildfly9-4.2.0.Final.zip/download" target="" class="regularLink">hibernate-ogm-modules-wildfly9-4.2.0.Final.zip</a> for that. If you are on WildFly 8, use Hibernate OGM 4.1 and get <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.1.3.Final/hibernate-ogm-modules-wildfly8-4.1.3.Final.zip/download" target="" class="regularLink">hibernate-ogm-modules-wildfly8-4.1.3.Final.zip</a> instead.
+</p>
+
+<p class="wikiPara">
+Unzip the archive corresponding to your WildFly version into the <i class="wikiEmphasis">modules</i> directory of the application server. If you prefer that the original WildFly directories remain unchanged, you also can unzip the Hibernate OGM modules archive to any other folder and configure this as the “module path” to be used by the server. To do so, export the following two environment variables, matching your specific environment:
+</p>
+
+<pre class="wikiPreformatted">
+export JBOSS_HOME=/path/to/wildfly
+export JBOSS_MODULEPATH=$JBOSS_HOME/modules:/path/to/ogm/modules
+</pre>
+
+
+<p class="wikiPara">
+In case you are working with the <a href="https://docs.jboss.org/wildfly/plugins/maven/latest/" target="" class="regularLink">Maven WildFly plug-in</a>, e.g. to launch WildFly during development, you’d achieve the same with the following plug-in configuration in your POM file:
+</p>
+
+<pre class="wikiPreformatted brush: xml; gutter: false;">...
+&lt;plugin&gt;
+    &lt;groupId&gt;org.wildfly.plugins&lt;/groupId&gt;
+    &lt;artifactId&gt;wildfly-maven-plugin&lt;/artifactId&gt;
+    &lt;version&gt;1.1.0.Alpha1&lt;/version&gt;
+    &lt;configuration&gt;
+        &lt;jboss-home&gt;/path/to/wildfly&lt;/jboss-home&gt;
+        &lt;modules-path&gt;/path/to/ogm/modules&lt;/modules-path&gt;
+    &lt;/configuration&gt;
+&lt;/plugin&gt;
+...
+</pre>
+
+
+<h3 class="wikiHeadline3" id="H-SettingUpTheProject"><a href="/2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly#H-SettingUpTheProject">Setting up the project</a></h3>
+
+<p class="wikiPara">
+Start by creating a new Maven project using the “war” packaging type. Add the following to your <i class="wikiEmphasis">pom.xml</i>:
+</p>
+
+<pre class="wikiPreformatted brush: xml; gutter: false;">...
+&lt;dependencyManagement&gt;
+    &lt;dependencies&gt;
+        &lt;dependency&gt;
+            &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+            &lt;artifactId&gt;hibernate-ogm-bom&lt;/artifactId&gt;
+            &lt;type&gt;pom&lt;/type&gt;
+            &lt;version&gt;4.2.0.Final&lt;/version&gt;
+            &lt;scope&gt;import&lt;/scope&gt;
+        &lt;/dependency&gt;
+    &lt;/dependencies&gt;
+&lt;/dependencyManagement&gt;
+...
+</pre>
+
+
+<p class="wikiPara">
+This makes sure you get matching versions of Hibernate OGM’s modules and any (optional) dependencies. Then add the dependency to the Java EE 7 API and one of the Hibernate OGM backend modules, e.g. <a href="http://infinispan.org/" target="" class="regularLink">Infinispan</a>, JBoss’ high-performance, distributed key/value data grid (any other such as <i class="wikiEmphasis">hibernate-ogm-mongodb</i> or the brand-new <i class="wikiEmphasis">hibernate-ogm-cassandra</i> module would work as well):
+</p>
+
+<pre class="wikiPreformatted brush: xml; gutter: false;">...
+&lt;dependencies&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;javax&lt;/groupId&gt;
+        &lt;artifactId&gt;javaee-api&lt;/artifactId&gt;
+        &lt;version&gt;7.0&lt;/version&gt;
+        &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+        &lt;groupId&gt;org.hibernate.ogm&lt;/groupId&gt;
+        &lt;artifactId&gt;hibernate-ogm-infinispan&lt;/artifactId&gt;
+        &lt;scope&gt;provided&lt;/scope&gt;
+    &lt;/dependency&gt;
+&lt;/dependencies&gt;
+...
+</pre>
+
+
+<p class="wikiPara">
+The <tt>provided</tt> scope makes these dependencies available for compilation but prevents them from being added to the resulting WAR file. That it because the Java EE API is part of WildFly already, and Hibernate OGM will be contributed through the modules you unzipped before.
+</p>
+
+<p class="wikiPara">
+Just adding these modules to the server doesn’t cut it, though. They also need to be registered as a module dependency with the application. To do so, add the file <i class="wikiEmphasis">src/main/webapp/WEB-INF/jboss-web.xml</i> with the following contents:
+</p>
+
+<pre class="wikiPreformatted brush: xml; gutter: false;">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;jboss-deployment-structure
+    xmlns="urn:jboss:deployment-structure:1.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"&gt;
+
+    &lt;deployment&gt;
+        &lt;dependencies&gt;
+            &lt;module name="org.hibernate" slot="ogm" services="import" /&gt;
+            &lt;module name="org.hibernate.ogm.infinispan" services="import" /&gt;
+            &lt;module name="org.hibernate.search.orm" services="import" /&gt;
+        &lt;/dependencies&gt;
+    &lt;/deployment&gt;
+&lt;/jboss-deployment-structure&gt;
+</pre>
+
+
+<p class="wikiPara">
+This will make Hibernate OGM core and the Infinispan backend as well as <a href="http://hibernate.org/search/" target="" class="regularLink">Hibernate Search</a> available to your application. The latter will be used to run JP-QL queries in a bit.
+</p>
+
+<h3 class="wikiHeadline3" id="H-AddingEntityClassesAndRepositories"><a href="/2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly#H-AddingEntityClassesAndRepositories">Adding entity classes and repositories</a></h3>
+
+<p class="wikiPara">
+With the basic project infrastructure in place, it’s time to add the entity classes and repository classes for accessing them. The entity types are basically the same as seen in <a href="http://in.relation.to/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities" target="" class="regularLink">part 1</a>, only now they are annotated with <tt>@Indexed</tt> in order to allow them to be queried via Hibernate Search and Lucene:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">@Entity
+@Indexed
+public class Person {
+
+    @Id
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    private String id;
+
+    private String firstName;
+    private String lastName;
+
+    @OneToMany(
+        mappedBy = "organizer",
+        cascade = { CascadeType.PERSIST, CascadeType.MERGE },
+        fetch = FetchType.EAGER
+    )
+    private Set&lt;Hike&gt; organizedHikes = new HashSet&lt;&gt;();
+
+    // constructors, getters and setters...
+}
+</pre>
+
+
+<pre class="wikiPreformatted brush: java; gutter: false;">@Entity
+@Indexed
+public class Hike {
+
+    @Id
+    @GeneratedValue(generator = "uuid")
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    private String id;
+
+    private String description;
+    private Date date;
+    private BigDecimal difficulty;
+
+    @ManyToOne
+    private Person organizer;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @OrderColumn(name = "sectionNo")
+    private List&lt;HikeSection&gt; sections;
+
+    // constructors, getters and setters...
+}
+</pre>
+
+
+<pre class="wikiPreformatted brush: java; gutter: false;">@Embeddable
+public class HikeSection {
+
+    private String start;
+    private String end;
+
+    // constructors, getters and setters...
+}
+</pre>
+
+
+<p class="wikiPara">
+In order to use these entities, a JPA persistence unit must be defined. To do so, create the file <i class="wikiEmphasis">src/main/resources/META-INF/persistence.xml</i>:
+</p>
+
+<pre class="wikiPreformatted brush: xml; gutter: false;">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;persistence xmlns="http://java.sun.com/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+    version="1.0"&gt;
+
+    &lt;persistence-unit name="hike-PU" transaction-type="JTA"&gt;
+        &lt;provider&gt;org.hibernate.ogm.jpa.HibernateOgmPersistence&lt;/provider&gt;
+
+            &lt;class&gt;org.hibernate.ogm.demos.ogm101.part3.model.Person&lt;/class&gt;
+            &lt;class&gt;org.hibernate.ogm.demos.ogm101.part3.model.Hike&lt;/class&gt;
+
+            &lt;properties&gt;
+                &lt;property name="hibernate.ogm.datastore.provider" value="INFINISPAN" /&gt;
+                &lt;property name="hibernate.ogm.datastore.database" value="hike_db" /&gt;
+                &lt;property name="hibernate.ogm.datastore.create_database" value="true" /&gt;
+            &lt;/properties&gt;
+    &lt;/persistence-unit&gt;
+&lt;/persistence&gt;
+</pre>
+
+
+<p class="wikiPara">
+Here we define a persistence unit named “hike-PU”. Infinispan is a fully transactional datastore, and using JTA as transaction type allows the persistence unit to participate in container-managed transactions. Specifying <tt>HibernateOgmPersistence</tt> as the provider class enables Hibernate OGM (instead of Hibernate ORM), which is configured with some properties for the setting backend (INFINISPAN in this case), database name etc.
+</p>
+
+<p class="wikiPara">
+Note that it actually should not be required to specify the entity types in persistence.xml when running in a Java EE container such as WildFly. Instead they should be picked up automatically. When using Hibernate OGM this unfortunately is needed at the moment. This a known limitation (see <a href="https://hibernate.atlassian.net/browse/OGM-828" target="" class="regularLink">OGM-828</a>) which we hope to fix soon.
+</p>
+
+<p class="wikiPara">
+The next step is to implement repository classes for accessing hike and organizer data. As an example, the following shows the <tt>PersonRepository</tt> class:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">@ApplicationScoped
+public class PersonRepository {
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public Person create(Person person) {
+        entityManager.persist( person );
+        return person;
+    }
+
+    public Person get(String id) {
+        return entityManager.find( Person.class, id );
+    }
+
+    public List&lt;Person&gt; getAll() {
+        return entityManager.createQuery( "FROM Person p", Person.class ).getResultList();
+    }
+
+    public Person save(Person person) {
+        return entityManager.merge( person );
+    }
+
+    public void remove(Person person) {
+        entityManager.remove( person );
+        for ( Hike hike : person.getOrganizedHikes() ) {
+            hike.setOrganizer( null );
+        }
+    }
+}
+</pre>
+
+
+<p class="wikiPara">
+The implementation is straight-forward; by means of the <tt>@ApplicationScoped</tt> annotation, the class is marked as application-scoped CDI bean (i.e. one single instance of this bean exists throughout the lifecycle of the application). It obtains a JPA entity manager through dependency injection and uses the same to implement some simple CRUD methods (Create, Read, Update, Delete).
+</p>
+
+<p class="wikiPara">
+Note how the <tt>getAll()</tt> method uses a JP-QL query to return all person objects. Upon execution this query will be transformed into an equivalent Lucene index query which will be run through Hibernate Search.
+</p>
+
+<p class="wikiPara">
+The hike repository looks very similar, so it’s omitted here for the sake of brevity. You can find <a href="https://github.com/hibernate/hibernate-demos/blob/master/hibernate-ogm/hiking-demo/src/main/java/org/hibernate/ogm/hiking/repository/HikeRepository.java" target="" class="regularLink">its source code</a> on GitHub.
+</p>
+
+<h3 class="wikiHeadline3" id="H-ExposingRESTServices"><a href="/2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly#H-ExposingRESTServices">Exposing REST services</a></h3>
+
+<p class="wikiPara">
+JAX-RS makes building REST-ful web services a breeze. It defines a declarative programming model where you annotate plain old Java classes to provide implementations for the GET, POST, PUT etc. operations of an HTTP endpoint.
+</p>
+
+<p class="wikiPara">
+Describing JAX-RS in depth is beyond the scope of this tutorial, e.g. refer to the <a href="https://docs.oracle.com/javaee/7/tutorial/jaxrs.htm#GIEPU" target="" class="regularLink">Java EE 7 tutorial</a> if you would like to learn more. Let’s just have a look at the some methods of a resource class for managing persons as an example:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">@Path("/persons")
+@Produces("application/json")
+@Consumes("application/json")
+@Stateless
+public class Persons {
+
+    @Inject
+    private PersonRepository personRepository;
+
+    @Inject
+    private ResourceMapper mapper;
+
+    @Inject
+    private UriMapper uris;
+
+    @POST
+    @Path("/")
+    public Response createPerson(PersonDocument request) {
+        Person person = personRepository.create( mapper.toPerson( request ) );
+        return Response.created( uris.toUri( person ) ).build();
+    }
+
+    @GET
+    @Path("/{id}")
+    public Response getPerson(@PathParam("id") String id) {
+        Person person = personRepository.get( id );
+        if ( person == null ) {
+            return Response.status( Status.NOT_FOUND ).build();
+        }
+        else {
+            return Response.ok( mapper.toPersonDocument( person ) ).build();
+        }
+    }
+
+    @GET
+    @Path("/")
+    public Response listPersons() { … }
+
+    @PUT
+    @Path("/{id}")
+    public Response updatePerson(PersonDocument request, @PathParam("id") String id) { … }
+
+    @DELETE
+    @Path("/{id}")
+    public Response deletePerson(@PathParam("id") String id) { … }
+}
+</pre>
+
+
+<p class="wikiPara">
+The <tt>@Path</tt>, <tt>@Produces</tt> and <tt>@Consumes</tt> annotations are defined by JAX-RS. They  bind the resource methods to specific URLs, expecting and creating JSON based messages. <tt>@GET</tt>, <tt>@POST</tt>, <tt>@PUT</tt> and <tt>@DELETE</tt> configure for which HTTP verb each method is responsible.
+</p>
+
+<p class="wikiPara">
+The <tt>@Stateless</tt> annotation defines this POJO as a stateless session bean. Dependencies such as the <tt>PersonRepository</tt> can be obtained via <tt>@Inject</tt>-based dependency injection. Implementing a session bean gives you the comfort of transparent transaction management by the container. Invocations of the methods of <tt>Persons</tt> will automatically be wrapped in a transaction, and all the interactions of Hibernate OGM with the datastore will participate in the same. This means that any changes you do to managed entities - e.g. by persisting a new person via <tt>PersonRepository#create()</tt> or by modifying a <tt>Person</tt> object retrieved from the entity manager - will be committed to the datastore after the method call returns.
+</p>
+
+<h3 class="wikiHeadline3" id="H-MappingModels"><a href="/2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly#H-MappingModels">Mapping models</a></h3>
+
+<p class="wikiPara">
+Note that the methods of our REST service do not return and accept the managed entity types themselves, but rather specific transport structures such as <tt>PersonDocument</tt>:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">public class PersonDocument {
+
+    private String firstName;
+    private String lastName;
+    private Set&lt;URI&gt; organizedHikes;
+
+    // constructors, getters and setters...
+}
+</pre>
+
+
+<p class="wikiPara">
+The reasoning for that is to represent the elements of associations (<tt>Person#organizedHikes</tt>, <tt>Hike#organizer</tt>) in form of URIs, which enables a client to fetch these linked resources as required. E.g. a GET call to <i class="wikiEmphasis">http://myserver/ogm-demo-part3/hike-manager/persons/123</i> may return a JSON structure like the following:
+</p>
+
+<pre class="wikiPreformatted">
+{
+    "firstName": "Saundra",
+    "lastName": "Johnson",
+    "organizedHikes": [
+        "http://myserver/ogm-demo-part3/hike-manager/hikes/456",
+        "http://myserver/ogm-demo-part3/hike-manager/hikes/789"
+    ]
+}
+</pre>
+
+
+<p class="wikiPara">
+The mapping between the internal model (e.g. entity <tt>Person</tt>) and the external one (e.g. <tt>PersonDocument</tt>) can quickly become a tedious and boring task, so some tool-based support for this is desirable. Several tools exist for this job, most of which use reflection or runtime byte code generation for propagating state between different models.
+</p>
+
+<p class="wikiPara">
+Another approach for this is pursued by <a href="http://mapstruct.org/" target="" class="regularLink">MapStruct</a>, which is a spare time project of mine and generates bean mapper implementations at compile time (e.g. with Maven or in your IDE) via a Java annotation processor. The code it generates is type-safe, fast (it's using plain method calls, no reflection) and dependency-free. You just need to declare Java interfaces with mapping methods for the source and target types you need and MapStruct will generate an implementation as part of the compilation process:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">@Mapper(
+    // allows to obtain the mapper via @Inject
+    componentModel = "cdi",
+
+    // a hand-written mapper class for converting entities to URIs; invoked by the generated
+    // toPersonDocument() implementation for mapping the organizedHikes property
+    uses = UriMapper.class
+)
+public interface ResourceMapper {
+
+    PersonDocument toPersonDocument(Person person);
+
+    List&lt;PersonDocument&gt; toPersonDocuments(Iterable&lt;Person&gt; persons);
+
+    @Mapping(target = "date", dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+    HikeDocument toHikeDocument(Hike hike);
+
+    // other mapping methods ...
+}
+</pre>
+
+
+<p class="wikiPara">
+The generated implementation can then be used in the <tt>Persons</tt> REST resource to map from the internal to the external model and vice versa. If you would like to learn more about this approach for model mappings, check out the <a href="https://github.com/hibernate/hibernate-demos/blob/master/hibernate-ogm/nosql-with-hibernate-ogm-101/hibernate-ogm-demo-nosql-with-hibernate-ogm-101-part-3/src/main/java/org/hibernate/ogm/demos/ogm101/part3/rest/mapper/ResourceMapper.java" target="" class="regularLink">complete mapper interface</a> on GitHub or the <a href="http://mapstruct.org/documentation" target="" class="regularLink">MapStruct reference documentation</a>.
+</p>
+
+<h3 class="wikiHeadline3" id="H-Wrapup"><a href="/2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly#H-Wrapup">Wrap-up</a></h3>
+
+<p class="wikiPara">
+In this part of our tutorial series you learned how to add Hibernate OGM to the WildFly application server and use it to access Infinispan as the data storage for a small REST application.
+</p>
+
+<p class="wikiPara">
+WildFly is a great runtime environment for applications using Hibernate OGM, as it provides most of the required building blocks out of the box (e.g. JPA/Hibernate ORM, JTA, transaction management etc.), tightly integrated and ready to use. Our module ZIP allows to put the Hibernate OGM modules into the mix very easily, without the need for re-deploying them each time with your application. With <a href="http://wildfly.org/news/2015/05/05/WildFly-Swarm-Released/" target="" class="regularLink">WildFly Swarm</a> there is also support for the micro-services architectural style, but we’ll leave it for another time to show how to use Hibernate OGM with Wildfly Swarm (currently JPA support is still lacking from WildFly Swarm).
+</p>
+
+<p class="wikiPara">
+You can find the sources of the project <a href="https://github.com/hibernate/hibernate-demos/tree/master/hibernate-ogm/nosql-with-hibernate-ogm-101/hibernate-ogm-demo-nosql-with-hibernate-ogm-101-part-3" target="" class="regularLink">on GitHub</a>. To build the project run <tt>mvn clean install</tt> (which executes an <a href="https://github.com/hibernate/hibernate-demos/blob/master/hibernate-ogm/nosql-with-hibernate-ogm-101/hibernate-ogm-demo-nosql-with-hibernate-ogm-101-part-3/src/test/java/org/hibernate/ogm/demos/ogm101/part3/rest/PersonsIT.java" target="" class="regularLink">integration test</a> for the REST services using Arquillian, an exciting topic on its own). Alternatively, the Maven WildFly plug-in can be used to fire up a WildFly instance and deploy the application via <tt>mvn wildfly:run</tt>, which is great for manual testing e.g. by sending HTTP requests through curl or wget.
+</p>
+
+<p class="wikiPara">
+If you have any questions, let us know in the comments below or send us a Tweet to <a href="https://twitter.com/Hibernate" target="" class="regularLink">@Hibernate</a>. Also your wishes for future parts of this tutorial are welcome. Stay tuned!
+</p>
+</div>
+

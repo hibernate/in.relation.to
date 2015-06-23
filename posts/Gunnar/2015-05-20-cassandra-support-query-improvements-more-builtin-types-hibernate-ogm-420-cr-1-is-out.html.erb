@@ -1,0 +1,221 @@
+---
+title: "Cassandra support, query improvements, more built-in types: Hibernate OGM 4.2.0.CR1 is out"
+author: "Gunnar Morling"
+blogger_name: "Gunnar"
+creation_date: "20-05-2015"
+original_tags: [Hibernate,Hibernate OGM,News]
+tags: [Hibernate OGM]
+
+relative_url: /2015/05/20/cassandra-support-query-improvements-more-builtin-types-hibernate-ogm-420-cr-1-is-out
+slug: cassandra-support-query-improvements-more-builtin-types-hibernate-ogm-420-cr-1-is-out
+lace: http://in.relation.to/42790.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/05/20/cassandra-support-query-improvements-more-builtin-types-hibernate-ogm-420-cr-1-is-out
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I am pleased to announce the release of Hibernate OGM 4.2.0.CR1.
+</p>
+
+<p class="wikiPara">
+The new version comes to you with initial support for Apache Cassandra, several improvements around JP-QL queries, support for MongoDB 3, MongoDB replica sets, new built-in types and much more.
+</p>
+
+<p class="wikiPara">
+You can download Hibernate OGM 4.2.0.CR1 from <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.2.0.CR1/" target="" class="regularLink">SourceForge</a> or via Maven, Gradle etc., using the following GAV coordinates:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-core:4.2.0.CR1</i> for the Hibernate OGM engine and</li>
+<li class="wikiUnorderedListItem"> <i class="wikiEmphasis">org.hibernate.ogm:hibernate-ogm-&lt;%DATASTORE%&gt;:4.2.0.CR1</i>, depending on the backend you want to use.</li>
+</ul>
+
+<h3 class="wikiHeadline3" id="H-PreviewForApacheCassandraSupport"><a href="/2015/05/20/cassandra-support-query-improvements-more-builtin-types-hibernate-ogm-420-cr-1-is-out#H-PreviewForApacheCassandraSupport">Preview for Apache Cassandra support</a></h3>
+
+<p class="wikiPara">
+<a href="http://cassandra.apache.org/" target="" class="regularLink">Cassandra</a> is a highly performant and scalable datastore of the <a href="http://en.wikipedia.org/wiki/BigTable" target="" class="regularLink">BigTable family</a>. The request for supporting it dates back to the early days of Hibernate OGM. So it’s a great pleasure to finally have this puppy out. Many thanks to all that worked on this journey: Michaël Figuière, Khanh Maudoux, John Worrell and Jonathan Halliday!
+</p>
+
+<p class="wikiPara">
+To use the Cassandra backend, add the hibernate-ogm-cassandra module to your classpath and specify the following properties for your persistence unit:
+</p>
+
+<pre class="wikiPreformatted">
+hibernate.ogm.datastore.provider = cassandra_experimental
+hibernate.ogm.datastore.database = my_keyspace
+hibernate.ogm.datastore.host = cassandra.example.com
+</pre>
+
+
+<p class="wikiPara">
+The Cassandra backend is in “tech preview” state at this moment. We still have lots of work left on our plates (e.g. clustering support, alternative association persistence options, queries, documentation), but we think we have the right foundation now. Be warned that mapping details still may change. Still this is the right time for you to give this new backend a first try and let us know about your experiences with it.
+</p>
+
+<p class="wikiPara">
+Any feature requests, error reports and other feedback are very welcome. Especially any thoughts on the proposed mapping of domain model elements to Cassandra structures are of great interest for us.
+</p>
+
+<h3 class="wikiHeadline3" id="H-QueryImprovements"><a href="/2015/05/20/cassandra-support-query-improvements-more-builtin-types-hibernate-ogm-420-cr-1-is-out#H-QueryImprovements">Query improvements</a></h3>
+
+<p class="wikiPara">
+We spent some more time to improve support for mapping JP-QL queries either to native NoSQL queries or full-text queries executed via Hibernate Search + Lucene.
+</p>
+
+<p class="wikiPara">
+You can now use types like enums or <tt>Date</tt> as query parameters:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">List&lt;Movie&gt; movies = entityManager.createQuery( "SELECT m FROM Movie m WHERE m.genre IN (:genre)", Movie.class )
+    .setParameter( "genre", EnumSet.of( Genre.DRAMA, Genre.COMEDY ) )
+    .getResultList();
+</pre>
+
+
+<p class="wikiPara">
+As you would expect it, the given parameter values are converted into the corresponding type used in the datastore and passed to the query engine.
+</p>
+
+<h3 class="wikiHeadline3" id="H-MappingFixForElementCollectionsWithNestedEmbeddables"><a href="/2015/05/20/cassandra-support-query-improvements-more-builtin-types-hibernate-ogm-420-cr-1-is-out#H-MappingFixForElementCollectionsWithNestedEmbeddables">Mapping fix for element collections with nested embeddables</a></h3>
+
+<p class="wikiPara">
+This release fixes a bug related to the mapping of nested embeddables stored within element collections. This affects the supported document stores as well as Neo4j. E.g. consider the following entity model:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">@Entity
+public class Account {
+
+    @ElementCollection
+    List&lt;Address&gt; addresses;
+}
+
+@Embeddable
+public class Address {
+    String street;
+    String city;
+    AddressType type;
+}
+
+@Embeddable
+public class AddressType {
+    String name;
+}
+</pre>
+
+
+<p class="wikiPara">
+Previously, this would have been stored as follows e.g. in MongoDB:
+</p>
+
+<pre class="wikiPreformatted">
+{
+    "_id" : "account-1",
+    "addresses" : [
+        {
+            "street" : "Piazza del Colosseo, 1",
+            "city" : "Rome",
+            "name" : "work" &lt;-- “flattened” representation of the nested embeddable
+        },
+        ...
+    ]
+}
+</pre>
+
+
+<p class="wikiPara">
+Whereas it really should be mapped like this:
+</p>
+
+<pre class="wikiPreformatted">
+{
+    "_id" : "account-1",
+    "addresses" : [
+        {
+            "street" : "Piazza del Colosseo, 1",
+            "city" : "Rome",
+            “type” : {
+                "name" : "work"
+            }
+        },
+        ...
+    ]
+}
+</pre>
+
+
+<p class="wikiPara">
+This is the mapping applied as of this new release. Note that you need to take care of existing records should have been working with such a model. Also please check out the <a href="https://developer.jboss.org/wiki/HibernateOGMMigrationNotes" target="" class="regularLink">migration notes</a> for the details.
+</p>
+
+<p class="wikiPara">
+We don’t take such mapping changes lightly and try to avoid them as much as we can. As this really was a mapping error, we decided to fix it as soon as possible; in the future we also may provide compatibility options or some sort of migration tooling in similar situations.
+</p>
+
+<h3 class="wikiHeadline3" id="H-SupportForMongoDB3AndMongoDBReplicaSets"><a href="/2015/05/20/cassandra-support-query-improvements-more-builtin-types-hibernate-ogm-420-cr-1-is-out#H-SupportForMongoDB3AndMongoDBReplicaSets">Support for MongoDB 3 and MongoDB replica sets</a></h3>
+
+<p class="wikiPara">
+We now also support MongoDB 3. In particular the new SCRAM-SHA-1 authentication strategy is working now. Migration should be smooth.
+</p>
+
+<p class="wikiPara">
+But the biggest improvement is support for replica sets. To quote <a href="http://docs.mongodb.org/manual/replication/" target="" class="regularLink">MongoDB’s documentation</a>, a replica set “is a group of mongod processes that maintain the same data set”. By using replica sets, your data is stored redundantly and protected against node failures through automatic fail-over between replica set members.
+</p>
+
+<p class="wikiPara">
+To support the notion of replica sets, Hibernate OGM’s “host” configuration option has been enhanced and now allows to specify a comma-separated list of hosts and host:port tuples:
+</p>
+
+<pre class="wikiPreformatted">
+hibernate.ogm.datastore.host=db1.example.com,db2.example.com,db3.example.com:29019
+</pre>
+
+
+<p class="wikiPara">
+With this configuration Hibernate OGM would connect to three MongoDB nodes, using the default port 27017 for the nodes db1 and db2 and the explicitly given port 29019 for node db3.
+</p>
+
+<p class="wikiPara">
+Currently the MongoDB backend is the only one supporting several nodes, but other backends will follow, e.g. Cassandra.
+</p>
+
+<h3 class="wikiHeadline3" id="H-NewBuiltinTypesForBooleanMapping"><a href="/2015/05/20/cassandra-support-query-improvements-more-builtin-types-hibernate-ogm-420-cr-1-is-out#H-NewBuiltinTypesForBooleanMapping">New built-in types for boolean mapping</a></h3>
+
+<p class="wikiPara">
+Requested by a user in our forum, we now support all the boolean mapping types known from Hibernate ORM: <tt>YesNoType</tt> (maps to character/String “Y” or “N”), <tt>TrueFalseType</tt> (maps to “T” or “F”) and <tt>NumericBooleanType</tt> (maps to 1 or 0).
+</p>
+
+<p class="wikiPara">
+You can use these types by means of the <tt>@Type</tt> annotation like so:
+</p>
+
+<pre class="wikiPreformatted brush: java; gutter: false;">// maps as boolean; default   
+private boolean myBoolean;
+
+@Type(type = "true_false")
+private boolean myBoolean;
+
+@Type(type = "yes_no")
+private boolean myBoolean;
+
+@Type(type = "numeric_boolean")
+private boolean myBoolean;
+</pre>
+
+
+<p class="wikiPara">
+Any feedback to the 4.2.0.CR1 release is highly welcome. The <a href="https://github.com/hibernate/hibernate-ogm/blob/4.2.0.CR1/changelog.txt" target="" class="regularLink">change log</a> tells in detail what's in there for you. Finally, some more useful links:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="https://forum.hibernate.org/viewforum.php?f=31" target="" class="regularLink">User forum</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="https://hibernate.atlassian.net/browse/OGM" target="" class="regularLink">Issue tracker</a>
+</li>
+<li class="wikiUnorderedListItem"> <a href="http://lists.jboss.org/pipermail/hibernate-dev/" target="" class="regularLink">Mailing list</a>
+</li>
+</ul>
+</div>
+

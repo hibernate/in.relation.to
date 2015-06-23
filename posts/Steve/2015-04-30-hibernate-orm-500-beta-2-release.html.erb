@@ -1,0 +1,46 @@
+---
+title: "Hibernate ORM 5.0.0.Beta2 Release"
+author: "Steve Ebersole"
+blogger_name: "Steve"
+creation_date: "30-04-2015"
+original_tags: [Core Release,Hibernate,News]
+tags: [Hibernate ORM,Releases]
+
+relative_url: /2015/04/30/hibernate-orm-500-beta-2-release
+slug: hibernate-orm-500-beta-2-release
+lace: http://in.relation.to/42676.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2015/04/30/hibernate-orm-500-beta-2-release
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+I have just finished releasing Hibernate O/RM 5.0.0.Beta2.  Beyond Beta1, this release adds:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Support for Spatial/GIS data through importing Hibernate Spatial.</li>
+<li class="wikiOrderedListItem"> Complete redesign of <q>bulk id tables</q> used to support update/delete queries against multi-table structures.  The redesign helps better fit what different databases support.</li>
+<li class="wikiOrderedListItem"> Redesign of transaction management</li>
+<li class="wikiOrderedListItem"> Much improved (and still improving!) schema management tooling for export, validation and migration.</li>
+</ol>
+
+<p class="wikiPara">
+At this point, 5.0.0 is getting a lot of testing.  So even though it is still in Beta I am feeling pretty confident of its quality.  I opted for another Beta here instead of CR1 for a few reasons:
+</p>
+
+<ol class="wikiOrderedList">
+<li class="wikiOrderedListItem"> Investigate whether we want to convert Hibernate's native APIs (Session, etc) to be typed.  There is one especially tricky case that needs to be figured out.  A major release like this would be the time to do that</li>
+<li class="wikiOrderedListItem"> I have just introduced some pretty significant Transaction changes since Beta1.  I felt it would be prudent to have one more Beta to allow people time to try out those changes and allow for additional changes based on feedback</li>
+<li class="wikiOrderedListItem"> I would still like to complete deprecating the Settings contract.  The last piece there is the discussion I started earlier on the dev list wrt its usage in SPI contracts (L2 cache, etc).  This effects a few integrations.</li>
+<li class="wikiOrderedListItem"> I am working on better Karaf support for hibernate-osgi.  Specifically creating a Karaf features respository that users can simply pick up and use.  That work is well under way, but ongoing.</li>
+</ol>
+
+<p class="wikiPara">
+As always, see <a href="http://hibernate.org/orm/downloads/" target="" class="regularLink">http://hibernate.org/orm/downloads/</a> for information on obtaining Hibernate O/RM.
+</p>
+</div>
+
