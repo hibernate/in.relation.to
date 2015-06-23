@@ -62,10 +62,6 @@ layout: project
   .span10
     -# Title
     = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
-    %h1
-      In relation to
-      -if member
-        = member.name
     - if not page.posts.nil?
       -# Look for the author in _data/people/
       - member = site.people.values.detect{|person| person.name == page.posts[0].author[0].to_s}

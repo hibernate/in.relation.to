@@ -59,10 +59,6 @@ layout: project
   .span10
     -# Title
     = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
-    %h1
-      In relation to
-      -if page_tag
-        = page_tag
     - if not page.posts.nil?
       - for post in page.posts
         .blogpost
