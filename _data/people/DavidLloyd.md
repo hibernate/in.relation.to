@@ -1,7 +1,7 @@
 ---
 name: David Lloyd
 photo:
-level: 10
+level: 0
 website: http://in.relation.to/Bloggers/David
 location: Madison, WI
 occupation: Senior Software Engineer at JBoss, a division of Red Hat

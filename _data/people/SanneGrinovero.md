@@ -1,7 +1,7 @@
 ---
 name: Sanne Grinovero
 photo:
-level: 10
+level: 1
 website: http://codingobsession.blogspot.com
 location: Newcastle, UK
 occupation: Doing stuff at JBoss, a Division of Red Hat Inc

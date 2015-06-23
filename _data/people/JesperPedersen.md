@@ -1,7 +1,7 @@
 ---
 name: Jesper Pedersen
 photo:
-level: 10
+level: 0
 website: http://www.jboss.org
 location: Westford, MA
 occupation: Principal Software Engineer

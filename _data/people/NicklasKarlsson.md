@@ -1,7 +1,7 @@
 ---
 name: Nicklas Karlsson
 photo:
-level: 10
+level: 0
 location: Turku, Finland
 occupation: Software Developer
 gravatar_hash: 3b41521342dac29e69af287b95e532d2

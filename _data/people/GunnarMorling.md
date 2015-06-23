@@ -1,7 +1,7 @@
 ---
 name: Gunnar Morling
 photo:
-level: 10
+level: 1
 website: http://musingsofaprogrammingaddict.blogspot.com/
 location: Hamburg, Germany
 occupation: Hibernate team member

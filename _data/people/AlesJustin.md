@@ -1,7 +1,7 @@
 ---
 name: Aleš Justin
 photo:
-level: 10
+level: 0
 website: http://in.relation.to/Bloggers/Ales
 location: Vrhnika, Slovenia
 occupation: JBoss CapeDwarf Lead

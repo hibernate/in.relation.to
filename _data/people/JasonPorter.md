@@ -1,7 +1,7 @@
 ---
 name: Jason Porter
 photo:
-level: 10
+level: 0
 website: http://lightguard-jp.blogspot.com
 location: Salt Lake City, UT
 occupation: Senior Software Engineer, Red Hat

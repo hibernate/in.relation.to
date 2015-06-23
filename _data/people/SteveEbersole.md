@@ -1,7 +1,7 @@
 ---
 name: Steve Ebersole
 photo:
-level: 10
+level: 1
 website: http://hibernate.org
 location: Austin, TX
 occupation: Software Developer

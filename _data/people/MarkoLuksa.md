@@ -1,7 +1,7 @@
 ---
 name: Marko Lukša
 photo:
-level: 10
+level: 0
 location: Ljubljana, Slovenia
 gravatar_hash: ce9572f319e848be149196b772776981
 ---

@@ -1,7 +1,7 @@
 ---
 name: Emmanuel Bernard
 photo: /images/team/EmmanuelBernard.jpg
-level: 10
+level: 1
 gravatar_hash: 34a47bd77922181070aef96782110714
 ---
 Member of the Hibernate team.

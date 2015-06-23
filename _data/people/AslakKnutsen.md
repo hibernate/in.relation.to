@@ -1,7 +1,7 @@
 ---
 name: Aslak Knutsen
 photo:
-level: 10
+level: 0
 website: http://twitter.com/aslakknutsen
 location: Oslo, Norway
 occupation: Senior Software Engineer

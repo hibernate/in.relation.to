@@ -9,7 +9,11 @@ layout: project
   - member = site.people.values.detect{|member| member.name == page.posts[0].author[0].to_s}
   - sanitized_member = page.posts[0].author[0].primary_page.url.split("/")[-1].to_s
 
--# Project specific navigation menu
+  - post_authors = site.posts_author.select { |post_author|
+  -   author = site.people.values.detect{|author| author.name == post_author.to_s}
+  -   !author.level.nil? && author.level.to_i < 10
+  - }
+
 .row-fluid
   -# Menu
   .span2
@@ -54,10 +58,7 @@ layout: project
         %h2 Tags
         = site.posts_tags_cloud
 
-      %hr.divider
-      .cloud-authors
-        %h2 Authors
-        = site.posts_author_cloud
+      = partial( 'project/blog/blogger_list.html.haml' )
 
   .span10
     -# Title

@@ -1,0 +1,60 @@
+---
+layout: project
+title: In relation to - Bloggers
+---
+
+.row-fluid
+  -# Menu
+  .span2
+    .project-menu
+      .text-center.project-menu-title
+        %a{:href => '/', :class => 'icon-stack'}
+          %i.icon-circle.icon-stack-base.icon-fixed-width
+          %i{:class => "icon icon-light icon-fixed-width icon-quote-right"}
+          /icon-rss icon-signal
+      %ul.nav.nav-list
+        -# removes index.html and then replace download.html to download/
+        - current_path = page.output_path.sub(/index\.html$/, "").sub(/\.html$/,"/")
+
+        - href = "/"
+        - active = false
+        %li{:class => "#{(active ? "active" : "")}"}
+          %a{:href => "#{relative("#{href}")}"}
+            %i{:class => "icon-home menu-icon"}
+            Home
+
+        - href = "/blog.atom"
+        - active = false
+        %li{:class => "#{(active ? "active" : "")}"}
+          %a{:href => "#{relative("#{href}")}"}
+            %i{:class => "icon-rss menu-icon"}
+            Feed
+
+      %hr.divider
+      .cloud-tags
+        %h2 Tags
+        = site.posts_tags_cloud
+
+  .span10
+    %h1
+      Bloggers
+
+    - # Sort by level first (putting 0 at the end), then by name
+    - for blogger in site.people.values.sort{|blogger1, blogger2| level1 = blogger1.level == 0 ? 10000 : blogger1.level; level2 = blogger2.level == 0 ? 10000 : blogger2.level; res = level1 <=> level2; res != 0 ? res : blogger1.name <=> blogger2.name}
+      - post_author = site.posts_author.detect{|author| author.to_s == blogger.name}
+
+      .author-list-element-wrapper
+        .author-list-element-image
+          .author-image-container
+            .author-image
+              - if not post_author.nil?
+                %a{:href=>post_author.primary_page.url}
+                  %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=120"}
+              - else
+                %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=120"}
+        .author-list-element-description
+          %strong
+            = blogger.name
+          %br
+          %br
+          = blogger.content
