@@ -1,7 +1,7 @@
 ---
 name: Jason Greene
 photo:
-level: 10
+level: 0
 website: http://in.relation.to/Bloggers/Jason
 location: Madison, WI
 occupation: Principal Software Engineer at JBoss, a division of Red Hat

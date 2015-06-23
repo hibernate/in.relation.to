@@ -1,7 +1,7 @@
 ---
 name: Hardy Ferentschik
 photo:
-level: 10
+level: 1
 location: Göteborg, Sweden
 occupation: Developer at JBoss, a division of Red Hat
 gravatar_hash: 12df4da7e3351be801bc16b66caf8038

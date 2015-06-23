@@ -1,7 +1,7 @@
 ---
 name: Marius Bogoevici
 photo:
-level: 10
+level: 0
 location: Toronto, Canada
 occupation: Senior Software Engineer at Red Hat
 gravatar_hash: ee7ff5474c7ecfe0ec209df0eeb531fa

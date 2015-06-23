@@ -1,7 +1,7 @@
 ---
 name: Pete Muir
 photo:
-level: 10
+level: 0
 website: https://twitter.com/#!/plmuir
 location: Edinburgh, Scotland
 occupation: Principal Software Engineer, Red Hat, Inc.

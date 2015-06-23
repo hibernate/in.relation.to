@@ -1,7 +1,7 @@
 ---
 name: Ilya Shaikovsky
 photo:
-level: 10
+level: 0
 location: Minsk
 occupation: Products engineer
 gravatar_hash: ce9572f319e848be149196b772776981

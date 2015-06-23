@@ -1,7 +1,7 @@
 ---
 name: Jay Balunas
 photo:
-level: 10
+level: 0
 website: http://aerogear.org
 location: Upstate New York USA
 occupation: JBoss core developer at Red Hat Inc.

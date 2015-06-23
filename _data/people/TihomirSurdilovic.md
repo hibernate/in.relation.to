@@ -1,7 +1,7 @@
 ---
 name: Tihomir Surdilovic
 photo:
-level: 10
+level: 0
 website: http://in.relation.to/Bloggers/Tihomir
 location: Atlanta, GA
 occupation: Senior Software Engineer at Red Hat

@@ -1,7 +1,7 @@
 ---
 name: John Haselden
 photo:
-level: 10
+level: 0
 website: www.thinkinginseam.co.uk
 location: UK
 occupation: Technical Consultant

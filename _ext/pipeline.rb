@@ -89,10 +89,6 @@ Awestruct::Extensions::Pipeline.new do
                                                    :per_page=>10, :per_page_init=>10,
                                                    :output_home_file=>'index',
                                                    :sanitize=>true )
-    extension Awestruct::Extensions::SplitCloud.new( :posts,
-                                                   'author',
-                                                   '/authors/index.html',
-                                                   :title=>'Author')
     extension Awestruct::Extensions::Atomizer.new( :posts,
                                                    '/blog.atom',
                                                    :template=>File.join(File.dirname(__FILE__), 'template.atom.haml'),

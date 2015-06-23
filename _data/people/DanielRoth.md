@@ -1,7 +1,7 @@
 ---
 name: Daniel Roth
 photo:
-level: 10
+level: 0
 website: http://in.relation.to/Bloggers/Daniel
 location: Gothenburg
 gravatar_hash: ce9572f319e848be149196b772776981

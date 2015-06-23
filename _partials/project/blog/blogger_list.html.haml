@@ -1,0 +1,20 @@
+-# Displays the list of bloggers
+
+- levels = Hash.new
+- post_authors = site.posts_author.select { |post_author|
+-   author = site.people.values.detect{|author| author.name == post_author.to_s}
+-   levels[post_author] = author.level
+-   author.level > 0
+- }
+- .sort{ |post_author1, post_author2| res = levels[post_author1] <=> levels[post_author2]; res != 0 ? res : post_author1.to_s <=> post_author2.to_s}
+
+%hr.divider
+.cloud-authors
+  %h2 Authors
+  - for author in post_authors
+    %div
+      %a{:href=>author.primary_page.url}
+        = author.to_s
+  .more-link
+    %a{:href=>"/authors"}
+      More...

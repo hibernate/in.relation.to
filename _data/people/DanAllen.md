@@ -1,7 +1,7 @@
 ---
 name: Dan Allen
 photo:
-level: 10
+level: 0
 website: http://mojavelinux.com
 location: Laurel, MD
 occupation: Senior Software Engineer

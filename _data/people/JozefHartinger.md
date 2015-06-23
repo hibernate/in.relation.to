@@ -1,7 +1,7 @@
 ---
 name: Jozef Hartinger
 photo:
-level: 10
+level: 0
 location: Brno, Czech republic
 occupation: Software Engineer
 gravatar_hash: 677a79e7c42c41f037e6e9c3998a9d78

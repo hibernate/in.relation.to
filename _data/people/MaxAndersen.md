@@ -1,7 +1,7 @@
 ---
 name: Max Andersen
 photo: /images/team/MaxRydahlAndersen.jpg
-level: 10
+level: 1
 gravatar_hash: 2e6595bcd18e59bc17e18912e330ac10
 ---
 
