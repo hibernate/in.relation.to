@@ -253,7 +253,7 @@ class Importer
 
     # Blog posts
     redirects.write "### Blog posts\n\n"
-    blog_entries.each do |blog_entry|
+    blog_entries.sort_by{|blog_entry| "#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}"}.reverse.each do |blog_entry|
       blog_entry.original_tags.each do |tag|
         tags << tag.strip
       end
@@ -264,7 +264,8 @@ class Importer
 
     # Tags
     redirects.write "### Tags\n\n"
-    tags.sort_by{|tag| tag.downcase}.each do |tag|
+
+    tags.sort{|tag1, tag2| res = tag1.casecmp(tag2); res != 0 ? res : tag2 <=> tag1}.each do |tag|
       new_tag = normalize_tag(tag)
       if (!new_tag.nil?)
         redirects.write "RewriteRule ^tag/" + tag.gsub(' ', "\\\\+") + "$ /#{new_tag.downcase.gsub(' ', '-')}/ [R=301,L,E=nocache:1]\n"
