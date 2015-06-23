@@ -5,8 +5,8 @@ title: In Relation To
 project: in.relation.to
 
 # Default minify settings
-css_minifier: disabled
-js_minifier: disabled
+css_minifier: enabled
+js_minifier: enabled
 html_minifier: disabled
 
 # Disqus settings
@@ -109,6 +109,8 @@ profiles:
 
   staging:
     << : *base
+    css_minifier: enabled
+    js_minifier: enabled
     legacy_post_syntax_highlighting: enabled
     project_images_url: http://static.jboss.org/images/hibernate
     wget:
@@ -118,6 +120,8 @@ profiles:
 
   production:
     << : *base
+    css_minifier: enabled
+    js_minifier: enabled
     legacy_post_syntax_highlighting: enabled
     project_images_url: http://static.jboss.org/images/hibernate
     wget:
