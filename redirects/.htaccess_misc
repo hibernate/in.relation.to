@@ -1,20 +1,21 @@
 RewriteEngine On
 
-RewriteRule ^Bloggers$ / [R=301,L,E=nocache:1]
-RewriteRule ^Bloggers/Everyone$ / [R=301,L,E=nocache:1]
+RewriteRule ^/Bloggers$ / [R=301,L,E=nocache:1]
+RewriteRule ^/Bloggers/Everyone$ / [R=301,L,E=nocache:1]
 
 # Main feed
-RewriteRule ^service/Feed/atom/Area/Bloggers(/Comments/.*)?$ /blog.atom [R=301,L,E=nocache:1]
+RewriteRule ^/service/Feed/atom/Area/Bloggers(/Comments/.*)?$ /blog.atom [R=301,L,E=nocache:1]
 
 # Jay's categories
 
-RewriteRule ^Bloggers/Aerogear$ /aerogear/ [R=301,L,E=nocache:1]
-RewriteRule ^Bloggers/Interop$ /seam/ [R=301,L,E=nocache:1]
-RewriteRule ^Bloggers/Tweetstream$ /rich-faces/ [R=301,L,E=nocache:1]
-RewriteRule ^Bloggers/Mobile$ /rich-faces/ [R=301,L,E=nocache:1]
-RewriteRule ^Bloggers/Openshift$ /jay-balunas/ [R=301,L,E=nocache:1]
-RewriteRule ^Bloggers/Releases$ /seam/ [R=301,L,E=nocache:1]
-RewriteRule ^Bloggers/Richfaces$ /rich-faces/ [R=301,L,E=nocache:1]
+RewriteRule ^/Bloggers/Aerogear$ /aerogear/ [R=301,L,E=nocache:1]
+RewriteRule ^/Bloggers/Interop$ /seam/ [R=301,L,E=nocache:1]
+RewriteRule ^/Bloggers/Tweetstream$ /rich-faces/ [R=301,L,E=nocache:1]
+RewriteRule ^/Bloggers/Mobile$ /rich-faces/ [R=301,L,E=nocache:1]
+RewriteRule ^/Bloggers/Openshift$ /jay-balunas/ [R=301,L,E=nocache:1]
+# That category is about Seam releases only
+RewriteRule ^/Bloggers/Releases$ /seam/ [R=301,L,E=nocache:1]
+RewriteRule ^/Bloggers/Richfaces$ /rich-faces/ [R=301,L,E=nocache:1]
 
 # Headers for "nocache" environment enabled in rewrite rules
 Header always set Cache-Control "no-store, no-cache, must-revalidate" env=nocache
