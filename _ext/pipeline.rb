@@ -19,6 +19,7 @@ require 'split_filterer'
 require 'split_atomizer'
 require 'paginator'
 require 'posts'
+require 'date'
 
 require 'legacy_post_code_highlighter'
 
