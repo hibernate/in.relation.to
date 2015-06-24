@@ -1,0 +1,83 @@
+---
+title: "MC's DI\\IoC article, JBVE and JBoss5 VFS cache usage update"
+author: "Aleš Justin"
+blogger_name: "Ales"
+creation_date: "09-01-2009"
+original_tags: [ioc,jbve,microcontainer,vfs]
+tags: [CDI,Events]
+
+relative_url: /2009/01/09/m-cs-di-io-c-article-jbve-andjboss-5-vfs-cache-usage-update
+slug: m-cs-di-io-c-article-jbve-andjboss-5-vfs-cache-usage-update
+lace: http://in.relation.to/10440.lace
+
+layout: blog-post
+
+disqus_thread_id: http://in.relation.to/2009/01/09/m-cs-di-io-c-article-jbve-andjboss-5-vfs-cache-usage-update
+---
+<div id="documentDisplay" class="documentDisplay">
+
+
+<p class="wikiPara">
+Although this is old news, just to make a simple blog announcement,<br>
+DZone posted my MC part II. article, the title is <q>Advanced Dependency Injection and IoC</q>.
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"><a href="http://java.dzone.com/articles/a-look-inside-jboss-microconta-0" target="" class="regularLink">http://java.dzone.com/articles/a-look-inside-jboss-microconta-0</a></li>
+</ul>
+
+<p class="wikiPara">
+It's about how we do DI/IoC in MC, not what others don't do.<br>
+The advanced notion relates to usage beyond simple attribute/property injection.
+</p>
+
+<br>
+<br>
+<p class="wikiPara">
+For all those who missed JBVE announcement on other blogs, here is the link:
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"> <a href="http://www-2.virtualevents365.com/jboss_experience/" target="" class="regularLink">http://www-2.virtualevents365.com/jboss_experience/</a>
+</li>
+</ul>
+
+<p class="wikiPara">
+I hear the speakers are great. ;-)
+</p>
+
+<br>
+<br>
+<p class="wikiPara">
+And I'm sorry to admit we found our first ugly <a href="https://jira.jboss.org/jira/browse/JBAS-6373" target="" class="regularLink">bug in JBoss5</a>. :-(
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"><a href="http://ourcraft.wordpress.com/2009/01/05/plague-of-jar-files/" target="" class="regularLink">http://ourcraft.wordpress.com/2009/01/05/plague-of-jar-files/</a></li>
+</ul>
+
+<p class="wikiPara">
+There is already an ongoing discussion on the forum
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"><a href="http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;t=147622" target="" class="regularLink">http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;t=147622</a></li>
+<li class="wikiUnorderedListItem"><a href="http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;t=148298" target="" class="regularLink">http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;t=148298</a></li>
+<li class="wikiUnorderedListItem"><a href="http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;t=148375" target="" class="regularLink">http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;t=148375</a></li>
+</ul>
+
+<p class="wikiPara">
+And yesterday I hacked this new impl of VFS cache
+</p>
+
+<ul class="wikiUnorderedList">
+<li class="wikiUnorderedListItem"><a href="http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;p=4200398#4200398" target="" class="regularLink">http://www.jboss.com/index.html?module=bb&amp;op=viewtopic&amp;p=4200398#4200398</a></li>
+</ul>
+
+<p class="wikiPara">
+It's a combination of permanent entries (the main roots) + real cache for any other possible new roots.<br>
+I'm already running some simple long running tests on my home server to check how this new cache handles the issue,<br>
+but any real life/scenario feedback is more than welcome - simply post your results to some of the before mentioned existing forum posts.
+</p>
+</div>
+
