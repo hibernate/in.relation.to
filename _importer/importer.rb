@@ -214,6 +214,12 @@ class Importer
     else
       blog_entry.author = author_link.text
       blog_entry.blogger_name = author_link.attribute('href').to_s.sub('/Bloggers/', '')
+
+      # Hack for this specific post where a diff is linked instead of the author
+      if blog_entry.lace.to_s == "http://in.relation.to/10440.lace"
+        blog_entry.author = "Aleš Justin"
+        blog_entry.blogger_name = "Ales"
+      end
     end
 
     # creation date
