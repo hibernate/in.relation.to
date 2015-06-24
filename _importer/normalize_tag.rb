@@ -149,7 +149,7 @@ def guess_tags(slug)
  when /shards/i
    tags.push("Hibernate Shards")
 
- when /search/i
+ when /(hibernate-search)|(full-text-search)/i
    tags.push("Hibernate Search")
 
  when /seam/i
