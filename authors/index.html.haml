@@ -41,7 +41,8 @@ title: In relation to - Bloggers
 
     - # Sort by level first (putting 0 at the end), then by name
     - for blogger in site.people.values.sort{|blogger1, blogger2| level1 = blogger1.level == 0 ? 10000 : blogger1.level; level2 = blogger2.level == 0 ? 10000 : blogger2.level; res = level1 <=> level2; res != 0 ? res : blogger1.name <=> blogger2.name}
-      - post_author = site.posts_author.detect{|author| author.to_s == blogger.name}
+      - if !site.posts_author.nil?
+        - post_author = site.posts_author.detect{|author| author.to_s == blogger.name}
 
       .author-list-element-wrapper
         .author-list-element-image

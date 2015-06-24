@@ -1,12 +1,13 @@
 -# Displays the list of bloggers
 
 - levels = Hash.new
-- post_authors = site.posts_author.select { |post_author|
--   author = site.people.values.detect{|author| author.name == post_author.to_s}
--   levels[post_author] = author.level
--   author.level > 0
-- }
-- .sort{ |post_author1, post_author2| res = levels[post_author1] <=> levels[post_author2]; res != 0 ? res : post_author1.to_s <=> post_author2.to_s}
+
+-# It's only null in editor mode
+- if !site.posts_author.nil?
+  - post_authors = site.posts_author.select {|post_author| author = site.people.values.detect{|author| author.name == post_author.to_s}; levels[post_author] = author.level; author.level > 0 }
+  - post_authors.sort{ |post_author1, post_author2| res = levels[post_author1] <=> levels[post_author2]; res != 0 ? res : post_author1.to_s <=> post_author2.to_s}
+- else
+  - post_authors = Array.new
 
 %hr.divider
 .cloud-authors
