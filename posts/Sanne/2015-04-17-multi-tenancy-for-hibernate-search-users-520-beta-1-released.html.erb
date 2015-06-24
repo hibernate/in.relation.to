@@ -21,14 +21,14 @@ disqus_thread_id: http://in.relation.to/2015/04/17/multi-tenancy-for-hibernate-s
 Last night we released Hibernate Search 5.2.0.Beta1, and as many users requested we worked on Multi-Tenancy support.
 </p>
 
-<h1 class="wikiHeadline1" id="H-Multitenancy"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-Multitenancy">Multi-tenancy</a></h1>
+<h3 class="wikiHeadline1" id="H-Multitenancy"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-Multitenancy">Multi-tenancy</a></h3>
 
 <p class="wikiPara">
 This feature was available since some time in Hibernate ORM, but while Hibernate Search would not prevent you to use it, it wouldn't apply the same strict isolation on full-text queries.
 This is all implemented now, and is <a href="http://docs.jboss.org/hibernate/search/5.2/reference/en-US/html_single/#section-multi-tenancy" target="" class="regularLink">super easy to use</a>.
 </p>
 
-<h2 class="wikiHeadline2" id="H-HowToUseIt"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-HowToUseIt">How to use it</a></h2>
+<h3 class="wikiHeadline2" id="H-HowToUseIt"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-HowToUseIt">How to use it</a></h3>
 
 <p class="wikiPara">
 It's not different than any usage of Hibernate ORM's multi-tenancy. After you open a tenant-aware 'Session', changes will be tagged as belonging to a specific tenant automatically.
@@ -36,7 +36,7 @@ When performing a full-text query, you'll only get results from the current tena
 When rebuilding the index using the MassIndexer, it will rebuild only the index from the current tenant. When performing a <q>purgeAll</q> operation, it will only delete entries which belong to the current tenant.
 </p>
 
-<h2 class="wikiHeadline2" id="H-ImplementationAndShardingConsiderations"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-ImplementationAndShardingConsiderations">Implementation and Sharding considerations</a></h2>
+<h3 class="wikiHeadline2" id="H-ImplementationAndShardingConsiderations"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-ImplementationAndShardingConsiderations">Implementation and Sharding considerations</a></h3>
 
 <p class="wikiPara">
 In this implementation, as suggested by some of you we didn't create a fully independent index for each tenant, but each Document in the index gets <q>tagged</q> by the tenantid.
@@ -46,25 +46,25 @@ In this implementation, as suggested by some of you we didn't create a fully ind
 I am wondering if we should also implement a variation in which we keep each tenant's data into a fully independent index: please let us know what you think about that. The current approach of a single index works better if you have a very high amount of tenants, as there are practical limits in how many indexes can be managed. Another benefit of the current approach, is that you can easily plug in a clever custom sharding implementation; by working on a modulo approach among a list of tenants, you can tune it for a reasonable level of separation without necessarily having as many indexes as tenants.
 </p>
 
-<h1 class="wikiHeadline1" id="H-PerformanceOnPolymorphicEntityLoading"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-PerformanceOnPolymorphicEntityLoading">Performance on polymorphic entity loading</a></h1>
+<h3 class="wikiHeadline1" id="H-PerformanceOnPolymorphicEntityLoading"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-PerformanceOnPolymorphicEntityLoading">Performance on polymorphic entity loading</a></h3>
 
 <p class="wikiPara">
 The performance improvement highlight of the month goes to a revisited strategy on our internal usage of criterias when loading polymorphic results. If you were loading full-text results from a non-trivial class hierarchy you might notice a sweet performance improvement. For more details see <a href="https://hibernate.atlassian.net/browse/HSEARCH-1793" target="" class="regularLink">HSEARCH-1793</a>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-MassIndexerNowSupportingACancelOperation"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-MassIndexerNowSupportingACancelOperation">MassIndexer now supporting a Cancel operation</a></h1>
+<h3 class="wikiHeadline1" id="H-MassIndexerNowSupportingACancelOperation"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-MassIndexerNowSupportingACancelOperation">MassIndexer now supporting a Cancel operation</a></h3>
 
 <p class="wikiPara">
 The async variation of the MassIndexer returns a Future, but this didn't implement the <u>cancel</u> operation. Many thanks to Yoann Gendre for implementing it!
 </p>
 
-<h1 class="wikiHeadline1" id="H-OtherImprovements"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-OtherImprovements">Other improvements</a></h1>
+<h3 class="wikiHeadline1" id="H-OtherImprovements"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-OtherImprovements">Other improvements</a></h3>
 
 <p class="wikiPara">
 For the list of minor improvements, please refer to <a href="https://github.com/hibernate/hibernate-search/blob/5.2.0.Beta1/changelog.txt#L4" target="" class="regularLink">the changelog</a>.
 </p>
 
-<h1 class="wikiHeadline1" id="H-GetTheUpdate"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-GetTheUpdate">Get the update!</a></h1>
+<h3 class="wikiHeadline1" id="H-GetTheUpdate"><a href="/2015/04/17/multi-tenancy-for-hibernate-search-users-520-beta-1-released#H-GetTheUpdate">Get the update!</a></h3>
 
 <p class="wikiPara">
 Everything you need is available on Hibernate Search's <a href="http://hibernate.org/search/" target="" class="regularLink">web site</a>.
