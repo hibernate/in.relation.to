@@ -14,6 +14,7 @@ require 'date'
 require 'fileutils'
 require 'net/http'
 require 'uri'
+require 'pathname'
 
 require_relative 'normalize_tag'
 
@@ -115,6 +116,9 @@ class Importer
     FileUtils.mkdir_p( @image_dir )
     @asset_dir = @output_dir + '/../assets'
     FileUtils.mkdir_p( @asset_dir )
+
+    # Hash for the processed blog entries keyed against the wiki hash
+    @blog_entries = Hash.new
   end
 
   def import_posts
@@ -123,8 +127,8 @@ class Importer
     failed_imports = 0
     failures = Hash.new
     posts = PStore.new(@import_file)
-    blog_entries = Array.new
 
+    # Process all blog posts stored in the PStore file
     posts.transaction(true) do
       posts.roots.each do |lace|
         if(!@single_lace.nil? && @single_lace != lace.to_s)
@@ -136,8 +140,7 @@ class Importer
         blog_entry.lace = lace
         begin
           if(import_post(blog_entry, posts[lace]))
-            write_file(blog_entry)
-            blog_entries << blog_entry
+            @blog_entries[blog_entry.camel_case_slug] = blog_entry
             successful_imports += 1
           else
             skipped_imports += 1
@@ -152,12 +155,19 @@ class Importer
       end
     end
 
+    # Write the blog entries to disk
+    @blog_entries.values.each do |blog_entry|
+      write_file(blog_entry)
+    end
+
+    # Create the Disqus WXT import file if necessary
     unless @skip_wxr_export
       @wxr_exporter.write_wxr
     end
 
+    # Create Apache redirects if necessary
     unless @skip_redirect_file_creation
-      create_redirects(blog_entries)
+      create_redirects
     end
 
     if(@log_errors == true)
@@ -200,8 +210,7 @@ class Importer
     end
 
     blog_entry.title = title_link.text
-    printf "Importing   %-32s - %s\n", blog_entry.lace, blog_entry.title
-    #puts "Importing #{blog_entry.lace} - #{blog_entry.title}"
+    printf "Importing   %-42s - %s\n", blog_entry.lace, blog_entry.title
     blog_entry.slug = title_link.attr('href').to_s.sub('/Bloggers/', '')
 
     # author and blogger name
@@ -250,7 +259,7 @@ class Importer
     return true
   end
 
-  def create_redirects(blog_entries)
+  def create_redirects
     authors = Hash.new
     tags = Set.new
 
@@ -259,7 +268,7 @@ class Importer
 
     # Blog posts
     redirects.write "### Blog posts\n\n"
-    blog_entries.sort_by{|blog_entry| "#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}"}.reverse.each do |blog_entry|
+    @blog_entries.values.sort_by{|blog_entry| "#{blog_entry.date.strftime('%Y/%m/%d')}/#{blog_entry.slug}"}.reverse.each do |blog_entry|
       blog_entry.original_tags.each do |tag|
         tags << tag.strip
       end
@@ -397,14 +406,20 @@ class Importer
       # match images either as absolute in.relation.to url or site relative
       if (image['src'] =~ /http:\/\/in.relation.to\/service\/File/ || image['src'] =~ /^\/service\/File/)
         # get the image and type
-        image_data, type = download_resource(image['src'])
+        image_path = image['src'].gsub(/\?thumbnail=true/, '')
+        image_name = image_path.split('/').last
+        if(Dir.glob(File.join(@image_dir, "#{image_name}.*")).size > 0)
+          file_name = Dir.glob(File.join(@image_dir, "#{image_name}.*"))[0]
+          image_name << File.extname(file_name)
+        else
+          image_data, type = download_resource(image_path)
 
-        # just keep the image name (a number in our case)
-        image_name = image['src'].split('/').last.gsub(/\?thumbnail=true/, '')
-        image_name << '.' << type
+          # append type
+          image_name << '.' << type
 
-        # write the image
-        write_resource(image_data, File.join( @image_dir, image_name ))
+          # write the image
+          write_resource(image_data, File.join( @image_dir, image_name ))
+        end
 
         # adjust the image target
         image['src'] = "/images/legacy/" + image_name
@@ -427,9 +442,13 @@ class Importer
           regexp = /\((.*), [0-9]/
           m = regexp.match(a.text)
           m.captures.each do |original_file_name|
-            # download and save
-            asset = download_resource(url)[0]
-            write_resource(asset, File.join( @asset_dir, original_file_name ))
+            assetPath = File.join( @asset_dir, original_file_name )
+            if(!File.exists?(assetPath))
+              # download and save
+              asset = download_resource(url)[0]
+              write_resource(asset, assetPath )
+            end
+
             anchor = prefix + "attachment" + attachment_count.to_s
             attachments[anchor] = original_file_name
             attachment_count += 1
@@ -456,7 +475,7 @@ class Importer
       resource_url = 'http://in.relation.to' + resource_url
     end
 
-    puts "Downloading #{resource_url}"
+    printf "Downloading %-42s\n", resource_url
     uri = URI.parse( resource_url )
 
     http = Net::HTTP.new(uri.host, uri.port)
