@@ -1,7 +1,8 @@
 -# Displays a single blog post
 - post = page["post"]
 - show_author_image = page["show_author_image"]
-- member = site.people.values.detect{|member| member.name == post.author[0].to_s}
+- # Author is a String in editor mode only
+- member = site.people.values.detect{|member| member.name == (post.author.is_a?(String) ? post.author : post.author[0].to_s)}
 
 .blog-title-bar
   .blog-title-image.hidden-phone
@@ -16,15 +17,24 @@
 
     .blog-author-bar
       Posted by
-      - post.author.each do |author|
-        %a{:href=>author.primary_page.url}
-          = author
+      - # It's a String in editor mode only
+      - if post.author.is_a? String
+        = post.author
+      - else
+        - post.author.each do |author|
+          %a{:href=>author.primary_page.url}
+            = author
       &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
       #{post.date.strftime( '%Y-%m-%d' )}
       &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; <i class="icon-tags"></i> Tagged as
       - post.tags.each do |tag|
-        %a.label{:href=>tag.primary_page.url}
-          = tag
+        - # It's a String in editor mode only
+        - if tag.is_a? String
+          .label
+            = tag
+        - else
+          %a.label{:href=>tag.primary_page.url}
+            = tag
 
 %div
   ~ post.content.force_encoding("UTF-8")
