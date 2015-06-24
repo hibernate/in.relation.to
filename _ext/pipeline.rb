@@ -59,8 +59,8 @@ Awestruct::Extensions::Pipeline.new do
   # blog
 
   ignore_older_than=nil
-  if Engine.instance.site.profile == 'editor' or Engine.instance.site.profile == 'development'
-    ignore_older_than = Time.now - 366*24*60*60
+  if !Engine.instance.site.ignore_older_than_days.nil? && Engine.instance.site.ignore_older_than_days.to_i > 0
+    ignore_older_than = Time.now - Engine.instance.site.ignore_older_than_days.to_i * 24 * 60 * 60
   end
 
   extension Awestruct::Extensions::Posts.new( '', :posts, nil, nil, ignore_older_than )
