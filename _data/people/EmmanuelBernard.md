@@ -12,7 +12,7 @@ Lead the JPA implementation of [Hibernate ORM](http://hibernate.org/orm/).
 Data platform architect for the JBoss portfolio at Red Hat.
 Particularly involved in the Hibernate portfolio as well as Infinispan.
 
-Spec lead of [Bean Validation](http:beanvalidation.org) and JPA expert group member.
+Spec lead of [Bean Validation](http://beanvalidation.org) and JPA expert group member.
 
 Follow him on [twitter](http://twitter.com/emmanuelbernard).  
 
