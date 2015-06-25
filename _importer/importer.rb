@@ -93,6 +93,7 @@ end
 class Importer
 
   BASE_URL = "http://in.relation.to"
+  CROSS_SITE_LINK_REG_EXP = '(\/Bloggers\/(\w+))'
 
   def initialize(import_file, output_dir, redirects_file, wxr_file_name, skip_image_processing, skip_asset_processing, log_errors, limit=-1, lace=nil)
     @import_file = import_file
@@ -154,6 +155,8 @@ class Importer
         end
       end
     end
+
+    post_process_posts
 
     # Write the blog entries to disk
     @blog_entries.values.each do |blog_entry|
@@ -245,12 +248,12 @@ class Importer
     blog_entry.disqus_thread_id = "http://in.relation.to" + blog_entry.relative_url
 
     # prepare the main content
-    blog_entry.content = prepare_content_body(doc, blog_entry)
+    blog_entry.content_node = prepare_content_body(doc, blog_entry)
 
     unless @skip_wxr_export
       @wxr_exporter.create_item(blog_entry.title,
                                 blog_entry.disqus_thread_id,
-                                blog_entry.content,
+                                blog_entry.content_node.to_s,
                                 blog_entry.date.strftime( "%d-%m-%Y" ) + '-' + blog_entry.slug,
                                 blog_entry.date)
       export_comments(doc)
@@ -320,7 +323,7 @@ class Importer
       blog_entry.assets = import_assets(doc, blog_entry.slug, content_node)
     end
 
-    return content_node.to_s
+    return content_node
   end
 
   # Process all comments of a given blog. They all within a table and one comment is within a column
@@ -501,6 +504,25 @@ class Importer
     FileUtils.mkdir_p( File.dirname( out ) )
     File.open( out, 'w' ) do |f|
       f.puts blog_entry.to_erb
+    end
+  end
+
+  # Do some post processing of the posts after all have been collected in the blog entries hash
+  def post_process_posts
+    @blog_entries.each do |wiki_slug, blog_entry|
+      update_cross_referencing_links blog_entry
+    end
+  end
+
+  # Some posts cross reference other posts. Let's update the links pointing to them
+  def update_cross_referencing_links(blog_entry)
+    blog_entry.content_node.css('a').each do |link_node|
+      if link_node['href'] =~ /#{CROSS_SITE_LINK_REG_EXP }/
+        cross_site_slug = link_node['href'].match(/#{CROSS_SITE_LINK_REG_EXP }/).captures[1]
+        if @blog_entries.has_key? cross_site_slug
+          link_node['href'] = link_node['href'].sub(/#{CROSS_SITE_LINK_REG_EXP }/, "#{@blog_entries[cross_site_slug].relative_url}")
+        end
+      end
     end
   end
 end
