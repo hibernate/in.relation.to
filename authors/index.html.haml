@@ -7,28 +7,7 @@ title: In relation to - Bloggers
   -# Menu
   .span2
     .project-menu
-      .text-center.project-menu-title
-        %a{:href => '/', :class => 'icon-stack'}
-          %i.icon-circle.icon-stack-base.icon-fixed-width
-          %i{:class => "icon icon-light icon-fixed-width icon-quote-right"}
-          /icon-rss icon-signal
-      %ul.nav.nav-list
-        -# removes index.html and then replace download.html to download/
-        - current_path = page.output_path.sub(/index\.html$/, "").sub(/\.html$/,"/")
-
-        - href = "/"
-        - active = false
-        %li{:class => "#{(active ? "active" : "")}"}
-          %a{:href => "#{relative("#{href}")}"}
-            %i{:class => "icon-home menu-icon"}
-            Home
-
-        - href = "/blog.atom"
-        - active = false
-        %li{:class => "#{(active ? "active" : "")}"}
-          %a{:href => "#{relative("#{href}")}"}
-            %i{:class => "icon-rss menu-icon"}
-            Feed
+      = partial( 'project/blog/home-menu.html.haml' )
 
       %hr.divider
       .cloud-tags
