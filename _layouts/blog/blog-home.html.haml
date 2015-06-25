@@ -11,16 +11,16 @@ title_partial: blog/blog-hero-unit.html.haml
   -# Menu
   .span2
     .project-menu
-      = partial( 'project/blog/home-menu.html.haml' )
+      = partial( 'blog/home-menu.html.haml' )
 
       %hr.divider
       .cloud-tags
         %h2 Tags
         = site.posts_tags_cloud
 
-      = partial( 'project/blog/blogger_list.html.haml' )
+      = partial( 'blog/blogger_list.html.haml' )
 
   .span10
     -# Title
-    = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
+    = partial( page.title_partial.nil? ? 'blog/title.html.haml' : page.title_partial, {"real_page" => page} )
     ~ content
