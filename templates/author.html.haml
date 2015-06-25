@@ -7,12 +7,6 @@ layout: project
 
 - if not page.posts.nil?
   - member = site.people.values.detect{|member| member.name == page.posts[0].author[0].to_s}
-  - sanitized_member = page.posts[0].author[0].primary_page.url.split("/")[-1].to_s
-
-  - post_authors = site.posts_author.select { |post_author|
-  -   author = site.people.values.detect{|author| author.name == post_author.to_s}
-  -   !author.level.nil? && author.level.to_i < 10
-  - }
 
 .row-fluid
   -# Menu
@@ -43,11 +37,6 @@ layout: project
     -# Title
     = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
     - if not page.posts.nil?
-      -# Look for the author in _data/people/
-      - member = site.people.values.detect{|person| person.name == page.posts[0].author[0].to_s}
-      -# If the author does not have a bio, use the name in the first blog post
-      - if member.nil?
-        - member = page.posts[0].author[0].to_s
       - for post in page.posts
         .blogpost
           = partial( 'project/blog/post.html.haml', {"post" => post, "show_author_image" => false } )

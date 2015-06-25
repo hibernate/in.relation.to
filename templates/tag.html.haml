@@ -14,10 +14,6 @@ layout: project
     - if tag_identifier == identifier
       - page_tag = tag
 
-- if not page.posts.nil?
-  - member = site.people.values.detect{|member| member.name == page.posts[0].tags[0].to_s}
-  - sanitized_member = page.posts[0].tags[0].primary_page.url.split("/")[-1].to_s
-
 -# Project specific navigation menu
 .row-fluid
   -# Menu
