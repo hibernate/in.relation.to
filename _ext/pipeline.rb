@@ -20,10 +20,12 @@ require 'split_atomizer'
 require 'paginator'
 require 'posts'
 require 'date'
-
-require 'legacy_post_code_highlighter'
-
 require 'i18n'
+
+# custom extensions
+require 'legacy_post_code_highlighter'
+require 'link_renderer'
+
 I18n.enforce_available_locales = false
 
 # hack to add asciidoc support in HAML
@@ -97,7 +99,7 @@ Awestruct::Extensions::Pipeline.new do
   end
 
   extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>10, :per_page_init=>10 )
-
+  extension InRelationTo::Extensions::PaginationLinkRenderer.new()
 
   # register extensions and transformers
   transformer Awestruct::Extensions::JsMinifier.new
