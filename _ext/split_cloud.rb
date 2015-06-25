@@ -12,7 +12,7 @@ module Awestruct
       end
 
       def execute(site)
-        page = site.engine.load_page( File.join( File.dirname( __FILE__ ), 'split_cloud.html.haml' ) )
+        page = site.engine.load_page( File.join( File.dirname( __FILE__ ), '../_templates/split_cloud.html.haml' ) )
         page.output_path = File.join( @output_path )
         page.layout = @layout
         page.title  = @title

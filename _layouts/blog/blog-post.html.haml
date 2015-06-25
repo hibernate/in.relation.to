@@ -1,6 +1,6 @@
 ---
 layout: project
-title_partial: project/blog/title-post.html.haml
+title_partial: blog/title-post.html.haml
 ---
 -# layout for pages related to the blog
 -# display menu on the left
@@ -11,18 +11,18 @@ title_partial: project/blog/title-post.html.haml
   -# Menu
   .span2
     .project-menu
-      = partial( 'project/blog/home-menu.html.haml' )
+      = partial( 'blog/home-menu.html.haml' )
 
     %hr.divider
     .cloud-tags
       %h2 Tags
       = site.posts_tags_cloud
 
-    = partial( 'project/blog/blogger_list.html.haml' )
+    = partial( 'blog/blogger_list.html.haml' )
 
   .span10
     .blogpost
-      = partial( 'project/blog/post.html.haml', {"post" => page} )
+      = partial( 'blog/post.html.haml', {"post" => page} )
     #disqus_thread
     %script{:src=>javascript, :type=>'text/javascript'}
       var disqus_shortname = '#{site.disqus_shortname}';

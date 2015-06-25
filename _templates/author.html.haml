@@ -12,7 +12,7 @@ layout: project
   -# Menu
   .span2
     .project-menu
-      = partial( 'project/blog/home-menu.html.haml' )
+      = partial( 'blog/home-menu.html.haml' )
 
       - if member && member.content && !member.content.empty?
         %hr.divider
@@ -31,13 +31,13 @@ layout: project
         %h2 Tags
         = site.posts_tags_cloud
 
-      = partial( 'project/blog/blogger_list.html.haml' )
+      = partial( 'blog/blogger_list.html.haml' )
 
   .span10
     -# Title
-    = partial( page.title_partial.nil? ? 'project/title.html.haml' : page.title_partial, {"real_page" => page} )
+    = partial( page.title_partial.nil? ? 'blog/title.html.haml' : page.title_partial, {"real_page" => page} )
     - if not page.posts.nil?
       - for post in page.posts
         .blogpost
-          = partial( 'project/blog/post.html.haml', {"post" => post, "show_author_image" => false } )
+          = partial( 'blog/post.html.haml', {"post" => post, "show_author_image" => false } )
       = page.posts.bootstrap_links

@@ -76,7 +76,7 @@ Awestruct::Extensions::Pipeline.new do
   if Engine.instance.site.profile != 'editor'
     extension Awestruct::Extensions::Splitter.new( :posts,
                                                    'tags',
-                                                   'templates/tag',
+                                                   '_templates/tag',
                                                    '',
                                                    :per_page=>10, :per_page_init=>10,
                                                    :output_home_file=>'index',
@@ -87,14 +87,14 @@ Awestruct::Extensions::Pipeline.new do
                                                    :title=>'Tags')
     extension Awestruct::Extensions::Splitter.new( :posts,
                                                    'author',
-                                                   'templates/author',
+                                                   '_templates/author',
                                                    '',
                                                    :per_page=>10, :per_page_init=>10,
                                                    :output_home_file=>'index',
                                                    :sanitize=>true )
     extension Awestruct::Extensions::Atomizer.new( :posts,
                                                    '/blog.atom',
-                                                   :template=>File.join(File.dirname(__FILE__), 'template.atom.haml'),
+                                                   :template=>File.join(File.dirname(__FILE__), '../_templates/template.atom.haml'),
                                                    :feed_title=>'In Relation To Blog')
   end
 
