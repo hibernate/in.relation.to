@@ -1,15 +1,12 @@
 ---
 layout: in-relation-to
 ---
--# layout for pages related to the blog
--# display menu on the left
--# handles title display
+-# template for author pages
 
 - if not page.posts.nil?
   - member = site.people.values.detect{|member| member.name == page.posts[0].author[0].to_s}
 
 .row-fluid
-  -# Menu
   .span2
     .project-menu
       = partial( 'blog/home-menu.html.haml' )
