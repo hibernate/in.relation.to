@@ -19,20 +19,4 @@ title_partial: blog/title-post.html.haml
   .span10
     .blogpost
       = partial( 'blog/post.html.haml', {"post" => page} )
-    #disqus_thread
-    %script{:src=>javascript, :type=>'text/javascript'}
-      var disqus_shortname = '#{site.disqus_shortname}';
-      var disqus_identifier = '#{page.creation_date}-#{page.slug}';
-      var disqus_title = '#{page.title}';
-      var disqus_url = '#{page.disqus_thread_id}';
-
-      (function() {
-      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
-      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-      })();
-
-    %noscript
-      Please enable JavaScript to view the
-      %a{:href=>'https://disqus.com/?ref_noscriptr', :rel=>'nofollow'}
-        comments powered by Disqus.
+      = partial( 'disqus-javascripts.html.haml', {"post" => page} )
