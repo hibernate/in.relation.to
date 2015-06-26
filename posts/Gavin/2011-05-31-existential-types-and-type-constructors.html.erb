@@ -18,7 +18,7 @@ disqus_thread_id: http://in.relation.to/2011/05/31/existential-types-and-type-co
 
 
 <p class="wikiPara">
-I just ran across a great usecase for existential types (like Java's wildcard types, which Ceylon <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart6" target="" class="regularLink">doesn't and won't support</a>). It's a little involved, and revolves around an advanced feature of Ceylon that other languages don't have: the typesafe metamodel. But let me see if I can get the idea across.
+I just ran across a great usecase for existential types (like Java's wildcard types, which Ceylon <a href="http://in.relation.to/2011/04/29/introduction-to-ceylon-part-6" target="" class="regularLink">doesn't and won't support</a>). It's a little involved, and revolves around an advanced feature of Ceylon that other languages don't have: the typesafe metamodel. But let me see if I can get the idea across.
 </p>
 
 <h1 class="wikiHeadline1" id="H-MetamodelReferencesAsIndirection"><a href="/2011/05/31/existential-types-and-type-constructors#H-MetamodelReferencesAsIndirection">Metamodel references as indirection</a></h1>
@@ -31,7 +31,7 @@ In Ceylon, a metamodel reference like <tt>Entry&lt;String,File&gt;</tt> has a we
 
 
 <p class="wikiPara">
-It just so happens that the metamodel type <tt>ConcreteClass&lt;T,P...&gt;</tt> is defined to extend <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAFunction" target="" class="regularLink">the function type</a> <tt>Callable&lt;T,P...&gt;</tt>, so we can even write stuff like this:
+It just so happens that the metamodel type <tt>ConcreteClass&lt;T,P...&gt;</tt> is defined to extend <a href="http://in.relation.to/2011/05/01/introduction-to-ceylon-part-8#H-RepresentingTheTypeOfAFunction" target="" class="regularLink">the function type</a> <tt>Callable&lt;T,P...&gt;</tt>, so we can even write stuff like this:
 </p>
 
 <pre class="wikiPreformatted brush: ceylon">Entry&lt;String,File&gt; stringFileEntryClass(String s, File f) = Entry&lt;String,File&gt;;
@@ -109,7 +109,7 @@ in Ceylon. The best you'll be able to do is something like this:
 
 
 <p class="wikiPara">
-UPDATE: Well, actually, there <i class="wikiEmphasis">is</i> a reasonable solution that occurs to me. We're <a href="http://in.relation.to/Bloggers/PluginLiteralFormats#comment20441" target="" class="regularLink">considering</a> supporting a left-to-right type inference for the special case of <a href="/Bloggers/PluginLiteralFormats" target="" class="regularLink">single quoted literals</a>, which would be limited to syntactically occur only in places where left-to-right type inference is possible. So the following syntax would work out, I suppose:
+UPDATE: Well, actually, there <i class="wikiEmphasis">is</i> a reasonable solution that occurs to me. We're <a href="http://in.relation.to/2011/05/24/plugin-literal-formats#comment20441" target="" class="regularLink">considering</a> supporting a left-to-right type inference for the special case of <a href="/2011/05/24/plugin-literal-formats" target="" class="regularLink">single quoted literals</a>, which would be limited to syntactically occur only in places where left-to-right type inference is possible. So the following syntax would work out, I suppose:
 </p>
 
 <pre class="wikiPreformatted brush: ceylon">names.sortedBy('&lt;')</pre>
