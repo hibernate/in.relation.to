@@ -8,7 +8,8 @@ layout: in-relation-to
 - if not page.posts.nil?
   - post = page.posts[0]
   - for tag in post.tags
-    - tag_identifier = tag.primary_page.url.split("/")[-1].to_s
+    -# relying on primary_page.output_path instead of url which is for our purposes identical - see WEBSITE-318
+    - tag_identifier = tag.primary_page.output_path.split("/")[1].to_s
     - if tag_identifier == identifier
       - page_tag = tag
 

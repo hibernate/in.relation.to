@@ -14,7 +14,8 @@
   %h2 Authors
   - for author in post_authors
     %div
-      %a{:href=>author.primary_page.url}
+      -# relying on primary_page.output_path instead of url which is for our purposes identical - see WEBSITE-318
+      %a{:href=>author.primary_page.output_path}
         = author.to_s
   .more-link
     %a{:href=>"/authors"}
