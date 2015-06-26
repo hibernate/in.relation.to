@@ -68,11 +68,11 @@ In Ceylon, <tt>Object</tt> isn't the root of the type system. An expression of t
 </p>
 
 <p class="wikiPara">
-Therefore, Ceylon's <tt>Object</tt> has a superclass, named <tt>Void</tt>, which we already met in <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-WritingASimpleProgram" target="" class="regularLink">Part 1</a>. All Ceylon types are assignable to <tt>Void</tt>. Expressions of type <tt>Void</tt> aren't useful for very much, since Void has no members or operations. You can't even narrow an expression of type <tt>Void</tt> to a different type. The one useful thing you can do with <tt>Void</tt> is use it to represent the signature of a method when you don't care about the return type, since a method declared <tt>void</tt> is considered to have return type <tt>Void</tt>, as we saw in <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-DefiningHigherOrderFunctions" target="" class="regularLink">Part 8</a>. 
+Therefore, Ceylon's <tt>Object</tt> has a superclass, named <tt>Void</tt>, which we already met in <a href="http://in.relation.to/2011/04/27/introduction-to-ceylon-part-1#H-WritingASimpleProgram" target="" class="regularLink">Part 1</a>. All Ceylon types are assignable to <tt>Void</tt>. Expressions of type <tt>Void</tt> aren't useful for very much, since Void has no members or operations. You can't even narrow an expression of type <tt>Void</tt> to a different type. The one useful thing you can do with <tt>Void</tt> is use it to represent the signature of a method when you don't care about the return type, since a method declared <tt>void</tt> is considered to have return type <tt>Void</tt>, as we saw in <a href="http://in.relation.to/2011/05/01/introduction-to-ceylon-part-8#H-DefiningHigherOrderFunctions" target="" class="regularLink">Part 8</a>. 
 </p>
 
 <p class="wikiPara">
-As we also saw in <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">Part 1</a>, the type <tt>Nothing</tt> directly extends <tt>Void</tt>. All types that represent well-defined values extend <tt>Object</tt>, including:
+As we also saw in <a href="http://in.relation.to/2011/04/27/introduction-to-ceylon-part-1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">Part 1</a>, the type <tt>Nothing</tt> directly extends <tt>Void</tt>. All types that represent well-defined values extend <tt>Object</tt>, including:
 </p>
 
 <ul class="wikiUnorderedList">
@@ -143,7 +143,7 @@ Thus, Ceylon is able to capture within the type system much of the behavior that
 <h1 class="wikiHeadline1" id="H-OperatorPolymorphism"><a href="/2011/05/05/introduction-to-ceylon-part-10#H-OperatorPolymorphism">Operator polymorphism</a></h1>
 
 <p class="wikiPara">
-Ceylon discourages the creation of intriguing executable ASCII art. Therefore, true operator overloading is not supported by the language. Instead, almost every operator (every one except the primitive <tt>.</tt>, <tt>()</tt>, <tt>is</tt>, and <tt>:=</tt> operators) is considered a shortcut way of writing some more complex expression involving other operators and ordinary method calls. For example, the <tt>&lt;</tt> operator is defined in terms of the interface <tt>Comparable&lt;Other&gt;</tt>, which we met in <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-TypesafeEnumerations" target="" class="regularLink">Part 5</a>, and which has a method named <tt>smallerThan()</tt>, which is in turn defined in terms of another method named <tt>compare()</tt>.
+Ceylon discourages the creation of intriguing executable ASCII art. Therefore, true operator overloading is not supported by the language. Instead, almost every operator (every one except the primitive <tt>.</tt>, <tt>()</tt>, <tt>is</tt>, and <tt>:=</tt> operators) is considered a shortcut way of writing some more complex expression involving other operators and ordinary method calls. For example, the <tt>&lt;</tt> operator is defined in terms of the interface <tt>Comparable&lt;Other&gt;</tt>, which we met in <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-5#H-TypesafeEnumerations" target="" class="regularLink">Part 5</a>, and which has a method named <tt>smallerThan()</tt>, which is in turn defined in terms of another method named <tt>compare()</tt>.
 </p>
 
 <pre class="wikiPreformatted brush:ceylon">x&lt;y</pre>
@@ -282,7 +282,7 @@ A very large or small numeric literals may be qualified by one of the standard S
 <h1 class="wikiHeadline1" id="H-NumericWidening"><a href="/2011/05/05/introduction-to-ceylon-part-10#H-NumericWidening">Numeric widening</a></h1>
 
 <p class="wikiPara">
-I mentioned earlier that Ceylon <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions" target="" class="regularLink">doesn't have implicit type conversions</a>, not even built-in conversions for numeric types. Assignment does not automatically widen (or narrow) numeric values. Instead, we need to call one of the operations (well, attributes, actually) defined by the interface <tt>Number</tt>.
+I mentioned earlier that Ceylon <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions" target="" class="regularLink">doesn't have implicit type conversions</a>, not even built-in conversions for numeric types. Assignment does not automatically widen (or narrow) numeric values. Instead, we need to call one of the operations (well, attributes, actually) defined by the interface <tt>Number</tt>.
 </p>
 
 <pre class="wikiPreformatted brush:ceylon">Whole zero = 0.whole; //explicitly widen from Natural</pre>
@@ -351,7 +351,7 @@ Operators in Ceylon are, in principle, just abbreviations for some expression in
 
 
 <p class="wikiPara">
-The type parameter <tt>Types</tt> uses a special trick. The argument to <tt>Types</tt> should be the <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-MoreAboutUnionTypes" target="" class="regularLink">union</a> of all types to which the implementing type is castable. 
+The type parameter <tt>Types</tt> uses a special trick. The argument to <tt>Types</tt> should be the <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-5#H-MoreAboutUnionTypes" target="" class="regularLink">union</a> of all types to which the implementing type is castable. 
 </p>
 
 <p class="wikiPara">
@@ -412,11 +412,11 @@ The value of all this — apart from eliminating special cases in the language d
 <h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/05/05/introduction-to-ceylon-part-10#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
-If you're interested, you can check out a <a href="/Bloggers/CeylonOperators" target="" class="regularLink">complete list of Ceylon's operators along with a discussion of their precedence</a>.
+If you're interested, you can check out a <a href="/2011/05/24/ceylon-operators" target="" class="regularLink">complete list of Ceylon's operators along with a discussion of their precedence</a>.
 </p>
 
 <p class="wikiPara">
-In the <a href="/Bloggers/IntroductionToCeylonPart11" target="" class="regularLink">Part 11</a> we're going to come back to the subject of object initialization, and deal with a subtle problem affecting languages like Java and C#.
+In the <a href="/2011/05/21/introduction-to-ceylon-part-11" target="" class="regularLink">Part 11</a> we're going to come back to the subject of object initialization, and deal with a subtle problem affecting languages like Java and C#.
 </p>
 </div>
 

@@ -35,9 +35,9 @@ Ceylon's design goals include:
 <li class="wikiUnorderedListItem"> to be easy to learn and understand for Java and C# developers, </li>
 <li class="wikiUnorderedListItem"> to eliminate some of Java's verbosity, while retaining its readability, </li>
 <li class="wikiUnorderedListItem"> to improve upon Java's typesafety, </li>
-<li class="wikiUnorderedListItem"> to provide a <a href="/Bloggers/IntroductionToCeylonPart9" target="" class="regularLink">declarative syntax for expressing hierarchical information</a> like user interface definition, externalized data, and system configuration, thereby eliminating Java's dependence upon XML, </li>
-<li class="wikiUnorderedListItem"> to support and encourage a more <q>functional</q> style of programming with immutable objects and <a href="/Bloggers/IntroductionToCeylonPart8" target="" class="regularLink">higher-order functions</a>,</li>
-<li class="wikiUnorderedListItem"> to provide great support for <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart12" target="" class="regularLink">meta-programming</a>, thus making it easier to write frameworks, and </li>
+<li class="wikiUnorderedListItem"> to provide a <a href="/2011/05/02/introduction-to-ceylon-part-9" target="" class="regularLink">declarative syntax for expressing hierarchical information</a> like user interface definition, externalized data, and system configuration, thereby eliminating Java's dependence upon XML, </li>
+<li class="wikiUnorderedListItem"> to support and encourage a more <q>functional</q> style of programming with immutable objects and <a href="/2011/05/01/introduction-to-ceylon-part-8" target="" class="regularLink">higher-order functions</a>,</li>
+<li class="wikiUnorderedListItem"> to provide great support for <a href="http://in.relation.to/2011/05/23/introduction-to-ceylon-part-12" target="" class="regularLink">meta-programming</a>, thus making it easier to write frameworks, and </li>
 <li class="wikiUnorderedListItem"> to provide built-in modularity. </li>
 </ul>
 
@@ -95,7 +95,7 @@ It might seem strange that a <tt>void</tt> method has a return type. The justifi
 </p>
 
 <p class="wikiPara">
-At a very abstract level, every method accepts arguments and returns a result. The type <tt>Void</tt>, loosely speaking, is a way of representing the notion of an unknown value of an unknown type. You can assign any value, including <tt>null</tt>, to <tt>Void</tt>, but then there's no way to get it back out again, or even discover what type of value it was. So, in theory, a <tt>void</tt> method has a return value, we just have no way of finding out anything about that value. This stuff probably doesn't sound very useful right now, but it will turn out to be useful when we discuss <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-DefiningHigherOrderFunctions" target="" class="regularLink">higher order functions</a> and Ceylon's <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-RepresentingTheTypeOfAFunction" target="" class="regularLink">typesafe metamodel</a>.
+At a very abstract level, every method accepts arguments and returns a result. The type <tt>Void</tt>, loosely speaking, is a way of representing the notion of an unknown value of an unknown type. You can assign any value, including <tt>null</tt>, to <tt>Void</tt>, but then there's no way to get it back out again, or even discover what type of value it was. So, in theory, a <tt>void</tt> method has a return value, we just have no way of finding out anything about that value. This stuff probably doesn't sound very useful right now, but it will turn out to be useful when we discuss <a href="http://in.relation.to/2011/05/01/introduction-to-ceylon-part-8#H-DefiningHigherOrderFunctions" target="" class="regularLink">higher order functions</a> and Ceylon's <a href="http://in.relation.to/2011/05/01/introduction-to-ceylon-part-8#H-RepresentingTheTypeOfAFunction" target="" class="regularLink">typesafe metamodel</a>.
 </p>
 
 <h1 class="wikiHeadline1" id="H-AddingInlineDocumentation"><a href="/2011/04/27/introduction-to-ceylon-part-1#H-AddingInlineDocumentation">Adding inline documentation</a></h1>
@@ -148,11 +148,11 @@ There's also a <tt>deprecated</tt> annotation for marking program elements that 
 </p>
 
 <p class="wikiPara">
-Notice that when an annotation argument is a literal, <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart12#H-AnnotationArguments" target="" class="regularLink">it doesn't need to be enclosed in parentheses</a>.
+Notice that when an annotation argument is a literal, <a href="http://in.relation.to/2011/05/23/introduction-to-ceylon-part-12#H-AnnotationArguments" target="" class="regularLink">it doesn't need to be enclosed in parentheses</a>.
 </p>
 
 <p class="wikiPara">
-Note also that <a href="/Bloggers/IntroductionToCeylonPart12" target="" class="regularLink">annotations</a> like <tt>doc</tt>, <tt>by</tt>, <tt>see</tt>, and <tt>deprecated</tt> aren't keywords. They're just ordinary identifiers. The same is true for annotations which are part of the language definition: <tt>abstract</tt>, <tt>variable</tt>, <tt>shared</tt>, <tt>formal</tt>, <tt>actual</tt>, and friends. On the other hand, <tt>void</tt> <i class="wikiEmphasis">is</i> a keyword.
+Note also that <a href="/2011/05/23/introduction-to-ceylon-part-12" target="" class="regularLink">annotations</a> like <tt>doc</tt>, <tt>by</tt>, <tt>see</tt>, and <tt>deprecated</tt> aren't keywords. They're just ordinary identifiers. The same is true for annotations which are part of the language definition: <tt>abstract</tt>, <tt>variable</tt>, <tt>shared</tt>, <tt>formal</tt>, <tt>actual</tt>, and friends. On the other hand, <tt>void</tt> <i class="wikiEmphasis">is</i> a keyword.
 </p>
 
 <h1 class="wikiHeadline1" id="H-StringsAndStringInterpolation"><a href="/2011/04/27/introduction-to-ceylon-part-1#H-StringsAndStringInterpolation">Strings and string interpolation</a></h1>
@@ -200,7 +200,7 @@ Note that this isn't the only way to concatenate strings in Ceylon. Indeed, it's
 
 
 <p class="wikiPara">
-However, don't make the mistake of thinking that these two approaches are always equivalent just because they result in the same output in this case. The <tt>+</tt> operator immediately evaluates its operand expressions and produces an immutable <tt>String</tt> object. On the other hand, a string template is an expression of type <tt>Gettable&lt;String&gt;</tt>, which evaluates its interpolated expressions <i class="wikiEmphasis">lazily</i>. If you print the same string template object twice, you might see different output the second time around! In fact, a string template is a kind of <i class="wikiEmphasis">closure</i> — an important concept we'll explore further in <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-UnderstandingObjectInitialization" target="" class="regularLink">Part 2</a>.
+However, don't make the mistake of thinking that these two approaches are always equivalent just because they result in the same output in this case. The <tt>+</tt> operator immediately evaluates its operand expressions and produces an immutable <tt>String</tt> object. On the other hand, a string template is an expression of type <tt>Gettable&lt;String&gt;</tt>, which evaluates its interpolated expressions <i class="wikiEmphasis">lazily</i>. If you print the same string template object twice, you might see different output the second time around! In fact, a string template is a kind of <i class="wikiEmphasis">closure</i> — an important concept we'll explore further in <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-2#H-UnderstandingObjectInitialization" target="" class="regularLink">Part 2</a>.
 </p>
 
 <h1 class="wikiHeadline1" id="H-DealingWithObjectsThatArentThere"><a href="/2011/04/27/introduction-to-ceylon-part-1#H-DealingWithObjectsThatArentThere">Dealing with objects that aren't there</a></h1>
@@ -232,7 +232,7 @@ The process object has an attribute named <tt>arguments</tt>, which holds a <tt>
 </p>
 
 <p class="wikiPara">
-Unlike Java, locals, parameters, and attributes that may contain null values must be explicitly declared as being of <i class="wikiEmphasis">optional</i> type. And unlike other languages with typesafe null value handling, an optional type in Ceylon is not an algebraic datatype that <q>wraps</q> the definite value. Instead, Ceylon uses an ad-hoc <i class="wikiEmphasis">union type</i>. The syntax <tt>T|S</tt> represents the <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-MoreAboutUnionTypes" target="" class="regularLink">union type</a> of <tt>T</tt> and <tt>S</tt>, a type which may contain a value of type <tt>T</tt> or of type <tt>S</tt>. An optional type is any type of form <tt>Nothing|X</tt> where <tt>X</tt> is the type of the definite value. Fortunately, Ceylon lets us abbreviate the union type <tt>Nothing|X</tt> to <tt>X?</tt>. 
+Unlike Java, locals, parameters, and attributes that may contain null values must be explicitly declared as being of <i class="wikiEmphasis">optional</i> type. And unlike other languages with typesafe null value handling, an optional type in Ceylon is not an algebraic datatype that <q>wraps</q> the definite value. Instead, Ceylon uses an ad-hoc <i class="wikiEmphasis">union type</i>. The syntax <tt>T|S</tt> represents the <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-5#H-MoreAboutUnionTypes" target="" class="regularLink">union type</a> of <tt>T</tt> and <tt>S</tt>, a type which may contain a value of type <tt>T</tt> or of type <tt>S</tt>. An optional type is any type of form <tt>Nothing|X</tt> where <tt>X</tt> is the type of the definite value. Fortunately, Ceylon lets us abbreviate the union type <tt>Nothing|X</tt> to <tt>X?</tt>. 
 </p>
 
 <pre class="wikiPreformatted brush:ceylon">doc "The type of null."
@@ -325,13 +325,13 @@ Defaulted parameters must be declared after all required parameters in the param
 </p>
 
 <p class="wikiPara">
-Ceylon also supports <i class="wikiEmphasis">sequenced parameters</i> (varargs), declared using the syntax <tt>T...</tt>. We'll <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart7#H-SequencedParameters" target="" class="regularLink">come back to them</a> after we discuss <a href="/Bloggers/IntroductionToCeylonPart4" target="" class="regularLink">sequences</a> and <tt>for</tt> loops.
+Ceylon also supports <i class="wikiEmphasis">sequenced parameters</i> (varargs), declared using the syntax <tt>T...</tt>. We'll <a href="http://in.relation.to/2011/04/29/introduction-to-ceylon-part-7#H-SequencedParameters" target="" class="regularLink">come back to them</a> after we discuss <a href="/2011/04/28/introduction-to-ceylon-part-4" target="" class="regularLink">sequences</a> and <tt>for</tt> loops.
 </p>
 
 <h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/04/27/introduction-to-ceylon-part-1#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
-In <a href="/Bloggers/IntroductionToCeylonPart2" target="" class="regularLink">Part 2</a>, we'll see how to define our own types: classes, interfaces, and <tt>object</tt>s.
+In <a href="/2011/04/28/introduction-to-ceylon-part-2" target="" class="regularLink">Part 2</a>, we'll see how to define our own types: classes, interfaces, and <tt>object</tt>s.
 </p>
 </div>
 

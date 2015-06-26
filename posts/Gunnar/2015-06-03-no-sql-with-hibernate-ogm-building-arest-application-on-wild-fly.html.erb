@@ -22,13 +22,13 @@ Welcome back to our tutorial series “NoSQL with Hibernate OGM”!
 </p>
 
 <p class="wikiPara">
-In this part you will learn how to use Hibernate OGM from within a Java EE application running on the WildFly server. Using the <a href="http://in.relation.to/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities#H-TheDomainModel" target="" class="regularLink">entity model</a> you already know from the previous parts of this tutorial, we will build a small REST-based application for managing hikes. In case you haven’t read the first two installments of this series, you can find them here:
+In this part you will learn how to use Hibernate OGM from within a Java EE application running on the WildFly server. Using the <a href="http://in.relation.to/2015/01/19/no-sql-with-hibernate-ogm-101-persisting-your-first-entities#H-TheDomainModel" target="" class="regularLink">entity model</a> you already know from the previous parts of this tutorial, we will build a small REST-based application for managing hikes. In case you haven’t read the first two installments of this series, you can find them here:
 </p>
 
 <ul class="wikiUnorderedList">
-<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities" target="" class="regularLink">Persisting your first entities</a>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/2015/01/19/no-sql-with-hibernate-ogm-101-persisting-your-first-entities" target="" class="regularLink">Persisting your first entities</a>
 </li>
-<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/Bloggers/NoSQLForHibernateOGMQueryingForYourData" target="" class="regularLink">Querying for your data</a>
+<li class="wikiUnorderedListItem"> <a href="http://in.relation.to/2015/02/23/no-sql-for-hibernate-ogm-querying-for-your-data" target="" class="regularLink">Querying for your data</a>
 </li>
 </ul>
 
@@ -43,7 +43,7 @@ The <a href="http://wildfly.org/" target="" class="regularLink">WildFly</a> serv
 </p>
 
 <p class="wikiPara">
-ZIP files containing all the required modules for Hibernate OGM are provided on SourceForge. Hibernate OGM 4.2 - which <a href="http://in.relation.to/Bloggers/HibernateOGM42FinalIsOut" target="" class="regularLink">we released yesterday</a> - supports WildFly 9, so download <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.2.0.Final/hibernate-ogm-modules-wildfly9-4.2.0.Final.zip/download" target="" class="regularLink">hibernate-ogm-modules-wildfly9-4.2.0.Final.zip</a> for that. If you are on WildFly 8, use Hibernate OGM 4.1 and get <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.1.3.Final/hibernate-ogm-modules-wildfly8-4.1.3.Final.zip/download" target="" class="regularLink">hibernate-ogm-modules-wildfly8-4.1.3.Final.zip</a> instead.
+ZIP files containing all the required modules for Hibernate OGM are provided on SourceForge. Hibernate OGM 4.2 - which <a href="http://in.relation.to/2015/06/02/hibernate-ogm-42-final-is-out" target="" class="regularLink">we released yesterday</a> - supports WildFly 9, so download <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.2.0.Final/hibernate-ogm-modules-wildfly9-4.2.0.Final.zip/download" target="" class="regularLink">hibernate-ogm-modules-wildfly9-4.2.0.Final.zip</a> for that. If you are on WildFly 8, use Hibernate OGM 4.1 and get <a href="http://sourceforge.net/projects/hibernate/files/hibernate-ogm/4.1.3.Final/hibernate-ogm-modules-wildfly8-4.1.3.Final.zip/download" target="" class="regularLink">hibernate-ogm-modules-wildfly8-4.1.3.Final.zip</a> instead.
 </p>
 
 <p class="wikiPara">
@@ -149,7 +149,7 @@ This will make Hibernate OGM core and the Infinispan backend as well as <a href=
 <h3 class="wikiHeadline3" id="H-AddingEntityClassesAndRepositories"><a href="/2015/06/03/no-sql-with-hibernate-ogm-building-arest-application-on-wild-fly#H-AddingEntityClassesAndRepositories">Adding entity classes and repositories</a></h3>
 
 <p class="wikiPara">
-With the basic project infrastructure in place, it’s time to add the entity classes and repository classes for accessing them. The entity types are basically the same as seen in <a href="http://in.relation.to/Bloggers/NoSQLWithHibernateOGM101PersistingYourFirstEntities" target="" class="regularLink">part 1</a>, only now they are annotated with <tt>@Indexed</tt> in order to allow them to be queried via Hibernate Search and Lucene:
+With the basic project infrastructure in place, it’s time to add the entity classes and repository classes for accessing them. The entity types are basically the same as seen in <a href="http://in.relation.to/2015/01/19/no-sql-with-hibernate-ogm-101-persisting-your-first-entities" target="" class="regularLink">part 1</a>, only now they are annotated with <tt>@Indexed</tt> in order to allow them to be queried via Hibernate Search and Lucene:
 </p>
 
 <pre class="wikiPreformatted brush: java; gutter: false;">@Entity

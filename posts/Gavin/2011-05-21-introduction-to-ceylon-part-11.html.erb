@@ -55,7 +55,7 @@ There's a good reason why <tt>super</tt> always refers to a superclass, and neve
 </p>
 
 <p class="wikiPara">
-Ceylon features a <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-InterfacesAndQmixinqInheritance" target="" class="regularLink">restricted kind of multiple inheritance</a> often called <i class="wikiEmphasis">mixin</i> inheritance. Some languages with multiple inheritance or even mixin inheritance feature so-called <q>depth-first</q> member resolution or <i class="wikiEmphasis">linearization</i> where all supertypes of a class are arranged into a linear order. We believe that this model is arbitrary and fragile.
+Ceylon features a <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-InterfacesAndQmixinqInheritance" target="" class="regularLink">restricted kind of multiple inheritance</a> often called <i class="wikiEmphasis">mixin</i> inheritance. Some languages with multiple inheritance or even mixin inheritance feature so-called <q>depth-first</q> member resolution or <i class="wikiEmphasis">linearization</i> where all supertypes of a class are arranged into a linear order. We believe that this model is arbitrary and fragile.
 </p>
 
 <p class="wikiPara">
@@ -63,15 +63,15 @@ Ceylon doesn't perform any kind of linearization of supertypes. The order in whi
 </p>
 
 <p class="wikiPara">
-In our view, there's no non-fragile basis for deciding that one type specializes another type unless the first type is explicitly defined to be a subtype of the second. There's no non-fragile basis for deciding that one operation is more specific than another operation unless the first operation is <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-InheritanceAndRefinement" target="" class="regularLink">explicitly declared</a> to refine the second.
+In our view, there's no non-fragile basis for deciding that one type specializes another type unless the first type is explicitly defined to be a subtype of the second. There's no non-fragile basis for deciding that one operation is more specific than another operation unless the first operation is <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-InheritanceAndRefinement" target="" class="regularLink">explicitly declared</a> to refine the second.
 </p>
 
 <p class="wikiPara">
-For a similar reason, interfaces shouldn't be able to define initialization logic. There's no non-fragile way to define the ordering in which supertype initializers are executed in a multiple-inheritance model. This is the basic reason why <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-InterfacesAndQmixinqInheritance" target="" class="regularLink">interfaces are stateless</a> in Ceylon.
+For a similar reason, interfaces shouldn't be able to define initialization logic. There's no non-fragile way to define the ordering in which supertype initializers are executed in a multiple-inheritance model. This is the basic reason why <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-InterfacesAndQmixinqInheritance" target="" class="regularLink">interfaces are stateless</a> in Ceylon.
 </p>
 
 <p class="wikiPara">
-(Note that these arguments are even stronger in the case of <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-Introduction" target="" class="regularLink">adapter introduction</a>, where linearization or statefulness would be <i class="wikiEmphasis">even more</i> fragile.)
+(Note that these arguments are even stronger in the case of <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-Introduction" target="" class="regularLink">adapter introduction</a>, where linearization or statefulness would be <i class="wikiEmphasis">even more</i> fragile.)
 </p>
 
 <p class="wikiPara">
@@ -131,7 +131,7 @@ new Broken();</pre>
 
 
 <p class="wikiPara">
-This behavior is bad enough in and of itself. But it would be even less acceptable in Ceylon, where most types don't have an acceptable <q>default</q> value. For example, consider the type <tt>Person</tt>. What would be an acceptable default value of this type? The value <tt>null</tt> certainly won't do, since it's not even an instance of <tt>Person</tt>. (It's an instance of <tt>Nothing</tt>, <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">remember</a>!) I suppose we could say that evaluation of an uninitialized instance variable always results in an immediate runtime exception, but this is really just our old friend <tt>NullPointerException</tt> creeping back in by the back door, and, well, it's Just Not How We Do Things Around Here.
+This behavior is bad enough in and of itself. But it would be even less acceptable in Ceylon, where most types don't have an acceptable <q>default</q> value. For example, consider the type <tt>Person</tt>. What would be an acceptable default value of this type? The value <tt>null</tt> certainly won't do, since it's not even an instance of <tt>Person</tt>. (It's an instance of <tt>Nothing</tt>, <a href="http://in.relation.to/2011/04/27/introduction-to-ceylon-part-1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">remember</a>!) I suppose we could say that evaluation of an uninitialized instance variable always results in an immediate runtime exception, but this is really just our old friend <tt>NullPointerException</tt> creeping back in by the back door, and, well, it's Just Not How We Do Things Around Here.
 </p>
 
 <p class="wikiPara">
@@ -141,7 +141,7 @@ Indeed, <q>few</q> object-oriented languages (i.e. none that I know of) perform 
 <h1 class="wikiHeadline1" id="H-ClassBodies"><a href="/2011/05/21/introduction-to-ceylon-part-11#H-ClassBodies">Class bodies</a></h1>
 
 <p class="wikiPara">
-In order to make it possible for the compiler to guarantee definite initialization of attributes, Ceylon imposes some restrictions on the body of a class. (Remember that Ceylon <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-UnderstandingObjectInitialization" target="" class="regularLink">doesn't have constructors</a>!) Actually, to be completely fair, they're not really <i class="wikiEmphasis">restrictions</i> at all, at least not from one point of view, since you're actually allowed <i class="wikiEmphasis">extra</i> flexibility in the body of a class that you're not allowed in the body of method or attribute declarations! But compared to Java, there's some things you're not allowed to do.
+In order to make it possible for the compiler to guarantee definite initialization of attributes, Ceylon imposes some restrictions on the body of a class. (Remember that Ceylon <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-2#H-UnderstandingObjectInitialization" target="" class="regularLink">doesn't have constructors</a>!) Actually, to be completely fair, they're not really <i class="wikiEmphasis">restrictions</i> at all, at least not from one point of view, since you're actually allowed <i class="wikiEmphasis">extra</i> flexibility in the body of a class that you're not allowed in the body of method or attribute declarations! But compared to Java, there's some things you're not allowed to do.
 </p>
 
 <p class="wikiPara">
@@ -307,7 +307,7 @@ class Parent() {
 <h1 class="wikiHeadline1" id="H-DefiniteInitializationOfMethods"><a href="/2011/05/21/introduction-to-ceylon-part-11#H-DefiniteInitializationOfMethods">Definite initialization of methods</a></h1>
 
 <p class="wikiPara">
-Ceylon lets us separate the declaration of a <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart8#H-MoreAboutHigherorderFunctions" target="" class="regularLink">method defined using a method reference</a> from the actual specification statement that specifies the method reference.
+Ceylon lets us separate the declaration of a <a href="http://in.relation.to/2011/05/01/introduction-to-ceylon-part-8#H-MoreAboutHigherorderFunctions" target="" class="regularLink">method defined using a method reference</a> from the actual specification statement that specifies the method reference.
 </p>
 
 <pre class="wikiPreformatted brush:ceylon">Float x = ... ;
@@ -353,7 +353,7 @@ But the following code results in an error at compile time:
 <h1 class="wikiHeadline1" id="H-TheresMore"><a href="/2011/05/21/introduction-to-ceylon-part-11#H-TheresMore">There's more...</a></h1>
 
 <p class="wikiPara">
-In the <a href="/Bloggers/IntroductionToCeylonPart12" target="" class="regularLink">Part 12</a>, we're going to discuss annotations, and take a little peek at using the metamodel to build framework code.
+In the <a href="/2011/05/23/introduction-to-ceylon-part-12" target="" class="regularLink">Part 12</a>, we're going to discuss annotations, and take a little peek at using the metamodel to build framework code.
 </p>
 </div>
 

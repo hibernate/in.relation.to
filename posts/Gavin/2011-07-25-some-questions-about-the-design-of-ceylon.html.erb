@@ -44,7 +44,7 @@ We originally wanted to use the <tt>${...}</tt> escape syntax, but it turns out 
 </p>
 
 <p class="wikiPara">
-The other thing we had in mind was that our primary motivation for having string interpolation in the language was <i class="wikiEmphasis">not</i> for writing everyday procedural code, but rather for use in defining <q>templates</q> (for example web pages) using the declarative <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart9#H-DeclarativeObjectInstantiationSyntax" target="" class="regularLink">object builder syntax</a>. We think that the <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-StringsAndStringInterpolation" target="" class="regularLink">syntax we ended up settling on for string interpolation</a> works out much better for this application, even if it can be slightly harder to read in typical procedural code.
+The other thing we had in mind was that our primary motivation for having string interpolation in the language was <i class="wikiEmphasis">not</i> for writing everyday procedural code, but rather for use in defining <q>templates</q> (for example web pages) using the declarative <a href="http://in.relation.to/2011/05/02/introduction-to-ceylon-part-9#H-DeclarativeObjectInstantiationSyntax" target="" class="regularLink">object builder syntax</a>. We think that the <a href="http://in.relation.to/2011/04/27/introduction-to-ceylon-part-1#H-StringsAndStringInterpolation" target="" class="regularLink">syntax we ended up settling on for string interpolation</a> works out much better for this application, even if it can be slightly harder to read in typical procedural code.
 </p>
 
 <h3 class="wikiHeadline3" id="H-OutOutDamnSemicolon"><a href="/2011/07/25/some-questions-about-the-design-of-ceylon#H-OutOutDamnSemicolon">Out, out, damn semicolon!</a></h3>
@@ -58,7 +58,7 @@ A number of recent languages use significant whitespace to eliminate the need fo
 </p>
 
 <p class="wikiPara">
-Unfortunately, auto-semicolon-insertion doesn't play well with the annotation syntax we wanted to use. An <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart12" target="" class="regularLink">annotation in Ceylon</a> looks syntactically like an expression statement (because, in fact, semantically it <i class="wikiEmphasis">is</i> an expression). So there's no way for the parser, let alone the lexer, to distinguish an annotation sitting on its own line from an expression statement.
+Unfortunately, auto-semicolon-insertion doesn't play well with the annotation syntax we wanted to use. An <a href="http://in.relation.to/2011/05/23/introduction-to-ceylon-part-12" target="" class="regularLink">annotation in Ceylon</a> looks syntactically like an expression statement (because, in fact, semantically it <i class="wikiEmphasis">is</i> an expression). So there's no way for the parser, let alone the lexer, to distinguish an annotation sitting on its own line from an expression statement.
 </p>
 
 <p class="wikiPara">
@@ -80,7 +80,7 @@ Well, we wanted to avoid the extremely thorny problem of trying to define equali
 </p>
 
 <p class="wikiPara">
-Ceylon sidesteps this whole problem by simply <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">not defining equality</a> for the <tt>null</tt> value. The compiler won't let you write <tt>person.address==org.address</tt> if either <tt>person.address</tt> or <tt>org.address</tt> might be <tt>null</tt>.
+Ceylon sidesteps this whole problem by simply <a href="http://in.relation.to/2011/04/27/introduction-to-ceylon-part-1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">not defining equality</a> for the <tt>null</tt> value. The compiler won't let you write <tt>person.address==org.address</tt> if either <tt>person.address</tt> or <tt>org.address</tt> might be <tt>null</tt>.
 </p>
 
 <p class="wikiPara">
@@ -152,7 +152,7 @@ I disagree. To me, there is no objective software-engineering justification for 
 </p>
 
 <p class="wikiPara">
-<a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-HidingImplementationDetails" target="" class="regularLink">Ceylon's visibility model</a> can be used to localize the visibility of a program element to a unit of any of the following levels of granularity:
+<a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-2#H-HidingImplementationDetails" target="" class="regularLink">Ceylon's visibility model</a> can be used to localize the visibility of a program element to a unit of any of the following levels of granularity:
 </p>
 
 <ul class="wikiUnorderedList">
@@ -173,7 +173,7 @@ Attributes look like properties. So why the different name of the feature?
 </blockquote>
 
 <p class="wikiPara">
-Well, to me the word <q>property</q> implies a getter or getter/setter pair. In Ceylon, <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart2#H-AbstractingStateUsingAttributes" target="" class="regularLink">not all attributes are getters</a>. <q>Attribute</q> is a collective name to describe both property-style attributes and simple attributes. You can override a simple attribute with a property-style attribute and vice versa.
+Well, to me the word <q>property</q> implies a getter or getter/setter pair. In Ceylon, <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-2#H-AbstractingStateUsingAttributes" target="" class="regularLink">not all attributes are getters</a>. <q>Attribute</q> is a collective name to describe both property-style attributes and simple attributes. You can override a simple attribute with a property-style attribute and vice versa.
 </p>
 
 <h3 class="wikiHeadline3" id="H-TypeInference"><a href="/2011/07/25/some-questions-about-the-design-of-ceylon#H-TypeInference">Type inference</a></h3>
@@ -183,7 +183,7 @@ Why not use <tt>val</tt> instead of <tt>local</tt> for type inference?
 </blockquote>
 
 <p class="wikiPara">
-Actually, a few weeks ago, we finally made the decision to go with <tt>value</tt> for attributes/locals, and <tt>function</tt> for methods. That change isn't yet reflected in the tutorial. One reason (out of several) for doing this was that we might someday change our minds and let you use <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-TypeInference" target="" class="regularLink">type inference</a> for <tt>shared</tt> declarations. (Only if we can figure out how to do this without too much negative impact upon compiler performance.)
+Actually, a few weeks ago, we finally made the decision to go with <tt>value</tt> for attributes/locals, and <tt>function</tt> for methods. That change isn't yet reflected in the tutorial. One reason (out of several) for doing this was that we might someday change our minds and let you use <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-5#H-TypeInference" target="" class="regularLink">type inference</a> for <tt>shared</tt> declarations. (Only if we can figure out how to do this without too much negative impact upon compiler performance.)
 </p>
 
 <h3 class="wikiHeadline3" id="H-SyntaxForInheritance"><a href="/2011/07/25/some-questions-about-the-design-of-ceylon#H-SyntaxForInheritance">Syntax for inheritance</a></h3>
@@ -206,8 +206,8 @@ Lots of people think that when they first see it, but actually it's not an arbit
 </p>
 
 <ol class="wikiOrderedList">
-<li class="wikiOrderedListItem"> So that <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart6#H-GenericTypeConstraints" target="" class="regularLink">upper bound type constraints</a> can use a syntax that is regular with class and interface declarations. The keywords <tt>extends</tt> and <tt>implements</tt> simply don't sound right for defining an upper bound type constraint.</li>
-<li class="wikiOrderedListItem"> Because the type that appears in the <tt>extends</tt> clause in a class definition <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-InheritanceAndRefinement" target="" class="regularLink">comes with arguments to the superclass constructor</a>. If we reused <tt>extends</tt> for interface extension like Java does, the grammar for the <tt>extends</tt> clause would be extremely irregular. And, on the other hand, <tt>implements</tt> doesn't sound right for interface inheritance. </li>
+<li class="wikiOrderedListItem"> So that <a href="http://in.relation.to/2011/04/29/introduction-to-ceylon-part-6#H-GenericTypeConstraints" target="" class="regularLink">upper bound type constraints</a> can use a syntax that is regular with class and interface declarations. The keywords <tt>extends</tt> and <tt>implements</tt> simply don't sound right for defining an upper bound type constraint.</li>
+<li class="wikiOrderedListItem"> Because the type that appears in the <tt>extends</tt> clause in a class definition <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-InheritanceAndRefinement" target="" class="regularLink">comes with arguments to the superclass constructor</a>. If we reused <tt>extends</tt> for interface extension like Java does, the grammar for the <tt>extends</tt> clause would be extremely irregular. And, on the other hand, <tt>implements</tt> doesn't sound right for interface inheritance. </li>
 </ol>
 
 <p class="wikiPara">
@@ -233,7 +233,7 @@ It's really just the excellent overriding model used in C#, but we're using diff
 </p>
 
 <p class="wikiPara">
-We had to separate <tt>formal</tt> from <tt>abstract</tt> because they actually perform semantically different roles. Java and C# can get away with overloading the meaning of <tt>abstract</tt>, because an inner class can't be overridden. In Ceylon, where we have <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-MemberClassesAndMemberClassRefinement" target="" class="regularLink">member class overriding</a>, a <tt>formal</tt> class and an <tt>abstract</tt> class are semantically quite different creatures, and we need to be able to distinguish between them.
+We had to separate <tt>formal</tt> from <tt>abstract</tt> because they actually perform semantically different roles. Java and C# can get away with overloading the meaning of <tt>abstract</tt>, because an inner class can't be overridden. In Ceylon, where we have <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-MemberClassesAndMemberClassRefinement" target="" class="regularLink">member class overriding</a>, a <tt>formal</tt> class and an <tt>abstract</tt> class are semantically quite different creatures, and we need to be able to distinguish between them.
 </p>
 
 <p class="wikiPara">
@@ -247,11 +247,11 @@ I'm not so enthusiastic about the use of union types underlying the typesafety o
 </blockquote>
 
 <p class="wikiPara">
-So it turns out that <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart5#H-MoreAboutUnionTypes" target="" class="regularLink">union types</a> can be more transparent here than using an algebraic type like in functional languages. For example, you never need to instantiate <q>wrappers</q>. In Haskell, for example, you need to write <tt>Just 1</tt> if you want to assign <tt>1</tt> to <tt>Maybe Int</tt>.
+So it turns out that <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-5#H-MoreAboutUnionTypes" target="" class="regularLink">union types</a> can be more transparent here than using an algebraic type like in functional languages. For example, you never need to instantiate <q>wrappers</q>. In Haskell, for example, you need to write <tt>Just 1</tt> if you want to assign <tt>1</tt> to <tt>Maybe Int</tt>.
 </p>
 
 <p class="wikiPara">
-We do hide the union type under some <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">syntax sugar</a>, but that's definitely a leaky abstraction. Union types are an integral part of Ceylon's type system that anyone will need to get comfortable with if they want to be effective in the language. I think most people will come around to liking them.
+We do hide the union type under some <a href="http://in.relation.to/2011/04/27/introduction-to-ceylon-part-1#H-DealingWithObjectsThatArentThere" target="" class="regularLink">syntax sugar</a>, but that's definitely a leaky abstraction. Union types are an integral part of Ceylon's type system that anyone will need to get comfortable with if they want to be effective in the language. I think most people will come around to liking them.
 </p>
 
 <blockquote class="wikiBlockquote">
@@ -269,7 +269,7 @@ Introductions look interesting, but I don't have an immediate similarity to map 
 </blockquote>
 
 <p class="wikiPara">
-<a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-Introduction" target="" class="regularLink">Introductions</a> are like a compromise between two features you'll find in other languages. <i class="wikiEmphasis">Extension methods</i> are best known from C#, but actually have a long prior history. <i class="wikiEmphasis">Implicit type conversions</i> are featured in several languages including C++ and Scala.
+<a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-Introduction" target="" class="regularLink">Introductions</a> are like a compromise between two features you'll find in other languages. <i class="wikiEmphasis">Extension methods</i> are best known from C#, but actually have a long prior history. <i class="wikiEmphasis">Implicit type conversions</i> are featured in several languages including C++ and Scala.
 </p>
 
 <p class="wikiPara">
@@ -277,7 +277,7 @@ Extension methods are a safe, convenient feature that let you add new members to
 </p>
 
 <p class="wikiPara">
-Implicit type conversions are a dangerous feature that, although they seem simple to understand, actually <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions" target="" class="regularLink">screw up several useful properties of the type system</a> (including transitivity of assignability), introducing complexity into mechanisms like member resolution and type argument inference, and can easily be abused.
+Implicit type conversions are a dangerous feature that, although they seem simple to understand, actually <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-IntroductionComparedToExtensionMethodsAndImplicitTypeConversions" target="" class="regularLink">screw up several useful properties of the type system</a> (including transitivity of assignability), introducing complexity into mechanisms like member resolution and type argument inference, and can easily be abused.
 </p>
 
 <p class="wikiPara">
@@ -291,7 +291,7 @@ Member classes look quite clever and easy to understand at first  glance. I can'
 </blockquote>
 
 <p class="wikiPara">
-Member <tt>object</tt>s turn out to be super-convenient once you actually start writing Ceylon code. I often use them instead of a nested class if the nested class would have no initializer parameters. They're a bit like a Java-style anonymous inner class, in that they give you a quick way to extend an existing type, while giving you access to state in the containing scope, but the <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart3#H-AnonymousClasses" target="" class="regularLink">syntax is a little cleaner</a>, and an <tt>object</tt> may have multiple supertypes. 
+Member <tt>object</tt>s turn out to be super-convenient once you actually start writing Ceylon code. I often use them instead of a nested class if the nested class would have no initializer parameters. They're a bit like a Java-style anonymous inner class, in that they give you a quick way to extend an existing type, while giving you access to state in the containing scope, but the <a href="http://in.relation.to/2011/04/28/introduction-to-ceylon-part-3#H-AnonymousClasses" target="" class="regularLink">syntax is a little cleaner</a>, and an <tt>object</tt> may have multiple supertypes. 
 </p>
 
 <p class="wikiPara">
@@ -305,7 +305,7 @@ So, my thoughts on the generics part is that there is a lot of power there with 
 </blockquote>
 
 <p class="wikiPara">
-It's intentionally verbose. <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart6" target="" class="regularLink">Generic declarations</a> are something most developers write <i class="wikiEmphasis">much</i> less often than they read. Certain kinds of verbosity can make code <i class="wikiEmphasis">more</i> readable, not less.
+It's intentionally verbose. <a href="http://in.relation.to/2011/04/29/introduction-to-ceylon-part-6" target="" class="regularLink">Generic declarations</a> are something most developers write <i class="wikiEmphasis">much</i> less often than they read. Certain kinds of verbosity can make code <i class="wikiEmphasis">more</i> readable, not less.
 </p>
 
 <p class="wikiPara">
@@ -352,7 +352,7 @@ The distinctions between immutable and mutable, the <tt>variable</tt> annotation
 </blockquote>
 
 <p class="wikiPara">
-The <a href="http://in.relation.to/Bloggers/IntroductionToCeylonPart7#H-Variables" target="" class="regularLink">rules</a> are:
+The <a href="http://in.relation.to/2011/04/29/introduction-to-ceylon-part-7#H-Variables" target="" class="regularLink">rules</a> are:
 </p>
 
 <ul class="wikiUnorderedList">
