@@ -34,7 +34,11 @@ title: In relation to - Bloggers
                 %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=120"}
         .author-list-element-description
           %strong
-            = blogger.name
+            - if not post_author.nil?
+              %a{:href=>post_author.primary_page.url}
+                = blogger.name
+            - else
+              = blogger.name
           %br
           %br
           = blogger.content
