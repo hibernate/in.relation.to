@@ -1,0 +1,24 @@
+When making changes to the redirect rules or other Apache HTTPD configuration files,
+these are not applied automatically by the Jenkins build job which
+normally publishes new blog posts.
+
+You have to invoke the deploy script to upload and restart HTTPD:
+
+ > source ./deploy.sh
+
+You can invoke this locally - from your workstation - but it assumes
+that you have SSH console credentials in place to get a shell on `ci.hibernate.org`.
+
+Your private key needs to be used in combination with user "ec2-user".
+
+A typical .ssh/config file would look like:
+
+Host ci.hibernate.org
+   User ec2-user
+   VerifyHostKeyDNS no
+   IdentityFile ~/.ssh/id_rsa # Possibly change to your key!
+   IdentitiesOnly yes
+   AddressFamily inet
+   Compression yes
+   ForwardAgent no
+   ForwardX11 no
