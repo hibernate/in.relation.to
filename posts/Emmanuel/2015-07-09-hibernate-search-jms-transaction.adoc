@@ -1,0 +1,101 @@
+= Hibernate Search, JMS and transactions
+Emmanuel Bernard
+:awestruct-tags: [ "Hibernate Search" ]
+:awestruct-layout: blog-post
+---
+Hibernate Search sends the indexing requests in the post transaction phase.
+Until now.
+The JMS backend can now sends its indexing requests _transactionally_ with the database changes.
+Why is that useful? Read on.
+
+== A bit of context
+
+When you change indexed entities,
+Hibernate Search collects these changes during the database transaction.
+It then waits for the *transaction to be successful before pushing them* to the backend.
+
+Hibernate Search has a few backends:
+
+* `lucene`: this one uses Lucene to index the entities
+* `JMS`: this one sends a JMS message with the list of index changes.
+  This JMS queue is then read by a master which uses the Lucene backend.
+* and a few more that are not interesting here
+
+Running the backend after the transaction (in the `afterTransaction` phase to be specific)
+is generally what you want.
+Just to name a few reasons:
+
+* you don't want index changes to be executed if you end up rollbacking the database transaction
+* you don't necessarily want your database changes to fail because the indexing fails:
+  you can always rebuild the index from your database.
+* and most backends don't support transactions anyways
+
+Hibernate Search lets you enlist an *error callback*
+so that you are notified of these indexing problems when they happen
+and react the way you want (log, raise an exception, retry etc).
+
+== So why make the JMS backend join the transaction
+
+If you make the JMS backend joins the transaction,
+then either the database changes happen and the JMS messages are received by the queue,
+or nothing happens (no database change and no JMS message).
+
+The non transactional approach is still our recommended approach.
+But there are a few reasons why you want to go transactional.
+
+No code to handle the message failure::
+It eliminates the need to write an error callback and handle this problematic case.
+
+Simpler exploitation processes::
+It simplifies your exploitation processes.
+You can focus on monitoring your JMS queue (rates of messages coming in, rates of messages coming out)
+which will give you an accurate status of the health of Hibernate Search's work.
+
+Transactional mass indexing::
+When doing changes to lots of indexed entities,
+it is common to use the following pseudo pattern to avoiod `OutOfMemoryException`
++
+[source,java]
+----
+for (int i = 0 ; i < workLoadSize ; i++) {
+    // do changes
+    if ( i % 500 == 0 ) {
+        fullTextSession.flush();
+        fullTextSession.flushToIndexes();
+        fullTextSession.clear();
+    }
+}
+----
++
+If you use the transactional JMS backend, then all the message will be sent or none of them.
++
+[WARNING]
+====
+Make sure your JMS implementation and your JTA transaction manager are smart and don't keep the messages in memory
+or you might face `OutOfMemoryException`.
+====
+
+More consistent batching frameworks flow::
+If you use a batching framework like Spring Batch which keeps its "done" status in a database,
+you have a guarantee than changes, indexing requests and batch status are all consistent.
+
+== How to use the feature
+
+This https://hibernate.atlassian.net/browse/HSEARCH-668[feature] is now integrated in master
+and will be in an Hibernate Search release any time soon.
+
+We kept the configuration as simple as possible.
+Simply add the following property
+
+[source]
+----
+hibernate.search.worker.enlist_in_transaction=true
+----
+
+If you try and use this option on a non transactional backend (i.e. not JMS),
+Hibernate Search will yell at you.
+
+Make sure to use a XA JMS queue
+and that your database supports XA as we are talking about coordinated transactional systems.
+
+Many thanks to Yoann, one of our customers, who helped us refine the why and how of that feature.
