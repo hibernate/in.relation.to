@@ -1,0 +1,55 @@
+= Let me tell you about Hibernate ORM 5 CR2...
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+Today I released the second candidate release for Hibernate ORM 5.0 (5.0.0.CR2).
+I felt a CR2 was required because of a bug in how class-loading worked in certain managed JPA environments.
+The details can be found in https://hibernate.atlassian.net/browse/HHH-9887[HHH-9887].
+The main changes since CR1 include:
+
+== Corrected ClassLoader usage
+
+This is the blocking issue mentioned above.  The problem would occur in environments passing a "temp ClassLoader" into 
+Hibernate via the JPA integration SPI (javax.persistence.spi.PersistenceUnitInfo#getNewTempClassLoader) and manifest itself
+as ClassCastExceptions.
+
+This was particularly hitting the "enterprise" containers like Java EE and e-OSGi.
+
+== Allow custom cache key generation for cache providers
+
+We now allow second level cache providers to generate their own cache key objects.
+This ca bring interesting performance improvements.
+
+This includes the addition of the following methods:
+
+* `org.hibernate.cache.spi.access.EntityRegionAccessStrategy#generateCacheKey`
+* `org.hibernate.cache.spi.access.CollectionRegionAccessStrategy#generateCacheKey`
+* `org.hibernate.cache.spi.access.NaturalIdRegionAccessStrategy#generateCacheKey`
+
+== Improved support for caching entities by reference
+
+For those making use of caching immutable entities by reference (rather than by "disassembled" state), an additional performance 
+improvement is included in CR2.
+
+== Ability to disable auto-quoting of identifiers for keywords
+
+A new feature in 5.0 is the automatic quoting of identifiers that are believed to be keywords in the underlying database.  As this support is
+new, often the Dialects are too aggressive in what they deem to be keywords.  Thus we added a new setting to disable this behavior if it causes
+problems in your application.  This can be controlled by specifying `hibernate.auto_quote_keyword` as false in configuration settings.
+
+
+== Significantly improved bytecode enhancement support
+
+Including:
+
+* added ability for automatic management of bi-directional associations
+* self-contained dirty state tracking (more efficient flushing), including switchable algorithms for dirty determination
+
+== Odds-n-ends
+
+Additionally many other improvements and bugfixes are included.  See https://hibernate.atlassian.net/projects/HHH/versions/20150[the changelogs] for the complete list of changes.
+
+The release tag is available on https://github.com/hibernate/hibernate-orm/releases/tag/5.0.0.CR2[GitHub].
+
+As always, see http://hibernate.org/orm/downloads/ for information on obtaining the releases.
