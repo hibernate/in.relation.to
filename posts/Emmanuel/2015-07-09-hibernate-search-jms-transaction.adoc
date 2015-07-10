@@ -5,7 +5,7 @@ Emmanuel Bernard
 ---
 Hibernate Search sends the indexing requests in the post transaction phase.
 Until now.
-The JMS backend can now sends its indexing requests _transactionally_ with the database changes.
+The JMS backend can now send its indexing requests _transactionally_ with the database changes.
 Why is that useful? Read on.
 
 == A bit of context
@@ -36,7 +36,7 @@ and react the way you want (log, raise an exception, retry etc).
 
 == So why make the JMS backend join the transaction
 
-If you make the JMS backend joins the transaction,
+If you make the JMS backend join the transaction,
 then either the database changes happen and the JMS messages are received by the queue,
 or nothing happens (no database change and no JMS message).
 
@@ -72,12 +72,12 @@ If you use the transactional JMS backend, then all the message will be sent or n
 [WARNING]
 ====
 Make sure your JMS implementation and your JTA transaction manager are smart and don't keep the messages in memory
-or you might face `OutOfMemoryException`.
+or you might face an `OutOfMemoryException`.
 ====
 
 More consistent batching frameworks flow::
 If you use a batching framework like Spring Batch which keeps its "done" status in a database,
-you have a guarantee than changes, indexing requests and batch status are all consistent.
+you have a guarantee that changes, indexing requests and batch status are all consistent.
 
 == How to use the feature
 
