@@ -1,0 +1,66 @@
+= Hibernate Search is ready for Hibernate ORM 5
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search" ]
+:awestruct-layout: blog-post
+---
+Hibernate Search version `5.4.0.CR1` is now available! It was built and tested with Hibernate ORM `5.0.0.CR2`,
+essentially it's all ready for ORM 5 and we'll just be waiting for this to be marked `Final`.
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-search-orm</artifactId>
+    <version>5.4.0.CR1</version>
+</dependency>
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-core</artifactId>
+    <version>5.0.0.CR2</version>
+</dependency>
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-entitymanager</artifactId>
+    <version>5.0.0.CR2</version>
+</dependency>
+----
+
+== Great improvements in the JMS backend
+
+=== Transactional JMS backend
+
+As explained in more detail in http://in.relation.to/2015/07/09/hibernate-search-jms-transaction/[last week's post],
+Hibernate Search now provides an option to include its indexing operations within the same transaction as the RDBMS.
+
+See also the http://docs.jboss.org/hibernate/search/5.4/reference/en-US/html_single/#search-architecture-jms[JMS Architecture documentation]
+and the http://docs.jboss.org/hibernate/search/5.4/reference/en-US/html_single/#jms-backend[JMS slave nodes configuration properties].
+
+In short, it's enabled by setting this property:
+[source]
+----
+hibernate.search.worker.enlist_in_transaction=true
+----
+But keep in mind: it's a global setting! If you want to use it, all your backends shall be set to use an
+XA enabled, transactional JMS queue.
+
+Please let us know if you have a great use case which would require us to allow some form of mixed mode.
+
+=== The JMS message header JMSXGroupID
+
+Hibernate Search will now use the specific `JMSXGroupID` message header and set it to the index name.
+That will allow users of the JMS backend to take advantage of *message grouping*.
+
+== Modules versions and running in WildFly
+
+The first WildFly version to use Hibernate ORM 5 is version `10.0.0.Alpha5`,
+which was released the past weekend.
+So the JBoss Modules we create for this appserver are targeting now WildFly 10,
+but at least version `10.0.0.Alpha5`.
+
+== Where to download it from
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.4.0.CR1[full distribution from here],
+or get it from Maven Central, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums]
+
+
