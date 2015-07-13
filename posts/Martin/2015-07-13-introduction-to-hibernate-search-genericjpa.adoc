@@ -1,0 +1,460 @@
+= Introduction to Hibernate Search with any JPA implementor (in this example: EclipseLink)
+Martin Braun
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+Hibernate Search currently is only associated with Hibernate ORM/OGM.
+For many people this comes at no surprise as it already has “Hibernate” in its name.
+However during this year’s Google Summer of Code I am working on an integration of 
+Hibernate Search that aims to be able to be used with any JPA implementor 
+(so far Hibernate, EclipseLink and OpenJPA are supported). 
+
+In the following article I will show you how you can leverage the 
+power of Hibernate Search even though you chose not to use a 
+Hibernate based persistence provider in your application by using the new
+https://github.com/Hotware/Hibernate-Search-JPA[*Hibernate Search GenericJPA project*].
+
+== The example project
+
+Imagine a Book store (ok, a really simple one).
+Information about their books are stored in their MySQL database and accessed via EclipseLink.
+A sample persistence.xml and Maven pom.xml for that would look like this:
+
+[source,xml]
+----
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
+ 
+<persistence-unit name="EclipseLink_MySQL"
+	transaction-type="RESOURCE_LOCAL">
+	<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+	<class>org.hibernate.search.genericjpa.test.entities.Book</class>
+	<properties>
+		<property name="javax.persistence.jdbc.driver" 
+			value="com.mysql.jdbc.Driver" />
+		<property name="javax.persistence.jdbc.url" 
+			value="jdbc:mysql://localhost:3306/testingdb" />
+		<property name="javax.persistence.jdbc.user" 
+			value="hibernate_user" />
+		<property name="javax.persistence.jdbc.password"
+			value="hibernate_password" />
+		<property name="eclipselink.ddl-generation" 
+			value="drop-and-create-tables" />
+		<property name="eclipselink.logging.level" 
+			value="INFO" />
+		<property name="eclipselink.ddl-generation.output-mode"
+			value="both" />
+	</properties>
+</persistence-unit>
+ 
+</persistence>
+----
+
+[source,xml]
+----
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-search-jpa-example</artifactId>
+    <version>0.2.0.0</version>
+    <packaging>jar</packaging>
+    <name>hibernate-search-jpa-example</name>
+ 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+ 
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+ 
+ 
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+ 
+         <!-- this is needed for adding search later -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-search-jpa</artifactId>
+            <version>0.2.0.0</version>
+        </dependency>
+ 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.12</version>
+        </dependency>
+ 
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.34</version>
+        </dependency>
+ 
+        <!-- Eclipselink -->
+        <dependency>
+            <groupId>org.eclipse.persistence</groupId>
+            <artifactId>eclipselink</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+ 
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-api</artifactId>
+            <version>7.0</version>
+        </dependency>
+ 
+    </dependencies>
+ 
+</project>
+----
+
+With the Book entity looking like this:
+
+[source,java]
+----
+package org.hibernate.search.genericjpa.test.entities;
+ 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+ 
+@Entity
+@Table(name = "Book")
+public class Book {
+ 
+	@Id
+	@Column(name = "name")
+	private String name;
+ 
+	@Field
+	@Column(name = "author")
+	private String author;
+ 
+	public String getName() {
+		return name;
+	}
+ 
+	public void setName(String name) {
+		this.name = name;
+	}
+ 
+	public String getAuthor() {
+		return author;
+	}
+ 
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+}
+----
+
+Now, the manager of the store wants to be able to search for a specific 
+book in the database to help the customers find what they want. 
+This is where a normal database like MySQL gets into trouble. 
+Yes, you can do queries like:
+
+[source,sql]
+----
+SELECT b FROM BOOK b WHERE b.name like ‘%Hobbit%’;
+----
+
+But these kind of queries don’t have all the power 
+a fully fletched search-engine has. In such an engine you have
+the power to decide over how the name would be indexed. 
+For example, if you want to have fuzzy queries that still
+return the right book even if you entered “Wobbit” a normal 
+RDBMS is not sufficient. This is where the power of Hibernate Search 
+comes in. Under the hood it uses Lucene, a powerful search-engine 
+and improves it by adding features like clustering and support for
+mappings of Java Beans.
+
+== Adding Search to our Book store
+
+Now, let’s take a look at how this is done for our Book store. 
+First, we need to annotate our JPA entity with some extra information.
+
+[source,java]
+----
+package org.hibernate.search.genericjpa.test.entities;
+ 
+import org.hibernate.search.annotations.DocumentId;
+import org.hibernate.search.annotations.Field;
+import org.hibernate.search.annotations.Indexed;
+import org.hibernate.search.genericjpa.annotations.InIndex;
+ 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
+ 
+@Entity
+@Table(name = "Book")
+@Indexed
+@InIndex
+public class Book {
+ 
+	@Id
+	@DocumentId
+	@Field
+	@Column(name = "name")
+	private String name;
+ 
+	@Field
+	@Column(name = "author")
+	private String author;
+ 
+	public String getName() {
+		return name;
+	}
+ 
+	public void setName(String name) {
+		this.name = name;
+	}
+ 
+	public String getAuthor() {
+		return author;
+	}
+ 
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+}
+----
+
+=== What did we do?
+- Class-Level:
+	* added @Indexed annotation
+		** This is needed for Hibernate Search to recognize this entity-class as a Top-Level index class.
+	* added @InIndex annotation
+		** This is a special annotation needed by Hibernate Search GenericJPA on every 
+			entity that somehow is found in any index. Just put it there and you’ll be fine
+- Field-Level:
+	* added @DocumentId/@Field on name
+		** Hibernate Search needs to know which field is used to identify this entity in the index.
+			this produces a field with the name “id” in the index.
+			We also want to store the name into a field called “name”.
+	* added @Field on author
+		** apart from searching for the name we also want to be able to search for
+			the author of the book. this is stored into the field called “author” in the index.
+			
+== Starting up the engine
+
+As Hibernate Search GenericJPA is not integrated into Hibernate ORM we have to 
+manually start everything up. But this is not hard, at all:
+
+[source,java]
+----
+//first, let's start up the basic JPA persistence.
+EntityManagerFactory emf = 
+  Persistence.createEntityManagerFactory( "EclipseLink_MySQL" );
+EntityManager em = emf.createEntityManager();
+ 
+//now, let's get the Properties
+Properties hsearchConfiguration = "...";
+//start our JPASearchFactoryController
+JPASearchFactoryController searchController =
+  Setup.createSearchFactory( emf, hsearchConfiguration );
+----
+
+You may have noticed loading a properties file in this snippet.
+This is the configuration needed for Hibernate Search. Let’s take a look at it next.
+
+[source]
+----
+# we use are using MySQL. this is needed to 
+# create the triggers for updating
+org.hibernate.search.genericjpa.searchfactory.triggerSource=\
+org.hibernate.search.genericjpa.db.events.triggers.MySQLTriggerSQLStringSource
+ 
+# we have a searchfactory that is supposed 
+#to get it's updates from SQL
+org.hibernate.search.genericjpa.searchfactory.type=sql
+ 
+# how many updates should be processed at once?
+# this number is quite conservative
+org.hibernate.search.genericjpa.searchfactory.batchSizeForUpdates=10
+ 
+# what delay do we want between checking for updates?
+org.hibernate.search.genericjpa.searchfactory.updateDelay=25
+ 
+# we are in a Java SE environment in this example.
+# if you specify 'true', you will have to add an extra property
+# to lookup the JTA mechanism. This is however not needed
+# if you are managing your Transactions by yourself
+# org.hibernate.search.genericjpa.searchfactory.transactionManagerProvider.jndi=\
+# java:jboss/TransactionManager
+org.hibernate.search.genericjpa.searchfactory.useJTATransactions=false
+ 
+# for this example we store our directory in ram.
+hibernate.search.default.directory_provider=ram
+ 
+# we could add extra properties as specified in the Hibernate Search 
+# documentation (http://docs.jboss.org/hibernate/search/5.3/reference/en-US/html_single/#_configuration) next
+----
+
+Now we could start using hibernate search for queries.
+
+[source,java]
+----
+EntityManager em = ...;
+em.getTransaction().begin();
+Book book = new Book();
+book.setName( "The Hobbit" );
+book.setAuthor( "J.R.R. Tolkien");
+em.persist( book );
+em.getTransaction().commit();
+ 
+FullTextEntityManager fem = searchController.getFullTextEntityManager( em );
+ 
+QueryBuilder qb = fem.getSearchFactory()
+  .buildQueryBuilder().forEntity(Book.class).get();
+org.apache.lucene.search.Query query = qb
+  .keyword()
+  .onFields("name")
+  .matching("The Hobbit")
+  .createQuery();
+ 
+List books = fem.createFullTextQuery(
+  query, Book.class )
+    .getResultList();
+----
+
+But wait, why didn’t we receive any Books even though our query was right?
+Well, that’s because we forgot to add some additional classes to our persistence.xml.
+In order to keep the index up-to-date we have to specify special entities that can hold
+the information about changes in the database. These will be queried by our
+Hibernate Search GenericJPA engine and then the index is updated accordingly.
+For our example, we need this special entity:
+
+[source,java]
+----
+package org.hibernate.search.genericjpa.test.entities;
+ 
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.Id;
+ 
+import org.hibernate.search.genericjpa.annotations.Event;
+import org.hibernate.search.genericjpa.annotations.IdFor;
+import org.hibernate.search.genericjpa.annotations.Updates;
+ 
+@Entity(name = "BookUpdates")
+// what is the original table name? and what table is this entity saved to
+// this is kinda duplicated, but needed
+@Updates(originalTableName = "Book", tableName = "BookUpdates")
+@Table(name = "BookUpdates")
+public class BookUpdates {
+ 
+	//Update events must be identified by order.
+	@Id
+	@Column(name = "id")
+	private Long id;
+ 
+	@Column(name = "bookId")
+	//this field will contain the id of the original entity
+	@IdFor(entityClass = Book.class, columns = "bookId", 
+		columnsInOriginal = "name")
+	private String bookId;
+ 
+	@Column(name = "eventCase")
+	//this field will contain information about whether #
+	//this was caused by a INSERT, UPDATE or DELETE
+	@Event(column = "eventCase")
+	private Integer eventCase;
+ 
+	public Long getId() {
+		return id;
+	}
+ 
+	public void setId(Long id) {
+		this.id = id;
+	}
+ 
+	public String getBookId() {
+		return bookId;
+	}
+ 
+	public void setBookId(String bookId) {
+		this.bookId = bookId;
+	}
+ 
+	public Integer getEventCase() {
+		return eventCase;
+	}
+ 
+	public void setEventCase(Integer eventCase) {
+		this.eventCase = eventCase;
+	}
+}
+----
+
+It just has to be in our persistence.xml and the engine will automatically recognize it:
+
+[source,xml]
+----
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
+ 
+<persistence-unit name="EclipseLink_MySQL"
+	transaction-type="RESOURCE_LOCAL">
+	<provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+	<class>org.hibernate.search.genericjpa.test.entities.Book</class>
+	<class>org.hibernate.search.genericjpa.test.entities.BookUpdates</class>
+	<properties>
+		<property name="javax.persistence.jdbc.driver" 
+			value="com.mysql.jdbc.Driver" />
+		<property name="javax.persistence.jdbc.url" 
+			value="jdbc:mysql://localhost:3306/testingdb" />
+		<property name="javax.persistence.jdbc.user" 
+			value="hibernate_user" />
+		<property name="javax.persistence.jdbc.password" 
+			value="hibernate_password" />
+		<property name="eclipselink.ddl-generation" 
+			value="drop-and-create-tables" />
+		<property name="eclipselink.logging.level" 
+			value="INFO" />
+		<property name="eclipselink.ddl-generation.output-mode"
+			value="both" />
+	</properties>
+</persistence-unit>
+ 
+</persistence>
+----
+
+(Note that every table that is related to any entity in the indexed graph has to be mapped like this.
+But for the sake of keeping it simple, we didn’t include any mapping tables in this example.)
+
+That’s it. Now we should be able to query our index properly and leverage Hibernate Search’s capabilities.
+
+== What’s next?
+
+This example is quite simple as it doesn’t make use of Hibernate Search’s possibilities 
+to index a complete hierarchy with many different entities in the graph.
+Examples on how to do that can be found in the Hibernate Search documentation 
+(http://docs.jboss.org/hibernate/search/5.3/reference/en-US/html_single/).
+The only thing to keep in mind is that the *Updates entities will have to be created
+even for the mapping tables.
