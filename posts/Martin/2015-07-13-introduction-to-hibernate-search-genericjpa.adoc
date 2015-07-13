@@ -17,7 +17,7 @@ https://github.com/Hotware/Hibernate-Search-JPA[*Hibernate Search GenericJPA pro
 == The example project
 
 Imagine a Book store (ok, a really simple one).
-Information about their books are stored in their MySQL database and accessed via EclipseLink.
+Information about the books are stored in a MySQL database and accessed via EclipseLink.
 A sample persistence.xml and Maven pom.xml for that would look like this:
 
 [source,xml]
@@ -57,52 +57,20 @@ A sample persistence.xml and Maven pom.xml for that would look like this:
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.hibernate</groupId>
-    <artifactId>hibernate-search-jpa-example</artifactId>
-    <version>0.2.0.0</version>
+    <groupId>com.example</groupId>
+    <artifactId>project</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>hibernate-search-jpa-example</name>
  
-    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
+    ... 
  
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                    <encoding>UTF-8</encoding>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
- 
- 
-    <dependencies>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
- 
+    <dependencies> 
          <!-- this is needed for adding search later -->
         <dependency>
             <groupId>org.hibernate</groupId>
             <artifactId>hibernate-search-jpa</artifactId>
             <version>0.2.0.0</version>
-        </dependency>
- 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>1.7.12</version>
         </dependency>
  
         <dependency>
