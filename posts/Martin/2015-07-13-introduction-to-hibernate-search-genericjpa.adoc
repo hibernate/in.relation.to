@@ -148,7 +148,7 @@ Yes, you can do queries like:
 SELECT b FROM BOOK b WHERE b.name like ‘%Hobbit%’;
 ----
 
-But these kind of queries don’t have all the power 
+But this kind of queries don’t have all the power 
 a fully fletched search-engine has. In such an engine you have
 the power to decide over how the name would be indexed. 
 For example, if you want to have fuzzy queries that still
@@ -252,7 +252,9 @@ This is the configuration needed for Hibernate Search. Let’s take a look at it
 [source]
 ----
 # we use are using MySQL. this is needed to 
-# create the triggers for updating
+# create the triggers for updating. These are "listening"
+# for updates on the entities and storing information about the eventCase
+# in a separate table.
 org.hibernate.search.genericjpa.searchfactory.triggerSource=\
 org.hibernate.search.genericjpa.db.events.triggers.MySQLTriggerSQLStringSource
  
@@ -310,11 +312,16 @@ List books = fem.createFullTextQuery(
 ----
 
 But wait, why didn’t we receive any Books even though our query was right?
+
 Well, that’s because we forgot to add some additional classes to our persistence.xml.
-In order to keep the index up-to-date we have to specify special entities that can hold
-the information about changes in the database. These will be queried by our
+In order to keep the index up-to-date we have to create extra tables that hold
+the information about changes in the database.  As of now this has to be done by creating
+special entities annotated with extra information (see example below). These will be queried by our
 Hibernate Search GenericJPA engine and then the index is updated accordingly.
-For our example, we need this special entity:
+For future versions of GenericJPA it is planned to have a mechanism that replaces this
+boiler-plate heavy approach.
+
+But as of now, we need this special entity for our example:
 
 [source,java]
 ----
@@ -422,7 +429,6 @@ That’s it. Now we should be able to query our index properly and leverage Hibe
 
 This example is quite simple as it doesn’t make use of Hibernate Search’s possibilities 
 to index a complete hierarchy with many different entities in the graph.
-Examples on how to do that can be found in the Hibernate Search documentation 
-(http://docs.jboss.org/hibernate/search/5.3/reference/en-US/html_single/).
+Examples on how to do that can be found in the http://docs.jboss.org/hibernate/stable/search/reference/[*Hibernate Search documentation*].
 The only thing to keep in mind is that the *Updates entities will have to be created
 even for the mapping tables.
