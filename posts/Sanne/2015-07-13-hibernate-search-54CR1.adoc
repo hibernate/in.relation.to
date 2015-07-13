@@ -25,6 +25,20 @@ essentially it's all ready for ORM 5 and we'll just be waiting for this to be ma
 </dependency>
 ----
 
+== No longer timeouts when using the MassIndexer in a container
+
+You can now have the `MassIndexer` set a different timeout for the internal transactions it will start,
+so if you're running Hibernate Search in a container like WildFly you no longer have to make a choice
+between having a deadline of 5 minutes or changing the default timeout of the whole container.
+
+[source,java]
+----
+fullTextSession
+   .createIndexer( User.class )
+   .transactionTimeout( 1800 ) //seconds
+   .startAndWait();
+----
+
 == Great improvements in the JMS backend
 
 === Transactional JMS backend
