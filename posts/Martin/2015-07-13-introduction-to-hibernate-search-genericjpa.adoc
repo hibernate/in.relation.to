@@ -217,7 +217,8 @@ public class Book {
 		** This is needed for Hibernate Search to recognize this entity-class as a Top-Level index class.
 	* added @InIndex annotation
 		** This is a special annotation needed by Hibernate Search GenericJPA on every 
-			entity that somehow is found in any index. Just put it there and you’ll be fine
+			entity that somehow is found in any index. For example EclipseLink subclasses Entities to do enhancements.
+			GenericJPA must be able to determine the real class and this annotation is used for that.
 - Field-Level:
 	* added @DocumentId/@Field on name
 		** Hibernate Search needs to know which field is used to identify this entity in the index.
@@ -259,7 +260,7 @@ org.hibernate.search.genericjpa.searchfactory.triggerSource=\
 org.hibernate.search.genericjpa.db.events.triggers.MySQLTriggerSQLStringSource
  
 # we have a searchfactory that is supposed 
-#to get it's updates from SQL
+# to get it's updates from SQL
 org.hibernate.search.genericjpa.searchfactory.type=sql
  
 # how many updates should be processed at once?
