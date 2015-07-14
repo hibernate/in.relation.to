@@ -14,6 +14,21 @@ power of Hibernate Search even though you chose not to use a
 Hibernate based persistence provider in your application by using the new
 https://github.com/Hotware/Hibernate-Search-JPA[*Hibernate Search GenericJPA project*].
 
+== Building the project
+
+As this project can currently not be found on Maven Central the source code has to
+be manually downloaded https://github.com/Hotware/Hibernate-Search-JPA/releases/tag/0.2.0.0-i[*here*].
+
+Next, unzip the project and go into the root directory of the extracted content. Now, build the project
+locally with:
+
+[source]
+----
+mvn clean install -DskipTests
+----
+
+Now the project can be found in your local repository and we can start writing projects depending on it.
+
 == The example project
 
 Imagine a Book store (ok, a really simple one).
@@ -254,7 +269,7 @@ This is the configuration needed for Hibernate Search. Let’s take a look at it
 ----
 # we use are using MySQL. this is needed to 
 # create the triggers for updating. These are "listening"
-# for updates on the entities and storing information about the eventCase
+# for updates on the entities and storing information about the event
 # in a separate table.
 org.hibernate.search.genericjpa.searchfactory.triggerSource=\
 org.hibernate.search.genericjpa.db.events.triggers.MySQLTriggerSQLStringSource
