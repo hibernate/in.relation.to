@@ -1,0 +1,47 @@
+= IntelliJ IDEA, Mac OS X and Hibernate ORM
+Emmanuel Bernard
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+Hibernate ORM, IntelliJ IDEA and Mac OS X have been a pretty tough combination to work with
+since our move to Gradle.
+It's not exactly anyone's fault but the combination of
+
+* gradle / IntelliJ integration
+* JDK 6 running IntelliJ IDEA
+* Hibernate ORM advanced use of Gradle and of custom plugins
+
+made for a long and painful journey.
+
+These days are over.
+Steve found the last blocking issue and you can now import Hibernate ORM natively in IntelliJ IDEA.
+
+== Importing Hibernate ORM in IntelliJ IDEA on Mac OS X
+
+[source,bash]
+----
+git clone git@github.com:hibernate/hibernate-orm.git
+----
+
+* Open https://www.jetbrains.com/idea/download/[IntelliJ IDEA]
+* `File -> Open`
+* Select `hibernate-orm`
+* The defaults should be good
+** Make especially sure that you select `Use default gradle wrapper`
+** I use Gradle JVM to 1.8
+* Click OK and let it work and download the internet
+
+You now have a properly imported Hibernate ORM project :)
+
+This worked on Mac OS X 10.10.4 and IntelliJ IDEA CE 14.1.4.
+
+== Importing Hibernate ORM in NetBeans on Mac OS X
+
+And this incidentally fixed an import bug for NetBeans.
+
+* Open https://netbeans.org/downloads/index.html[NetBeans]
+* Install the Gradle plugin
+* `Open project`
+* Select `hibernate-orm`
+
+This worked on Mac OS X 10.10.4 and NetBeans 8.0.2.
