@@ -1,5 +1,5 @@
 # Generic version of Tagger
-module Awestruct
+module InRelationTo
   module Extensions
     class Splitter
 
