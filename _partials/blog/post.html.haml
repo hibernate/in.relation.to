@@ -26,6 +26,8 @@
             = author
       &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
       #{post.date.strftime( site.date_format )}
+      &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+      %a{:href=>"#{post.url}#disqus_thread", :data=>{:disqus_identifier=>"#{post.creation_date}-#{post.slug}"}}= comments 
       &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; <i class="icon-tags"></i> Tagged as
       - post.tags.each do |tag|
         - # It's a String in editor mode only
