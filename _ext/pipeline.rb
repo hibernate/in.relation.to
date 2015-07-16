@@ -74,7 +74,7 @@ Awestruct::Extensions::Pipeline.new do
                                                     )
 
   if Engine.instance.site.profile != 'editor'
-    extension Awestruct::Extensions::Splitter.new( :posts,
+    extension InRelationTo::Extensions::Splitter.new( :posts,
                                                    'tags',
                                                    '_templates/tag',
                                                    '',
@@ -85,7 +85,7 @@ Awestruct::Extensions::Pipeline.new do
                                                    'tags',
                                                    '/tags/index.html',
                                                    :title=>'Tags')
-    extension Awestruct::Extensions::Splitter.new( :posts,
+    extension InRelationTo::Extensions::Splitter.new( :posts,
                                                    'author',
                                                    '_templates/author',
                                                    '',
