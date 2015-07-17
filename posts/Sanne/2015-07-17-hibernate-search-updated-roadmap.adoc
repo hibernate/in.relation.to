@@ -1,0 +1,69 @@
+= Updated Roadmap for Hibernate Search
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search" ]
+:awestruct-layout: blog-post
+---
+The http://hibernate.org/search/roadmap/[Hibernate Search project roadmap] was quite outdated, so after some
+team chats on IRC and our developer's mailing list I've summarized our plans on the project website.
+
+== What's the plan?
+
+=== Current 80% progress
+
+Upgrade to Hibernate ORM 5::
+Coming in `Hibernate Search 5.4`, http://in.relation.to/2015/07/13/hibernate-search-54CR1/[which is almost ready],
+and you could try it already.
+
+http://in.relation.to/2015/07/09/hibernate-search-jms-transaction/[Transactional improvements for the JMS backend]::
+Also included in version `5.4`, with improved documentation and configuration examples to follow probably in `5.4`.
+
+MassIndexer Improvements::
+The long standing limitation of transaction timeouts was finally resolved.
+
+Apache Lucene 5 support::
+We've been working on this on separate branches, but we won't merge it in `5.4` as this branch is stable now.
+The Lucene 5 update code doesn't look too scary but we plan that to be `5.5` 's highlight so that you can focus on one
+thing at a time: update to Hibernate ORM 5 now, and just after to Apache Lucene 5.
+
+Neither upgrade is particularly complex, but I hope you'll appreciate the effort to let you update step by step and
+take a break in between in case there is some surprise which needs extra attention.
+
+Consider that the upgrade to Hibernate ORM 5 implies an upgrade to WildFly 10.
+
+=== Near Future Intentions
+
+Clustering, backends and reliability::
+We want to make it much simpler for you to use Hibernate Search in a clustered / cloud deployment.
+This has been possible since years, but the amount of requests for help are soaring and we have
+to admit that we can make several things easier.
+This is going to be an ongoing effort, with small improvements like the https://hibernate.atlassian.net/browse/HSEARCH-1922[usage of JMSXGroupID] already in `5.4`, improved JMS examples in `5.5`, and the driver for several of the
+improvements I've listed in the roadmap for `5.6`... however depending on your help and feedback you could read
+that as _"5.6 and beyond"_.
+
+Java 8, Java 9, ...::
+With Java 8 very popular and Java 9 getting closer I hope that roadmap items such as _out of the box indexing for the new Date/Time types_ don't need any explanation. They could use some help though!
+We made it http://docs.jboss.org/hibernate/search/5.4/reference/en-US/html_single/#_bridgeprovider_associate_a_bridge_to_a_given_return_type[easy to register new bridges for any type] so you can define your own custom types and define how they should best be indexed; this implies you can make an independent plug-in package for any type we don't support yet, and if it's a popular type like the ones from JSR 310 or JSR 354 we'd love to integrate it.
+
+ElasticSearch and Apache Solr::
+There has been interest in such integrations for a while, but we failed to make any progress as the problem needs to be broken down in smaller steps.
+Several points on https://hibernate.atlassian.net/projects/HSEARCH[JIRA] and http://hibernate.org/search/roadmap/[the roadmap] might seem only tangential but resolve roadblocks and pave the road to integrate Hibernate with such services.
+While we're intimately familiar with Apache Lucene and these _Lucene-as-a-service_ alternatives provide similar features,
+we don't have direct experience with these, so some help will be appreciated.
+The plan is to prefer merging small iterative improvements over stalling development for months,
+so we'll see several steps in a `5.6+` series and use that as the foundation to assess how we can deal
+with API inconsistencies across these slightly different backends.
+
+=== Next!
+
+After having all the above-listed new features nicely chiseled in our current stable API, I'm confident
+that to make the most of features like the ElasticSearch integration we'll need to make changes to the API.
+This last refinement step will define `Hibernate Search 6.0`.
+
+As always, these plans might need to change and we'll always look forward to your suggestions.
+I'm unable to commit on dates or seasons; I would love to see this all happen before this winter but we'll need your
+contribution for that to be realistic.
+
+
+
+
+
