@@ -1,0 +1,125 @@
+= Hibernate Validator 5.2.1.Final^*^
+Hardy Ferentschik
+:awestruct-tags: [ "Hibernate Validator" ]
+:awestruct-layout: blog-post
+---
+
+I know you have been waiting in anticipation, but now it is available -
+Hibernate Validator 5.2.1.Final :-). Given that it is a drop-in replacement for
+all 5.x releases, there is no reason to delay an upgrade. Just go and
+<<get-it, get it>>.
+
+For the more cautious, here again the highlights of the 5.2 release with
+pointers to more information.
+
+[[highlights]]
+== The highlights
+
+* Java 8 Support, most notably the ability to validate `Optional` and the new
+  date/time types. Types, which do not represent an instant on
+  the time-line, however, are not supported out of the box. This includes,
+  for example, `LocalDate` and its sub-types. Semantically it does not make
+  sense to talk about future and past, if your data type cannot be
+  unambiguously tied to an instant in time. This is still a bit of a open
+  discussion (see link:https://hibernate.atlassian.net/browse/HV-981[HV-981]) though.
+  <<contact,Contact us>> if you have an opinion. +
++
+Support for Java 8 also includes the use of type annotation constraints like:
++
+[source,java]
+----
+private List<@AcmeEmail String> emails;
+----
++
+In this case each element of the `emails` list (or more generally of any `Iterable`)
+will be validated using the `@AcmeEmail`. Note the use of a custom constraint and not
+the Hibernate Validator provided `@Email`. The reason is that all provided constraints
+are missing `java.lang.annotation.ElementType.TYPE_USE` in their definition for now.
+Adding it would break backwards compatibility to Java 6.
++
+[NOTE]
+====
+Java 8 is not a requirement for Hibernate Validator 5.2. It
+is still backward compatible with Java 6. Java 8 specific features are only
+enabled in case a Java 8 runtime is detected.
+====
+link:/2014/10/23/hibernate-validator-520-alpha-1-with-java-8-support-and-a-51-maintenance-release/#H-Java8Support[read more ...]
+
+* Ability to provide custom constraints discoverable
+  via the Java link:http://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html/[ServiceLoader] mechanism.
+  Under the hood this uses the new `ConstraintMappingContributor` SPI.
+  link:/2015/02/24/hibernate-validator-520-beta-1-a-joint-effort/#H-ProgrammaticConstraintMappingViaConstraintMappingContributor[read more...]
+
+* Ability to use Hibernate Validator without dependency to the Expression
+  Language libraries by using the new `ParameterMessageInterpolator`.
+  link:/2014/10/23/hibernate-validator-520-alpha-1-with-java-8-support-and-a-51-maintenance-release#H-TtParameterMessageInterpolatortt[read more...]
+
+* Ability to provide an external `ClassLoader`. Potentially handy for
+  modularized environments. link:/2015/02/24/hibernate-validator-520-beta-1-a-joint-effort/#H-AbilityToProvideExternalClassLoader[read more...]
+
+* Apache Karaf feature file.
+  link:/2015/02/24/hibernate-validator-520-beta-1-a-joint-effort/#H-HibernateValidatorFeaturesxmlForApacheKaraf[read more...]
+
+* Extension of the
+  link:http://docs.jboss.org/hibernate/beanvalidation/spec/1.1/api/javax/validation/Path.html[Path API]
+  for nodes of type `ElementKind.PROPERTY`, which allows to obtain the value
+  of the represented property.
+  link:http://docs.jboss.org/hibernate/validator/5.2/reference/en-US/html_single/#section-extensions-path-api[read more...]
+
+* TimeProvider contract. link:http://docs.jboss.org/hibernate/validator/5.2/reference/en-US/html_single/#section-time-provider[read more...]
+
+* Tons of bug fixes
+
+[[get-it]]
+== Where to get it
+Maven artifacts can be found in the link:http://repository.jboss.org/nexus/content/groups/public-jboss/org/hibernate/hibernate-validator/5.2.1.Final/[JBoss Maven] repository, as well as in link:http://search.maven.org/#artifactdetails|org.hibernate|hibernate-validator|5.2.1.Final|jar[Maven Central]. The GAV is _org.hibernate:hibernate-validator:5.2.1.Final_.
+Distribution bundles will be uploaded to
+link:https://sourceforge.net/projects/hibernate/files/hibernate-validator/5.2.1.Final[SourceForge] once it has recovered from its link:http://sourceforge.net/blog/sourceforge-infrastructure-and-service-restoration-update-for-728[storage fault].
+
+[[whats-next]]
+== What's next
+
+Further development will be driven by the upcoming Bean Validation update -
+Bean Validation 1.2. Most likely this will align with a Hibernate Validator 6
+requiring Java 8. This will be necessary to make use of all the new features
+Java 8 offers, amongst others the use of
+`link:https://docs.oracle.com/javase/tutorial/java/annotations/repeating.html[@Repeatable]`.
+This is in alignment with other technologies which are part of the Java EE 8
+standard.
+
+Watch for changes to the Hibernate Validator
+link:http://hibernate.org/validator/roadmap/[roadmap],
+as well as announcements on this and the
+link:http://beanvalidation.org[Bean Validation] blog.
+
+[[contact]]
+== Let us know what you think
+
+Feedback and questions are welcome via the Hibernate Validator
+link:https://forum.hibernate.org/viewforum.php?f=9[forum] or on
+stackoverflow using the hibernate-validator
+link:http://stackoverflow.com/questions/tagged/hibernate-validator[tag].
+If that is not enough, check out the other ways you can get in
+link:http://hibernate.org/community[contact] with us.
+
+[[thank-you]]
+== Thank you
+
+Last but not least, a big thank you to all of you who were lending a helping hand
+along the way, be it via a bug report or more hands on via a pull request. Special
+thanks to link:https://github.com/khalidq[Khalid] who kicked of the work on the 5.2
+release series with his Google Summer of Code work.
+Thank you also for the smaller contributions provided by
+link:https://github.com/denistiago[Denis Tiago],
+link:https://github.com/NicolaF[Nicolas Francois],
+link:https://github.com/sosna[Xavier Sosnovsky],
+link:https://github.com/dernasherbrezon[dernasherbrezon],
+link:https://github.com/stawny[stawny] and
+link:https://github.com/tonnyyi[tonnyyi].
+Finally a thank you to all other Hibernate team members who were involved.
+
+Enjoy!
+
+---
+
+pass:[*] In case you are wondering what happened with 5.2.0.Final, it became obsolete while waiting for SourceForge to recover. In the meantime an IBM JVM specific issue (link:https://hibernate.atlassian.net/browse/HV-1007[HV-1007]) was reported and fixed.
