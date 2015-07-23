@@ -1,0 +1,171 @@
+= Map me if you can  - Advanced embeddable mappings
+Gunnar Morling
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+The other day I came across an interesting mapping challenge which I thought may be worth sharing. If you are a seasoned JPA user, it will probably be nothing new to you, but those not as experienced may find it helpful :)
+
+TL;DR - JPA let's you override database columns for embedded objects but also for collections of embedded objects; `@AttributeOverride` and `@AssocationOverride` can be used for that.
+
+Let's assume the following entity model representing a person and their home and business address:
+
+image::class_diagram_element_collection.png["Entity model",align="center"]
+
+The interesting part is that `Person` has two associations with `Address`, one with the "homeAddress" role and another one with the "businessAddress" role. `Address` in turn has one ore more address lines.
+
+When mapping these types with JPA, `Person` naturally becomes an entity. As there is a composition relationship between `Person` and `Address`, the latter is mapped with `@Embeddable`. The same goes for `AddressLine`, which also is an `@Embeddable`, contained within an element collection owned by `Address`.
+
+So you'd end up with these classes:
+
+[source,java]
+----
+@Entity
+public class Person {
+
+    @Id
+    private long id;
+    private String name;
+    private Address homeAddress;
+    private Address businessAddress;
+
+    // constructor, getters and setters...
+}
+----
+[source,java]
+----
+@Embeddable
+public class Address {
+
+    private boolean active;
+
+    @ElementCollection
+    private List<AddressLine> lines = new ArrayList<AddressLine>();
+
+    // constructor, getters and setters...
+}
+----
+[source,java]
+----
+@Embeddable
+public class AddressLine {
+
+    private String value;
+
+    // constructor, getters and setters...
+}
+----
+
+=== @AttributeOverride
+
+Let's fire up a session factory with these types (this uses the brand-new bootstrapping API coming in Hibernate ORM 5) and see how that goes:
+
+[source,java]
+----
+StandardServiceRegistry registry = new StandardServiceRegistryBuilder()
+    .applySetting( AvailableSettings.SHOW_SQL, true )
+    .applySetting( AvailableSettings.FORMAT_SQL, true )
+    .applySetting( AvailableSettings.HBM2DDL_AUTO, "create-drop" )
+    .build();
+
+SessionFactory sessionFactory = new MetadataSources( registry )
+    .addAnnotatedClass( Person.class )
+    .buildMetadata()
+    .buildSessionFactory();
+----
+
+Hum, that did not go too well:
+
+[source,java]
+----
+org.hibernate.MappingException: Repeated column in mapping for entity:
+org.hibernate.bugs.Person column: active (should be mapped with insert="false" update="false")
+----
+
+Of course this makes sense; As `Address` is embedded twice within `Person`, its properties must be mapped to unique column names within the `Person` table. The http://docs.oracle.com/javaee/7/api/index.html?javax/persistence/AttributeOverride.html[@AttributeOverride] annotation can be used for that:
+
+[source,java]
+----
+@Entity
+public class Person {
+
+    @Id
+    private long id;
+    private String name;
+
+    @AttributeOverride(name = "active", column = @Column(name = "home_address_active"))
+    private Address homeAddress;
+
+    @AttributeOverride(name = "active", column = @Column(name = "business_address_active"))
+    private Address businessAddress;
+
+    // constructor, getters and setters...
+}
+----
+
+With that, the session factory boots successfully. But let's take a look at the tables that get created:
+
+[source,sql]
+----
+create table Person (
+    id bigint not null,
+    business_address_active boolean,
+    home_address_active boolean,
+    name varchar(255),
+    primary key (id)
+)
+
+create table Person_lines (
+    Person_id bigint not null,
+    "value" varchar(255)
+)
+----
+
+=== @AssociationOverride
+
+The `Person` table looks alright, but there is only a single table for the address lines. That's a problem as it means there is no way to tell apart the lines of the business address from the lines of the home address when reading back a person from the database.
+
+So what to do? `@AttributeOverride` is of no help this time, as it's not a single column which needs to be re-defined but an entire table. But luckily, `@AttributeOverride` has a companion, http://docs.oracle.com/javaee/7/api/index.html?javax/persistence/AssociationOverride.html[@AssociationOverride]. This annotation can be used to configure the required tables in this case:
+
+[source,java]
+----
+@Entity
+public class Person {
+
+    @Id
+    private long id;
+    private String name;
+
+    @AttributeOverride(name = "active", column = @Column(name = "home_address_active"))
+    @AssociationOverride(name = "lines", joinTable = @JoinTable(name = "Person_HomeAddress_Line"))
+    private Address homeAddress;
+
+    @AttributeOverride(name = "active", column = @Column(name = "business_address_active"))
+    @AssociationOverride(name = "lines", joinTable = @JoinTable(name = "Person_BusinessAddress_Line"))
+    private Address businessAddress;
+
+    // constructor, getters and setters...
+}
+----
+
+Et voilà, now you'll get the DDL for creating the `Person` table and two different tables for the address lines:
+
+[source,java]
+----
+create table Person (
+    id bigint not null,
+    business_address_active boolean,
+    home_address_active boolean,
+    name varchar(255),
+    primary key (id)
+)
+
+create table Person_BusinessAddress_Line (
+    Person_id bigint not null,
+    "value" varchar(255)
+)
+
+create table Person_HomeAddress_Line (
+    Person_id bigint not null,
+    "value" varchar(255)
+)
+----
