@@ -1,0 +1,193 @@
+= Handling queries on complex types in Hibernate Search
+Emmanuel Bernard
+:awestruct-tags: [ "Hibernate Search" ]
+:awestruct-layout: blog-post
+---
+Writing queries using complex types can be a bit surprising in Hibernate Search.
+For these *multi-fields types*, the key is to *target each individual field in the query*.
+Let's discuss how this works.
+
+== What's a complex type?
+
+Hibernate Search lets you write custom types that take a Java property and create Lucene fields in a document.
+As long as there is a one property for one field relationship, you are good.
+It becomes more subtle if your custom bridge stores the property in several Lucene fields.
+Say an `Amount` type which has the numeric part and the currency part.
+
+Let's take a real example from a user using http://infinispan.org[Infinispan]'s search engine -
+proudly served by http://hibernate.org/search/[Hibernate Search].
+
+[source,java]
+.The `FieldBridge`
+----
+public class JodaTimeSplitBridge implements TwoWayFieldBridge {
+
+    /**
+     * Set year, month and day in separate fields
+     */
+    @Override
+    public void set(String name, Object value, Document document, LuceneOptions luceneoptions) {
+        DateTime datetime = (DateTime) value;
+        luceneoptions.addFieldToDocument(
+            name+".year", String.valueOf(datetime.getYear()), document
+        );
+        luceneoptions.addFieldToDocument(
+            name+".month", String.format("%02d", datetime.getMonthOfYear()), document
+        );
+        luceneoptions.addFieldToDocument(
+            name+".day", String.format("%02d", datetime.getDayOfMonth()), document
+        );
+    }
+
+    @Override
+    public Object get(String name, Document document) {
+        IndexableField fieldyear = document.getField(name+".year");
+        IndexableField fieldmonth = document.getField(name+".month");
+        IndexableField fieldday = document.getField(name+".day");
+        String strdate = fieldday.stringValue()+"/"+fieldmonth.stringValue()+"/"+fieldyear.stringValue();
+        DateTime value = DateTime.parse(strdate, DateTimeFormat.forPattern("dd/MM/yyyy"));
+        return String.valueOf(value);
+    }
+
+    @Override
+    public String objectToString(Object date) {
+        DateTime datetime = (DateTime) date;
+        int year = datetime.getYear();
+        int month = datetime.getMonthOfYear();
+        int day = datetime.getDayOfMonth();
+        String value = String.format("%02d",day)+"/"+String.format("%02d",month)+"/"+String.valueOf(year);
+        return String.valueOf(value);
+    }
+}
+----
+
+[source,java]
+.The entity using the bridge
+----
+[...]
+@Indexed
+class BlogEntry {
+    [...]
+
+    @Field(store=Store.YES, index=Index.YES)
+    @FieldBridge(impl=JodaTimeSplitBridge.class)
+    DateTime creationdate;
+}
+----
+
+== Let's query this field
+
+A naive but intuitive query looks like this.
+
+[source,java]
+.Incorrect query
+----
+QueryBuilder qb = sm.buildQueryBuilderForClass(BlogEntry.class).get();
+Query q = qb.keyword().onField("creationdate").matching(new DateTime()).createQuery();
+CacheQuery cq = sm.getQuery(q, BlogEntry.class);
+System.out.println(cq.getResultSize());
+----
+
+Unfortunately that query will always return 0 result.
+Can you spot the problem?
+
+It turns out that Hibernate Search does not know about these subfields
+`creationdate.year`, `creationdate.month` and `creationdate.day`.
+A `FieldBridge` is a bit of a blackbox for the Hibernate Search query DSL,
+so it assumes that you index the data in the field name provided by the `name` parameter
+(`creationdate` in this example).
+
+We have plans in a not so future version of Hibernate Search to address that problem.
+It will only require you to provide a bit of metadata when you write such advanced custom field bridge.
+But that's the future, so what to do now?
+
+== Use a single field
+
+I am cheating here but as much as you can, try and keep the one property = one field mapping.
+Life will be much simpler to you.
+In this specific JodaTime type example, this is extremely easy.
+Use the custom bridge but instead of creating three fields (for year, month, day),
+keep it as a single field in the form of `yyyymmdd`.
+
+Let's again use our user real life solution.
+
+[source,java]
+.A bridge using one field
+----
+public class JodaTimeSingleFieldBridge implements TwoWayFieldBridge {
+
+    /**
+     * Store the data in a single field in yyymmdd format
+     */
+    @Override
+    public void set(String name, Object value, Document document, LuceneOptions luceneoptions) {
+        DateTime datetime = (DateTime) value;
+        luceneoptions.addFieldToDocument(
+            name, datetime.toString(DateTimeFormat.forPattern("yyyyMMdd")), document
+        );
+    }
+
+
+    @Override
+    public Object get(String name, Document document) {
+        IndexableField strdate = document.getField(name);
+        return DateTime.parse(strdate.stringValue(), DateTimeFormat.forPattern("yyyyMMdd"));
+    }
+
+    @Override
+    public String objectToString(Object date) {
+        DateTime datetime = (DateTime) date;
+        return datetime.toString(DateTimeFormat.forPattern("yyyyMMdd"));
+    }
+}
+----
+
+[TIP]
+====
+In this case, it would even be better to use a Lucene numeric format field.
+They are more compact and more efficient at range queries.
+Use `luceneOptions.addNumericFieldToDocument( name, numericDate, document );`.
+====
+
+The query above will work as expected now.
+
+== But my type must have multiple fields!
+
+OK, OK.
+I won't avoid the question.
+The solution is to disable the Hibernate Query DSL magic
+and target the fields directly.
+
+Let's see how to do it based on the first `FieldBridge` implementation.
+
+[source,java]
+.Query targeting multiple fields
+----
+int year = datetime.getYear(); 
+int month = datetime.getMonthOfYear(); 
+int day = datetime.getDayOfMonth();
+ 
+QueryBuilder qb = sm.buildQueryBuilderForClass(BlogEntry.class).get();
+Query q = qb.bool()
+    .must( qb.keyword().onField("creationdate.year").ignoreFieldBridge().ignoreAnalyzer()
+                .matching(year).createQuery() )
+    .must( qb.keyword().onField("creationdate.month").ignoreFieldBridge().ignoreAnalyzer()
+                .matching(month).createQuery() )
+    .must( qb.keyword().onField("creationdate.day").ignoreFieldBridge().ignoreAnalyzer()
+                .matching(day).createQuery() )
+   .createQuery();
+
+CacheQuery cq = sm.getQuery(q, BlogEntry.class);
+System.out.println(cq.getResultSize());
+----
+
+The key is to:
+
+* target directly each field,
+* disable the field bridge conversion for the query,
+* and it's probably a good idea to disable the analyzer.
+
+It's a rather advanced topic and the query DSL will do the right thing most of the time.
+No need to panic just yet.
+
+But in case you hit a complex type needs, it's interesting to understand what is going on underneath.
