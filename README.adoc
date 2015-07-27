@@ -50,6 +50,7 @@ If you get "_command not found_" or a version < 1.10:
 > gem install bundler
 ----
 
+[[get-the-source]]
 === Get the source
 
 [source]
@@ -58,12 +59,12 @@ If you get "_command not found_" or a version < 1.10:
 > cd in.relation.to
 ----
 
+[[awestruct-setup]]
 === Setup awestruct
 
 [source]
 ----
 > rake setup
-> rake check
 ----
 
 === Serve the site locally
@@ -204,8 +205,6 @@ You can read more on the Asciidoctor syntax at http://asciidoctor.org.
 
 Happy blogging.
 
-
-
 == Preview changes on staging.in.relation.to
 
 Use git to push on the _staging_ branch on GitHub.
@@ -256,7 +255,30 @@ to see how the different awestruct calls are wrapped.
 
 === Fedora 22 setup
 
-Make sure the user is in the sudo group
+Make sure the user is in the sudo group and install required dependencies for
+compilation of native extensions:
+
+[source]
+----
+> sudo dnf -y install gcc-c++ make ruby-devel libxml2-devel libxslt-devel
+----
+
+[note]
+====
+This is required regardless how you proceed from here (provided Ruby version ns RVM)
+====
+
+==== Using Ruby version provided by the Fedora packages
+
+[source]
+----
+> sudo dnf -y ruby
+> gem install rake bundler
+----
+
+Continue <<get-the-source,here>>
+
+==== Using RVM
 
 How to Integrating RVM with gnome-terminal: http://rvm.io/integration/gnome-terminal
 
@@ -286,22 +308,9 @@ Load the .rvmrc file:
 cd ../in.relation.to
 ----
 
-Say yes to .rvmrc execution:
+Say yes to .rvmrc execution.
 
-[source]
-----
-gem install rake
-gem install bundler
-----
-
-That's the core of the installation on Fedora.
-In case of problem, you can try with the following:
-
-[source]
-----
-sudo yum install -y rubygem-nokogiri
-sudo yum install gcc ruby-devel libxml2 libxml2-devel libxslt libxslt-devel
-----
+Continue <<awestruct-setup, here>>
 
 === Got a problem with bundler or rake complaining about versions 0?
 
@@ -315,6 +324,20 @@ or if all else fails
 [source]
 ----
 rm -fR .bundle/
+----
+
+=== [Linux] Problem with character encodings during execution of awestruct
+
+[source]
+----
+An error occurred: /in.relation.to/in.relation.to/README.adoc is not valid US-ASCII
+----
+
+Make sure you have the right locale set:
+[source]
+----
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
 ----
 
 === If your changes are not visible...
