@@ -1,0 +1,51 @@
+= Third Candidate Release for ORM 5.0
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Release"]
+:awestruct-layout: blog-post
+
+Yesterday I released the third candidate release for Hibernate ORM 5.0 (5.0.0.CR3).  We felt another CR was warranted
+because we had some minor integration (SPI) work that we needed to make in to Final, but too much development had happened since
+the second CR to be considered risk free to just include everything into Final.  At any rate CR3 got lots of great TLC :)  The 
+complete set of changes can be seen in the https://hibernate.atlassian.net/projects/HHH/versions/20350[Jira changelog].  The
+main changes include:
+
+
+== Minor changes to the caching SPI
+
+Essentially passing Session along to the various region access strategy methods to allow integrating with non-JDBC transactions.
+
+
+== Work on schema tooling
+
+Improved namespace (catalog/schema) support overall in schema tools.  Improved handling of views and synonyms for migrating and validating.
+
+
+== Work on bytecode enhancement
+
+Lots of fixes based on feedback.  
+
+
+== Consistency in Transaction API
+
+A few changes were made to the JDCB-based TransactionCoordinator to work more like in JTA environments.  Specifically:
+
+* implemented support for marking the Transaction for rollback-only.
+* transaction is now rolled back automatically on a failed commit.
+
+
+== Work on the documentation
+
+Besides updating the content, the content has been split into 3 separate guides:
+
+* User Guide
+* Domain Model Mapping Guide
+* Integrations Guide
+
+
+== How to get it
+
+Additionally many other improvements and bugfixes are included.  See https://hibernate.atlassian.net/projects/HHH/versions/20150 for the complete list of changes.
+
+The release tag is available at https://github.com/hibernate/hibernate-orm/releases/tag/5.0.0.CR2
+
+As always, see http://hibernate.org/orm/downloads/ for information on obtaining the releases.
