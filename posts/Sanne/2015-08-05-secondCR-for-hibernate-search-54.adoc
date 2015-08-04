@@ -1,0 +1,48 @@
+= Second candidate release for Hibernate Search 5.4
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+While Hibernate ORM applies some more polish before releasing the final version,
+so did the Hibernate Search team.
+
+Hibernate Search version `5.4.0.CR2` is now available!
+It was built and tested with Hibernate ORM `5.0.0.CR3`, again we're just waiting for that to be final but decided
+to release another Candidate Release as some fixes and improvements were recently applied.
+
+== The "Meridian crossing issue"
+
+The Spatial query feature was affected by a math sign mistake which would reveal itself on distance based queries
+which would cross the 180' meridian. Thanks to Alan Field for the test and Nicholas Helleringer for
+debugging and fixing the issue!
+
+== Serialization issue on enabling Term Vectors
+
+Kudos to Benoit Guillon, who debugged and fixed a mistake in the Avro based serializer,
+for which values of Term Vectors would not be indexed when enabling Term Vectors in combination
+with a remote backend. See also https://hibernate.atlassian.net/browse/HSEARCH-1936[HSEARCH-1936].
+
+== Various small improvements
+
+You can now have the `MassIndexer` set a different timeout for the internal transactions it will start,
+so if you're running Hibernate Search in a container like WildFly you no longer have to make a choice
+between having a deadline of 5 minutes or changing the default timeout of the whole container.
+
+* Improved validation when choosing an invalid Sort definition
+* The Infinispan module will now get you a warning if your Maven project is using the old artifact ids
+* The performance integration tests have been re-enabled, and fixed to run on latest WildFly and Java8 and Java9
+* Fixed a potential issue with timezone encoding for indexed dates
+* Improved the code generating the path for index storage to handle "." elements in the configured paths
+* Upgraded to `Hibernate ORM 5.0.0.CR3` and `WildFly 10.0.0.Alpha6` (WildFly only used for testing)
+
+== Where to download it from
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.4.0.CR2[full distribution from here],
+or get it from Maven Central, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums]
+
+=== What's next?
+
+Soon we'll be releasing a preview of 5.5 to have you upgrade to Apache Lucene 5.2.
+The Hibernate Search version 5.4.0.Final will be released when Hibernate ORM 5 is released as stable.
