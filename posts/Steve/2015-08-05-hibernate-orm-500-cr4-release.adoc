@@ -1,0 +1,59 @@
+= Fourth Candidate Release for ORM 5.0
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+Today I released a fourth candidate release for Hibernate ORM 5.0 (5.0.0.CR4).  The purpose was entirely to change the defaults
+for some settings.  This allowed some additional fixes and additional documentation work to make it in.
+
+
+== Default ImplicitNamingStrategy
+
+The default ImplicitNamingStrategy (`hibernate.implicit_naming_strategy`) has changed to the JPA-compliant one.  Additionally
+I added some short-names for the Hibernate-provided implementations.
+
+* "default" -> org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
+* "jpa" -> org.hibernate.boot.model.naming.ImplicitNamingStrategyJpaCompliantImpl
+* "legacy-jpa" -> org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+* "legacy-hbm" -> org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyHbmImpl
+* "component-path" -> org.hibernate.boot.model.naming.ImplicitNamingStrategyComponentPathImpl
+
+The previous default was "legacy-jpa".  Existing applications that previously used the default naming strategy
+and want to continue to use that implicit naming strategy should specify `hibernate.implicit_naming_strategy=legacy-jpa`
+in their configuration settings.  Alternatively, they can call 
+`MetadataBuilder#setImplicitNamingStrategy(ImplicitNamingStrategyLegacyJpaImpl.INSTANCE)`.
+
+
+== Identifier generator mapping
+
+Back in 3.6 I developed a new set of identifier generator strategies aimed at database portability based
+on the JPA expectations for `@SequenceGenerator` and `@TableGenerator`.  Between 3.6 and now the default has been
+to continue to use the legacy generator strategies, but we added a setting (`hibernate.id.new_generator_mappings`) 
+to allow applications to request the newer strategies be used.  The default for this setting had been false.  I changed 
+it to true.
+
+Existing applications updating to CR4 and then Final that experience issues with identifier generator strategy selection 
+should try setting this back to false if they wish to keep using the legacy mappings.
+
+
+== Keyword auto-quoting
+
+This is a new feature in 5.0, but previously the default had been to auto-quote any sql identifiers believed to be a 
+keyword in the underlying database.  That feature has been disabled by default.
+
+Applications that wish to use this feature should explicitly enable it by specifying `hibernate.auto_quote_keyword=true`
+in their configuration settings.
+
+
+== More work on the documentation
+
+Still in progress, but alot more content has been added.
+
+
+== How to get it
+
+Additionally many other improvements and bugfixes are included.  See https://hibernate.atlassian.net/projects/HHH/versions/20752 for the complete list of changes.
+
+The release tag is available at https://github.com/hibernate/hibernate-orm/releases/edit/5.0.0.CR4
+
+As always, see http://hibernate.org/orm/downloads/ for information on obtaining the releases.
