@@ -1,0 +1,61 @@
+= Hibernate ORM 4.2.20.Final and 4.3.11.Final Released
+Gail Badner
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+---
+
+Hibernate ORM 4.2.20.Final was released 24-July-2015. At the time it was released,
+SourceForge was out of commission so distributions could not be uploaded. I decided
+to delay the announcement until SourceForge was back in commission and I was able
+to release 4.3.11.Final on 5-Aug-2015.
+
+
+== Release Notes
+
+[%hardbreaks]
+4.2.20.Final: https://hibernate.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10031&version=19651
+4.3.11.Final: https://hibernate.atlassian.net/jira/secure/ReleaseNote.jspa?projectId=10031&version=20050
+
+
+== Notable bugfixes
+
+In both 4.3.11.Final and 4.2.20.Final:
+
+* https://hibernate.atlassian.net/browse/HHH-2851[HHH-2851] fixed a longstanding bug
+affecting dialects that require the type for binding null parameter values to a query
+predicate like (`:param IS NULL OR alias.someField = :param`). This bug affected Oracle
+and SQL Server dialects, and possibly others. This bug was easily worked around, but
+it was clearly a headache for people using those dialects.
+
+In 4.3.11.Final only:
+
+* https://hibernate.atlassian.net/browse/HHH-9287[HHH-9287] fixed a bug that caused
+pooled optimizer identifiers to be reused if an external (to Hibernate) system inserted
+a row using the same sequence.
+
+* Hibernate's support for AttributeConverter was improved. https://hibernate.atlassian.net/browse/HHH-8804[HHH-8804]
+adds support for a parameterized type as an AttributeConverter type parameter
+(e.g., `AttributeConverter<Set<Category>, String>`);
+https://hibernate.atlassian.net/browse/HHH-8854[HHH-8854] fixed a bug extracting
+the ParameterizedType representation of AttributeConverter definition from an
+implementation that did not directly implement AttributeConverter
+i.e., a superclass implements AttributeConverter.
+
+* There were some bugfixes related to lazy (byte-code instrumented) properties.
+https://hibernate.atlassian.net/browse/HHH-5255[HHH-5255] fixed a longstanding
+bug merging a detached entity with a lazy property that has been initialized
+(this only works for "property" access);
+https://hibernate.atlassian.net/browse/HHH-7573[HHH-7573] fixed a bug processing
+lazy properties after an EntityManager PreUpdate callback;
+https://hibernate.atlassian.net/browse/HHH-9629[HHH-9629] fixed a bug in cache
+key generation for an entity with inheritance when fetching lazy property.
+
+
+== How to get it
+
+[%hardbreaks]
+Release tag for 4.2.20.Final: https://github.com/hibernate/hibernate-orm/releases/tag/4.2.20.Final
+Release tag for 4.3.11.Final: https://github.com/hibernate/hibernate-orm/releases/tag/4.3.11.Final
+
+See http://hibernate.org/orm/downloads/ for information on obtaining the releases.
+
