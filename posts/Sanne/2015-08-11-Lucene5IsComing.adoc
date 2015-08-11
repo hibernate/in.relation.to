@@ -1,0 +1,72 @@
+= First preview of Hibernate Search for Apache Lucene 5
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+In the last couple of months we've been working to upgrade Hibernate Search to use `Apache Lucene 5`,
+to keep up with the greatest releases from the Lucene community.
+
+Today `Hibernate Search 5.5.0.Alpha1` is available!
+
+As the version suggests this is the first cut, but we'll also need your feedback and suggestions
+to better assess the needed steps to evolve this into a great, efficient and stable Final release.
+
+== A stable API
+
+As Uwe Schindler - a great developer from the Lucene community - had suggested me to try, it turns out
+it was possible to update from Apache Lucene version 4 to 5 (a major upgrade) in a minor upgrade of
+Hibernate Search: many things improved, some things are slightly different, but overall the API
+was not affected by any significant change.
+
+You might be affected by some minor changes of the Lucene API if you were writing power-use extensions
+to Hibernate Search, in that case:
+* consult http://lucene.apache.org/core/5_2_1/MIGRATE.html[the Apache Lucene migration guide]
+* the http://hibernate.org/search/documentation/migrate/5.5/[Hibernate Search migration guide]
+* get in touch with us and let us know!
+
+Please let us know if there are difficulties in upgrading:
+we can try to improve on that, or at least improve the migration guide.
+If you don't tell us, we might not know and many other developers will have a hard time!
+
+== Improved Performance
+
+Several changes in the Apache Lucene code relate to improved efficiency, in particular of memory usage.
+
+However our aim for this release was functionality and correctness; we didn't have time to run
+performance tests, and to be fair even if we had the time nothing beats feedback from
+the community of users.
+
+We would highly appreciate your help in trying it out and run some performance tests, especially
+if you can compare with previous versions of Hibernate Search (based on earlier versions of Apache Lucene).
+
+If you think you can try this, it's a unique opportunity to both contribute and to get our insight and support
+to analyse and understand your performance reports!
+
+== Sorting and Faceting: use the right types!
+
+It appears that when using Apache Lucene 4, if you were running a Numeric Faceting Query but the target field
+was not Numeric, it would still work - or appear to work.
+
+Similarly, if you Sort a query using the wrong SortType, Apache Lucene 4 appears to be forgiving.
+
+When using Apache Lucene 5 now, and also because of some internal changes we had to do to keep your
+migration cost easier, the validation on the right types got much stricter.
+
+Please be aware that you'll get runtime exceptions like the following when mistmaching the types:
+[source]
+---
+Type mismatch: ageForIntSorting was indexed with multiple values per document, use SORTED_SET instead
+---
+
+I'm aware those are confusing, so we'll working on improving the errors: https://hibernate.atlassian.net/browse/HSEARCH-1951[HSEARCH-1951]; still even with those error messages, the meaning is you have to fix your mapping.
+No shame in that, we figured this problem out as several unit tests were too relaxed ;-)
+
+
+== How to get it
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.4.0.Alpha1[full distribution from here],
+or get it from Maven Central, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums] or http://hibernate.org/community/[mailing lists].
+
+
