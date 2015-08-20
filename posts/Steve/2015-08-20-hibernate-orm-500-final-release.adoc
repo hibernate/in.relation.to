@@ -1,0 +1,149 @@
+= Hibernate ORM 5.0 has goes Final!
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+Today I have released Hibernate ORM 5.0 (5.0.0.Final).  This has been a long time coming and is the result
+of the efforts of many folks.  Thanks to everyone who helped us get here with fixes, bug reports, suggestions,
+input and encouragement!
+
+A lot of development has gone into 5.0.  Here are the big points:
+
+
+== New bootstrap API
+
+The venerable way to bootstrap Hibernate (build a SessionFactory) has been to use its Configuration class.
+Configuration, historically, allowed users to iteratively add settings and mappings in any order and to query the
+state of settings and mapping information in the middle of that process.  Which meant that building the mapping
+information could not effectively rely on any settings being available.  This lead to many limitations and problems.
+
+5.0 introduces a new bootstrapping API aimed at alleviating those limitations and problems, while allowing
+better determinism and better integration.  See the Bootstrap chapter in the User Guide for details on using
+the new API.
+
+Configuration is still available for use, although in a limited sense.  Some of its methods have been removed.  Under
+the covers Configuration makes use of the new bootstrap API.
+
+
+== Spatial/GIS support
+
+Hibernate Spatial is a project that has been around for a number of years.  Karel Maesen has done an amazing job
+with it.  
+
+Starting in 5.0 Hibernate Spatial is now part of the Hibernate project proper to allow it to better keep up with 
+upstream development.  It is available as `org.hibernate:hibernate-spatial`.  If your apppication has need for 
+GIS data, we highly recommend giving hibernate-spatial a try.
+
+
+== Java 8 support
+
+Well, ok.. not all of Java 8.  Specifically we have added support for Java 8 Date and Time API in regards to easily mapping
+attributes in your domain model using the Java 8 Date and Time API types to the database.  This support is available
+under the dedicated hibernate-java8 artifact (to isolate Java 8 dependencies).  For additional information, see 
+the Basic Types chapter in the Domain Model Mapping Guide.
+
+
+== Expanded AUTO id generation support
+
+JPA defines support for GenerationType#AUTO limited to just Number types.  Starting in 5.0 Hibernate offers expandable support for a broader
+set of types, including built-in support for both Number types (Integer, Long, etc) and UUID.  Users are also free to plug
+in custom strategies for interpreting GenerationType#AUTO via the new `org.hibernate.boot.model.IdGeneratorStrategyInterpreter` extension.
+
+
+== Naming strategy split
+
+NamingStrategy has been removed in favor of a better designed API. 2 distinct ones actually:
+
+* `org.hibernate.boot.model.naming.ImplicitNamingStrategy` - used whenever a table or column is not explicitly named to determine the name to use
+* `org.hibernate.boot.model.naming.PhysicalNamingStrategy` - used to convert a "logical name" (either implicit or explicit) name of a table or column
+into a physical name (e.g. following corporate naming guidelines)
+
+
+== Attribute Converter support
+
+5.0 offers significantly improved support for JPA 2.1 AttributeConverters:
+
+* fully supported for non-@Enumerated enum values
+* applicable in conjunction with @Nationalized support
+* now called to handle null values
+* settable in hbm.xml by using type="converter:fully.qualified.AttributeConverterName"
+* integrated with hibernate-envers
+* collection values, map keys
+* support for conversion of parameterized types
+
+
+== Better "bulk id table" support
+
+Support for "bulk id tables" has been completely redesigned to better fit what different databases support.
+
+
+== Transaction management
+
+The transaction SPI underwent a major redesign as part of 5.0 as well.  From a user perspective this generally
+only comes into view in terms of configuration.  Previously applications would work with the different backend
+transaction stratagies directly via the `org.hibernate.Transaction` API.  In 5.0 a level of indirection has been
+added here.  The API implementation of `org.hibernate.Transaction` is always the same now.  On the backend, the
+`org.hibernate.Transaction` impl talks to a `org.hibernate.resource.transaction.TransactionCoordinator` which represents
+the "transactional context" for a given Session according to the backend transaction strategy.  Users generally do not
+need to care about the distinction.
+
+The change is noted here because it might affect your bootstrap configuration.  Whereas previously applications would
+specify `hibernate.transaction.factory_class` and refer to a `org.hibernate.engine.transaction.spi.TransactionFactory` FQN,
+with 5.0 the new contract is `org.hibernate.resource.transaction.TransactionCoordinatorBuilder` and is specified using the
+`hibernate.transaction.coordinator_class` setting.  See `org.hibernate.cfg.AvailableSettings.TRANSACTION_COORDINATOR_STRATEGY`
+JavaDocs for additional details.
+
+The following short-names are recognized:
+`jdbc`::(the default) says to use JDBC-based transactions (`org.hibernate.resource.transaction.backend.jdbc.internal.JdbcResourceLocalTransactionCoordinatorImpl`)
+`jta`::says to use JTA-based transactions (`org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl`)
+
+See the User Guide for additional details.
+
+
+== Schema Tooling
+
+5.0 offers much improvement in the area of schema tooling (export, validation and migration).
+
+
+== Typed Session API
+
+Hibernate's native APIs (Session, etc) have been updated to be typed.  No more casting!
+
+
+== Improved OSGi support
+
+Really this started with a frustration over the fragility of hibernate-osgi tests.  The first piece was a better testing setup using 
+Pax Exam and Karaf.  This lead to us generating (and now publishing!) a Hibernate Karaf features file.  
+
+OSGi support has undergone some general improvement as well thanks to feedback from some Karaf and Pax developers and users.
+
+See the Getting Started Guide for additional details on using the new Karaf features file.
+
+
+== Improved bytrecode enhancement capabilities
+
+
+== Work on documentation
+
+A lot of work has gone into the documentation for 5.0.  Its still not complete (is documentation ever "complete"?), but it is much improved.
+
+See the revamped http://hibernate.org/orm/documentation/5.0[documentation page] for details.
+
+
+== BinTray
+
+For now the plan is to publish the release bundles (zip and tgz) to BinTray.  We will continue to publish to SourceForge as well.  For the time being
+we will publish the bundles to both.
+
+Ultimately we will start to publish the "maven" artifacts there as well.
+
+This is all a work in progress.
+
+
+== How to get it
+
+See http://hibernate.atlassian.net/projects/HHH/versions/20851 for the complete list of changes.
+
+The release tag is available at https://github.com/hibernate/hibernate-orm/releases/tag/5.0.0.Final
+
+See http://hibernate.org/orm/downloads/ for information on obtaining the releases.
