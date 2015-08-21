@@ -248,6 +248,15 @@ More info link:server-config/README[in the server-config readme file].
 The '-T' version will list the available tasks with short description whereas the '-D'
 version gives the long description.
 
+=== If your changes are not visible...
+
+Panic! Then completely regenerate the site via:
+
+[source]
+----
+> rake clean preview
+----
+
 === I am getting errors when trying to execute *awestruct* directly
 
 You need to use `bundle exec <command>` to make sure you get all required Gems. Check the *Rakefile*
@@ -312,19 +321,9 @@ Say yes to .rvmrc execution.
 
 Continue <<awestruct-setup, here>>
 
-=== Got a problem with bundler or rake complaining about versions 0?
+=== Bugger that,...
 
-[source]
-----
-rake clean[all]
-----
-
-or if all else fails
-
-[source]
-----
-rm -fR .bundle/
-----
+I cannot get the enviroment up and running. Use Docker! Read link:/docker/README[how]!
 
 === [Linux] Problem with character encodings during execution of awestruct
 
@@ -338,15 +337,6 @@ Make sure you have the right locale set:
 ----
 export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
-----
-
-=== If your changes are not visible...
-
-Panic! Then completely regenerate the site via:
-
-[source]
-----
-> rake clean preview
 ----
 
 == License
