@@ -8,13 +8,6 @@
 #
 #  rake setup
 #
-# The setup task installs the necessary libraries inside the project in the .bin
-# directory.
-#
-# There are also tasks for running Awestruct. The build will auto-detect
-# whether you are using Bundler and, if you are, wrap calls to awestruct in
-# `bundle exec`.
-#
 # To run in Awestruct in editor mode, execute:
 #
 #  rake
@@ -36,18 +29,14 @@ task :default => :preview
 #####################################################################################
 # Perform initialization steps, such as setting up the PATH
 task :init do
-  # Detect using gems local to project
-  if File.exist? '.bin'
-    ENV['PATH'] = ".bin#{File::PATH_SEPARATOR}#{ENV['PATH']}"
-  else
-    msg "No local bundle installation. Run 'rake setup' first", :warn
-    exit 0
-  end
+  cmd = "bundle check"
+  msg cmd
+  system cmd or raise "Bundle dependencies not satisfied. Run 'rake setup' first", :warn
 end
 
 desc 'Setup the environment to run Awestruct using Bundler'
 task :setup do |task, args|
-  bundle_command = 'bundle install --binstubs=.bin --path=.bundle'
+  bundle_command = 'bundle install'
   msg "Executing '#{bundle_command}' in clean Bundler environment"
   Bundler.with_clean_env do
     system bundle_command
@@ -86,16 +75,22 @@ desc 'Clean out generated site and temporary files, using [all-keep-deps] remove
 task :clean, :option do |task, args|
   require 'fileutils'
   dirs = ['.awestruct', '.sass-cache', '_site', '_tmp']
-  if args[:option] == 'all-keep-deps'
-    dirs << '.wget-cache'
-  end
   if args[:option] == 'all'
     dirs << '.wget-cache'
-    dirs << '.bin'
-    dirs << '.bundle'
   end
   dirs.each do |dir|
     FileUtils.remove_dir dir unless !File.directory? dir
+  end
+end
+
+#####################################################################################
+# Test
+#####################################################################################
+desc 'Run Rspec tests'
+task :test do
+  all_ok = system "bundle exec rspec _spec --format documentation"
+  if all_ok == false
+    fail "RSpec tests failed - aborting build"
   end
 end
 
@@ -111,7 +106,7 @@ end
 
 def get_profile(args)
   if args[:profile].nil?
-    profile = "editor"
+    profile = "development"
   else
     profile = args[:profile]
   end
