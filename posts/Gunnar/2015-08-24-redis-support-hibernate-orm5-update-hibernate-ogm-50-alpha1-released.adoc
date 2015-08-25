@@ -1,0 +1,190 @@
+= "Redis support, Update to Hibernate ORM 5: Hibernate OGM 5.0.0.Alpha1 released"
+Gunnar Morling
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+It's my pleasure to announce the first Alpha release of http://hibernate.org/ogm/[Hibernate OGM] 5!
+
+This release is based on Hibernate ORM 5.0 Final which we released just http://in.relation.to/2015/08/20/hibernate-orm-500-final-release/[last week].
+The update should be smooth in general, but you should be prepared for some changes if you are bootstrapping Hibernate OGM manually through the Hibernate API and not via JPA.
+
+Check out the Hibernate OGM https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes] to learn more about migrating from earlier versions of Hibernate OGM to 5.x.
+Also the Hibernate ORM https://github.com/hibernate/hibernate-orm/blob/5.0/migration-guide.adoc[migration guide] is a recommended read.
+
+=== Experimental support for Redis
+
+Hibernate OGM 5 brings tech preview support for http://redis.io/[Redis] which is a high-performance key/value store with many interesting features.
+
+A huge thank you goes out to community member https://twitter.com/mp911de[Mark Paluch] for this fantastic contribution!
+Originally started by https://github.com/seiyak[Seiya Kawashima], Mark took up the work on this backend and delivered a great piece of work in no time.
+Looking forward to many more of his contributions to come!
+
+The general mapping approach is to store JSON documents as values in Redis. For instance consider the following entity and embeddables:
+
+[source,java]
+----
+@Entity
+public class Account {
+
+    @Id
+    private String login;
+    private String password;
+    private Address homeAddress;
+
+    // getters, setters etc.
+}
+----
+[source,java]
+----
+@Embeddable
+public class Address {
+
+    private String street;
+    private String city;
+    private String zipCode;
+    private String country;
+    private AddressType type;
+
+    // getters, setters etc.
+}
+----
+[source,java]
+----
+@Embeddable
+public class AddressType {
+
+    private String name;
+
+    // getters, setters etc.
+}
+----
+
+This will be persisted into Redis as a JSON document like this under the key "Account:piere":
+
+[source,json]
+----
+{
+    "homeAddress": {
+        "country": "France",
+        "city": "Paris",
+        "postalCode": "75007",
+        "street": "1 avenue des Champs Elysees",
+        "type": {
+            "name": "main"
+        }
+    },
+    "password": "like I would tell ya"
+} 
+----
+
+Refer to the http://docs.jboss.org/hibernate/ogm/5.0/reference/en-US/html_single/#ogm-redis[Redis chapter] of the reference guide to learn more about this new dialect and its capabilities.
+It is quite powerful already (almost all tests of the Hibernate OGM backend TCK pass) and there is support for using it in WildFly, too.
+
+While JSON is a popular choice for storing structured data amongst Redis users, we will investigate alternative mapping approaches, too.
+Specifically, one interesting approach would be to store entity properties using http://redis.io/topics/data-types-intro#hashes[Redis hashes].
+This poses some interesting challenges, though, e.g. regarding type conversion (only `String` values are supported in hashes) as well as handling of embedded objects and associations.
+
+So if you are faced with the challenge of persisting object models into Redis, give this new backend a try and let us know what you think, open feature requests etc. 
+
+=== Improved mapping of `Map` properties
+
+`Map`-typed entity properties are persisted in a more natural format now in MongoDB (and also with the new Redis backend). The following shows an example:
+
+[source,java]
+----
+@Entity
+public class User {
+
+    @Id
+    private String id;
+
+    @OneToMany
+    @MapKeyColumn(name = "addressType")
+    private Map<String, Address> addresses = new HashMap<>();
+
+    // getters, setters etc.
+}
+----
+
+In previous versions of Hibernate OGM this would have been mapped to a MongoDB document like this:
+
+[source,json]
+----
+{
+    "id" : 123,
+    "addresses" : [
+        { "addressType" : "home", "addresses_id" : 456 },
+        { "addressType" : "work", "addresses_id" : 789 }
+    ] 
+}
+----
+
+This is not what one would expect from a document store mapping, though. Therefore Hibernate OGM 5 will create the following, more natural representation instead:
+
+[source,json]
+----
+{
+    "id" : 123,
+    "addresses" : {
+        "home" : 456,
+        "work" : 789
+    }
+}
+----
+
+This representation is more concise and should improve interoperability with other clients working on the same database.
+If needed - e.g. for migration purposes - you can enforce the previous mapping through the `hibernate.ogm.datastore.document.map_storage` property.
+Check out the http://docs.jboss.org/hibernate/ogm/5.0/reference/en-US/html_single/#mongodb_specific_configuration_properties[reference guide] for the details.
+
+The optimized mapping is currently only applied if the map key comprises a single column which is of type `String`.
+For other types, e.g. `Long` or composite map keys the previous mapping is used since JSON/BSON only supports field names which are strings.
+
+An open question for us is whether other key column types should be converted into a string or not.
+If for instance the `addresses` map was of type `Map<Long, Address>` one could think of storing the map keys using field names such as "1", "2" etc.
+Let us know whether that's something you'd find helpful or not.
+
+=== Support for multi-get operations
+
+One of the many optimizations in Hibernate ORM is batch fetching of lazily loaded entities.
+This is controlled using the https://docs.jboss.org/hibernate/stable/orm/javadocs/index.html?org/hibernate/annotations/BatchSize.html[@BatchSize] annotation.
+So far, Hibernate OGM did not support batch fetching, resulting in more round trips to the datastore than actually needed.
+
+This situation has been improved by introducing http://docs.jboss.org/hibernate/ogm/5.0/api/index.html?org/hibernate/ogm/dialect/multiget/spi/MultigetGridDialect.html[MultigetGridDialect]
+which is an optional "capability interface" that Hibernate OGM backends can implement. If a backend happens to support this contract, the Hibernate OGM engine will take advantage of it
+and fetch entities configured for lazy loading in batches, resulting in a better performance.
+
+At the moment the new Redis backend makes use of this, with the MongoDB and Neo4j backends https://hibernate.atlassian.net/browse/OGM-907[following soon].
+
+=== Upgrade to MongoDB driver 3.0
+
+We have upgraded to version 3.0 of the http://mongodb.github.io/mongo-java-driver/3.0/[MongoDB driver].
+Most users of Hibernate OGM should not be affected by this but down the road this will allow us for some nice performance optimizations and support of some new functionality.
+
+Together with the driver update we have reorganized the connection-level options of the MongoDB backend.
+All `String`, `int` and `boolean` MongoDB http://api.mongodb.org/java/3.0/index.html?com/mongodb/MongoClientOptions.Builder.html[client options] can be configured now through the `hibernate.ogm.mongodb.driver.*` namespace:
+
+[source]
+----
+hibernate.ogm.mongodb.driver.connectTimeout=10000
+hibernate.ogm.mongodb.driver.serverSelectionTimeout=3000
+hibernate.ogm.mongodb.driver.socketKeepAlive=true
+----
+
+These options will be passed on to MongoDB's client builder as-is.
+Note that the previously existing option `hibernate.ogm.mongodb.connection_timeout` has been removed in favor of this new approach.
+
+=== Where can I get it?
+
+You can retrieve Hibernate OGM 5.0.0.Alpha1 via Maven etc. using the following coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-core:5.0.0.Alpha1_ for the Hibernate OGM core module
+* _org.hibernate.ogm:hibernate-ogm-<%BACKEND%>:5.0.0.Alpha1_ for the NoSQL backend you want to use, with _<%BACKEND%>_ being one of "mongodb", "redis", "neo4j" etc.
+
+Alternatively, you can download archives containing all the binaries, source code and documentation from SourceForge.
+
+Als always we are looking forward to your feedback very much. The https://github.com/hibernate/hibernate-ogm/blob/5.0.0.Alpha1/changelog.txt[change log] tells in detail what's in there for you.
+Get in touch through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
