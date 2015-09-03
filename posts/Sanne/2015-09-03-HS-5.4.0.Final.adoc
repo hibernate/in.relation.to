@@ -1,0 +1,48 @@
+= Hibernate Search now ready for Hibernate ORM 5
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+After two candidate releases and a bit of quiet time in waiting for Hibernate ORM 5.0.0.Final,
+we now published `Hibernate Search 5.4.0.Final`: the first stable release compatible with ORM 5.
+
+== Minimal API changes
+
+This version is designed to minimize your work to upgrade the Hibernate stack,
+so that you can focus on the changes needed to get running with Hibernate ORM 5
+without having to deal with changes in the Search API.
+
+== Plans for WildFly 10, Lucene 5
+
+WildFly 10 is coming fast and will feature both Hibernate ORM 5 and Hibernate Search, so please
+take advantage of this `Hibernate Search 5.4.0.Final` release as a milestone to get your applications up to date.
+
+In WildFly 10 however we plan to include a further evolved version of Hibernate Search, to also update Apache Lucene to the latest (currently Lucene 5.3).
+
+So the plan is that we'll include some evolution of Hibernate Search 5.5.x in WildFly 10,
+but upgrading both ORM and Lucene could be a lot of changes for you to face in one sprint
+so I highly recommend using this version `5.4.0.Final` as an intermediate, reliable refactoring step.
+
+== Other improvements
+
+Since the main mantra for this version was "don't change anything" (except the Hibernate ORM version),
+the new and cool stuff will be coming in the next minor release.
+
+Of course we also fixed some minor bugs; the most relevant ones are in the area of the Query DSL,
+improving the handling of null-tokens during query generation and better recognition of Numeric Fields.
+
+For details, see:
+* https://hibernate.atlassian.net/browse/HSEARCH-1981[HSEARCH-1981] QueryBuilder should not tokenize the null-token when searching for null
+* https://hibernate.atlassian.net/browse/HSEARCH-1973[HSEARCH-1973] Make sure the metadata recognizes a field as Numeric even if it's wrapped into a NullEncodingTwoWayFieldBridge
+* https://hibernate.atlassian.net/browse/HSEARCH-1968[HSEARCH-1968] Avoid the NPE on empty results during a Faceting Query
+
+Special thanks to Marcel Barbosa Pinto for identifying and fixing the NPE on Faceting queries!
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.4.0.Final[full distribution from here],
+or get it from Maven Central, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums] or http://hibernate.org/community/[mailing lists].
+
+
