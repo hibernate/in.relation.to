@@ -1,0 +1,83 @@
+= Releasing Hibernate Search 5.5.0.CR1
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+The first Candidate Release for Hibernate Search 5.5 is now available, introducing integration with `Apache Lucene 5.3`
+and several nice improvements.
+
+As a reminder on versions: Hibernate Search now requires `Hibernate ORM 5.0.0.Final` at least, and at the time of writing only
+`Infinispan 8.0.1.Final` supports real time replication of an `Apache Lucene 5.3` index.
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.5.0.CR1</version>
+</dependency>
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-core</artifactId>
+   <version>5.0.1.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.infinispan</groupId>
+   <artifactId>infinispan-directory-provider</artifactId>
+   <version>8.0.1.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.apache.lucene</groupId>
+   <artifactId>lucene-core</artifactId>
+   <version>5.3.0</version>
+</dependency>
+----
+====
+
+== Out of the box indexing of java.time types 
+
+Hibernate Search is now able to automatically provide a sensible mapping for `java.time.Year`, `java.time.Duration` `java.time.Instant`, `java.time.LocalDate`, `java.time.LocalTime`, `java.time.LocalDateTime`, `java.time.LocalTime`, `java.time.MonthDay`, `java.time.OffsetDateTime`, `java.time.OffsetTime`, `java.time.Period`, `java.time.YearMonth`, `java.time.ZoneDateTime`, `java.time.ZoneId`, `java.time.ZoneOffset`.
+
+That means that it includes an out of the box `FieldBridge` for each of these types, and allows transparent indexing and querying of properties of these types.
+You can of course customize the indexing by providing your own `FieldBridge`, as usual.
+
+This feature is only available if you are running on a Java 8 runtime, although all other features of Hibernate Search are still backwards compatible with Java 7.
+
+== Sorting improvements
+
+Since Apache Lucene 5.0 (and including 5.3 as we currently require) we can provide a significant performance improvement if you let us know in advance which fields you intend to use for sorting.
+
+For this purpose a new annotation http://docs.jboss.org/hibernate/search/5.5/api/org/hibernate/search/annotations/SortableField.html[`org.hibernate.search.annotations.SortableField`] is available.
+If you start using this annotation in your projects you'll benefit from improved performance, but for those who don't want to update their mapping yet we will fallback to the older strategy.
+
+We'll get back on this subject soon with another blog post, watch this space!
+
+== Encoding null tokens in your index
+
+When using http://docs.jboss.org/hibernate/search/5.5/api/org/hibernate/search/annotations/Field.html#indexNullAs--[`@Field(indexNullAs=)`] to encode some marker value in the index,
+the type of the marker is now required to be of a compatible field type as all other values which are indexed in that same field.
+
+This was problematic for `NumericField`s, the ones optimised for range queries on numbers, as we would previously allow you to encode a string keyword like '_null_': this is no longer allowed,
+you will have to pick a number to be used to represent the null value.
+
+As an example for an "age" property you might want to use:
+
+====
+[source, Java]
+----
+@Field(indexNullAs = "-1")
+Integer nullableAge;
+----
+====
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.5.0.CR1[full distribution from here],
+or get it from Maven Central using the above coordinates, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums] or http://hibernate.org/community/[mailing lists].
+
+Feedback always welcome! [Please let us know of any problem]https://hibernate.atlassian.net/projects/HSEARCH/summary before we release the Final version.
+
+
