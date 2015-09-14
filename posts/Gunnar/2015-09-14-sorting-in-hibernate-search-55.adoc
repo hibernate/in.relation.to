@@ -1,0 +1,91 @@
+= "Order, ooorder! Sorting results in Hibernate Search 5.5"
+Gunnar Morling
+:awestruct-tags: [ "Hibernate Search" ]
+:awestruct-layout: blog-post
+---
+"Order, ooorder!" - Sometimes not only the honourable members of the House of Commons need to be https://youtu.be/8Qu7s-Wox0M[called to order],
+but also the results of Hibernate Search queries need to be ordered in a specific way.
+
+To do so, just pass a `Sort` object to your full-text query before executing it, specifying the field(s) to sort on:
+
+[source,java]
+----
+FullTextSession session = ...;
+QueryParser queryParser = ...;
+
+FullTextQuery query = session.createFullTextQuery( queryParser.parse( "summary:lucene" ), Book.class );
+Sort sort = new Sort( new SortField( "title", SortField.Type.STRING, false ) );
+query.setSort( sort );
+List<Book> result = query.list();
+----
+
+As of Lucene 5 (which is what Hibernate Search 5.5 is based on), there is a big *performance gain if the fields to sort on are known up front*.
+In this case these fields can be stored as so-called "doc value fields", which is much faster and less memory-consuming than the traditional approach of index un-inverting.
+
+For that purpose, Hibernate Search provides the *new annotation* `@SortableField` (and it's multi-valued companion, `@SortableFields`)
+for tagging those fields that should be available for sorting. The following example shows how do it:
+
+[source,java]
+----
+@Entity
+@Indexed(index = "Book")
+public class Book {
+
+    @Id
+    private Integer id;
+
+    @Field
+    @SortableField
+    @DateBridge(resolution = Resolution.DAY)
+    private Date publicationDate;
+
+    @Fields({
+        @Field,
+        @Field(name = "sortTitle", analyze = Analyze.NO, store = Store.NO, index = Index.NO)
+    })
+    @SortableField(forField = "sortTitle")
+    private String title;
+
+    @Field
+    private String summary;
+
+    // constructor, getters, setters ...
+}
+----
+
+`@SortableField` is used next to the known `@Field` annotation. In case a single field exists for a given property (e.g. `publicationDate`) just specifying the `@SortableField` annotation
+is enough to make that field sortable. If several fields exist (see the `title` property), specify the field name via `@SortableField#forField()`.
+
+Note that *sort fields must not be analyzed*. In case you want to index a given property analyzed for searching purposes,
+just add another, un-analyzed field for sorting as it is shown for the `title` property.
+If the field is only needed for sorting and nothing else, you may configure it as un-indexed and un-stored, thus avoid unnecessary index growth.
+
+For using the configured sort fields *when querying nothing has changed*. Just specify a `Sort` with the required field(s):
+
+[source,java]
+----
+FullTextQuery query = ...;
+Sort sort = new Sort(
+    new SortField( "publicationDate", SortField.Type.LONG, false ),
+    new SortField( "sortTitle", SortField.Type.STRING, false ) 
+);
+query.setSort( sort );
+----
+
+Now what happens if you sort on fields which you have not explicitly declared as sortable, e.g. when migrating an existing application over to Hibernate Search 5.5?
+The good news is that the sort will be applied as expected from a functional perspective. Hibernate Search detects the missing sort fields and *transparently falls back to
+index-univerting*.
+
+But be aware that this comes with a performance penalty (also it is quite memory-intensive as uninverting is RAM-only operation) and it even might happen that this
+functionality will be removed from Lucene in a future version altogether. Thus watch out for messages like the following in your log files and follow the advice to *declare the missing sort fields*:
+
+[source]
+----
+WARN ManagedMultiReader:142 - HSEARCH000289: Requested sort field(s) summary_forSort are not configured for entity \
+type org.hibernate.search.test.query.Book mapped to index Book, thus an uninverting reader must be created. You \
+should declare the missing sort fields using @SortField.
+----
+
+When migrating an existing application, be sure to *rebuild the affected index(es)* as described in the https://docs.jboss.org/hibernate/search/5.5/reference/en-US/html_single/#search-batchindex[reference guide].
+
+With all the required sort fields configured, your search results with be in order, just as the British parliament members after being called to order by Mr. Speaker.
