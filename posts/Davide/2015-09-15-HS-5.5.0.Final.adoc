@@ -1,0 +1,93 @@
+= Hibernate Search 5.5 Final is out 
+Davide D'Alto 
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+I'm happy to announce the latest final release of Hibernate Search: `Hibernate Search 5.5 Final`.
+We mainly consolidated the features included in the latest candidate release
+and worked on fixing some bugs.
+
+As a reminder on versions:
+
+Hibernate Search now requires at least `Hibernate ORM 5.0.0.Final`,
+and at the time of writing only `Infinispan 8.0.1.Final` supports real time replication
+of an `Apache Lucene 5.3` index.
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.5.0.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-core</artifactId>
+   <version>5.0.1.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.infinispan</groupId>
+   <artifactId>infinispan-directory-provider</artifactId>
+   <version>8.0.1.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.apache.lucene</groupId>
+   <artifactId>lucene-core</artifactId>
+   <version>5.3.0</version>
+</dependency>
+----
+====
+
+== WildFly 10, Lucene 5
+
+Last week, http://in.relation.to/2015/09/03/HS-5/[we released Hibernate Search 5.4 Final] with
+the minimal set of changes to make it work with Hibernate ORM 5.
+This version uses Lucene 5.3; if you haven't upgraded already, we recommend to start with version
+http://hibernate.org/search/downloads/[5.4.0.Final], first.
+
+Hibernate Search 5.5 will be included in WildFly 10.
+
+== Out of the box indexing of java.time types 
+
+Hibernate Search is now able to automatically provide a sensible mapping for `java.time.Year`, `java.time.Duration` `java.time.Instant`, `java.time.LocalDate`, `java.time.LocalTime`, `java.time.LocalDateTime`, `java.time.LocalTime`, `java.time.MonthDay`, `java.time.OffsetDateTime`, `java.time.OffsetTime`, `java.time.Period`, `java.time.YearMonth`, `java.time.ZoneDateTime`, `java.time.ZoneId`, `java.time.ZoneOffset`.
+
+That means that it includes an out of the box `FieldBridge` for each of these types, and allows transparent indexing and querying of properties of these types.
+You can of course customize the indexing by providing your own `FieldBridge`, as usual.
+
+This feature is only available if you are running on a Java 8 runtime, although all other features of Hibernate Search are still backwards compatible with Java 7.
+
+== Sorting improvements
+
+Since Apache Lucene 5.0 (and including 5.3 as we currently require) we can provide a significant performance improvement if you let us know in advance which fields you intend to use for sorting.
+
+For this purpose a new annotation http://docs.jboss.org/hibernate/search/5.5/api/org/hibernate/search/annotations/SortableField.html[`org.hibernate.search.annotations.SortableField`] is available.
+If you start using this annotation in your projects you'll benefit from improved performance, but for those who don't want to update their mapping yet we will fallback to the older strategy.
+
+This subject is discussed in detail in this {base_url}2015/09/14/sorting-in-hibernate-search-55/[follow-up post].
+
+== Encoding null tokens in your index
+
+When using http://docs.jboss.org/hibernate/search/5.5/api/org/hibernate/search/annotations/Field.html#indexNullAs--[`@Field(indexNullAs=)`] to encode some marker value in the index,
+the type of the marker is now required to be of a compatible field type as all other values which are indexed in that same field.
+
+This was problematic for `NumericField`s, the ones optimised for range queries on numbers, as we would previously allow you to encode a string keyword like '_null_': this is no longer allowed,
+you will have to pick a number to be used to represent the null value.
+
+As an example for an "age" property you might want to use:
+
+====
+[source, Java]
+----
+@Field(indexNullAs = "-1")
+Integer nullableAge;
+----
+====
+
+== How to get this release
+
+Everything you need is available on http://hibernate.org/search[Hibernate Search's web site].
+Download the http://sourceforge.net/projects/hibernate/files/hibernate-search/5.5.0.Final[full distribution from SourceForge],
+or get it from Maven Central, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums] or http://hibernate.org/community/[mailing lists].
+
