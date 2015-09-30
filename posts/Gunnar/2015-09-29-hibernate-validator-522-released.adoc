@@ -1,0 +1,36 @@
+= "Hibernate Validator 5.2.2 released"
+Gunnar Morling
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+I am happy to announce the availability of Hibernate Validator 5.2.2.Final.
+
+This release fixes several bugs, including a https://hibernate.atlassian.net/browse/HV-1018[nasty regression] around private property declarations in inheritance hierarchies
+and a https://hibernate.atlassian.net/browse/HV-1017[tricky issue] related to classloading in environments such as OSGi.
+
+We also https://hibernate.atlassian.net/browse/HV-807[closed a gap] in the API for constraint declaration which allows to ignore annotation-based constraints for specific methods, parameters etc.:
+
+[source,java]
+----
+HibernateValidatorConfiguration config = Validation.byProvider( HibernateValidator.class ).configure();
+
+ConstraintMapping mapping = config.createConstraintMapping();
+mapping.type( OrderService.class )
+    .method( "placeOrder", Item.class, int.class )
+        .ignoreAnnotations( true )
+        .parameter( 0 )
+            .ignoreAnnotations( false );
+config.addMapping( mapping );
+
+Validator validator = config.buildValidatorFactory().getValidator();
+----
+
+Please refer to the https://github.com/hibernate/hibernate-validator/blob/5.2.2.Final/changelog.txt[change log] for the complete list of all issues.
+You can get the release with Maven, Gradle etc. using the GAV coordinates _org.hibernate:hibernate-validator::5.2.2.Final_.
+Alternatively, a distribution bundle is provided on on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.2.2.Final/hibernate-validator-5.2.2.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.2.2.Final/hibernate-validator-5.2.2.Final-dist.zip/download[ZIP]).
+
+Get in touch through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
