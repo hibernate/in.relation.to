@@ -1,0 +1,45 @@
+= The Great Jira Cleanup of 2015
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM"]
+:awestruct-layout: blog-post
+
+== What is happening?
+
+In an effort to focus attention on 5.0 and moving forward we will be bulk updating bug reports in Jira which are not indicated to affect 5.0 to request help for folks to verify that the reported issue still affects 5.0
+
+
+== Why is it happening?
+
+Now that ORM 5.0 has gone final, we need to focus our development efforts on 5.0 and beyond.  http://github.com/hibernate/hibernate-orm/wiki/Huge-Project,-Small-Team discusses why we do this.  Put simply, versions prior to 5.x are no longer maintained and bug reports which do not affect 5.0 are outside that focus.  We are asking your help to verify that the reported bug still affects version 5.0.  This is a great help to the Hibernate team and to the Hibernate community.
+
+We realize some of the issues caught up in this process may have already been caught up in the bulk clean up the last time we did it.  We apologize, but the last time we did not do a great job setting up tracking for knowing when these issues were verified.  This time we will be setting up filters so that we can see which issues are caught up in this process and which have been verified.  We will tie those that have been verified into our weekly triage meeting amongst the development team and make sure that the verified issues get looked at.
+
+
+== How will it happen?
+
+Essentially this will affect any issues which:
+
+* are a Bug report
+* are in the ORM (HHH) project
+* are Unresolved
+* have no fix-for version
+* do not list any 5.0 releases in affects version
+
+This pool of issues is defined by a Jira filter: http://hibernate.atlassian.net/issues/?filter=16961
+
+These issues will have a bulk update applied to them to:
+
+. add the label `verify-affects-5.0`
+. change status to `Awaiting Response`
+. add a comment indicating that the issue has been included in this process, along with a link to this announcement
+
+
+== What needs done?
+
+As discussed in http://github.com/hibernate/hibernate-orm/wiki/Jira-Report-Expectations, we are hoping for someone to champion these bug reports.  But really, even verifying them is a great step towards getting them resolved.
+
+http://hibernate.atlassian.net/issues/?filter=17060 defines the pool of bug reports waiting to be verified against 5.0.  We are asking for help in verifying that these issues affect 5.0.  That essentially means writing a test (or adapting an already attached test) to use 5.0 and verifying that the problem still exists.  If it does still exist in 5.0, add the specific version used to test to the list of "Affects version/s" for the Jira issue and attach the test used to verify.
+
+After a bug report is verified as affecting 5.0, the issue will move to the http://hibernate.atlassian.net/issues/?filter=17061.  This pool of issues will then become part of the triage meeting the Hibernate ORM team has (roughly) once a week to be discussed and either scheduled, resolved or rejected.
+
+Bug reports that sit in the "awaiting verification" pool will eventually be resolved as "Out of Date".  Eventually is a fluid term; we have not defined any sort of timeline for when that would happen; but I expect it would be allowed to sit there for months before we get to that point.
