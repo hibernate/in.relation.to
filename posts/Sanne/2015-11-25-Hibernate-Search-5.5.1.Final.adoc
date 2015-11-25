@@ -1,0 +1,122 @@
+= Many improvements for Hibernate Search 5.5.1.Final
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate Search 5.5.1.Final is now available!
+
+Feedback about our recent `5.5.0.Final` release has been great, and while the good news is that nobody reported significant issues,
+some people also pointed out that the new sorting system was a bit limited.
+
+So we've been working on enhancing the `FieldBridge` API to make sure that those more expert users who implement their
+own bridging would have a better control on how sorting works as well.
+
+We've also started some work to push the performance higher, and overall I'm proud to state that this `5.5.1.Final` release
+is including some small internal polish, but results in measurable improvements.
+
+
+== Sorting & FieldBridge improvements
+
+Since Hibernate Search 5.5, we recommend you explicitly mark which fields will be used for sorting via the `@SortableField` annotation.
+
+This has an effect on indexing and triggers improved query performance as long as Hibernate Search understands it can use
+the new more effective sorting strategy.
+
+As kindly reported by Ashot Golovenko, when implementing a custom `FieldBridge` there was no way to let the Hibernate Search Engine component
+know which custom created fields are valid to sort on, so even if your implementation was clever enough to index fields
+appropriately to take advantage of the new sorting capabilities, this wouldn't be used at query time.
+
+This has been fixed by introducing an extension to `FieldBridge`: `org.hibernate.search.bridge.MetadataProvidingFieldBridge`
+which allows you to configure the metadata correctly.
+Beware though: this approach is meant for expert users, and the Query engine is going to trust that the metadata you define
+is actually reflected by what your bridge implementation writes into the index.
+In case of mismatches, you'll have runtime exceptions during query time when sorting on a field which wasn't indexed as declared.
+
+See also http://docs.jboss.org/hibernate/search/5.5/reference/en-US/html_single/#sortablefield-annotation[Example 4.5. Marking fields as sortable via a custom field bridge]
+of the reference documentation.
+
+
+== Spot inefficient sorting operations easily in test suites
+
+While Hibernate Search already would log a warning when forced to perform a query using a sub-optimal sorting strategy,
+that wasn't making it very easy to spot mapping or usage mistakes.
+
+You can now set this property:
+
+====
+----
+    hibernate.search.index_uninverting_allowed = false
+----
+====
+
+and you'll have your tests fail with a reasonable exception rather than log the warning.
+
+
+== Performance improvements
+
+There are many internal improvements related to performance.
+
+The most interesting one is that now we'll be able to automatically skip scoring in various index housekeeping operations.
+This implies you'll see lower CPU usage on some index write and update operations, and also improved query performance when certain automatic filtering
+needs to be applied on your queries, such as for narrowing down the entity types, apply sharding related filtering.
+
+The sorting operations have been improved as well: we can now skip the index uninverting process when sorting on distances
+during spatial queries, or when sorting by scores.
+
+Memory usage has been reduced as well!
+Special thanks to Andrej Golovnin to have diagnosed and reported https://hibernate.atlassian.net/browse/HSEARCH-2029[HSEARCH-2029],
+that fix alone will reduce our permanent memory usage.
+
+We also reduced allocation of several short lived but heavy objects being used during indexing and query execution,
+overall this should improve the efficiency of the JVM.
+
+The performance work is an on-going challenge: I'm quite happy to see very respectable figures,
+but we're planning even more improvements, and if you have profiling data or other useful data to share
+don't be selfish and share it! Always happy to improve it further.
+
+
+== Components upgrades
+
+Several components were upgraded; most notably we're now using the latest `Apache Lucene` version `5.3.1`.
+
+* Upgrade Narayana to 5.2.5.Final
+* Upgrade JGroups to 3.6.6.Final
+* Upgrade Hibernate ORM to 5.0.4.Final
+* Upgrade Apache Lucene to 5.3.1
+* Upgrade to Hibernate Commons Annotations 5.0.1.Final
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.5.1.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-core</artifactId>
+   <version>5.0.4.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.apache.lucene</groupId>
+   <artifactId>lucene-core</artifactId>
+   <version>5.3.1</version>
+</dependency>
+----
+====
+
+== Next?
+
+We're working on version 5.6, as previously announced it's going to sport an experimental integration with Elasticsearch.
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.5.1.Final[full distribution from here],
+or get it from Maven Central using the above coordinates, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums] or http://hibernate.org/community/[mailing lists].
+
+Feedback always welcome! https://hibernate.atlassian.net/projects/HSEARCH/summary[Please let us know of any problem or suggestion].
+
+
