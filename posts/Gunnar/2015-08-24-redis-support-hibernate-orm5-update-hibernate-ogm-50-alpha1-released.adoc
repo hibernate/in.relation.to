@@ -12,7 +12,7 @@ If you are using Hibernate OGM on WildFly, you need to adapt your application to
 Check out the Hibernate OGM https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes] to learn more about migrating from earlier versions of Hibernate OGM to 5.x.
 Also the Hibernate ORM https://github.com/hibernate/hibernate-orm/blob/5.0/migration-guide.adoc[migration guide] is a recommended read.
 
-=== Experimental support for Redis
+== Experimental support for Redis
 
 Hibernate OGM 5 brings tech preview support for http://redis.io/[Redis] which is a high-performance key/value store with many interesting features.
 
@@ -87,7 +87,7 @@ This poses some interesting challenges, though, e.g. regarding type conversion (
 
 So if you are faced with the challenge of persisting object models into Redis, give this new backend a try and let us know what you think, open feature requests etc. 
 
-=== Improved mapping of `Map` properties
+== Improved mapping of `Map` properties
 
 `Map`-typed entity properties are persisted in a more natural format now in MongoDB (and also with the new Redis backend). The following shows an example:
 
@@ -144,7 +144,7 @@ An open question for us is whether other key column types should be converted in
 If for instance the `addresses` map was of type `Map<Long, Address>` one could think of storing the map keys using field names such as "1", "2" etc.
 Let us know whether that's something you'd find helpful or not.
 
-=== Support for multi-get operations
+== Support for multi-get operations
 
 One of the many optimizations in Hibernate ORM is batch fetching of lazily loaded entities.
 This is controlled using the https://docs.jboss.org/hibernate/stable/orm/javadocs/index.html?org/hibernate/annotations/BatchSize.html[@BatchSize] annotation.
@@ -156,7 +156,7 @@ and fetch entities configured for lazy loading in batches, resulting in a better
 
 At the moment the new Redis backend makes use of this, with the MongoDB and Neo4j backends https://hibernate.atlassian.net/browse/OGM-907[following soon].
 
-=== Upgrade to MongoDB driver 3.0
+== Upgrade to MongoDB driver 3.0
 
 We have upgraded to version 3.0 of the http://mongodb.github.io/mongo-java-driver/3.0/[MongoDB driver].
 Most users of Hibernate OGM should not be affected by this but down the road this will allow us for some nice performance optimizations and support of some new functionality.
@@ -174,7 +174,7 @@ hibernate.ogm.mongodb.driver.socketKeepAlive=true
 These options will be passed on to MongoDB's client builder as-is.
 Note that the previously existing option `hibernate.ogm.mongodb.connection_timeout` has been removed in favor of this new approach.
 
-=== Where can I get it?
+== Where can I get it?
 
 You can retrieve Hibernate OGM 5.0.0.Alpha1 via Maven etc. using the following coordinates:
 
