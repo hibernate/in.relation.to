@@ -1,0 +1,53 @@
+= Building the Hibernate blog with Docker on Windows
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+For my first post, I'd like to share the experience of running the http://in.relation.to/[in.relation.to] blog on my Windows machine.
+
+All the blog content is available on https://github.com/hibernate/in.relation.to[GitHub], and you can practically run the whole site on your local environment.
+
+The Hibernate blog is built with http://awestruct.org/[awestruct] from http://asciidoctor.org/docs/asciidoc-syntax-quick-reference/[Asciidoctor] files, and
+getting all the Ruby gems in place is definite not a walk in the park.
+To make matters worse, I'm running a Windows machine and all these Ruby gems are tightly coupled to Linux libraries, as I discovered after several failed attempts with the 64 bits Ruby 2.2.4 or the 32 bits Ruby 1.9.3.
+
+Luckily, there is a _dockerfile_ available, so building a https://www.docker.com/[Docker] image and run it in a dedicated container can tackle the Ruby gem hell.
+Building the Docker image was fine, but running it was a three hours _hackathon_ for both Emmanuel and I.
+
+Docker images are static and all changes are wiped out once the machine is terminated.
+Instead, we want the GitHub repository to be mounted in the Docker container, so all changes are persisted even after shutting down the docker machine.
+
+Once the image is built, we need to run this command:
+
+[source,shell]   
+---- 
+docker run -t -i -p 4242:4242 -v `pwd`:/home/dev/in.relation.to hibernate/in.relation.to
+----
+
+[NOTE]
+====
+This doesn't work on Windows because Docker needs the OS paths to be prefixed with another slash.
+====
+
+So this command must be changed to:
+
+[source,shell]  
+---- 
+docker run -t -i -p 4242:4242 -v '/'`pwd`:/home/dev/in.relation.to hibernate/in.relation.to
+----
+
+After running it, the mounted folder was just empty.
+We noticed that without the GitHub folder mounting part the Docker image could run properly, so the mounting process was the culprit.
+
+After all sorts of hacks, Emmanuel had the idea of checking the Virtual Box _Shared Folders_, and, by default, only the `C:\Users` directory is being shared.
+No wonder it was not working all along. 
+
+All my repositories being on `D:\`, we thought that adding a new shared path would fix this issue. 
+Well, it didn't.
+
+Docker must mount these Virtual Box shared folders too, but it only does so for `C:\Users`.
+
+[IMPORTANT]
+====
+After moving the checkout GitHub repository to `/c/Users/Vlad/GitHub/in.relation.to`, it all worked fine.
+====
