@@ -1,0 +1,95 @@
+= "Cassandra 2.2, @Lob mapping and @PostLoad support: Hibernate OGM 5.0.0.Beta1 released"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+It's 3 days from Christmas and as a present we decided to release the first Beta of http://hibernate.org/ogm/[Hibernate OGM] 5!
+
+The major news in this release is the mapping support for http://cassandra.apache.org[Cassandra] 2.2 new data types,
+proper handling of the @Lob annotation, post-load event support 
+and http://infinispan.org[Infinispan 8].
+
+This release also continue the process of aligning Hibernate OGM to the Hibernate 5 family.
+After the passage to Hibernate ORM 5 in the previous release, we updated http://hibernate.org/search/[Hibernate Search]
+to the 5.5 version that also includes the power of https://lucene.apache.org[Apache Lucene 5].
+
+
+http://in.relation.to/2015/08/24/redis-support-hibernate-orm5-update-hibernate-ogm-50-alpha1-released/[In the previous
+release post] we described the improvements about storing map-typed properties on MongoDB and Redis.
+We have now applied the same natural mapping on CouchDB.
+
+Check out the Hibernate OGM https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes]
+to learn more about migrating from earlier versions of Hibernate OGM to 5.x.
+
+== Cassandra 2.2 new data types
+
+Take advantage of the http://www.datastax.com/dev/blog/datastax-java-driver-2-2-0-rc1-released[new data types provided by Cassandra 2.2]:
+
+* _date_ for properties mapped using `@Temporal(TemporalType.DATE)`
+* _time_ for properties mapped using `@Temporal(TemporalType.TIME)`
+* _tinyint_ for `java.lang.Byte`
+* _smallint_ for `java.lang.Short`
+
+== PostLoad event support
+
+Thanks to David Williams contribution, the `@PostLoad` annotation will now work with Hibernate OGM.
+
+If you are not familiar with this annotation, it's part of the JPA spec and it allows to specify
+callback methods for the corresponding lifecycle event.
+
+[source, java]
+----
+@Entity
+public class Zoo {
+
+   @Id
+   private Integer id;
+
+   @ElementCollection
+   private Set<Animal> animals = new HashSet<Animal>();
+
+   private int nrOfAnimals;
+
+   ...
+
+   @PostLoad
+   public void postLoad() {
+       nrOfAnimals = animals.size();
+   }
+}
+----
+
+The `postLoad()` method will be called after all the eagerly fetched fields of the class `Zoo` 
+have been loaded from the datastore allowing us to inizialize the value of the attribute
+`nrOfElement`.
+
+Note that this code follows the JPA spec and it could be use in the same way with Hibernate ORM
+or any other JPA compliant project.
+
+== How can I add support for a new data store?
+
+I'm glad you ask, community member https://twitter.com/mp911de[Mark Paluch] contributed to the
+documentation adding a new section that explains the different components involved in the creation
+of a new backend: http://docs.jboss.org/hibernate/ogm/5.0/reference/en-US/html/ch01.html#how_to_build_support_for_a_data_store[How to build support for a data store]
+
+== What's coming next?
+
+The major features we are planning to include in the next release are the support for the Neo4j
+remote server and an alternative dialect for Redis which persists values right into hash fields.
+
+== Where can I get it?
+
+You can retrieve Hibernate OGM 5.0.0.Beta1 via Maven etc. using the following coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-core:5.0.0.Beta1_ for the Hibernate OGM core module
+* _org.hibernate.ogm:hibernate-ogm-<%BACKEND%>:5.0.0.Beta1_ for the NoSQL backend you want to use, with _<%BACKEND%>_ being one of "mongodb", "redis", "neo4j" etc.
+
+Alternatively, you can download archives containing all the binaries, source code and documentation from SourceForge.
+
+As always, we are looking forward to your feedback. The https://github.com/hibernate/hibernate-ogm/blob/5.0.0.Beta1/changelog.txt[change log] tells in detail what's in there for you.
+Get in touch through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
