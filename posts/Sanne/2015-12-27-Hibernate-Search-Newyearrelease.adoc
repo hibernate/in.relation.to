@@ -1,0 +1,62 @@
+= Great community and another release at end of year for Hibernate Search
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Version `5.5.2.Final` is now available, our latest stable version sporting integration with Hibernate ORM 5 and Apache Lucene 5.3 - the state of the art.
+
+Creating this version to be compatible with these two great OSS projects kept us busy for a good deal of this past year; I remember discussing this option with superstar OSS contributors Uwe Schindler (Apache Lucene developer) and Gustavo Nalle (Infinispan developer) at FOSDEM in January 2015! I am grateful to both for their guidance and suggestions, as driving progress forward is sometimes challenging when we strive to keep backwards compatibility as best as we can.
+
+On top of that, our same small but amazing team as been working hard on http://hibernate.org/ogm/[Hibernate OGM 5], a bit of Hibernate Validator, incredible performance improvements on Hibernate ORM "classic" and is still tinkering on the internals of Hibernate Search to make an Elasticsearch backend an alternative to plain Lucene.
+
+
+== Feel like helping with the Elasticsearch integration?
+
+Version 5.6 will feature an experimental integration with https://www.elastic.co/products/elasticsearch[Elasticsearch]. Early feedback would be very welcome!
+If you feel like helping, quite some code is integrated in the _master_ branch already and there are clear TODO and FIXME comments to be found in the code.
+
+Feel free to join the hacking! But best to let us know which area you feel like working on to avoid duplication of efforts and conflicting patches.
+
+
+== The 5.5.2.Final release and our great community
+
+Technically I pushed the release button the 24th, but I couldn't publish the blog until now because of travels.
+
+On top of the improvements from previous http://in.relation.to/2015/11/25/Hibernate-Search-5/[5.5.1.Final release which sported significant performance improvements], this version now incorporates several important corrections by Yoann Rodière and Guillaume Smet around metadata which was producing incorrect range queries for embedded numeric types.
+
+Yoann also contributed another great performance improving patch, by limiting the recursion triggered by `@ContainedIn` more strictly, by considering the indexed paths and not just the recursion depth. You might not notice this if you have very simple flat models, but this can provide a very significant boost for all those of you using Hibernate Search to index rich models with extensive usage of `@ContainedIn` annotations.
+
+Many thanks to Yoann and Guillaume, they are "power users" who do the right thing: their hands-on regular feedback is invaluable, not to mention they send such great patches for everybody else to benefit from.
+Not least, this is very encouraging for us: let us know which great things you're building with these libraries!
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.5.2.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-core</artifactId>
+   <version>5.0.6.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.apache.lucene</groupId>
+   <artifactId>lucene-core</artifactId>
+   <version>5.3.1</version>
+</dependency>
+----
+====
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.5.2.Final[full distribution from here],
+or get it from Maven Central using the above coordinates, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums] or http://hibernate.org/community/[mailing lists].
+
+Feedback always welcome! https://hibernate.atlassian.net/projects/HSEARCH/summary[Please let us know of any problem or suggestion].
+
+
