@@ -1,0 +1,196 @@
+= JPA test case templates
+Vlad Mihalcea
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+In the good spirit of open source, any Hibernate ORM issue should be accompanied by a replicating test case.
+The test case is a proof that the issue really exists and is reproducible.
+
+To simplify the test case writing procedure, Hibernate provides a series of templates that you can just grab from https://github.com/hibernate/hibernate-test-case-templates[GitHub].
+Thanks to these tests, the issue reporter can focus on the actual persistence-related problem since the templates take care of all the bootstrapping logic.
+
+Previously, the test case templates were available only for the http://in.relation.to/2015/06/26/hibernate-test-case-templates/[Hibernate native API],
+which was fine as long as you're familiar with it.
+Because many projects use Hibernate as a JPA provider, it's very convenient to offer a JPA bootstrap environment as well.
+And that's what we did.
+
+Next, I'm going to provide a step-by-step guide for writing a JPA-based Hibernate test case.
+
+First, you need to either fork or download the https://github.com/hibernate/hibernate-test-case-templates[hibernate-test-case-templates] GitHub repository.
+
+This repository has an `orm` folder containing two Maven modules:
+
+hibernate-orm-4:: To replicate issues for Hibernate 4.x
+hibernate-orm-5:: To replicate issues for Hibernate 5.x
+
+Each module has three templates:
+
+ORMStandaloneTestCase.java:: This one is a Hibernate native test case (you get access to the `SessionFactory` and you operate with a `Session`), but it requires you to manually bootstrap the Hibernate environment.
+ORMUnitTestCase.java:: This is also a Hibernate native test case (you get access to the `SessionFactory` and you operate with a `Session`), but the bootstrapping is provided on your behalf.
+JPAUnitTestCase.java:: This is the new template that needs to be used for replicating an issue using the Java Persistence API (you get access to the `EntityManagerFactory` and you operate with an `EntityManager`).
+
+[NOTE]
+====
+When replicating an issue with the Hibernate native API, the `ORMUnitTestCase` is usually preferred.
+====
+
+This post focuses on the newly added `JPAUnitTestCase` which looks like this:
+
+====
+[source,java]
+----
+public class JPAUnitTestCase {
+
+    private EntityManagerFactory entityManagerFactory;
+
+    @Before
+    public void init() {
+        entityManagerFactory = Persistence.createEntityManagerFactory( "templatePU" );
+    }
+
+    @After
+    public void destroy() {
+        entityManagerFactory.close();
+    }
+
+    // Entities are auto-discovered, so just add them anywhere on class-path
+    // Add your tests, using standard JUnit.
+    @Test
+    public void hhh123Test() throws Exception {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+        // Do stuff...
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+}
+----
+====
+
+The `EntityManagerFactory` is created before every test case and destroyed afterwards.
+The test case logic goes inside the `@Test` Junit method.
+
+[NOTE]
+====
+You should name the test method after the Hibernate JIRA issue you are trying to replicate.
+====
+
+The `EntityManagerFactory` uses the `templatePU` Persistence Unit, which is located under `src/test/resources/META-INF/persistence.xml`.
+By default, this file looks like this:
+
+====
+[source,xml]
+----
+<persistence xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+             http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+             version="2.1">
+
+    <persistence-unit name="templatePU" transaction-type="RESOURCE_LOCAL">
+
+        <description>Hibernate test case template Persistence Unit</description>
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+        <properties>
+            <property name="hibernate.archive.autodetection" value="class, hbm"/>
+
+            <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+            <property name="hibernate.connection.driver_class" value="org.h2.Driver"/>
+            <property name="hibernate.connection.url" value="jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1"/>
+            <property name="hibernate.connection.username" value="sa"/>
+
+            <property name="hibernate.connection.pool_size" value="5"/>
+
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.hbm2ddl.auto" value="create-drop"/>
+
+            <property name="hibernate.max_fetch_depth" value="5"/>
+
+            <property name="hibernate.cache.region_prefix" value="hibernate.test"/>
+            <property name="hibernate.cache.region.factory_class"
+                      value="org.hibernate.testing.cache.CachingRegionFactory"/>
+
+            <!--NOTE: hibernate.jdbc.batch_versioned_data should be set to false when testing with Oracle-->
+            <property name="hibernate.jdbc.batch_versioned_data" value="true"/>
+
+            <property name="javax.persistence.validation.mode" value="NONE"/>
+            <property name="hibernate.service.allow_crawling" value="false"/>
+            <property name="hibernate.session.events.log" value="true"/>
+        </properties>
+
+    </persistence-unit>
+</persistence>
+----
+====
+
+[NOTE]
+====
+The `persistence.xml` configuration file is already set up for bootstrapping Hibernate, offering a reasonable default environment.
+In case you want to provide a different configuration, like using JTA with a stand-alone Transaction Manager, you'll have to change the default configuration.
+====
+
+All entities are auto-discovered, so you can place them anywhere on classpath.
+In this example, we are going to use the following entity:
+
+====
+[source,java]
+----
+@Entity
+public class Event {
+
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @Temporal(TemporalType.TIMESTAMP )
+    private Date createdOn;
+
+    public Event() {
+    }
+
+    public Event(Date createdOn) {
+        this.createdOn = createdOn;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Date getCreatedOn() {
+        return createdOn;
+    }
+}
+----
+====
+
+Now, the persistence logic can be added to the JUnit test method:
+
+====
+[source,java]
+----
+@Test
+public void hhh123Test() throws Exception {
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    entityManager.getTransaction().begin();
+
+    Event event = new Event( new Date() );
+    entityManager.persist( event );
+
+    Event dbEvent = entityManager.createQuery(
+            "select e " +
+            "from Event e", Event.class)
+        .getSingleResult();
+    assertEquals(event.getCreatedOn(), dbEvent.getCreatedOn());
+
+    entityManager.getTransaction().commit();
+    entityManager.close();
+}
+----
+====
+
+That's it! You can now provide a Hibernate test case using the standard Java Persistence API.
