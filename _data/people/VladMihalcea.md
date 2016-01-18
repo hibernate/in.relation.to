@@ -10,4 +10,4 @@ Hibernate Developer Advocate. Author of [High-Performance Java Persistence](http
 
 Follow him on [twitter](http://twitter.com/vlad_mihalcea).  
 
-[more...](https://vladmihalcea.com)
+[more...](http://vladmihalcea.com)
