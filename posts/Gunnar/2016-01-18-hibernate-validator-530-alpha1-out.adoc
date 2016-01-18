@@ -1,0 +1,123 @@
+= "Hibernate Validator 5.3.0.Alpha1 is out"
+Gunnar Morling
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+It's my pleasure to announce the first release of Hibernate Validator 5.3!
+
+The overarching idea for the 5.3 timeline is to prototype several features which may potentially be standardized in the Bean Validation 2.0 specification.
+For instance we'll work on a solution for the long-standing request for https://hibernate.atlassian.net/browse/HV-706[sorting the constraints on single properties].
+
+If you'd like to see any specific features addressed in that prototyping work (and eventually included in BV 2.0),
+then please get in touch and let us know which are the most important things you are missing from the spec.
+We've compiled a https://hibernate.atlassian.net/issues/?jql=project%20%3D%20BVAL%20AND%20fixVersion%20%3D%201.2%20ORDER%20BY%20priority%20DESC[first list of issues] we are considering for inclusion in BV 2.0.
+For sure we cannot address all of them, so it'll greatly help if you tell us what would be most helpful to you.
+
+== Dynamic payloads for constraints
+
+To get things rolling, the Alpha 1 allows to you to enrich custom constraint violations with additional context data.
+Code examining constraint violations can access and interpret this data in a safer way than by parsing string-based constraint violation messages.
+Think of it as a dynamic variant of the existing Bean Validation http://beanvalidation.org/1.1/spec/#constraintsdefinitionimplementation-constraintdefinition-payload[payload feature].
+
+As an example, let's assume we have a constraint `@Matches` for making sure a long property matches a given value with some tolerance:
+
+[source,java]
+----
+public static class Package {
+
+    @Matches(value=1000, tolerance=100)
+    public long weight;
+}
+----
+
+If the annotated value is invalid, the resulting constraint violation should have a specific _severity_, depending on whether the value lies within the given tolerance or not.
+That severity value could then for instance be used for formatting the error specifically in a UI.
+
+The definition of the `@Matches` constraint is nothing new, it's just a regular custom constraint annotation:
+
+[source,java]
+----
+@Retention(RUNTIME)
+@Constraint(validatedBy = { MatchesValidator.class })
+@Documented
+public @interface Matches {
+
+    public enum Severity { WARN, ERROR; }
+
+    String message() default "Must match {value} with a tolerance of {tolerance}";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+
+    long value();
+    long tolerance();
+}
+----
+
+The constraint validator is where it's getting interesting:
+
+[source,java]
+----
+public class MatchesValidator implements ConstraintValidator<Matches, Long> {
+
+    private long tolerance;
+    private long value;
+
+    @Override
+    public void initialize(Matches constraintAnnotation) {
+        this.value = constraintAnnotation.value();
+        this.tolerance = constraintAnnotation.tolerance();
+    }
+
+    @Override
+    public boolean isValid(Long value, ConstraintValidatorContext context) {
+        if ( value == null ) {
+            return true;
+        }
+
+        if ( this.value == value.longValue() ) {
+            return true;
+        }
+
+        HibernateConstraintValidatorContext hibernateContext = context.unwrap(
+                HibernateConstraintValidatorContext.class
+        );
+        hibernateContext.withDynamicPayload(
+                Math.abs( this.value - value ) < tolerance ? Severity.WARN : Severity.ERROR
+        );
+
+        return false;
+    }
+}
+----
+
+In `isValid()` the severity object is set via `HibernateConstraintValidatorContext#withDynamicPayload()`.
+Note that the payload object must be serializable in case constraint violations are sent to remote clients, e.g. via RMI.
+
+Validation clients may then access the dynamic payload like so:
+
+[source,java]
+----
+HibernateConstraintViolation<?> violation = violations.iterator()
+    .next()
+    .unwrap( HibernateConstraintViolation.class );
+
+if ( violation.getDynamicPayload( Severity.class ) == Severity.ERROR ) {
+    // ...
+}
+----
+
+== What else is there?
+
+Other features of the Alpha 1 releases are https://hibernate.atlassian.net/browse/HV-1039[improved OSGi support] (many thanks to Benson Margulies for this!),
+optional https://hibernate.atlassian.net/browse/HV-872[relaxation of parameter constraints] (kudos to Chris Beckey!)
+and several bug fixes and improvements, amongst them https://hibernate.atlassian.net/browse/HV-864[support for cross-parameter constraints] in the annotation processor (cheers to Nicola Ferraro!).
+
+You can find the complete list of all addressed issues in the https://github.com/hibernate/hibernate-validator/blob/5.3.0.Alpha1/changelog.txt[change log].
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}::5.3.0.Alpha1_.
+Alternatively, a distribution bundle containing all the bits is provided on on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.3.1.Alpha1/hibernate-validator-5.3.0.Alpha1-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.3.1.Alpha1/hibernate-validator-5.3.0.Alpha1-dist.zip/download[ZIP]).
+
+To get in touch, use the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
