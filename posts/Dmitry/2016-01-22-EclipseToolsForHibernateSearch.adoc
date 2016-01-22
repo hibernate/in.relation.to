@@ -1,0 +1,74 @@
+= Eclipse tools for Hibernate Search
+Dmitry  Bocharov
+:awestruct-tags: [ "Hibernate Search", "JBoss Tools" ]
+:awestruct-layout: blog-post
+---
+I'm glad to announce the first release of the https://marketplace.eclipse.org/content/hibernate-search-plugin[Eclipse plugin for Hibernate Search].
+In this post I want to describe its features and ask you for any comments, positive or (even more important for me) negative.
+
+
+== Installation
+
+The plugin was made as a feature of https://github.com/jbosstools/jbosstools-hibernate[jbosstools-hibernate plugin], which can be http://tools.jboss.org/downloads/[downloaded] and installed on its own or together with the full JBoss Tools distribution.
+After that you can install the Hibernate Search plugin via the Eclipse Marketplace.
+
+All requirements, such as eclipse version and platform support, are listed in the link.
+
+In order to work with Hibernate Search you have to set the Hibernate configuration properties `hibernate.search.default.directory_provider` and `hibernate.search.default.indexBase`.
+
+See also http://hibernate.org/search/documentation/getting-started/[Getting started with Hibernate Search].
+
+
+== Functionality
+
+The plugin was thought to be some kind of a https://github.com/DmitryKey/luke[Luke tool] inside Eclipse.
+It was thought to be more convenient than launching a separate application, and picks up the configuration directly from your Hibernate configuration.
+
+Three options were added to the console configurations: Index rebuild, Explore documents and Try analysers.
+
+image::http://4.bp.blogspot.com/-zdlCGJTL7RA/VqC-WTMDg2I/AAAAAAAABIE/NNb6h0B36iI/s1600/menu.jpg[Index Rebuild Action screenshot,align="center",style="margin:10px 10px"]
+
+== Index rebuild
+
+When introducing Hibernate Search in an existing application, you have to create an initial Lucene index for the data already present in your database.
+
+The option "Rebuild index" will do so by re-creating the Lucene index in the directory specified by the `hibernate.search.default.indexBase` property.
+
+image::http://2.bp.blogspot.com/-tQQhxH56Mgw/VqC-Zh4F5DI/AAAAAAAABIk/To6asNxc6vg/s400/markedIndexed.jpg[Screenshot of Hibernate Search indexed entities,align="center",style="margin:10px 10px"]
+
+image::http://1.bp.blogspot.com/-dq8I2MnOdaU/VqC-ZPNWgoI/AAAAAAAABIo/49TQVpSzzPQ/s640/GeneratedIndexes.jpg[Screenshot for Hibernate Search configuration properties,align="center",style="margin:10px 10px"]
+
+
+== Explore Documents
+
+After creating the initial index you can now inspect the Lucene Documents it contains.
+
+All entities annotated as `@Indexed` are displayed in the Lucene Documents tab.
+Tick the checkboxes as needed and load the documents. Iterate through the documents using arrows.
+
+image::http://2.bp.blogspot.com/-5xcXGTSDABI/VqC-ZDFKFSI/AAAAAAAABIc/GGOw_j_PEnE/s1600/luceneDocs.jpg[Screenshot of Lucene Documents inspection,align="center",style="margin:10px 10px"]
+
+
+== Try the Analyzers
+
+The "try analyzers" instrument allows you to view the result of work of different Lucene Analyzers.
+The combo-box contains all classes in the workspace which extend org.apache.lucene.analysis.Analyzer, including custom implementations created by the user. While you type the text you want to analyse, the result immediately appears in the AnalysisResultTab view.
+
+image::http://1.bp.blogspot.com/-yHTxwJhpgRw/VqC-ZHEiceI/AAAAAAAABIg/YVqn8uOk0p8/s1600/analyzers.jpg::[Screenshot of Try Analyzers,align="center",style="margin:10px 10px"]
+
+
+== Possible issues
+
+One problem which you might have is that "Index rebuild" option seems to do nothing. As a temporary workaround try to set the Hibernate configuration property "hibernate.search.autoregister_listeners" to "true" explicitly.
+
+If you have any other problems, such as unexpected behaviour, strange windows with exceptions or any errors in the Error log view feel free to contact me directly anywhere or just create an issue in the https://github.com/bdshadow/org.jboss.tools.hibernate.search/issues[plugin github page].
+
+== Plans
+
+* Make options "Index rebuild" and "Explore documents" available not only for configurations, but also for concrete entities under session factory.
+* Make Lucene Documents view more comfortable to use and add there more features from Luke tool, for example, the ability to search over documents.
+* Increasing stability of the plugin and implementing your suggestions!
+
+This post was replicated from: http://bdshadow.blogspot.ru/2016/01/hibernate-search-tools-100alpha-release.html
+
+
