@@ -1,7 +1,7 @@
 ---
 name: Brett Meyer
 photo:
-level: 10
+level: 1
 website: http://3riverdev.com
 location: Fort Wayne, IN, USA
 occupation: Software Engineer @ Red Hat
