@@ -1,0 +1,78 @@
+= ORM 5.1 feature release
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+The Hibernate team is proud to announce the release of ORM 5.1 which includes a number of new features and enhancements, including:
+
+== Entity joins (or ad hoc joins)
+
+In HQL you now have the ability to define a join to an entity, not just a mapped association.  For example:
+
+[source, JAVA]
+----
+select ...
+from FinancialRecord f
+    left join User u 
+        on r.lastUpdateBy = u.username
+----
+
+See https://hibernate.atlassian.net/browse/HHH-16[HHH-16] for details.
+
+
+== load-by-multiple-id API
+
+Loading multiple entities of same type by identifier is now a first class API much like loading a single entity by identifier.  For example:
+
+[source, JAVA]
+----
+// load Users 1, 2 and 3 at one shot
+List<User> users = session.byMultipleIds(User.class)
+    .multiLoad( 1, 2, 3 );
+----
+
+See https://hibernate.atlassian.net/browse/HHH-7572[HHH-7572] for details.
+
+
+== CDI integration improvements
+
+Especially in regards to in-container integration, we have seen gaps between the JPA, CDI and EE specs in terms of timing between
+JPA and CDI components.  Generally this manifests as Hibernate trying to access the CDI BeanManager too soon.  5.1 offers
+some solutions to deal with this.  Long term we are working with the Weld development team to propose a solution at the JPA and
+CDI spec levels.
+
+See https://hibernate.atlassian.net/browse/HHH-8706[HHH-8706] and https://hibernate.atlassian.net/browse/HHH-10477[HHH-10477] for details.
+
+
+== @Embeddables and all null column values
+
+Historically Hibernate would always treat all null column values for an @Embeddable to mean that the @Embeddable should itself be null.  5.1
+allows applications to dictate that Hibernate should instead use an empty @Embeddable instance.  This is achieved via an opt-in setting:
+`hibernate.create_empty_composites.enabled`.
+
+See https://hibernate.atlassian.net/browse/HHH-7610[HHH-7610] for details.
+
+
+== Envers audit queries can now refer to to-one associtions
+
+When deinfing an Envers audit query you can now refer across an association.
+
+A further performance improvement here will be for this feature to leverage the entity-join
+work (HHH-16) mentioned above.  That work did not get done in time for inclusion in 5.1.0,
+but will be in 5.1.1.
+
+See https://hibernate.atlassian.net/browse/HHH-3555[HHH-3555] for details.
+
+'''
+
+In addition there have been many performance improvements and bug fixes.  
+
+There is a https://github.com/hibernate/hibernate-orm/blob/master/migration-guide.adoc[migration guide] for migrating from 5.0->5.1.  This is a temporary location; we hope to have a better option as part of http://hibernate.org longer term.
+
+The complete list of changes can be found https://hibernate.atlassian.net/projects/HHH/versions/19355[here] (or https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=19355[here] for people without a Hibernate Jira account).
+
+For information on consuming the release via your favorite dependency-management-capable build tool, see http://hibernate.org/orm/downloads/
+
+For those of you allergic to dependency-management-capable build tools, the release bundles can be obtained from 
+http://sourceforge.net/projects/hibernate/files/hibernate-orm/5.1.0.Final/[SourceForge] or 
+http://bintray.com/hibernate/bundles/hibernate-orm/5.1.0.Final[BinTray].
