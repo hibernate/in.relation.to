@@ -1,0 +1,33 @@
+= The New Hibernate ORM User Guide
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+== Big news
+
+We are glad to announce that the new http://docs.jboss.org/hibernate/orm/5.1/userguide/html_single/Hibernate_User_Guide.html[Hibernate ORM User Guide] has become the default Hibernate 5.1 reference documentation.
+This process was started last summer, and it was one of the primary goals of the Hibernate 5 project version.
+
+== What's changed
+
+Previously, all the documentation was written in DocBook, and we wanted to move away to a more human-friendly format.
+Thanks to https://twitter.com/mojavelinux[Dan Allen] and the Asciidoctor community, we now have a tool to write technical documentation where the actual content doesn't get lost in a myriad of XML markup tags.
+
+All the examples are embedded from unit tests which are, of course, available on https://github.com/hibernate/hibernate-orm/tree/master/documentation/src/test/java/org/hibernate/userguide[GitHub].
+This way, we ensure that all code snippets are valid and relevant in the future as well (removing a deprecated class will trigger a test failure, and we can immediately update the broken example).
+
+The previous documentation was featuring many XML-based examples which were no longer relevant for the vast majority of our users.
+Because it is very common to use Hibernate as a JPA provider, most examples are written according to the Java Persistence API specifications but, since Hibernate is more than a JPA provider, we also feature Hibernate-specific examples which cover use cases that are not supported by the JPA standard.
+
+== What's to come
+
+As previously stated, the User Guide is not finished yet.
+In the near future, we are going to enhance the following sections as well:
+
+- Hibernate support for calling stored procedures,
+- Migrating Hibernate Envers examples to unit tests,
+- Multi-tenancy examples,
+- A new section about Hibernate Spatial.
+
+Enjoy reading it and we are looking forward to getting your feedback!
