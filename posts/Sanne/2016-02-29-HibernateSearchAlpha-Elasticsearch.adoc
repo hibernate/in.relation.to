@@ -1,0 +1,170 @@
+= Hibernate Search 5.6.0.Alpha2: Elasticsearch integration
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Today we're proud to announce the first Alpha release sporting experimental integration with https://www.elastic.co/products/elasticsearch[Elasticsearch]!
+
+We also updated to use Apache Lucene 5.5 - the latest stable release of our favourite search engine -
+as of course we're not abandoning our traditional users!
+
+== What is the Hibernate Search / Elasticsearch integration?
+
+Both Hibernate Search and Elasticsearch can do much more, but for the purpose of explaining this integration at an high level I'll simplify their definitions as:
+
+Hibernate Search:: is a popular extension of the super popular Hibernate ORM framework, which makes it easy to index and query your entities using Apache Lucene.
+
+Elasticsearch:: is a very popular REST server which wraps the capabilities of Apache Lucene and makes it easier to scale this service horizontally.
+
+Until today when using Hibernate Search you'd be using Apache Lucene directly, in what we will now call "embedded mode".
+In this mode a query is executed by the same process of your application, and while indexing happens in background still the overhead of such
+processing is happening within the same server and within the same JVM process as your Hibernate powered application.
+
+With the Elasticsearch integration, rather than indexing your entities directly by managing the Lucene resources, we will
+be sending RPCs to an Elasticsearch cluster to achieve a very similar purpose: after all it is also Lucene based, so the
+feature match is extremely close!
+
+This means that we're able to transparently map all the current features to this new alternative backend,
+and by so doing give you more architectural choices at minimum required changes in your applications:
+the goal is that for most users the differences will be mostly in configuration details.
+
+When using Elasticsearch we will need to send an `RPC`s over the network to run queries and index updates,
+but on the other hand you benefit from _Microservices_ - style decoupling and all the nice features
+that Elasticsearch can provide in terms of running and managing an horizontally scalable cluster.
+
+==== In a nutshell...
+
+Elasticsearch will manage the index for you, Hibernate ORM will manage your objects and the transactions,
+Hibernate Search will transparently keep Elasticsearch synchronized to your database transactions
+and let you query your Domain Model returning managed objects, but moving the heavy lifting to an
+independent Elasticsearch service.
+
+
+== Elasticsearch integration status
+
+This is literally being developed right now, so do not expect this to be feature complete nor reliable enough to run
+in a production system. Still, we already have a great set of features working so it's a nice time to start
+playing with it and hopefully provide some feedback.
+
+The documentation sports a new http://docs.jboss.org/hibernate/search/5.6/reference/en-US/html_single/#_integration_with_elasticsearch[Elasticsearch chapter],
+which is a good place to start.
+
+== Configuring the Elasticsearch backend
+
+=== Dependencies
+
+You'll need a new dependency, named `org.hibernate:hibernate-search-backend-elasticsearch`.
+
+The Maven dependencies for Hibernate Search with Elasticsearch:
+
+====
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-backend-elasticsearch</artifactId>
+   <version>5.6.0.Alpha2</version>
+</dependency>
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.6.0.Alpha2</version>
+</dependency>
+----
+====
+
+=== Configuration options
+
+Point it to your Elasticsearch node:: `hibernate.search.elasticsearch.host \http://127.0.0.1:9200`
+Enable the backend to be used for all your indexed entities:: `hibernate.search.default.indexmanager elasticsearch`
+Allow it to destroy and create indexes:: `hibernate.search.elasticsearch.index_management_strategy CREATE_DELETE`
+
+For details about these configuration options see the http://docs.jboss.org/hibernate/search/5.6/reference/en-US/html_single/#_integration_with_elasticsearch[Reference documentation].
+
+=== Updating the indexes
+
+As with Lucene in embedded mode, the indexes are updated automatically when you create or update
+entities which are mapped to Hibernate Search using the same annotations already familiar from our
+traditional index mapping (see http://docs.jboss.org/hibernate/search/5.6/reference/en-US/html_single/#search-mapping[Mapping entities to the index structure]).
+
+=== Running a query on an Elasticsearch mapped entity
+
+In many cases the existing way (see http://docs.jboss.org/hibernate/search/5.6/reference/en-US/html_single/#search-query[Querying]) of running queries should work:
+we do automatically translate the most common types of Apache Lucene queries and many of the queries generated by the Hibernate Search DSL.
+
+On top of translating Lucene queries, you can directly create Elasticsearch queries by using either its String format or a JSON format:
+
+Creating an Elasticsearch native query from a string:
+
+====
+[source, JAVA]
+----
+FullTextSession fullTextSession = Search.getFullTextSession(session);
+QueryDescriptor query = ElasticsearchQueries.fromQueryString("title:tales");
+List<?> result = fullTextSession.createFullTextQuery(query, ComicBook.class).list();
+----
+====
+
+Creating an Elasticsearch native query from JSON:
+
+====
+[source, JAVA]
+----
+FullTextSession fullTextSession = Search.getFullTextSession(session);
+QueryDescriptor query = ElasticsearchQueries.fromJson(
+      "{ 'query': { 'match' : { 'lastName' : 'Brand' } } }");
+List<?> result = session.createFullTextQuery(query, GolfPlayer.class).list();
+----
+====
+
+=== Remaining work ahead
+
+This is an early preview, and while we're proud of some of the progress there are several areas which still need much coding.
+On the other hand, implementing some of these is not very hard: this might be the perfect time to join the project.
+
+Please check with JIRA and the mailing lists for updates, but at the time of writing this at least the following features are known to not work yet:
+
+ - Analyzer definitions will not be applied
+ - Spatial queries need more work
+ - Filters can't be applied yet
+ - Faceting is mostly implemented
+ - Scheduled index optimisation is not applied
+ - Query timeouts
+ - Delete by queries
+ - Resolution for Date type mapping is ignored
+ - Scrolling on large results won't work yet
+ - MoreLikeThis queries
+ - Mixing Lucene based indexes and Elasticsearch based indexes
+ 
+Any aspect related to performance and efficiency will also be looked at only at the end of basic feature development.
+
+=== API Changes
+
+In the `5.x` series we will keep backward compatibility.
+
+That might come at a cost of not perfect Hibernate Search / Elasticsearch integration API wise.
+This is something we will address in the `6.x` series. But our focus is on offering the right set of features and get feedback in `5.x` before improving the APIs.
+
+In a nutshell, `6.x` will depend on how you use this feature in `5.6`.
+
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Get it from Maven Central using the above coordinates.
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/5.6.0.Alpha2/[Sourceforge] are available as well, but these don't contain the Elasticsearch integration components yet.
+Similarly the WildFly modules also are not including the new Elasticsearch extensions yet.
+
+== Feedback
+
+Feedback always welcome!
+
+Please let us know of any problem or suggestion by creating an https://hibernate.atlassian.net/projects/HSEARCH/summary[issue on JIRA],
+or by sending an email to the developer's  http://hibernate.org/community/[developer's mailing lists], or posting on the https://forums.hibernate.org/viewforum.php?f=9[forums].
+
+We also monitor Stack Overflow; when posting on SO please use the tag http://stackoverflow.com/questions/tagged/hibernate-search[`hibernate-search`]. 
+
