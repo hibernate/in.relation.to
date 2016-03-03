@@ -1,0 +1,68 @@
+= "Converting projection results of full-text queries into POJOs"
+Gunnar Morling
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch" ]
+:awestruct-layout: blog-post
+---
+During my talk at http://voxxeddaysvienna2016.sched.org/grid/[VoxxedVienna] on using http://voxxeddaysvienna2016.sched.org/event/68pl/from-hibernate-to-elasticsearch-in-no-time[Hibernate Search with Elasticsearch] earlier this week,
+there was an interesting question which I couldn't answer right away:
+
+"When running a full-text query with a projection of fields, is it possible to return the result as a list of POJOs rather than as a list of arrays of `Object`?"
+
+The answer is: Yes, it is possible, http://docs.jboss.org/hibernate/orm/current/javadocs/index.html?org/hibernate/transform/ResultTransformer.html[result transformers] are the right tool for this.
+
+Let's assume you want to convert the result of a projection query against the https://github.com/hibernate/hibernate-demos/blob/master/hibernate-search/hsearch-with-elasticsearch/src/main/java/org/hibernate/demos/hswithes/model/VideoGame.java[VideoGame] entity shown in the talk into the following DTO (data transfer object):
+
+[source,java]
+----
+public static class VideoGameDto {
+
+    private String title;
+    private String publisherName;
+    private Date release;
+
+    public VideoGameDto(String title, String publisherName, Date release) {
+        this.title = title;
+        this.publisherName = publisherName;
+        this.release = release;
+    }
+
+    // getters...
+}
+----
+
+This is how you could do it via a result transformer:
+
+[source,java]
+----
+FullTextEntityManager ftem = ...;
+
+QueryBuilder qb = ftem.getSearchFactory()
+    .buildQueryBuilder()
+    .forEntity( VideoGame.class )
+    .get();
+
+FullTextQuery query = ftem.createFullTextQuery(
+    qb.keyword()
+        .onField( "tags" )
+        .matching( "round-based" )
+        .createQuery(),
+    VideoGame.class
+    )
+    .setProjection( "title", "publisher.name", "release" )
+    .setResultTransformer( new BasicTransformerAdapter() {
+        @Override
+        public VideoGameDto transformTuple(Object[] tuple, String[] aliases) {
+            return new VideoGameDto( (String) tuple[0], (String) tuple[1], (Date) tuple[2] );
+        }
+    } );
+
+List<VideoGameDto> results = query.getResultList();
+----
+
+I've https://github.com/hibernate/hibernate-demos/blob/master/hibernate-search/hsearch-with-elasticsearch/src/test/java/org/hibernate/demos/HibernateSearchWithElasticsearchIT.java#L265..L298[pushed this example] to the demo repo on GitHub.
+
+There are also some ready-made implementations of the `ResultTransformer` interface which you might find helpful.
+So be sure to check out its type hierarchy.
+For this example I found it easiest to extend `BasicTransformerAdapter` and implement the `transformTuple()` method by hand.
+
+To the person asking the question: Thanks, and I hope this answer is helpful to you!
