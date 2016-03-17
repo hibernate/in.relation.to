@@ -1,0 +1,46 @@
+= Third milestone for Elasticsearch support
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Having fixed several issues and tasks since the previous milestone, it's time to publish our third milestone
+towards Elasticsearch integration: Hibernate Search version 5.6.0.Alpha3 is now available!
+
+== Migration from Hibernate Search 5.5.x
+
+Even if you're not interested in the new Elasticsearch support, you might want to try out this version as
+it benefits from Apache Lucene 5.5.0.
+
+If you ignore the new features and want to simply use Lucene in embedded mode the migration is easy,
+and as usual we are maintaining notes regarding relevant API changes in the
+http://hibernate.org/search/documentation/migrate/5.6/[Migration Guide to Hibernate Search 5.6].
+
+== Elasticsearch support progress
+
+ - you can now use the Analyzers from Elasticsearch
+ - Multiple operations will now be sent to Elasticsearch as a single batch to improve both performance and consistency
+ - Spatial indexing and querying is now feature complete
+ - We'll wait for Elasticsearch to be "green" before attempting to use it at boot
+ - Many improvements in the query translation
+ - Error capture and reporting was improved
+ - the Massindexer is working now, but is not yet using efficient bulk operations
+ - the Elasticsearch extensions are now included in the WildFly modules
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Get it from Maven Central using the above coordinates.
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/5.6.0.Alpha3/[Sourceforge] are available as well.
+
+== Feedback
+
+Feedback always welcome!
+
+Please let us know of any problem or suggestion by creating an https://hibernate.atlassian.net/projects/HSEARCH/summary[issue on JIRA],
+or by sending an email to the developer's  http://hibernate.org/community/[developer's mailing lists], or posting on the https://forums.hibernate.org/viewforum.php?f=9[forums].
+
+We also monitor Stack Overflow; when posting on SO please use the tag http://stackoverflow.com/questions/tagged/hibernate-search[`hibernate-search`]. 
+
