@@ -1,0 +1,135 @@
+= "Redis Cluster support, Redis hash mapping and more MongoDB CLI syntax: Hibernate OGM 5 CR1 released"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We are getting closer and closer to the final release of http://hibernate.org/ogm/[Hibernate OGM] 5.
+
+This release includes support for http://redis.io/topics/cluster-tutorial[Redis Cluster] and
+a new dialect to store data within http://redis.io[Redis] hashes; `java.util.UUID` are now
+using the native `uuid` type in http://cassandra.apache.org[Apache Cassandra];
+more queries are now supported using the https://www.mongodb.com/[MongoDB] CLI syntax.
+
+This release is also aligned to the Hibernate 5 family and it will work with http://hibernate.org/orm[Hibernate ORM] 5,
+http://hibernate.org/search[Hibernate Search] 5.5 and the latest http://wildfly.org/[WildFly] 10.
+Check the http://in.relation.to/2015/12/21/hibernate-ogm-5-beta1-released[previous post] for more details about it.
+
+The https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes]
+contains more information about migrating from earlier versions of Hibernate OGM to 5.x.
+
+Have a look at the https://github.com/hibernate/hibernate-ogm/blob/5.0.0.CR1/changelog.txt[change log] for a list
+of everything included in this release.
+
+== Redis Cluster support
+
+Enabling the support for Redis Cluster is a matter of setting the following property to `true`:
+
+[source]
+----
+hibernate.ogm.redis.cluster = true
+----
+
+When this property is enabled, data will be stored across Redis cluster nodes according to the
+http://redis.io/topics/cluster-spec#keys-distribution-modelbased[Redis key distribution model]
+on the hash slot of the key of each entity.
+
+Check the documentation for more details about the
+http://docs.jboss.org/hibernate/ogm/5.0/reference/en-US/html_single/#ogm-redis-configuration[configuration options for Redis] in Hibernate OGM.
+
+== Redis hash mapping
+
+When using this mapping, data is stored using key-values pairs using Redis hashes. The benefit of
+this approach is that it allows partial updates.
+
+You can enable this dialect setting the following property:
+
+[source]
+----
+hibernate.ogm.datastore.grid_dialect = org.hibernate.ogm.datastore.redis.RedisHashDialect
+----
+
+This will map the following entity:
+
+[source, java]
+----
+@Entity
+public class News {
+
+    @Id
+    private String id;
+
+    @Version
+    @Column(name="version")
+    private int version;
+
+    private String title;
+
+    private String description;
+
+    //getters, setters ...
+}
+----
+
+with the following properties:
+
+[source]
+----
+version     = 1
+title       = On the merits of NoSQL
+description = This paper discuss why NoSQL will save the world for good
+----
+
+A huge thanks to community member https://twitter.com/mp911de[Mark Paluch], responsible for both
+these great improvements in the Redis area. Note that these features are both experimental for the
+time being.
+
+== Additional MongoDB native CLI queries support
+
+Thanks to the contribution of https://github.com/twwwt[Thorsten Möller], Hibernate OGM now supports
+more type of queries using the MongoDB CLI syntax: _findOne_, _findAndModify_, _insert_, _remove_ and _update_.
+
+Here an example showing how you can use them:
+
+[source, java]
+----
+OgmSession session = ...
+
+String nativeQuery = "db.OscarWilde.findAndModify({"
+        + "'query': {'author': 'oscarwilde'}, "
+        + "'update': { '$set': { 'author': 'Oscar Wilder' } }, "
+        + "'new': true "
+        + "})";
+
+Query query = session.createNativeQuery( nativeQuery ).addEntity( OscarWilde.class );
+List<OscarWilde> result = query.list();
+----
+
+You can find more details in the documentation about experimental
+http://docs.jboss.org/hibernate/ogm/5.0/reference/en-US/html/ch11.html#ogm-mongodb-queries-native[support of native MongoDB queries].
+
+== What's coming next?
+
+We are working on the Neo4j remote dialect and we are focused on releasing a stable version of
+Hibernate OGM 5.
+
+== Where can I get it?
+
+You can get Hibernate OGM 5.0.0.CR1 via Maven etc. using the following coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-core:5.0.0.CR1_ for the Hibernate OGM core module
+* _org.hibernate.ogm:hibernate-ogm-<%BACKEND%>:5.0.0.CR1 for the NoSQL backend you want to use, with _<%BACKEND%>_ being one of "mongodb", "redis", "neo4j", etc.
+
+Alternatively, you can download archives containing all the binaries, source code and documentation https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.0.0.CR1[from SourceForge].
+
+== How can I get in touch?
+
+You can get in touch through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+
+We are looking forward to hear your feedback!
+
