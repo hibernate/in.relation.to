@@ -1,0 +1,234 @@
+= "Emulating property literals with Java 8 method references"
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+One of the things library developers often miss in Java are property literals.
+In this post I'm going to show how to make creative use of Java 8 method references to emulate property literals, with the help of some byte code generation.
+
+Akin to class literals (e.g. `Customer.class`), property literals would allow to refer to the properties of a bean class in a type-safe manner.
+This would be useful for designing APIs that run actions on specific bean properties or apply some means of configuration to them.
+E.g. consider the https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/#hsearch-mapping-programmaticapi[API for programmatic configuration] of index mappings in Hibernate Search:
+
+[source,java]
+----
+new SearchMapping().entity( Address.class )
+    .indexed()
+    .property( "city", ElementType.METHOD )
+        .field();
+----
+
+Or the `validateValue()` method from the http://beanvalidation.org/1.1/spec/#validationapi-validatorapi-validationmethods[Bean Validation API] for validating a value against the constraints of a single property:
+
+[source,java]
+----
+Set<ConstraintViolation<Address>> violations = validator.validateValue( Address.class, "city", "Purbeck" );
+----
+
+In both cases a String is used to represent the `city` property of the `Address` class.
+
+That's error-prone on several levels:
+
+* The `Address` class might not have a property `city` at all.
+Or one could forget to update that String reference when renaming the property.
+* In the case of `validateValue()`, there is no way for making sure that the passed value actually satisfies the type of the `city` property.
+
+Users of the APIs will only find out about these issues when actually running their application.
+Wouldn't it be nice if instead the compiler and the language's type system prevented such wrong usages from the beginning?
+If Java had property literals, that'd be exactly what you'd get (invented syntax, this does not compile!):
+
+[source,java]
+----
+mapping.entity( Address.class )
+    .indexed()
+    .property( Address::city, ElementType.METHOD )
+        .field();
+----
+
+And:
+
+[source,java]
+----
+validator.validateValue( Address.class, Address::city, "Purbeck" );
+----
+
+The issues mentioned above would be avoided: Having a typo in a property literal would cause a compilation error which you'd notice right in your IDE.
+It'd allow to design the configuration API in Hibernate Search in a way to accept only properties of `Address` when configuring the `Address` entity.
+And in case of Bean Validation's `validateValue()`, literals could help to ensure that only values can be passed, that are assignable to the property type in question.
+
+== Java 8 method references
+
+While Java 8 has no real property literals (and their introduction isn't planned for Java 9 either),
+it provides an interesting way to emulate them to some degree: https://docs.oracle.com/javase/tutorial/java/javaOO/methodreferences.html[method references].
+Having been introduced to improve the developer experience when using Lambda expressions, method references also can be leveraged as poor-man's property literals.
+
+The idea is to consider a reference to a getter method as a property literal:
+
+[source,java]
+----
+validator.validateValue( Address.class, Address::getCity, "Purbeck" );
+----
+
+Obviously, this will only work if there actually is a getter.
+But if your classes are following JavaBeans conventions - which often is the case - that's fine.
+
+Now how would the definition of the `validateValue()` method look like?
+The key is using the new `Function` type:
+
+[source,java]
+----
+public <T, P> Set<ConstraintViolation<T>> validateValue(Class<T> type, Function<? super T, P> property, P value);
+----
+
+By using two type parameters, we make sure that the bean type, the property and the value passed for the property all correctly match.
+So API-wise, we got what we need: It's safe to use, and the IDE will even auto-complete method names after starting to write `Address::`.
+But how do we derive the property name from the `Function` in the implementation of `validateValue()`?
+
+That's where the fun begins, as the `Function` interface just defines a single method, `apply()`, wich runs the function against a given instance of `T`.
+That seems not exactly helpful, does it?
+
+== ByteBuddy to the rescue
+
+As it turns out, applying the function actually does the trick!
+By creating a proxy instance of the `T` type, we have a target for invoking the method and can obtain its name in the proxy's method invocation handler.
+
+Java comes with support for dynamic proxies out of the box, but that's limited to proxying interfaces only.
+As our API should work with any kind of bean, also actual classes, I'm going to use a neat tool called http://bytebuddy.net/[ByteBuddy] instead.
+ByteBuddy provides an easy-to-use DSL for creating classes on the fly which is exactly what we need.
+
+Let's begin by defining an interface which just allows to store and obtain the name of a property we obtained from a method reference:
+
+[source,java]
+----
+public interface PropertyNameCapturer {
+
+    String getPropertyName();
+
+    void setPropertyName(String propertyName);
+}
+----
+
+Now let's use ByteBudy to programmatically create a proxy class which is assignable to the type of interest (e.g. `Address`) and `PropertyNameCapturer`:
+
+[source,java]
+----
+public <T> T /* & PropertyNameCapturer */ getPropertyNameCapturer(Class<T> type) {
+    DynamicType.Builder<?> builder = new ByteBuddy()                                       // <1>
+            .subclass( type.isInterface() ? Object.class : type );
+
+    if ( type.isInterface() ) {                                                            // <2>
+        builder = builder.implement( type );
+    }
+
+    Class<?> proxyType = builder
+        .implement( PropertyNameCapturer.class )                                           // <3>
+        .defineField( "propertyName", String.class, Visibility.PRIVATE )
+        .method( ElementMatchers.any() )                                                   // <4>
+            .intercept( MethodDelegation.to( PropertyNameCapturingInterceptor.class ) )
+        .method( named( "setPropertyName" ).or( named( "getPropertyName" ) ) )             // <5>
+            .intercept( FieldAccessor.ofBeanProperty() )
+        .make()
+        .load(                                                                             // <6>
+             PropertyNameCapturer.class.getClassLoader(),
+             ClassLoadingStrategy.Default.WRAPPER
+        )
+        .getLoaded();
+
+    try {
+        @SuppressWarnings("unchecked")
+        Class<T> typed = (Class<T>) proxyType;
+        return typed.newInstance();                                                        // <7>
+    }
+    catch (InstantiationException | IllegalAccessException e) {
+        throw new HibernateException(
+            "Couldn't instantiate proxy for method name retrieval", e
+        );
+    }
+}
+----
+
+The code may appear a bit dense, so let me run you through it.
+First we obtain a new `ByteBuddy` instance *(1)* which is the entry point into the DSL.
+It is used to create a new dynamic type that either extends the given type (if it is a class) or extends `Object` and implements the given type if it is an interface *(2)*.
+
+Next, we let the type implement the `PropertyNameCapturer` interface and add a field for storing the name of the specified property *(3)*.
+Then we say that invocations to all methods should be intercepted by `PropertyNameCapturingInterceptor` (we'll come to that in a moment) *(4)*.
+Only `setPropertyName()` and `getPropertyName()` (as declared in the `PropertyNameCapturer` interface) should be routed to write and read access of the field created before *(5)*.
+Finally, the class is built, loaded *(6)* and instantiated *(7)*.
+
+That's all that's needed to create the proxy type; Thanks to ByteBuddy, this is done in a few lines of code.
+Now let's take a look at the interceptor we configured before:
+
+[source,java]
+----
+public class PropertyNameCapturingInterceptor {
+
+    @RuntimeType
+    public static Object intercept(@This PropertyNameCapturer capturer, @Origin Method method) {         // <1>
+        capturer.setPropertyName( getPropertyName( method ) );                                           // <2>
+
+        if ( method.getReturnType() == byte.class ) {                                                    // <3>
+            return (byte) 0;
+        }
+        else if ( ... ) { } // ... handle all primitve types
+            // ...
+        }
+        else {
+            return null;
+        }
+    }
+
+    private static String getPropertyName(Method method) {                                               // <4>
+        final boolean hasGetterSignature = method.getParameterTypes().length == 0
+                && method.getReturnType() != null;
+
+        String name = method.getName();
+        String propName = null;
+
+        if ( hasGetterSignature ) {
+            if ( name.startsWith( "get" ) && hasGetterSignature ) {
+                propName = name.substring( 3, 4 ).toLowerCase() + name.substring( 4 );
+            }
+            else if ( name.startsWith( "is" ) && hasGetterSignature ) {
+                propName = name.substring( 2, 3 ).toLowerCase() + name.substring( 3 );
+            }
+        }
+        else {
+            throw new HibernateException( "Only property getter methods are expected to be passed" );    // <5>
+        }
+
+        return propName;
+    }
+}
+----
+
+`intercept()` accepts the `Method` being invoked as well as the target of the invocation *(1)*.
+The annotations `@Origin` and `@This` are used to designate the respective parameters so ByteBuddy can generate the correct invocations of `intercept()` into the dynamic proxy type.
+
+Note that there is no strong dependency from this interceptor to any types of ByteBuddy,
+meaning that ByteBuddy is only needed when creating that dynamic proxy type but not later on, when actually using it.
+
+Via `getPropertyName()` *(4)* we then obtain the name of the property represented by the passed method object and store it in the `PropertyNameCapturer` *(2)*.
+If the given method doesn't represent a getter method, an exception is raised *(5)*.
+The return value of the invoked getter is irrelevant, so we just make sure to return a sensible "null value" matching the property type *(3)*.
+
+With that, we got everything in place to get hold of the property represented by a method reference passed to `validateValue()`:
+
+[source,java]
+----
+public <T, P> Set<ConstraintViolation<T>> validateValue(Class<T> type, Function<? super T, P> property, P value) {
+    T capturer = getPropertyNameCapturer( type );
+    property.apply( capturer );
+    String propertyName = ( (PropertyLiteralCapturer) capturer ).getPropertyName();
+    
+    // perform validation of the property value...
+}
+----
+
+When applying the function to the property name capturing proxy, the interceptor will kick in, obtain the property name from the `Method` object and store it in the capturer instance, from where it can be retrieved finally.
+
+And there you have it, some byte code magic lets us make creative use of Java 8 method references for emulating property literals.
+
+That said, having real property literals as part of the language (dreaming for a moment, maybe Java 10?) would still be very beneficial.
+It'd allow to deal with private properties and, hopefully, one could refer to property literals from within annotations.
+Real property literals also would be more concise (no "get" prefix) and it'd generally feel a tad less hackish ;)
