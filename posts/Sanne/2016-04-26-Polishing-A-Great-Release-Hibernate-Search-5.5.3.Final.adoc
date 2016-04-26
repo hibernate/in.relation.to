@@ -1,0 +1,83 @@
+= "Polishing a great release: Hibernate Search 5.5.3.Final"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+While the team has been busy implementing great new features such as the http://in.relation.to/2016/03/17/ThirdAlphaElasticsearch/[Elasticsearch integration] for the next 5.6 release,
+some of you provided interesting feedback on our stable release.
+
+The summary of the feedback I heard is that migrating to the new sorting requirements can be confusing, and there were some issues with our Faceting implementation.
+
+Hibernate Search version `5.5.3.Final` is available now, fixing the reported issues and improving the error messages around sorting.
+
+The changelog is rather small, so this time I'll post it verbatim:
+
+    * https://hibernate.atlassian.net/browse/HSEARCH-1917[HSEARCH-1917] - Cannot index null or empty values for faceted fields
+    * https://hibernate.atlassian.net/browse/HSEARCH-2082[HSEARCH-2082] - Documentation refers to @SortField when it should be @SortableField
+    * https://hibernate.atlassian.net/browse/HSEARCH-2085[HSEARCH-2085] - Typo in hibernate-search-engine logger
+    * https://hibernate.atlassian.net/browse/HSEARCH-2086[HSEARCH-2086] - Long and Date range faceting doesn't honor hasZeroCountsIncluded
+    * https://hibernate.atlassian.net/browse/HSEARCH-2179[HSEARCH-2179] - Hanging during shutdown of SyncWorkProcessor
+    * https://hibernate.atlassian.net/browse/HSEARCH-2193[HSEARCH-2193] - LuceneBackendQueueTask does not release the Directory lock on update failures
+    * https://hibernate.atlassian.net/browse/HSEARCH-2200[HSEARCH-2200] - Typo in log message
+    * https://hibernate.atlassian.net/browse/HSEARCH-2240[HSEARCH-2240] - Parallel service lookup might fail to find the service
+    * https://hibernate.atlassian.net/browse/HSEARCH-2199[HSEARCH-2199] - Allows the use of CharFilter in the programmatic API of SearchMapping
+    * https://hibernate.atlassian.net/browse/HSEARCH-2084[HSEARCH-2084] - Upgrade to WildFly 10.0.0.Final
+    * https://hibernate.atlassian.net/browse/HSEARCH-2089[HSEARCH-2089] - Ensure the performance tests do not use the WildFly embedded version of Search
+    * https://hibernate.atlassian.net/browse/HSEARCH-1951[HSEARCH-1951] - Improve resulting error message when applying the wrong Sort Type
+    * https://hibernate.atlassian.net/browse/HSEARCH-2090[HSEARCH-2090] - Using the wrong header in the distribution/pom.xml
+    * https://hibernate.atlassian.net/browse/HSEARCH-2241[HSEARCH-2241] - Clarify deprecation of setFilter() method on FullTextQuery
+
+
+== Spot inefficient sorting operations easily in test suites
+
+While Hibernate Search already would log a warning when forced to perform a query using a sub-optimal sorting strategy,
+that wasn't making it very easy to spot mapping or usage mistakes.
+
+Set this property:
+
+====
+----
+    hibernate.search.index_uninverting_allowed = false
+----
+====
+
+and you'll have your tests fail with an exception rather than log warnings.
+
+This property is not new in this release, but it's worth reminding as it makes it much easier to validate your migrations from previous versions.
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.5.3.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-core</artifactId>
+   <version>5.0.6.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.apache.lucene</groupId>
+   <artifactId>lucene-core</artifactId>
+   <version>5.3.1</version>
+</dependency>
+----
+====
+
+== What are we working on?
+
+The Elasticsearch integration is almost feature complete, we expect to be able to release a Beta1 version in some weeks.
+
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.5.3.Final[full distribution from here],
+or get it from Maven Central using the above coordinates, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums] or http://hibernate.org/community/[mailing lists].
+
+Feedback always welcome! https://hibernate.atlassian.net/projects/HSEARCH/summary/statistics[Please let us know of any problem or suggestion].
+
+
