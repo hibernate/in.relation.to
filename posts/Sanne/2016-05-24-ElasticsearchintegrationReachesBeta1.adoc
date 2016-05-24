@@ -1,0 +1,62 @@
+= Elasticsearch integration reaches the Beta1 milestone
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+After over 60 resolved tasks, we're proud to release Hibernate Search version 5.6.0.Beta1.
+
+The Elasticsearch integration made significant progress, and we believe it to be ready for wider usage.
+
+== Progress of the Elasticsearch integration
+
+Improvements since the previous milestone:
+
+MassIndexer:: significant better performance as it now uses bulk operations.
+Calendar, Dates, numbers and mapping details:: several corrections and improvements were made to produce a cleaner schema.
+Cluster state:: we now wait for a newly started Elasticsearch cluster to be "green" - or optionally "yellow" - before starting to use it.
+WildFly modules:: a critical bug was resolved, the modules should work fine now.
+Many more:: for a full list of all 63 improvements, see https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HSEARCH%20AND%20fixVersion%20%3D%205.6.0.Beta1[this JIRA query].
+
+What is missing yet?
+
+Performance testing:: we didn't do much performance testing, it's probably not as efficient as it could be.
+Relax the expected Elasticsearch version:: it's being tested with version 2.3.1 but we have plans to support a wider range of versions.
+Explicit refresh requests:: we plan to add methods to issue an indexreader refresh request, as the changes pushed to Elasticsearch are not immediately visible by default.
+Your Feedback!:: we think it's in pretty good shape, it would be great for more people to try it out and let us know what is missing and how it's working for you.
+
+=== Notable differences between using embededd Lucene vs Elasticsearch
+
+Unless you reconfigure Hibernate Search to use an async worker, by default when using the Lucene backend after you commit a transaction the changes to the index are immediately applied and any subsequent search will "see" the changes.
+On Elasticsearch the default is different: changes received by the cluster are only "visible" to searches after some seconds (1 by default).
+
+You can reconfigure Hibernate Search to force a refresh of indexes after each write operation by using the `hibernate.search.default.elasticsearch.refresh_after_write` configuration setting.
+
+This setting defaults to `false` as that's the recommended setting for optimal performance on Elasticsearch.
+You might want to set this to `true` to make it simpler to write unit tests, but you should take care to not rely on the synchronous
+behaviour for your production code.
+
+== Improvements for embedded Lucene users
+
+While working on Elasticsearch, we also applied some performance improvements which apply to users of the
+traditional Lucene embedded users.
+
+Special thanks to Andrej Golovnin, who contributed several patches to reduce allocation of objects on the hot path and improve overall performance.
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Get it from Maven Central using the above coordinates.
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/5.6.0.Beta1/[Sourceforge] are available as well.
+
+== Feedback
+
+Feedback always welcome!
+
+Please let us know of any problem or suggestion by creating an https://hibernate.atlassian.net/projects/HSEARCH/summary[issue on JIRA],
+or by sending an email to the developer's  http://hibernate.org/community/[developer's mailing lists], or posting on the https://forums.hibernate.org/viewforum.php?f=9[forums].
+
+We also monitor Stack Overflow; when posting on SO please use the tag http://stackoverflow.com/questions/tagged/hibernate-search[`hibernate-search`]. 
+
