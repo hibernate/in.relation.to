@@ -1,0 +1,69 @@
+= Meet Mark Paluch, a true open-source champion
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate OGM" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet http://www.paluch.biz/[Mark Paluch], who, among other projects, is one of our http://hibernate.org/ogm/[Hibernate OGM] project contributors.
+
+. *Hi, Mark. Would you like to introduce yourself and tell us what you are currently working on?*
++
+I am Mark Paluch, and I am working for Pivotal Software as http://projects.spring.io/spring-data/[Spring Data] Engineer.
+I am a member of the https://www.jcp.org/en/jsr/detail?id=365[JSR 365 EG (CDI 2.0)],
+project lead of the https://github.com/mp911de/lettuce[lettuce Redis driver], and I run a couple of other open source projects.
+I enjoy tinkering on Internet of Things projects in my spare time.
+Before I joined Pivotal, I worked since the early 2000's as a freelancer in a variety of projects using Java SE/EE and web technologies.
+My focus lies now on Spring Data with Redis, Cassandra, and MongoDB in particular.
+
++
+. *You have contributed a lot to the Hibernate OGM Redis module. Can you please tell us a little bit about Redis?*
++
+I was not the first one bringing up the idea of Redis support in Hibernate OGM.
+In fact, Seiya Kawashima did a pretty decent job with his pull-request but at some point, Hibernate OGM development and the PR diverged.
+I came across the pull request and picked it up from there.
++
+Redis is an in-memory data structure store, used as database, cache and message broker.
+It originated from a key-value store but evolved by supporting various data structures like lists, sets, hashes and much more.
+Redis is blazing-fast although it runs mostly single-threaded.
+Its performance originates in a concise implementation and that all operations are performed in-memory.
+This does not mean that Redis has no persistence.
+Redis is configured by default to store data on disk and disk I/O is asynchronous.
+Redis facilitates through its versatile nature an enormous number of use-cases such as Caching, queues, remote locking, just storing data and much more.
+An important fact to me is always that I'd never use Redis for data I cannot recover as wiping data from Redis is just too easy but using it as semi-persistent a store is the perfect use.
+
+. *You are also the author of the Lettuce open source project. How does it compare to Hibernate OGM?*
++
+Hibernate OGM and lettuce are projects with different aims.
+Lettuce is a driver/Java-binding for Redis. It gives Java developers access to the Redis API using synchronous, asynchronous and reactive API bindings. You can invoke the Redis API with lettuce directly and get the most out of Redis if you need it.
+Any JDBC driver is situated on a similar abstraction level as lettuce except for some specific features. lettuce does not require connection-pooling and dealing with broken connections as it allows users to benefit from auto-reconnection and thread-safe connections. Hibernate OGM Redis uses this infrastructure and provides its data mapping features on top of lettuce.
+
+. *What benefit do you think Hibernate OGM offers to application developers compared to using the NoSQL API directly?*
++
+Each NoSQL data store has its own, very specific API.
+Native APIs require developers not only get familiar with the data store traits but also with its API.
+Redis API comes with over 150 commands that translate to 650+ commands with sub-command permutations.
++
+Every Redis command is very specific and behaves on its own.
+The http://redis.io/commands/[Redis command documentation] provides detailed insight to commands, but users are required to spend a fair amount of their time to get along with the native API.
++
+Hibernate OGM applies elements from the JPA spec to NoSQL data stores and comes up with an API that Java EE/JPA developers are familiar.
+Hibernate OGM lowers barriers to entry.
+Hibernate OGM comes with a purpose of mapping data into a NoSQL data store.
+Mapping simple JPA entities to the underlying data store works fine but sometimes, like associations or transactions, do not map well to MongoDB and Redis.
+Users of Hibernate OGM need to be aware of the underlying persistence technology to get familiar with its concepts and strengths as well with their limitations.
++
+I also see a great advantage of the uniform configuration mechanism of Hibernate OGM.
+Every individual datastore driver comes up with its individual configuration method.
+Hibernate OGM unifies the styles into a common approach. One item on my wish list for Hibernate OGM is JDNI/WildFly configuration support to achieve similar flexibility as it is possible with JDBC data sources.
+
+. *Do you plan on supporting Hibernate OGM in Spring Data as well?*
++
+Hibernate OGM and Spring Data follow both the idea of supporting NoSQL data stores.
+Hibernate OGM employs several features from NoSQL data stores to enhance its data mapping centering around JPA.
+JPA is an inherently relational API, which talks about concepts that are not necessarily transferable to the NoSQL world.
+Spring Data comes with modules for various popular data stores with a different approach to providing a consistent programming model for the supported stores but not try to force everything into a single abstracting API. Spring Data Modules provide multiple levels of abstraction on top of the NoSQL data store APIs.
+Core concepts of NoSQL data stores are exposed through an API that commonly looks and feels like Spring endpoints.
+Hibernate OGM can already be used together with Spring Data JPA.
+A good use-case is the Spring Data Repositories abstraction which provides a uniform interface to access data from various data stores that do not require users to write a query language and leverages store-specific features.
+
+*Thank you, Mark, for taking your time. It is a great honor to have you here. To reach Mark, you can follow him on https://twitter.com/mp911de[Twitter].*
