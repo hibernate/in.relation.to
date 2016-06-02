@@ -1,0 +1,43 @@
+= Hibernate ORM 5.2 release
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+The 5.2.0 release of Hibernate ORM has just been http://github.com/hibernate/hibernate-orm/releases/tag/5.2.0[tagged] and published.
+
+Many of the changes in 5.2.0 have important ramifications in terms of both usage and extension.  Be sure to read the https://github.com/hibernate/hibernate-orm/wiki/Migration-Guide---5.2[5.2 Migration Guide] for details.
+
+The complete list of changes can be found https://hibernate.atlassian.net/projects/HHH/versions/23150/tab/release-report-done[here].  Below is a discussion of the major changes.
+
+== Java 8 baseline
+
+5.2 moves to Java 8 as its baseline, both for JDK and JRE.  This means:
+
+* The `hibernate-java8` module has been removed; that functionality has been consolidated into `hibernate-core`.
+* Native support for Java 8 date/time types as Query parameters.
+* Support for streaming (`java.util.stream.Stream`) query results.
+* Support for `java.util.Optional` as return from methods that may return null.
+* Leveraging Java 8 "default methods" when introducing new methods to extension points.
+
+
+== Consolidating JPA support into `hibernate-core`.
+
+That effectively means that the `hibernate-entitymanager` module no longer exists.  Its functionality has been consolidated into `hibernate-core`.
+
+
+== JCache support
+
+Support for using any JCache-compliant cache impl as a second-level caching provider. See https://hibernate.atlassian.net/browse/HHH-10770[HHH-10770].
+
+
+== Session-level batch size support
+
+Support has been added for specifying a batch size for write operations per Session.  See https://hibernate.atlassian.net/browse/HHH-10431[HHH-10431].
+
+
+== Getting it
+
+For information on consuming the release via your favorite dependency-management-capable build tool, see http://hibernate.org/orm/downloads/
+
+For those of you allergic to dependency-management-capable build tools, the release bundles can be obtained in ZIP or TGZ format from 
+http://sourceforge.net/projects/hibernate/files/hibernate-orm/5.2.0.Final/[SourceForge].
