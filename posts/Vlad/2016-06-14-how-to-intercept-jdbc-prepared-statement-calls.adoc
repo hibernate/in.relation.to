@@ -8,7 +8,7 @@ Vlad Mihalcea
 
 When you're using JDBC or if you are generating SQL statements by hand, you always know what statements are sent to the database server.
 Although there are situations when a native query is the most obvious solution to a given business use case, most statements are simple enough to be generated automatically
-That's exactly what JPA and Hibernate and the application developer can focus on https://vladmihalcea.com/2014/07/30/a-beginners-guide-to-jpahibernate-entity-state-transitions/[entity state transitions] instead.
+That's exactly what JPA and Hibernate do, and the application developer can focus on https://vladmihalcea.com/2014/07/30/a-beginners-guide-to-jpahibernate-entity-state-transitions/[entity state transitions] instead.
 
 Nevertheless, the application developer must always https://vladmihalcea.com/2014/02/01/taming-jpa-with-the-sql-statement-count-validator/[assert that Hibernate generates the expected statements], as well as the number of statements being generated (to avoid N+1 query issues).
 
@@ -24,7 +24,7 @@ Luckily, for Hibernate, we don't even need to use an external dependency for int
 = StatementInspector
 
 For many use cases, the `StatementInspector` is the only thing you need to capture all SQL statements that are executed by Hibernate.
-The `StatementInspector` must be provided during SessionFactory bootstrapping as follows:
+The `StatementInspector` must be provided during `SessionFactory` bootstrapping as follows:
 
 [source, JAVA, indent=0]
 ----
