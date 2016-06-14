@@ -1,0 +1,270 @@
+= How to intercept JDBC PreparedStatement calls with Hibernate
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+= Introduction
+
+When you're using JDBC or if you are generating SQL statements by hand, you always know what statements are sent to the database server.
+Although there are situations when a native query is the most obvious solution to a given business use case, most statements are simple enough to be generated automatically
+That's exactly what JPA and Hibernate and the application developer can focus on https://vladmihalcea.com/2014/07/30/a-beginners-guide-to-jpahibernate-entity-state-transitions/[entity state transitions] instead.
+
+Nevertheless, the application developer must always https://vladmihalcea.com/2014/02/01/taming-jpa-with-the-sql-statement-count-validator/[assert that Hibernate generates the expected statements], as well as the number of statements being generated (to avoid N+1 query issues).
+
+= Proxying the underlying JDBC Driver or DataSource
+
+In production, it's very common to Proxy the underlying Driver Connection providing mechanism so that the application benefits from https://vladmihalcea.com/2014/04/17/the-anatomy-of-connection-pooling/[connection pooling], or for https://vladmihalcea.com/2014/04/30/professional-connection-pool-sizing/[monitoring connection pool usage].
+For this purpose, the underlying JDBC `Driver` or `DataSource` can be proxied using tools such as https://github.com/p6spy/p6spy[P6spy] or https://github.com/ttddyy/datasource-proxy[datasource-proxy].
+In fact, this is also a very convenient way of https://vladmihalcea.com/2016/05/03/the-best-way-of-logging-jdbc-statements/[logging JDBC statements along with their bind parameters].
+
+While for many application, it's not an issue to add yet another dependency when you are developing an open source framework you strive to minimize the number of dependencies your project needs to depend on.
+Luckily, for Hibernate, we don't even need to use an external dependency for intercepting JDBC statements, and this post is going to show you how easily you can tackle this requirement.
+
+= StatementInspector
+
+For many use cases, the `StatementInspector` is the only thing you need to capture all SQL statements that are executed by Hibernate.
+The `StatementInspector` must be provided during SessionFactory bootstrapping as follows:
+
+[source, JAVA, indent=0]
+----
+public class SQLStatementInterceptor {
+
+    private final LinkedList<String> sqlQueries = new LinkedList<>();
+
+    public SQLStatementInterceptor(SessionFactoryBuilder sessionFactoryBuilder) {
+        sessionFactoryBuilder.applyStatementInspector(
+        (StatementInspector) sql -> {
+            sqlQueries.add( sql );
+            return sql;
+        } );
+    }
+
+    public LinkedList<String> getSqlQueries() {
+        return sqlQueries;
+    }
+}
+----
+
+With this utility we can easily verify the Oracle follow-on-locking mechanism which is caused by the https://docs.oracle.com/database/121/SQLRF/statements_10002.htm#SQLRF55371[FOR UPDATE clause restrictions] imposed by the database engine:
+
+[source, JAVA, indent=0]
+----
+sqlStatementInterceptor.getSqlQueries().clear();
+
+List<Product> products = session.createQuery(
+    "select p from Product p", Product.class )
+.setLockOptions( new LockOptions( LockMode.PESSIMISTIC_WRITE ) )
+.setFirstResult( 40 )
+.setMaxResults( 10 )
+.getResultList();
+
+assertEquals( 10, products.size() );
+assertEquals( 11, sqlStatementInterceptor.getSqlQueries().size() );
+----
+
+So far, so good. But as simple as the `StatementInspector` may be, it does not mix well with JDBC batching.
+`StatementInspector` intercepts the prepare phase, whereas for batching we need to intercept the `addBatch` and `executeBatch` method calls.
+
+Even without native support for such a feature, we can easily design a custom `ConnectionProvider` that can intercept all `PreparedStatement` method calls.
+
+The new `ConnectionProvider` looks as follows:
+
+[source, JAVA, indent=0]
+----
+public class PreparedStatementSpyConnectionProvider implements
+        ConnectionProvider,
+        Configurable,
+        ServiceRegistryAwareService {
+
+    private ServiceRegistryImplementor serviceRegistry;
+
+    private ConnectionProvider connectionProvider;
+
+    private final Map<PreparedStatement, String> preparedStatementMap = new LinkedHashMap<>();
+
+    @Override
+    public void configure(Map configurationValues) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> settings = new HashMap<>( configurationValues );
+        settings.remove( AvailableSettings.CONNECTION_PROVIDER );
+        connectionProvider = ConnectionProviderInitiator.INSTANCE.initiateService(
+                settings,
+                serviceRegistry
+        );
+        if ( connectionProvider instanceof Configurable ) {
+            Configurable configurableConnectionProvider = (Configurable) connectionProvider;
+            configurableConnectionProvider.configure( settings );
+        }
+    }
+
+    @Override
+    public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+        this.serviceRegistry = serviceRegistry;
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+        return spy( connectionProvider.getConnection() );
+    }
+
+    @Override
+    public void closeConnection(Connection conn) throws SQLException {
+        connectionProvider.closeConnection( conn );
+    }
+
+    @Override
+    public boolean supportsAggressiveRelease() {
+        return connectionProvider.supportsAggressiveRelease();
+    }
+
+    @Override
+    public boolean isUnwrappableAs(Class unwrapType) {
+        return connectionProvider.isUnwrappableAs( unwrapType );
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> unwrapType) {
+        return connectionProvider.unwrap( unwrapType );
+    }
+
+    private Connection spy(Connection connection) {
+        if ( new MockUtil().isMock( connection ) ) {
+            return connection;
+        }
+        Connection connectionSpy = Mockito.spy( connection );
+        try {
+            doAnswer( invocation -> {
+                PreparedStatement statement = (PreparedStatement) invocation.callRealMethod();
+                PreparedStatement statementSpy = Mockito.spy( statement );
+                String sql = (String) invocation.getArguments()[0];
+                preparedStatementMap.put( statementSpy, sql );
+                return statementSpy;
+            } ).when( connectionSpy ).prepareStatement( anyString() );
+        }
+        catch ( SQLException e ) {
+            throw new IllegalArgumentException( e );
+        }
+        return connectionSpy;
+    }
+
+    /**
+     * Clears the recorded PreparedStatements and reset the associated Mocks.
+     */
+    public void clear() {
+        preparedStatementMap.keySet().forEach( Mockito::reset );
+        preparedStatementMap.clear();
+    }
+
+    /**
+     * Get one and only one PreparedStatement associated to the given SQL statement.
+     *
+     * @param sql SQL statement.
+     *
+     * @return matching PreparedStatement.
+     *
+     * @throws IllegalArgumentException If there is no matching PreparedStatement or multiple instances, an exception is being thrown.
+     */
+    public PreparedStatement getPreparedStatement(String sql) {
+        List<PreparedStatement> preparedStatements = getPreparedStatements( sql );
+        if ( preparedStatements.isEmpty() ) {
+            throw new IllegalArgumentException(
+                    "There is no PreparedStatement for this SQL statement " + sql );
+        }
+        else if ( preparedStatements.size() > 1 ) {
+            throw new IllegalArgumentException( "There are " + preparedStatements
+                    .size() + " PreparedStatements for this SQL statement " + sql );
+        }
+        return preparedStatements.get( 0 );
+    }
+
+    /**
+     * Get the PreparedStatements that are associated to the following SQL statement.
+     *
+     * @param sql SQL statement.
+     *
+     * @return list of recorded PreparedStatements matching the SQL statement.
+     */
+    public List<PreparedStatement> getPreparedStatements(String sql) {
+        return preparedStatementMap.entrySet()
+                .stream()
+                .filter( entry -> entry.getValue().equals( sql ) )
+                .map( Map.Entry::getKey )
+                .collect( Collectors.toList() );
+    }
+
+    /**
+     * Get the PreparedStatements that were executed since the last clear operation.
+     *
+     * @return list of recorded PreparedStatements.
+     */
+    public List<PreparedStatement> getPreparedStatements() {
+        return new ArrayList<>( preparedStatementMap.keySet() );
+    }
+}
+----
+
+The `PreparedStatementSpyConnectionProvider` is capable of substituting any other `ConnectionProvider`
+that would be otherwise picked by Hibernate (e.g. `DatasourceConnectionProviderImpl`, `DriverManagerConnectionProviderImpl`, `HikariCPConnectionProvider`)
+for the current configuration properties.
+
+The `PreparedStatementSpyConnectionProvider` decorates an actual `ConnectionProvider`, and, using Mockito, it returns a `Connection` spy.
+
+To use this custom provider, we just need to provide an instance via the `hibernate.connection.provider_class` configuration property:
+
+[source, JAVA, indent=0]
+----
+private PreparedStatementSpyConnectionProvider connectionProvider =
+    new PreparedStatementSpyConnectionProvider();
+
+@Override
+protected void addSettings(Map settings) {
+    settings.put(
+            AvailableSettings.CONNECTION_PROVIDER,
+            connectionProvider
+    );
+}
+----
+
+Now, we can assert that the underlying `PreparedStatement` is batching statements according to our expectations:
+
+[source, JAVA, indent=0]
+----
+Session session = sessionFactory().openSession();
+session.setJdbcBatchSize( 3 );
+
+session.beginTransaction();
+try {
+    for ( long i = 0; i < 5; i++ ) {
+        Event event = new Event();
+        event.id = id++;
+        event.name = "Event " + i;
+        session.persist( event );
+    }
+}
+finally {
+    connectionProvider.clear();
+    session.getTransaction().commit();
+    session.close();
+}
+
+PreparedStatement preparedStatement = connectionProvider.getPreparedStatement(
+    "insert into Event (name, id) values (?, ?)" );
+
+verify(preparedStatement, times( 5 )).addBatch();
+verify(preparedStatement, times( 2 )).executeBatch();
+----
+
+The `PreparedStatement` is not a mock but a http://site.mockito.org/mockito/docs/current/org/mockito/Mockito.html#13[real object spy], which can intercept method call while also propagating the call to the underlying actual JDBC Driver `PreparedStatement` object.
+
+Although getting the `PreparedStatement` by its associated SQL `String` is useful for the aforementioned test case, we can also get all executed `PreparedStatements` like this:
+
+[source, JAVA, indent=0]
+----
+List<PreparedStatement> preparedStatements = connectionProvider.getPreparedStatements();
+assertEquals(1, preparedStatements.size());
+preparedStatement = preparedStatements.get( 0 );
+
+verify(preparedStatement, times( 5 )).addBatch();
+verify(preparedStatement, times( 2 )).executeBatch();
+----
