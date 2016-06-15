@@ -68,11 +68,13 @@ So far, so good. But as simple as the `StatementInspector` may be, it does not m
 
 Even without native support for such a feature, we can easily design a custom `ConnectionProvider` that can intercept all `PreparedStatement` method calls.
 
-The new `ConnectionProvider` looks as follows:
+First, we start with the `ConnectionProviderDelegate` which is capable of substituting any other `ConnectionProvider`
+that would otherwise be picked by Hibernate (e.g. `DatasourceConnectionProviderImpl`, `DriverManagerConnectionProviderImpl`, `HikariCPConnectionProvider`)
+for the current configuration properties.
 
 [source, JAVA, indent=0]
 ----
-public class PreparedStatementSpyConnectionProvider implements
+public class ConnectionProviderDelegate implements
         ConnectionProvider,
         Configurable,
         ServiceRegistryAwareService {
@@ -81,7 +83,10 @@ public class PreparedStatementSpyConnectionProvider implements
 
     private ConnectionProvider connectionProvider;
 
-    private final Map<PreparedStatement, String> preparedStatementMap = new LinkedHashMap<>();
+    @Override
+    public void injectServices(ServiceRegistryImplementor serviceRegistry) {
+        this.serviceRegistry = serviceRegistry;
+    }
 
     @Override
     public void configure(Map configurationValues) {
@@ -99,13 +104,8 @@ public class PreparedStatementSpyConnectionProvider implements
     }
 
     @Override
-    public void injectServices(ServiceRegistryImplementor serviceRegistry) {
-        this.serviceRegistry = serviceRegistry;
-    }
-
-    @Override
     public Connection getConnection() throws SQLException {
-        return spy( connectionProvider.getConnection() );
+        return connectionProvider.getConnection();
     }
 
     @Override
@@ -126,6 +126,23 @@ public class PreparedStatementSpyConnectionProvider implements
     @Override
     public <T> T unwrap(Class<T> unwrapType) {
         return connectionProvider.unwrap( unwrapType );
+    }
+}
+----
+
+With the `ConnectionProviderDelegate` in place, we can now implement the `PreparedStatementSpyConnectionProvider` which, using Mockito, it returns a `Connection` spy instead of an actual JDBC Driver `Connection` object:
+
+[source, JAVA, indent=0]
+----
+public class PreparedStatementSpyConnectionProvider
+        extends ConnectionProviderDelegate {
+
+    private final Map<PreparedStatement, String> preparedStatementMap = new LinkedHashMap<>();
+
+    @Override
+    public Connection getConnection() throws SQLException {
+        Connection connection = super.getConnection();
+        return spy( connection );
     }
 
     private Connection spy(Connection connection) {
@@ -203,12 +220,6 @@ public class PreparedStatementSpyConnectionProvider implements
     }
 }
 ----
-
-The `PreparedStatementSpyConnectionProvider` is capable of substituting any other `ConnectionProvider`
-that would otherwise be picked by Hibernate (e.g. `DatasourceConnectionProviderImpl`, `DriverManagerConnectionProviderImpl`, `HikariCPConnectionProvider`)
-for the current configuration properties.
-
-The `PreparedStatementSpyConnectionProvider` decorates an actual `ConnectionProvider`, and, using Mockito, it returns a `Connection` spy.
 
 To use this custom provider, we just need to provide an instance via the `hibernate.connection.provider_class` configuration property:
 
