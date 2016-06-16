@@ -4,7 +4,7 @@ Vlad Mihalcea
 :awestruct-layout: blog-post
 ---
 
-= Introduction
+== Introduction
 
 When you're using JDBC or if you are generating SQL statements by hand, you always know what statements are sent to the database server.
 Although there are situations when a native query is the most obvious solution to a given business use case, most statements are simple enough to be generated automatically
@@ -12,7 +12,7 @@ That's exactly what JPA and Hibernate do, and the application developer can focu
 
 Nevertheless, the application developer must always https://vladmihalcea.com/2014/02/01/taming-jpa-with-the-sql-statement-count-validator/[assert that Hibernate generates the expected statements], as well as the number of statements being generated (to avoid N+1 query issues).
 
-= Proxying the underlying JDBC Driver or DataSource
+== Proxying the underlying JDBC Driver or DataSource
 
 In production, it's very common to Proxy the underlying Driver Connection providing mechanism so that the application benefits from https://vladmihalcea.com/2014/04/17/the-anatomy-of-connection-pooling/[connection pooling], or for https://vladmihalcea.com/2014/04/30/professional-connection-pool-sizing/[monitoring connection pool usage].
 For this purpose, the underlying JDBC `Driver` or `DataSource` can be proxied using tools such as https://github.com/p6spy/p6spy[P6spy] or https://github.com/ttddyy/datasource-proxy[datasource-proxy].
@@ -21,7 +21,7 @@ In fact, this is also a very convenient way of https://vladmihalcea.com/2016/05/
 While for many application, it's not an issue to add yet another dependency when you are developing an open source framework you strive to minimize the number of dependencies your project needs to depend on.
 Luckily, for Hibernate, we don't even need to use an external dependency for intercepting JDBC statements, and this post is going to show you how easily you can tackle this requirement.
 
-= StatementInspector
+== StatementInspector
 
 For many use cases, the `StatementInspector` is the only thing you need to capture all SQL statements that are executed by Hibernate.
 The `StatementInspector` must be provided during `SessionFactory` bootstrapping as follows:
