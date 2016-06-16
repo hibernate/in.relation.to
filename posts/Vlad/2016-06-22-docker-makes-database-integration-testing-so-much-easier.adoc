@@ -1,0 +1,77 @@
+= Docker makes database integration testing so much easier
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+== Introduction
+
+When I started writing https://leanpub.com/high-performance-java-persistence[High-Performance Java Persistence],
+I decided to install four database systems on my current machine:
+
+- Oracle XE
+- SQL Server Express Edition
+- PostgreSQL
+- MySQL
+
+These four relational databases are the most commonly referred ones on our forum, StackOverflow, as well as on most JIRA issues.
+However, these four top-ranked databases are not enough because, from time to time, we need to integrate Pull Requests for other database systems, like Informix or DB2.
+
+Since installing a plethora of databases on a single machine is not very practical, we can do better than that.
+Many database providers have generated Docker images for their products, and this post is going to show you haw easy we can start an Informix database.
+
+== Running Informix on Docker
+
+IBM offers Docker images for both https://hub.docker.com/r/ibmcom/informix-innovator-c/[Informix Innovator-C] and https://hub.docker.com/r/ibmcom/db2express-c/[DB2 Express-C].
+
+As explained on https://hub.docker.com/r/ibmcom/informix-innovator-c/[Docker Hub], you have to start the container using the following command:
+
+[source,shell]
+----
+docker run -it --name iif_innovator_c --privileged -p 9088:9088 -p 27017:27017 -p 27018:27018 -p 27883:27883 -e LICENSE=accept ibmcom/informix-innovator-c:latest
+----
+
+To run the Informix Docker container, you have to execute the following command:
+
+[source,shell]
+----
+docker start iif_innovator_c
+----
+
+After the Docker container is started, we can attach a new shell to it:
+
+[source,shell]
+----
+docker exec -it iif_innovator_c bash
+----
+
+We have a `databases.gradle` configuration file which contains the connection properties for all databases we use for testing, and, for Informix, we have the following entry:
+
+[source,shell]
+----
+informix : [
+    'db.dialect' : 'org.hibernate.dialect.InformixDialect',
+    'jdbc.driver': 'com.informix.jdbc.IfxDriver',
+    'jdbc.user'  : 'informix',
+    'jdbc.pass'  : 'in4mix',
+    'jdbc.url'   : 'jdbc:informix-sqli://192.168.99.100:9088/sysuser:INFORMIXSERVER=dev;user=informix;password=in4mix'
+]
+----
+
+With this configuration in place, I only need to setup the current `hibernate.properties` configuration file to use Informix:
+
+[source,shell]
+----
+gradle clean testClasses -Pdb=informix
+----
+
+Now I can run any Informix integration test right from my IDE.
+
+When I'm done, I stop the Docker container with the following command:
+
+[source,shell]
+----
+docker stop iif_innovator_c
+----
+
+As simple as that!
