@@ -1,0 +1,768 @@
+= "Bean Validation and the Jigsaw Liaison"
+Gunnar Morling
+:icons: font
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+Unless you've been living under a rock for the last months and years, you've probably heard about the efforts for adding a module system to the Java platform, code-named http://openjdk.java.net/projects/jigsaw/["Project Jigsaw"].
+
+Defining a module system and modularizing a huge system like the JDK is by no means a trivial task, so it's not by surprise that the advent of Jigsaw has been delayed several times.
+But I think by now it's a rather safe bet to expect Jigsaw to be released as part of JDK 9 eventually (the exact release date http://mail.openjdk.java.net/pipermail/jdk9-dev/2016-June/004443.html[remains to be defined]), especially since it became part of the early access builds http://mreinhold.org/blog/jigsaw-module-system[a while ago].
+
+This means that if you are an author of a library or framework, you should grab the latest JDK https://jdk9.java.net/download/[preview build] and make sure your lib can be used a) on Java 9 and b) within modularized applications using Jigsaw.
+
+The latter is what we are going to discuss in more detail in the following, taking Bean Validation and its reference implementation, Hibernate Validator as an example.
+We'll see what is needed to convert them into Jigsaw modules and use them in a modularized environment.
+
+Now one might ask why having a module system and providing libraries as modules based on such system is a good thing?
+There are many facets to that, but I think a good answer is that modularization is a great tool for building software systems from encapsulated, loosely-coupled and re-usable components with clearly defined interfaces.
+It makes API design a very conscious decision and on the other hand gives library authors the freedom to change _internal_ implementation aspects of their module without risking compatibility issues with clients.
+
+If you are not yet familiar with Jigsaw at all, it's recommended to take a look at the http://openjdk.java.net/projects/jigsaw/[project home page].
+It contains links to many useful resources, especially check out http://openjdk.java.net/projects/jigsaw/spec/sotms/["The State of the Module System"] which gives a great overview.
+I also found this https://blog.codecentric.de/en/2015/11/first-steps-with-java9-jigsaw-part-1/[two-part introduction] very helpful.
+
+== Getting started
+
+In order to follow our little experiment of "Jigsaw-ifying" Bean Validation, you should be using a https://www.gnu.org/software/bash/[Bash]-compatible shell and be able to run commands such as https://www.gnu.org/software/wget/[wget].
+On systems lacking support for Bash by default, https://www.cygwin.com/[Cygwin] can be used.
+You also need https://git-scm.com/[git] to download some source code from GitHub.
+
+Let's get started by downloading and installing the latest JDK 9 https://jdk9.java.net/download/[early access build] (build 122 has been used when writing this post).
+Then run `java -version` to confirm that JDK 9 is enabled.
+You should see an output like this:
+
+[source]
+----
+java version "9-ea"
+Java(TM) SE Runtime Environment (build 9-ea+122)
+Java HotSpot(TM) 64-Bit Server VM (build 9-ea+122, mixed mode)
+----
+
+After that, create a base directory for our experiments:
+
+[source]
+----
+mkdir beanvalidation-with-jigsaw
+----
+
+Change into that directory and create some more sub-directories for storing the required modules and 3rd-party libraries:
+
+[source]
+----
+cd beanvalidation-with-jigsaw
+
+mkdir sources
+mkdir modules
+mkdir automatic-modules
+mkdir tools
+----
+
+As tooling support for Java 9 / Jigsaw still is rather limited at this point, we are going to use plain `javac` and `java` commands to compile and test the code.
+Although that's not as bad as it sounds and it's indeed a nice exercise to learn about the existing and new compiler options,
+I admit I'm looking forward to the point where the known build tools such as Maven will fully support Jigsaw and allow compiling and testing modularized source code.
+But for now, the plain CLI tools will do the trick :)
+
+Download the source code for Bean Validation and Hibernate Validator from GitHub:
+
+[source]
+----
+git clone https://github.com/beanvalidation/beanvalidation-api.git sources/beanvalidation-api
+git clone https://github.com/hibernate/hibernate-validator.git sources/hibernate-validator
+----
+
+As we cannot leverage Maven's dependency management, we fetch the dependencies required by Hibernate Validator via wget, storing them in the _automatic-modules_ (dependencies) and _tools_ (the JBoss Logging annotation processor needed for generating logger implementations) directory, respectively:
+
+[source]
+----
+wget http://repo1.maven.org/maven2/joda-time/joda-time/2.9/joda-time-2.9.jar -P automatic-modules
+wget http://repo1.maven.org/maven2/javax/el/javax.el-api/2.2.4/javax.el-api-2.2.4.jar -P automatic-modules
+wget http://repo1.maven.org/maven2/org/jsoup/jsoup/1.8.3/jsoup-1.8.3.jar -P automatic-modules
+wget http://repo1.maven.org/maven2/org/jboss/logging/jboss-logging-annotations/2.0.1.Final/jboss-logging-annotations-2.0.1.Final.jar -P automatic-modules
+wget http://repo1.maven.org/maven2/org/jboss/logging/jboss-logging/3.3.0.Final/jboss-logging-3.3.0.Final.jar -P automatic-modules
+wget http://repo1.maven.org/maven2/com/fasterxml/classmate/1.1.0/classmate-1.1.0.jar -P automatic-modules
+wget http://repo1.maven.org/maven2/com/thoughtworks/paranamer/paranamer/2.5.5/paranamer-2.5.5.jar -P automatic-modules
+wget http://repo1.maven.org/maven2/org/hibernate/javax/persistence/hibernate-jpa-2.1-api/1.0.0.Final/hibernate-jpa-2.1-api-1.0.0.Final.jar -P automatic-modules
+
+wget http://repo1.maven.org/maven2/org/jboss/logging/jboss-logging-processor/2.0.1.Final/jboss-logging-processor-2.0.1.Final.jar -P tools
+wget http://repo1.maven.org/maven2/org/jboss/jdeparser/jdeparser/2.0.0.Final/jdeparser-2.0.0.Final.jar -P tools
+wget http://repo1.maven.org/maven2/javax/annotation/jsr250-api/1.0/jsr250-api-1.0.jar -P tools
+----
+
+http://openjdk.java.net/projects/jigsaw/spec/sotms/#automatic-modules[Automatic modules] are a means of Jigsaw to work with libraries in a modularized environment which have not yet been modularized themselves.
+Essentially, an automatic module is a module which exports all its packages and reads all other http://openjdk.java.net/projects/jigsaw/spec/sotms/#defining-modules[named modules].
+
+Its module name is derived from the JAR file name, applying http://download.java.net/java/jigsaw/docs/api/java/lang/module/ModuleFinder.html#of-java.nio.file.Path...-[some rules] for splitting artifact name and version and replacing hyphens with dots.
+So e.g. _jboss-logging-annotations-2.0.1.Final.jar_ will have the automatic module name _jboss.logging.annotations_.
+
+== Creating modules for Bean Validation API and Hibernate Validator
+
+Currently, the Bean Validation API and Hibernate Validator are in a state where they can be compiled out of the box using Java 9.
+But what's still missing are the required module descriptors which describe a module's name, its public API, its dependencies to other modules and some other things.
+
+Module descriptors are Java files named `module-info.java` and live in the root of a given module.
+Create the descriptor for the Bean Validation API with the following contents:
+
+[source,java]
+._sources/beanvalidation-api/src/main/java/module-info.java_
+----
+module javax.validation {// <1>
+    exports javax.validation;// <2>
+    exports javax.validation.bootstrap;
+    exports javax.validation.constraints;
+    exports javax.validation.constraintvalidation;
+    exports javax.validation.executable;
+    exports javax.validation.groups;
+    exports javax.validation.metadata;
+    exports javax.validation.spi;
+
+    uses javax.validation.spi.ValidationProvider;// <3>
+}
+----
+<1> Module name
+<2> All the packages the module exports (as this is an API module, all contained packages are exported)
+<3> The usage of the `ValidationProvider` service
+
+&nbsp; +
+
+Services have been present in Java for a long time.
+Originally added as an internal component in the JDK, the https://docs.oracle.com/javase/tutorial/ext/basics/spi.html[service loader mechanism] became an official part of the platform as of Java 6.
+
+Since then it has seen wide adoption for building extensible applications from loosely coupled components.
+With its help, service consumers can solely be implemented against a well-defined service contract, without knowing upfront about a specific service provider and its implementation.
+http://openjdk.java.net/projects/jigsaw/spec/sotms/#services[Jigsaw embraces] the existing service concept and makes services first-class citizens of the modularized world.
+
+Luckily, Bean Validation has been using the service mechanism for locating providers (such as Hibernate Validator) from the get go, so things play out nicely with Jigsaw.
+As we'll see in a minute, Hibernate Validator provides an implementation of the `ValidationProvider` service, allowing the user to bootstrap it without depending on this specific implementation.
+
+But for now let's compile the Bean Validation module:
+
+[source]
+----
+export BASE=`pwd`
+cd sources/beanvalidation-api
+javac -d $BASE/modules/javax.validation $(find src/main/java -name "*.java")
+cd $BASE
+----
+
+After compilation, the built module can be found under _modules/javax.validation_.
+Note that modules usually will be packaged and redistributed as JAR files, but to keep things simple let's just work with class directory structures here.
+
+Things get a bit more interesting when it comes to Hibernate Validator.
+Its module descriptor should look like this:
+
+[source,java]
+._sources/hibernate-validator/engine/src/main/java/module-info.java_
+----
+module org.hibernate.validator.engine {// <1>
+    exports org.hibernate.validator;// <2>
+    exports org.hibernate.validator.cfg;
+    exports org.hibernate.validator.cfg.context;
+    exports org.hibernate.validator.cfg.defs;
+    exports org.hibernate.validator.constraints;
+    exports org.hibernate.validator.constraints.br;
+    exports org.hibernate.validator.constraintvalidation;
+    exports org.hibernate.validator.constraintvalidators;
+    exports org.hibernate.validator.engine;
+    exports org.hibernate.validator.group;
+    exports org.hibernate.validator.messageinterpolation;
+    exports org.hibernate.validator.parameternameprovider;
+    exports org.hibernate.validator.path;
+    exports org.hibernate.validator.resourceloading;
+    exports org.hibernate.validator.spi.cfg;
+    exports org.hibernate.validator.spi.group;
+    exports org.hibernate.validator.spi.resourceloading;
+    exports org.hibernate.validator.spi.time;
+    exports org.hibernate.validator.spi.valuehandling;
+    exports org.hibernate.validator.valuehandling;
+
+    exports org.hibernate.validator.internal.util.logging to jboss.logging;// <3>
+    exports org.hibernate.validator.internal.xml to java.xml.bind;
+
+    requires javax.validation;// <4>
+    requires joda.time;
+    requires javax.el.api;
+    requires jsoup;
+    requires jboss.logging.annotations;
+    requires jboss.logging;
+    requires classmate;
+    requires paranamer;
+    requires hibernate.jpa;
+    requires java.xml.bind;
+    requires java.xml;
+    requires java.scripting;
+    requires javafx.base;
+
+    provides javax.validation.spi.ValidationProvider with
+        org.hibernate.validator.HibernateValidator;// <5>
+
+    uses javax.validation.ConstraintValidator;// <6>
+}
+----
+<1> The module name
+<2> All the packages the module exports; Hibernate Validator always had a very well defined public API, with all the code parts not meant for public usage living in an `internal` package. Naturally, only the non-internal parts are exported. Things will be more complex when modularizing an existing component without such clearly defined public API. Likely you'll need to move some classes around first, untangling public API and internal implementation parts.
+<3> Two noteworthy exceptions are `o.h.v.internal.util.logging` and `o.h.v.internal.xml` which are exported via a so-called "qualified exports". This means that only the _jboss.logging_ module may access the logging package and only _java.xml.bind_ may access the XML package. This is needed as these modules require reflective access to the logging and XML classes, respectively. Using qualified exports, this exposure of internal classes can be limited to the smallest degree possible. +
+<4> All the modules which this module requires. These are the `javax.validation` module we just built, all the automatic modules we downloaded before and some modules coming with the JDK itself (`java.xml.bind`, `javafx.base` etc). +
+Some of these dependencies might be considered optional at runtime, e.g. Joda Time would only be needed at runtime when actually validating Joda Time types with `@Past` or `@Future`. Unfortunately - and in contrast to OSGi or https://docs.jboss.org/author/display/MODULES[JBoss Modules] - Jigsaw doesn't support the notion of optional module requirements, meaning that all module requirements must be satisfied at compile time as well as runtime. That's a pity, as it prevents a common pattern for libraries which expose certain functionality depending on what dependencies/classes are available at runtime or not. +
+The "right answer" with Jigsaw would be to extract these optional features into their own modules (e.g. _hibernate.validator.joda.time_, _hibernate.validator.jsoup_ etc.) but this comes at the price of making things more complex for users which then need to deal with all these modules.
+<5> The module provides an implementation of the `ValidationProvider` service
+<6> The module uses the `ConstraintValidator` service, see below
+
+&nbsp; +
+With the module descriptor in place, we can compile the Jigsaw-enabled Hibernate Validator module:
+
+[source]
+----
+cd sources/hibernate-validator/engine
+mkdir -p target/generated-sources/jaxb
+
+xjc -enableIntrospection -p org.hibernate.validator.internal.xml \# <1>
+    -extension \
+    -target 2.1 \
+    -d target/generated-sources/jaxb \
+    src/main/xsd/validation-configuration-1.1.xsd src/main/xsd/validation-mapping-1.1.xsd \
+    -b src/main/xjb/binding-customization.xjb
+
+javac -addmods java.xml.bind,java.annotations.common \# <2>
+    -g \
+    -modulepath $BASE/modules:$BASE/automatic-modules \
+    -processorpath $BASE/tools/jboss-logging-processor-2.0.1.Final.jar:$BASE/tools/jdeparser-2.0.0.Final.jar:$BASE/tools/jsr250-api-1.0.jar:$BASE/automatic-modules/jboss-logging-annotations-2.0.1.Final.jar::$BASE/automatic-modules/jboss-logging-3.3.0.Final.jar \
+    -d $BASE/modules/org.hibernate.validator.engine \
+    $(find src/main/java -name "*.java") $(find target/generated-sources/jaxb -name "*.java")
+
+cp -r src/main/resources/* $BASE/modules/org.hibernate.validator.engine;# <3>
+
+cp -r src/main/xsd/* $BASE/modules/org.hibernate.validator.engine/META-INF;# <4>
+cd $BASE
+----
+<1> The `xjc` utility is used to create some JAXB types from the XML constraint descriptor schemas
+<2> Compile the source code via `javac`
+<3> Copy error message resource bundle into the module directory
+<4> Copy XML schema files into the module directory
+
+&nbsp; +
+Note how the module path used for compilation refers to the _modules_ directory (containing the _javax.validation_ module) and the _automatic-modules_ directory (containing all the dependencies such as Joda Time etc.).
+
+The resulting module is located under _modules/org.hibernate.validator.engine_.
+
+== Giving it a test ride
+
+Having converted Bean Validation API and Hibernate Validator into proper Jigsaw modules, it's about time to give these modules a test ride.
+Create a new compilation unit for that:
+
+[source]
+----
+mkdir -p sources/com.example.acme/src/main/java/com/example/acme
+----
+
+Within that directory structure, create a very simple domain class and a class with a main method for validating it:
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/Car.java_
+----
+package com.example.acme;
+
+import java.util.List;
+
+import javax.validation.constraints.Min;
+
+public class Car {
+
+    @Min(1)
+    public int seatCount;
+
+    public List<String> passengers;
+    
+    public Car(int seatCount, List<String> passengers) {
+        this.seatCount = seatCount;
+        this.passengers = passengers;
+    }
+}
+----
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/ValidationTest.java_
+----
+package com.example.acme;
+
+import java.util.Collections;
+import java.util.Set;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
+public class ValidationTest {
+
+    public static void main(String... args) {
+        Validator validator = Validation.buildDefaultValidatorFactory()
+            .getValidator();
+
+        Set<ConstraintViolation<Car>> violations = validator.validate( new Car( 0, Collections.emptyList() ) );
+
+        System.out.println( "Validation error: " + violations.iterator().next().getMessage() );
+    }
+}
+----
+
+This obtains a `Validator` object via `Validation#buildDefaultValidatorFactory()` (which internally uses the service mechanism described above) and performs a simple validation of a `Car` object.
+
+Of course we need a _module-info.java_, too:
+
+[source,java]
+._sources/com.example.acme/src/main/java/module-info.java_
+----
+module com.example.acme {
+    exports com.example.acme;
+
+    requires javax.validation;
+}
+----
+
+That should look familiar by now: we just export the single package (so Hibernate Validator can access the state of the `Car` object) and depend on the Bean Validation API module.
+
+Also compilation of this module isn't much news:
+
+[source]
+----
+cd sources/com.example.acme
+javac \
+    -g \
+    -modulepath $BASE/modules:$BASE/automatic-modules \
+    -d $BASE/modules/com.example.acme $(find src/main/java -name "*.java")
+cd $BASE
+----
+
+And with that, we finally can run a first test of Bean Validation under Jigsaw:
+
+[source]
+----
+java \
+    -modulepath modules:automatic-modules \
+    -m com.example.acme/com.example.acme.ValidationTest
+----
+
+Similar to _javac_, there is a new _modulepath_ option for the _java_ command, pointing to one or more directories with Jigsaw modules.
+The _-m_ switch specifies the main class to run by giving its module name and fully qualified class name.
+
+Mh, that was not really successful:
+
+[source]
+----
+HV000149: An exception occurred during message interpolation
+    ...
+Caused by: java.lang.UnsupportedOperationException: ResourceBundle.Control not supported in named modules
+    at java.util.ResourceBundle.checkNamedModule(java.base@9-ea/ResourceBundle.java:1551)
+    at java.util.ResourceBundle.getBundle(java.base@9-ea/ResourceBundle.java:1533)
+    at org.hibernate.validator.resourceloading.PlatformResourceBundleLocator.loadBundle(org.hibernate.validator.engine/PlatformResourceBundleLocator.java:135)
+----
+
+What's that about?
+Hibernate Validator is using the http://download.java.net/java/jdk9/docs/api/index.html?java/util/ResourceBundle.Control.html[Control] class in order to merge the contents (error messages) of several resource bundles with the same name found on the classpath.
+This is not supported in the modularized environment any longer, hence the exception above is raised.
+Eventually, Hibernate Validator should handle this situation automatically (this is tracked under https://hibernate.atlassian.net/browse/HV-1073[HV-1073]).
+
+For now let's hack around it and disable the troublesome bundle aggregregation in Hibernate Validator's `AbstractMessageInterpolator`.
+To do so, change `true` to `false` in the constructor invocation on line 165:
+
+[source,java]
+._sources/hibernate-validator/engine/src/main/java/org/hibernate/validator/messageinterpolation/AbstractMessageInterpolator.java_
+----
+...
+new PlatformResourceBundleLocator(
+    CONTRIBUTOR_VALIDATION_MESSAGES,
+    null,
+    false
+);
+...
+----
+
+Re-compile the Hibernate Validator module.
+After running the test again, you should now see the following output on the console:
+
+[source]
+----
+Validation error: must be greater than or equal to 1
+----
+
+Tada, the first successful bean validation in the Jigsaw environment :)
+
+Let me quickly recap what has happened so far:
+
+* We added a module descriptor to the Bean Validation API, making it a proper Jigsaw module
+* We added a module descriptor to Hibernate Validator; this Bean Validation provider will be discovered by the API module using the service mechanism
+* We created a test module with a main method, which uses the Bean Validation API to perform a simple object validation
+
+== (Not) overstepping boundaries
+
+Now let's be nasty and see whether the module system actually is doing its job as expected.
+For that add the module requirement to Hibernate Validator to the module descriptor (so its considered for compilation at all) and cast the validator to the internal implementation type in `ValidationTest`:
+
+[source,java]
+._sources/com.example.acme/src/main/java/module-info.java_
+----
+module com.example.acme {
+    exports com.example.acme;
+
+    requires javax.validation;
+    requires org.hibernate.validator.engine;
+}
+----
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/ValidationTest.java_
+----
+package com.example.acme;
+
+import javax.validation.Validation;
+
+import org.hibernate.validator.internal.engine.ValidatorImpl;
+
+public class ValidationTest {
+
+    public static void main(String... args) throws Exception{
+        ValidatorImpl validator = (ValidatorImpl) Validation.buildDefaultValidatorFactory()
+            .getValidator();
+    }
+}
+----
+
+Running _javac_ again, you should now get a compilation error, complaining about the type not being found.
+So Jigsaw prevents accesses to non-exported types.
+If you like, try referencing anything from the packages exported by Hibernate Validator, which will work.
+
+That's a great advantage over the traditional flat classpath, where you might have organized your code base into public and internal parts but then had to hope for users of your library not to step across the line and - accidentally or intentionally - access internal classes.
+
+== Custom constraints
+
+With the modules basically working, it's time to get a bit more advanced and create a http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-customconstraints[custom Bean Validation constraint].
+This one should make sure that a car does not have more passengers than seats available.
+
+For that we need an annotation type:
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/PassengersDontExceedSeatCount.java_
+----
+package com.example.acme;
+
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import javax.validation.Constraint;
+import javax.validation.Payload;
+
+@Documented
+@Constraint(validatedBy = { PassengersDontExceedSeatCountValidator.class })
+@Target({ TYPE })
+@Retention(RUNTIME)
+public @interface PassengersDontExceedSeatCount {
+
+    String message() default "{com.example.acme.PassengersDontExceedSeatCount.message}";
+    Class<?>[] groups() default { };
+    Class<? extends Payload>[] payload() default { };
+}
+----
+
+And also a constraint validator implementation:
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/PassengersDontExceedSeatCountValidator.java_
+----
+package com.example.acme;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+
+import com.example.acme.PassengersDontExceedSeatCount;
+
+public class PassengersDontExceedSeatCountValidator implements
+        ConstraintValidator<PassengersDontExceedSeatCount, Car> {
+
+    @Override
+    public void initialize(PassengersDontExceedSeatCount constraintAnnotation) {}
+
+    @Override
+    public boolean isValid(Car car, ConstraintValidatorContext constraintValidatorContext) {
+        if ( car == null ) {
+            return true;
+        }
+        
+        return car.passengers == null || car.passengers.size() <= car.seatCount;
+    }
+}
+----
+
+A resource bundle with the error message for the constraint is needed, too:
+
+[source,java]
+._sources/com.example.acme/src/main/resources/ValidationMessages.properties_
+----
+com.example.acme.PassengersDontExceedSeatCount.message=Passenger count must not exceed seat count
+----
+
+Now we can put the new constraint type to the `Car` class and finally validate it:
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/Car.java_
+----
+@PassengersDontExceedSeatCount
+public class Car {
+    ...
+}
+----
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/ValidationTest.java_
+----
+package com.example.acme;
+
+import java.util.Arrays;
+import java.util.Set;
+
+import javax.validation.Validation;
+import javax.validation.Validator;
+import javax.validation.ConstraintViolation;
+
+public class ValidationTest {
+
+    public static void main(String... args) throws Exception{
+        Validator validator = Validation.buildDefaultValidatorFactory()
+            .getValidator();
+
+        Set<ConstraintViolation<Car>> violations = validator.validate(
+            new Car( 2, Arrays.asList( "Anna", "Bob", "Alice" ) )
+        );
+
+        System.out.println( "Validation error: " + violations.iterator().next().getMessage() );
+    }
+}
+----
+
+Compile the example module again; don't forget to copy the resource bundle to the module directory:
+
+[source]
+----
+cd sources/com.example.acme
+javac \
+    -g \
+    -modulepath $BASE/modules:$BASE/automatic-modules \
+    -d $BASE/modules/com.example.acme $(find src/main/java -name "*.java")
+cp -r src/main/resources/* $BASE/modules/com.example.acme
+cd $BASE
+----
+
+Run it as before, and you should get a nice error message. But what's that:
+
+[source]
+----
+Validation error: {com.example.acme.PassengersDontExceedSeatCount.message}
+----
+
+It seems the error message wasn't resolved properly, so the raw interpolated message key from the annotation definition has been returned.
+Now why is this?
+
+Bean Validation error messages are loaded through `java.util.ResourceBundle`, and due to the strong encapsulation of the modularized environment the Hibernate Validator module cannot "see" the resource bundle provided in the example module.
+
+The http://download.java.net/java/jdk9/docs/api/index.html?java/util/ResourceBundle.html[updated JavaDocs] of `ResourceBundle` make it clear that only bundles located in the same module as the caller of `ResourceBundle#getBundle()` can be accessed.
+In order to access resource bundles from other modules, the service loader mechanism is to be used as per Java 9;
+A new SPI interface, http://download.java.net/java/jdk9/docs/api/java/util/spi/ResourceBundleProvider.html[ResourceBundleProvider], has been added to the JDK for that purpose.
+
+Ultimately, Bean Validation should take advantage of that mechanism, but how can we make things work out for now?
+As it turns out, Hibernate Validator has its own extension point for customizing the retrieval of resource bundles, http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-resource-bundle-locator[ResourceBundleLocator].
+
+This comes in very handy now: we just need to create an implementation of that SPI in the example module:
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/internal/MyResourceBundleLocator.java_
+----
+package com.example.acme.internal;
+
+import java.util.Locale;
+import java.util.ResourceBundle;
+
+import org.hibernate.validator.spi.resourceloading.ResourceBundleLocator;
+
+public class MyResourceBundleLocator implements ResourceBundleLocator {
+
+    @Override
+    public ResourceBundle getResourceBundle(Locale locale) {
+        return ResourceBundle.getBundle( "ValidationMessages", locale );
+    }
+}
+----
+
+When bootstrapping the validator factory, configure a message interpolator using that bundle locator like this:
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/ValidationTest.java_
+----
+import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
+import com.example.acme.internal.MyResourceBundleLocator;
+
+...
+
+Validator validator = Validation.byDefaultProvider()
+    .configure()
+    .messageInterpolator( new ResourceBundleMessageInterpolator( new MyResourceBundleLocator() ) )
+    .buildValidatorFactory()
+    .getValidator();
+----
+
+As the call to `ResourceBundle#getBundle()` now originates from the same module that declares the `ValidationMessages` bundle, the bundle can be found and the error message will be interpolated correctly.
+Success!
+
+== Keeping your privacy
+
+With the custom constraint in place, let's think about encapsulation a bit more.
+Wouldn't it be nice if the constraint validator implementation didn't live in the exported package but rather somewhere under `internal`?
+After all, that class is an implementation detail and should not be referenced directly by users of the `@PassengersDontExceedSeatCount` constraint.
+
+Another feature of Hibernate Validator is helpful here: http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-constraint-definition-contribution[service-loader based discovery] of constraint validators.
+
+This allows us to remove the reference from the constraint annotation to its validator (just add an empty `@Constraint({})` annotation) and relocate the validator implementation to the `internal` package:
+
+[source]
+----
+mv sources/com.example.acme/src/main/java/com/example/acme/PassengersDontExceedSeatCountValidator.java \
+    sources/com.example.acme/src/main/java/com/example/acme/internal
+----
+
+Also adapt the package declaration in the source file accordingly and add an import for the `Car` type.
+We then need to declare the constraint validator as service provider in the module descriptor:
+
+[source,java]
+._sources/com.example.acme/src/main/java/module-info.java_
+----
+module com.example.acme {
+    ...
+
+    provides javax.validation.ConstraintValidator
+        with com.example.acme.internal.PassengersDontExceedSeatCountValidator;
+}
+----
+
+Compile and run the example module again.
+You should get an error like this:
+
+[source]
+----
+java.lang.IllegalAccessException: class org.hibernate.validator.internal.util.privilegedactions.NewInstance (in module org.hibernate.validator.engine) cannot access class com.example.acme.internal.PassengersDontExceedSeatCountValidator (in module com.example.acme) because module com.example.acme does not export com.example.acme.internal to module org.hibernate.validator.engine
+----
+
+This originates from the fact that Hibernate Validator is using the service loader mechanism only for detecting validator types and then instantiates them for each specific constraint usage.
+As the `internal` package has not been exported, this instantiation is bound to fail.
+You have two options now:
+
+* Use a qualified export in _module-info.java_ to expose that package to the Hibernate Validator module
+* Use the new `-XaddExports` option of the `java` command to dynamically add this export when running the module
+
+Following the latter approach, the `java` invocation would look like this:
+
+[source]
+----
+java \
+    -modulepath modules:automatic-modules \
+    -XaddExports:com.example.acme/com.example.acme.internal=org.hibernate.validator.engine \
+    -m com.example.acme/com.example.acme.ValidationTest
+----
+
+While this approach works, it can become a bit tedious when taking other libraries into the picture, that need to perform reflective operations on non-exported types.
+JPA providers such as Hibernate ORM and dependency injection frameworks are just two examples.
+
+Luckily, the OpenJDK team is aware of that issue and there is an entry for it in the requirements list for the Java Module System: http://openjdk.java.net/projects/jigsaw/spec/issues/#ReflectiveAccessToNonExportedTypes[ReflectiveAccessToNonExportedTypes].
+I sincerely hope that this one gets addressed before Java 9 gets finalized.
+
+== XML configuration
+
+As last part of our journey of "Jigsaw-ifying" Bean Validation, let's take a look at XML-based configuration of constraints.
+This is a useful alternative, if you cannot put constraint metadata to a model via annotations or e.g. want to override existing annotation-based constraints externally.
+
+The Bean Validation spec defines a validation mapping file for this, which in turn can point to one or more constraint mapping XML files.
+Create the following files in order to override the `@Min` constraint of the `Car` class:
+
+[source,xml]
+._sources/com.example.acme/src/main/resources/META-INF/validation.xml_
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<validation-config
+    xmlns="http://jboss.org/xml/ns/javax/validation/configuration"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/configuration">
+
+    <constraint-mapping>META-INF/constraints-car.xml</constraint-mapping>
+</validation-config>
+----
+
+[source,xml]
+._sources/com.example.acme/src/main/resources/META-INF/constraints-car.xml_
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<constraint-mappings
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://jboss.org/xml/ns/javax/validation/mapping validation-mapping-1.1.xsd"
+    xmlns="http://jboss.org/xml/ns/javax/validation/mapping" version="1.1">
+
+    <bean class="com.example.acme.Car" ignore-annotations="true">
+        <field name="seatCount">
+            <constraint annotation="javax.validation.constraints.Min">
+                <element name="value">2</element>
+            </constraint>
+        </field>
+    </bean>
+</constraint-mappings>
+----
+
+Traditionally, Bean Validation will look for _META-INF/validation.xml_ on the classpath and resolve any linked constraint mapping files relatively to that.
+If you've followed this article that far, you won't be surprised that this is not going to work in Jigsaw.
+There is no notion of a "flat classpath" any longer, and thus a validation provider cannot see XML files in other modules, akin to the case of error message bundles discussed above.
+
+More specifically, the method `ClassLoader#getResourceAsStream()` which is used by Hibernate Validator to open mapping files, won't work for named modules as of JDK 9. 
+That change will be a tough nut to crack for many projects when migrating to Java 9, as it renders strategies for resource loading known from existing modular environment such as OSGi inoperable.
+E.g. Hibernate Validator allows to http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-constraint-customizing-class-loading[pass in a classloader] for loading user-provided resources.
+In OSGi this can be used to pass what's called the bundle loader and allow Hibernate Validator to access constraint mapping files and other things provided by the user.
+This pattern cannot be employed with Jigsaw unfortunately, as `getResourceAsStream()` http://download.java.net/java/jdk9/docs/api/java/lang/ClassLoader.html#getResourceAsStream-java.lang.String-["does not find resources in named modules"].
+
+But Bean Validation has a way out for this issue, too, as it allows to pass in constraint mappings as `InputStream` opened by the bootstrapping code.
+`Class#getResourceAsStream()` continues to work for resources from the same module, so things will work out as expected when bootstrapping the validator factory like this (don't forget to close the stream afterwards):
+
+[source,java]
+._sources/com.example.acme/src/main/java/com/example/acme/ValidationTest.java_
+----
+InputStream constraintMapping = ValidationTest.class.getResourceAsStream( "/META-INF/constraints-car.xml" );
+
+Validator validator = Validation.byDefaultProvider()
+    .configure()
+    .addMapping( constraintMapping )
+    .buildValidatorFactory()
+    .getValidator();
+----
+
+That way the constraint mapping is opened by code from the same module and thus can be accessed and passed to the Bean Validation provider.
+
+In the longer term, APIs such as Bean Validation should foresee some kind of SPI contract for conveying all required configuration information http://mail.openjdk.java.net/pipermail/jpms-spec-experts/2015-October/000163.html[as per Jigsaw spec lead Mark Reinhold].
+The user would then expose an instance of that contract via a service implementation.
+
+== Wrapping it up
+
+With that, we conclude our experiment of making Bean Validation ready for the Jigsaw module system.
+Overall, things work out pretty well, and without too much effort Bean Validation and Hibernate Validator can be made first-class citizens in a fully-modularized world.
+
+Some observations from the experiment:
+
+* The lack of optional module requirements poses a usability issue in my opinion, as it prevents libraries from exposing additional functionality based on what classes and modules are present at runtime in a given environment. This means that users of the library either need to provide other modules they don't actually need or - if the library has been cut into several modules, one per optional dependency - need to add several modules now where they could have worked with a single one before.
+* The need to explicitly expose internal packages for reflective access by libraries such as Hibernate Validator, but also JPA providers or DI containers, can become tedious. I hope there will be a way to enable such access in a more global way, e.g. by whitelisting "trustworthy modules" such as the aforementioned libraries.
+* The changed behaviors around loading of resources such as configuration files or resource bundles provided by the user of a library will potentially affect many applications when migrating to Java 9. The established pattern of accepting an external classloader for loading user resources will not work anymore, so libraries need to adapt either by providing dedicated extension points (akin to `addMapping(InputStream)` in Bean Validation) or by migrating to service based approaches as envisioned by the makers of Jigsaw.
+* Tools such as Maven (including plug-ins as e.g. Surefire for running tests) or Gradle but also IDEs still need to catch up with Jigsaw. Using plain `javac` and `java` can be fun for a while, but you wish back more powerful tools rather quickly :)
+* Converting Hibernate Validator into a Jigsaw module is relatively easy, as we luckily were very careful about a proper API/implementation split from the beginning. Modularizing existing libraries or applications without such clear distinction will be a much tougher exercise, as it may require lots of types to be moved around and unwanted (package) dependencies to be broken up. There are some tools that can help with that, but that might be a topic for a future blog post by itself.
+
+One thing is for sure: interesting times lie ahead! While migration might be painful here and there, I think it's overdue that Java gets its proper module system and I look forward to seeing it as an integrated part of the platform very much.
+
+Got feedback from following the steps described above or from your own experiments with Jigsaw? Let's all together learn from our different experiences and insights, so please share any thoughts on the topic below.
+
+Many thanks to https://twitter.com/Sander_Mak[Sander Mak], https://twitter.com/SanneGrinovero[Sanne Grinovero] and https://github.com/gsmet/[Guillaume Smet] for reviewing this post!

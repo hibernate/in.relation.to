@@ -53,36 +53,36 @@
   }
 }
 
-// alternatively could use &#10122; through &#10131 to get the numbered circles,
-// then style them as appropriate; would need to output them in the text, though
-.conum {
-  display: inline-block;
-  color: white !important;
-  background-color: $body-font-color;
-  // removed by emmanuel @include border-radius(100px);
-  text-align: center;
-  width: 20px;
-  height: 20px;
-  font-size: 12px;
-  font-weight: bold;
-  line-height: 20px;
-  font-family: Arial, sans-serif;
-  font-style: normal;
-  position: relative;
-  top: -2px;
-  letter-spacing: -1px;
-
-  & * {
-    color: white !important;
-  }
-
-  // hack for when highlight.js adds a bogus element into DOM
-  &:empty {
-    display: none;
-  }
+.conum[data-value] {
+    background-color: rgba(0, 0, 0, 0.8);
+    border-radius: 100px;
+    color: #fff !important;
+    display: inline-block;
+    font-family: "Open Sans","DejaVu Sans",sans-serif;
+    font-size: 0.75em;
+    font-style: normal;
+    font-weight: bold;
+    height: 1.67em;
+    line-height: 1.67em;
+    text-align: center;
+    width: 1.67em;
 }
-
-pre .comment .conum {
-  // coverup the comment
-  left: -20px;
+.conum[data-value] * {
+    color: #fff !important;
+}
+.conum[data-value] + b {
+    display: none;
+}
+.conum[data-value]::after {
+    content: attr(data-value);
+}
+pre .conum[data-value] {
+    position: relative;
+    top: -0.125em;
+}
+b.conum * {
+    color: inherit !important;
+}
+.conum:empty:not([data-value]) {
+    display: none;
 }
