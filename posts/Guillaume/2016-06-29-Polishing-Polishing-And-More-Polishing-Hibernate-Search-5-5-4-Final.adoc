@@ -1,0 +1,56 @@
+= "Polishing, polishing and more polishing: Hibernate Search 5.5.4.Final is here!"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We are making good progress on our next major release which focuses on http://in.relation.to/2016/05/24/ElasticsearchintegrationReachesBeta1/[Elasticsearch integration]
+but we don't forget our beloved users of Hibernate Search 5.5.x and here is a new stable release to prove it!
+
+This bugfix release is entirely based on user feedback so keep it coming!
+
+Hibernate Search version `5.5.4.Final` is available now and fixes the following issues:
+
+    * https://hibernate.atlassian.net/browse/HSEARCH-2301[HSEARCH-2301] - CriteriaObjectInitializer is suboptimal when we query only one subtype of a hierarchy
+    * https://hibernate.atlassian.net/browse/HSEARCH-2286[HSEARCH-2286] - DistanceSortField should support reverse sorting
+    * https://hibernate.atlassian.net/browse/HSEARCH-2306[HSEARCH-2306] - Upgrade 5.5.x to Hibernate ORM 5.0.9
+    * https://hibernate.atlassian.net/browse/HSEARCH-2307[HSEARCH-2307] - Documentation shouldn't suggest need for @Indexed of embedded association fields
+
+Small focus on https://hibernate.atlassian.net/browse/HSEARCH-2301[HSEARCH-2301] as it might significantly improve your performances if you index complex hierarchy of objects.
+Prior to this fix, when querying the database to hydrate the objects, Hibernate Search was using the root type of the hierarchy potentially leading to queries with a lot of joins.
+Hibernate now builds the most efficient query possible depending on the effective results.
+
+You can see two instances of this issue on Stack Overflow http://stackoverflow.com/questions/37894280/hibernate-search-mysql-error-too-many-joins-with-joined-inheritance-model/37897277#37897277[here] and http://stackoverflow.com/questions/38072423/hibernate-search-query-searches-all-tables-instead-of-only-the-specified-class/38075496[here].
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.5.4.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-core</artifactId>
+   <version>5.0.9.Final</version>
+</dependency>
+<dependency>
+   <groupId>org.apache.lucene</groupId>
+   <artifactId>lucene-core</artifactId>
+   <version>5.3.1</version>
+</dependency>
+----
+====
+
+== How to get this release
+
+Everything you need is available on Hibernate Search's http://hibernate.org/search/[web site].
+Download the https://sourceforge.net/projects/hibernate/files/hibernate-search/5.5.4.Final[full distribution from here],
+or get it from Maven Central using the above coordinates, and don't hesitate to reach us in our https://forums.hibernate.org/viewforum.php?f=9[forums] or http://hibernate.org/community/[mailing lists].
+
+We also monitor closely the http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag] on Stack Overflow.
+
+Feedback always welcome! https://hibernate.atlassian.net/projects/HSEARCH/summary/statistics[Please let us know of any problem or suggestion].
+
+
