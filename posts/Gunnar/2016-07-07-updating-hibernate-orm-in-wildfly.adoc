@@ -1,0 +1,197 @@
+= "Updating Hibernate ORM in WildFly"
+Gunnar Morling
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+In this post I'll show you how easy it is to use the latest and greatest version of Hibernate ORM with WildFly 10.
+
+Traditionally, updating Hibernate in WildFly required some good knowledge of the server's module system and the structure of the ORM modules.
+It certainly was doable, but it involved search/replace in existing module descriptors and generally wasn't very convenient.
+
+This has become much simpler with link:/2016/06/30/hibernate-orm-521-final-release/[last week's release] of Hibernate ORM 5.2.1!
+
+We now provide a ZIP archive containing all the required modules,
+making it a breeze to add the latest version of Hibernate to an existing WildFly instance.
+And what's best: the version of Hibernate packaged with the application server remains untouched; switching between this and the new version is just a matter of setting one small configuration option, and you can go back at any time.
+
+== Preparations
+
+The ZIP file is available in Maven Central, so you can automate its download as part of your build if needed.
+These are the GAV coordinates:
+
+* _groupId_: org.hibernate
+* _artifactId_: hibernate-orm-modules
+* _version_: 5.2.1.Final
+* _classifier_: wildfly-10-dist
+* _type_: zip
+
+Alternatively, that's the URL if you want to download the ZIP file manually: http://search.maven.org/remotecontent?filepath=org/hibernate/hibernate-orm-modules/5.2.1.Final/hibernate-orm-modules-5.2.1.Final-wildfly-10-dist.zip.
+
+Unzip the archive into the _modules_ directory of your WildFly instance.
+If done correctly, you should see two sub-directories under _modules_: _system_ (the server's original modules) and _org_ (the new Hibernate ORM modules).
+
+== Choosing the right version of Hibernate ORM
+
+Having added the Hibernate ORM 5.2 modules to the server, you need to configure your application so it uses that specific Hibernate version instead of the default one coming with the server.
+To do so, just add the following property to your _META-INF/persistence.xml_ file:
+
+[source,xml]
+----
+...
+<properties>
+    <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2" />
+    ...
+</properties>
+...
+----
+
+In case you have several Hibernate releases added to your WildFly server, you also can define a specific micro version:
+
+[source,xml]
+----
+<property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2.1.Final" />
+----
+
+== Example project
+
+As an example for using the module ZIP, I've created a small Maven project.
+You can find it in the https://github.com/hibernate/hibernate-demos/tree/master/hibernate-orm/wildfly[hibernate-demos repository].
+To run the example project, simply execute `mvn clean verify`.
+Let's take a quick look at some interesting parts.
+
+First, in the Maven POM file, the http://maven.apache.org/plugins/maven-dependency-plugin/[maven-dependency-plugin] is used to
+
+* download the WildFly server and http://maven.apache.org/plugins/maven-dependency-plugin/unpack-mojo.html[unpack] it into the _target_ directory
+* download the Hibernate ORM module ZIP and extract its contents into the _modules_ directory of WildFly:
+
+[source,xml]
+._pom.xml_
+----
+...
+<properties>
+    <hibernate.version>5.2.1.Final</hibernate.version>
+    <wildfly.version>10.0.0.Final</wildfly.version>
+    <jboss.home>${project.build.directory}/wildfly-${wildfly.version}</jboss.home>
+    ...
+</properties>
+...
+<plugin>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>unpack</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+                <goal>unpack</goal>
+            </goals>
+            <configuration>
+                <artifactItems>
+                    <!-- WildFly server; Unpacked into target/wildfly-10.0.0.Final -->
+                    <artifactItem>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-dist</artifactId>
+                        <version>${wildfly.version}</version>
+                        <type>zip</type>
+                        <overWrite>false</overWrite>
+                        <outputDirectory>${project.build.directory}</outputDirectory>
+                    </artifactItem>
+                    <!-- Hibernate ORM modules; Unpacked into target/wildfly-10.0.0.Final/modules -->
+                    <artifactItem>
+                        <groupId>org.hibernate</groupId>
+                        <artifactId>hibernate-orm-modules</artifactId>
+                        <version>${hibernate.version}</version>
+                        <classifier>wildfly-10-dist</classifier>
+                        <type>zip</type>
+                        <overWrite>false</overWrite>
+                        <outputDirectory>${jboss.home}/modules</outputDirectory>
+                    </artifactItem>
+                </artifactItems>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+----
+
+Next, Hibernate ORM 5.2 must be enabled for the application using the `jboss.as.jpa.providerModule` property as discussed above:
+
+[source,xml]
+._META-INF/persistence.xml_
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence
+    xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence
+        http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+    version="2.1">
+
+    <persistence-unit name="testPu" transaction-type="JTA">
+        <jta-data-source>java:jboss/datasources/ExampleDS</jta-data-source>
+
+        <properties>
+            <property name="javax.persistence.schema-generation.database.action" value="drop-and-create"/>
+            <property name="jboss.as.jpa.providerModule" value="org.hibernate:5.2"/>
+        </properties>
+    </persistence-unit>
+</persistence>
+----
+
+This persistence unit is using the example datasource configured by default in WildFly, which is using an in-memory H2 database.
+
+Finally, we need a test to ensure that actually Hibernate ORM 5.2 is used and not the 5.0 version coming with WildFly.
+To do so, we can simply invoke one of the methods of `EntityManager` which are exposed through Hibernate's classic `Session` API as of 5.2:
+
+[source,java]
+._HibernateModulesOnWildflyIT.java_
+----
+@RunWith(Arquillian.class)
+public class HibernateModulesOnWildflyIT {
+
+    @Deployment
+    public static WebArchive createDeployment() {
+        return ShrinkWrap.create( WebArchive.class )
+                .addClass( Kryptonite.class )
+                .addAsWebInfResource( EmptyAsset.INSTANCE, "beans.xml" )
+                .addAsResource( "META-INF/persistence.xml" );
+    }
+
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    @Test
+    @Transactional(value=TransactionMode.ROLLBACK)
+    public void shouldUseHibernateOrm52() {
+        Session session = entityManager.unwrap( Session.class );
+
+        Kryptonite kryptonite1 = new Kryptonite();
+        kryptonite1.id = 1L;
+        kryptonite1.description = "Some Kryptonite";
+        session.persist( kryptonite1 );
+
+        session.flush();
+        session.clear();
+
+        // EntityManager methods exposed through Session only as of 5.2
+        Kryptonite loaded = session.find( Kryptonite.class, 1L );
+
+        assertThat( loaded.description, equalTo( "Some Kryptonite" ) );
+    }
+}
+----
+
+The call to `find()` would fail with a `NoSuchMethodError` if Hibernate ORM 5.0 instead of 5.2 was used.
+To try it out, simply remove the `jboss.as.jpa.providerModule` property from _persistence.xml_.
+
+The test itself is executed using the great http://arquillian.org/[Arquillian tool].
+It creates a test WAR file with the contents configured in the `createDeployment()` method, starts up the WildFly server, deploys the WAR file and runs the test within the running container. Using the http://arquillian.org/modules/transaction-extension/[Arquillian Transactional Extension], the test method is executed within a transaction which is rolled back afterwards.
+
+== Feedback welcome!
+
+The Hibernate ORM module ZIP file is a very recent addition to Hibernate.
+Should you run into any issues, please let us know and we'll be happy to help.
+
+You can learn more in this http://docs.jboss.org/hibernate/orm/5.2/topical/html_single/wildfly/Wildfly.html[topical guide].
+Hibernate ORM 5.2.1 is the first release to provide a module ZIP, the next 5.1.x release will provide one, too.
+
+Give it a try and let us know about your feedback!
