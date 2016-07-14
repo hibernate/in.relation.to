@@ -1,0 +1,128 @@
+= How we fixed all database connection leaks
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+== The context
+
+By default, all Hibernate tests are run on http://www.h2database.com/html/main.html[H2].
+However, we have a lots of database-specific tests as well, so we should be testing on Oracle, PostgreSQL, MySQL, and possibly SQL Server as well.
+
+When we tried to set up a Jenkins job that uses PostgreSQL, we realized that the job fails because we ran out of connections.
+Knowing that the PostgreSQL server has a `max_connections` setting of 30, we realized the connection leak issue was significant.
+
+== Needle in a haystack
+
+Just the `hibernate-core` module alone has over 5000 tests, and `hibernate-envers` has around 2500 tests as well.
+But there are many mode modules: `hibernate-c3p0`, `hibernate-ehcache`, `hibernate-jcache`, etc.
+All in all, we couldn't just browse the code and spot issues.
+We needed an automated connection leak detector.
+
+That being said, I came up with https://vladmihalcea.com/2016/07/12/the-best-way-to-detect-database-connection-leaks/[a solution that works on H2, Oracle, PostgreSQL, and MySQL] as well.
+Luckily, no problem was spotted in the actual framework code base.
+All issues were caused by unit tests which did not handle database resources properly.
+
+== The most common issues
+
+One of the most widespread issue was caused by improper bootstrapping logic:
+
+[source,java]
+----
+@Test
+public void testInvalidMapping() {
+    try {
+        new MetadataSources( )
+                .addAnnotatedClass( TheEntity.class )
+                .buildMetadata();
+        fail( "Was expecting failure" );
+    }
+    catch (AnnotationException ignore) {
+    }
+}
+----
+
+The issue here is that `MetadataSources` creates a `BootstrapServiceRegistry` behind the scenes, which in turn triggers the initialization of the underlying `ConnectionProvider`.
+Without closing the `BootstrapServiceRegistry` explicitly, the `ConnectionProvider` will not get a chance to close all the currently pooled JDBC `Connection(s)`.
+
+The fix is as simple as that:
+
+[source,java]
+----
+@Test
+public void testInvalidMapping() {
+    MetadataSources metadataSources = new MetadataSources( )
+        .addAnnotatedClass( TheEntity.class );
+    try {
+        metadataSources.buildMetadata();
+        fail( "Was expecting failure" );
+    }
+    catch (AnnotationException ignore) {
+    }
+    finally {
+        ServiceRegistry metaServiceRegistry = metadataSources.getServiceRegistry();
+        if(metaServiceRegistry instanceof BootstrapServiceRegistry ) {
+            BootstrapServiceRegistryBuilder.destroy( metaServiceRegistry );
+        }
+    }
+}
+----
+
+Another recurring issue was improper transaction handling such as in the following example:
+
+[source,java]
+----
+protected void cleanup() {
+    Session s = getFactory().openSession();
+    s.beginTransaction();
+
+    TestEntity testEntity = s.get( TestEntity.class, "foo" );
+    Assert.assertTrue( testEntity.getParams().isEmpty() );
+
+    TestOtherEntity testOtherEntity = s.get( TestOtherEntity.class, "foo" );
+    Assert.assertTrue( testOtherEntity.getParams().isEmpty() );
+
+    s.getTransaction().commit();
+    s.clear();
+    s.close();
+}
+----
+
+The first thing to notice is the lack of a try/finally block which should be closing the session even if there is an exception being thrown.
+But that's not all.
+
+Not a long time ago, I had fixed https://hibernate.atlassian.net/browse/HHH-7412[HHH-7412], meaning that, for `RESOURCE_LOCAL` (e.g. JDBC `Connection`-bound transactions),
+the https://vladmihalcea.com/2014/12/23/a-beginners-guide-to-transaction-isolation-levels-in-enterprise-java/[logical or physical] `Connection` is closed only when the https://vladmihalcea.com/2014/01/05/a-beginners-guide-to-acid-and-database-transactions/[transaction is ended] (either commit or rollback).
+
+Before HHH-7412 was fixed, the `Connection` was closed automatically when the Hibernate `Session` was closed as well, but this behavior is not supported anymore.
+Nowadays, aside from closing the underlying `Session`, you have to commit/rollback the current running `Transaction` as well:
+
+[source,java]
+----
+protected void cleanup() {
+    Session s = getFactory().openSession();
+    s.beginTransaction();
+
+    try {
+        TestEntity testEntity = s.get( TestEntity.class, "foo" );
+        Assert.assertTrue( testEntity.getParams().isEmpty() );
+
+        TestOtherEntity testOtherEntity = s.get( TestOtherEntity.class, "foo" );
+        Assert.assertTrue( testOtherEntity.getParams().isEmpty() );
+
+        s.getTransaction().commit();
+    }
+    catch ( RuntimeException e ) {
+        s.getTransaction().rollback();
+        throw e;
+    }
+    finally {
+        s.close();
+    }
+}
+----
+
+If you are curious of all the changes that were required, you can check the following two commits: https://github.com/hibernate/hibernate-orm/commit/da9c6e160d6800a506fc1197db5caffb78382fba[da9c6e1] and https://github.com/hibernate/hibernate-orm/commit/f5e10c29ebf103df4de7ea7b528702f0d2d9fc2a[f5e10c2].
+The good news is that the http://ci.hibernate.org/view/ORM/job/hibernate-orm-master-pgsql/[PostgreSQL job is running fine now], and soon we will add jobs for Oracle and a MySQL too.
+
+
