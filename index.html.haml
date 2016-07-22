@@ -21,6 +21,7 @@ title_partial: blog/blog-hero-unit.html.haml
     = partial( page.title_partial.nil? ? 'blog/title.html.haml' : page.title_partial, {"real_page" => page} )
 
     - for post in page.posts
-      .blogpost
+
+      .blogpost{:itemprop=>"blogPost", :itemscope => "", :itemtype => "https://schema.org/BlogPosting", :itemref=>"logobar"}
         = partial( 'blog/post.html.haml', {"post" => post} )
     = page.posts.bootstrap_links

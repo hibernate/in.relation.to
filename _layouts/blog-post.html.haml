@@ -17,7 +17,7 @@ title_partial: blog/title-post.html.haml
     = partial( 'blog/blogger_list.html.haml' )
 
   .span10
-    .blogpost
+    .blogpost{:itemprop=>"blogPost", :itemscope => "", :itemtype => "https://schema.org/BlogPosting", :itemref=>"logobar"}
       = partial( 'blog/post.html.haml', {"post" => page} )
     #disqus_thread
     %script{:src=>javascript, :type=>'text/javascript'}
