@@ -1,0 +1,43 @@
+= Hibernate Community Newsletter 15/2016
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+* Multitenancy is a very useful enterprise application requirement, and Java EE might add support for it in a future release.
+Luckily, Hibernate already supports it, and André William Prade Hildinger shows you how you can use the https://www.toptal.com/hibernate/build-multitenant-java-hibernate[Hibernate schema-based multitenancy support in production].
+* in fact, https://leanpub.com/high-performance-java-persistence/read#leanpub-auto-jpa-vs-hibernate[Hibernate offers many features that are not yet supported in JPA].
+* Anghel Leonard, who is a well-known https://www.packtpub.com/books/info/authors/anghel-leonard[book author] and JSF contributor, wrote three articles:
+** http://java-ee-articles.blogspot.ro/2016/07/data-table-pagination-via-primeng.html[How to implement table pagination with Spring MVC, Hibernate, and PrimeNG]
+** http://java-ee-articles.blogspot.ro/2016/07/hibernate-logging-with-datasource-proxy.html[How to log statements with Hibernate and datasource-proxy]
+** http://java-ee-articles.blogspot.ro/2016/07/asserting-sql-statement-count-generated.html[How to assert the SQL statement count with Hibernate]
+* Hibernate Spatial is now bundled as a `hibernate-spatial` module dependency, and if you plan to use it, then you must check http://blog.disy.net/geodatabase-comparison-mysql-mssql-sql-anywhere/[how various relational databases support spatial queries].
+* Bozhidar Bozhanov wrote a very good http://techblog.bozho.net/spring-managed-hibernate-event-listeners/[article about Spring-managed Hibernate Event Listeners].
+* On our blog, we documented http://in.relation.to/2016/07/19/null-andnot-null-discriminator-values/[how you can use `null` and `not-null` with `@DiscriminatorValue` to accommodate various legacy database inheritance mappings].
+* We also documented how you can detect connection leaks with https://vladmihalcea.com/2016/07/12/the-best-way-to-detect-database-connection-leaks/[this very useful utility] which helped us http://in.relation.to/2016/07/14/how-we-fixed-all-database-connection-leaks/[find all leaks in our test suite].
+* http://www.baeldung.com/hibernate-common-performance-problems-in-logs[3 Common Hibernate Performance Issues and How to Find Them in Your Log File] is a very interesting article on Baeldung.
+* Thorben Janssen shows you http://www.thoughts-on-java.org/hibernate-tips-use-custom-sequence/[how to use a custom database sequence with Hibernate]. If you're using sequences, you should be using https://vladmihalcea.com/2014/07/21/hibernate-hidden-gem-the-pooled-lo-optimizer/[the `pooled` ot the `pooled-lo` optimizer to boost Hibernate write performance].
+* https://vladmihalcea.com/2016/07/19/jpa-persist-and-merge/[How does persist and merge work in JPA and Hibernate] is an article I was planning on writing for a long time because it features the `Redundant-Save Anti-Pattern` as well.
+
+== Questions and answers
+
+* https://www.quora.com/Is-Hibernate-outdated/[Is Hibernate outdated?]
+* http://stackoverflow.com/questions/1069992/jpa-entitymanager-why-use-persist-over-merge[Why use persist() over merge()?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043474&p=2490038[Pattern to avoid problems with equals/hashCode based on @Id]
+* https://www.quora.com/Which-connection-pool-is-best-for-Hibernate[Which connection pool is best for Hibernate?]
+* https://www.quora.com/What-are-some-good-tips-tricks-and-gotchas-in-setting-up-Hibernate-entity-associations/answer/Vlad-Mihalcea-1[What are some good tips, tricks, and gotchas in setting up Hibernate entity associations?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043444&p=2489982[Replication, load-balancing and JTA confusion]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043447[Hibernate 3.2 to 5.2 migration]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043458&p=2489989[Automatically generating index when creating foreign key]
+* http://stackoverflow.com/questions/10041938/how-to-choose-the-id-generation-strategy-when-using-hibernate/38391106[How to choose the id generation strategy when using Hibernate?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043464&p=2490013[Debug mode loads child data when FetchType is Lazy]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043465&p=2490014[Can Hibernate register an entity class at runtime?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043470&p=2490031[Enable Hibernate second level cache only on subclass]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043473[Automatic schema creation defaults timestamp precision to 0]
+* https://www.quora.com/If-I-have-a-one-to-many-object-relationship-with-Hibernate-how-can-many-people-add-objects-without-locking-optimistic-the-one-object/[If I have a one-to-many object relationship with Hibernate, how can many people add objects without locking (optimistic) the "one" object?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043481&p=2490050[@Id mapping without PK constraint on the column]
+
