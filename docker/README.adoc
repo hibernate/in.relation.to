@@ -102,18 +102,22 @@ WORKDIR    $HOME/in.relation.to
 
 CMD [ "/bin/bash" ]
 ----
-<1> Install all dependencies, especially the ones needed to compile native
+
+. Install all dependencies, especially the ones needed to compile native
 extensions. After changes to the gem dependencies this might need to be updated.
 Otherwise we rely on the default ruby version available via _dnf_.
-<2> In order for the container to be able to modify files in your mounted volume,
+
+. In order for the container to be able to modify files in your mounted volume,
 we need to make sure that the created _dev_ user gets the same user id as the files
 have on the host machine. In many cases 1000 is a good guess, but in case you are
 getting file permission errors when running `rake preview` you want to check which
 user id the files have when mounted into the container. Use this user id as part of
 the `useradd` command and re-build the image.
-<3> We need the checkout to setup the awestruct environment. At runtime the checkout
+
+. We need the checkout to setup the awestruct environment. At runtime the checkout
 will be overridden by the mounted volume
-<4> An awestruct hack. Awestruct uses live-reload to determine file changes in order
+
+. An awestruct hack. Awestruct uses live-reload to determine file changes in order
 to trigger re-generation of pages. live-reload allows to configure how changes are
 detected, but awestruct does not expose this option. When mounting your checkout as
 a volume, the default detection fails (at least on Mac using boot2docker) and polling
