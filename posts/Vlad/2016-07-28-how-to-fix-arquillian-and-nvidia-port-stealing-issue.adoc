@@ -1,0 +1,136 @@
+= How to fix the port stealing issue between Nvidia Windows driver and Wildfly running on Arquillian
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+== hibernate-orm-modules
+
+As http://in.relation.to/2016/07/07/updating-hibernate-orm-in-wildfly/[previously explained],
+the https://github.com/hibernate/hibernate-orm/tree/master/hibernate-orm-modules[hibernate-orm-modules] integrates the latest version of Hibernate into Wildfly 10.
+
+While on Linux and OSX, testing this module works just fine, on Windows, we used to get the following test failure:
+
+[source,bash]
+----
+:hibernate-orm-modules:test
+
+org.hibernate.wildfly.integrationtest.HibernateModulesOnWildflyTest > classMethod FAILED
+    org.jboss.arquillian.container.spi.client.container.LifecycleException
+
+1 test completed, 1 failed
+:hibernate-orm-modules:test FAILED
+----
+
+== Finding the culprit
+
+Looking into test report, there is little clue about what's going on:
+
+[source,bash]
+----
+org.jboss.arquillian.container.spi.client.container.LifecycleException: The server is already running! Managed containers do not support connecting to running server instances due to the possible harmful effect of connecting to the wrong server. Please stop server before running or change to another type of container.
+To disable this check and allow Arquillian to connect to a running server, set allowConnectingToRunningServer to true in the container configuration
+	at org.jboss.as.arquillian.container.managed.ManagedDeployableContainer.failDueToRunning(ManagedDeployableContainer.java:321)
+	at org.jboss.as.arquillian.container.managed.ManagedDeployableContainer.startInternal(ManagedDeployableContainer.java:81)
+	at org.jboss.as.arquillian.container.CommonDeployableContainer.start(CommonDeployableContainer.java:115)
+----
+
+The error message says that the application server is already running, so there can be two ways to explain this behavior:
+
+- either the set-up logic is flawed and the server is starting twice, which cannot be the case since tests run just fine on Linux and OSX.
+- one of the ports required by the application server is stolen by some other process, and Arquillian assumes we already started a server instance.
+
+In this kind of situations, a good old debugging session can prove the actual culprit, and in our case,
+I could identify the problem in `org.jboss.as.arquillian.container.managed.ManagedDeployableContainer`:
+
+[source,java]
+----
+private boolean isServerRunning() {
+    Socket socket = null;
+    try {
+        socket = new Socket(
+                getContainerConfiguration().getManagementAddress(),
+                getContainerConfiguration().getManagementPort());
+    } catch (Exception ignored) { // nothing is running on defined ports
+        return false;
+    } finally {
+        if (socket != null) {
+            try {
+                socket.close();
+            } catch (Exception e) {
+                throw new RuntimeException("Could not close isServerStarted socket", e);
+            }
+        }
+    }
+    return true;
+}
+----
+
+The Wildfly Arquillian Container trys to establish a socker to the address and the port given by the `org.jboss.as.arquillian.container.CommonContainerConfiguration` which, by default, uses teh following address and port info:
+
+[source,java]
+----
+managementAddress = "127.0.0.1";
+managementPort = 9990 + Integer.decode(System.getProperty("jboss.socket.binding.port-offset", "0"));
+----
+
+Without providing a `jboss.socket.binding.port-offset` property, the default port is 9990.
+
+Let's see who's already using this port:
+
+[source,bash]
+----
+for /f "tokens=5" %a in ('netstat -ano ^| findstr 9990') do tasklist /fi "pid eq %a"
+
+Image Name                     PID Session Name        Session#    Mem Usage
+========================= ======== ================ =========== ============
+NvNetworkService.exe          2976 Services                   0      4,724 K
+----
+
+The `NvNetworkService.exe` process is the Network Service used by Nvidia, and it's used for updating the Nvidia driver.
+
+So, we have two options:
+
+- either we disable the `NvNetworkService.exe` process and then we'll no longer get any driver update for our video card.
+- we use the `jboss.socket.binding.port-offset` property and then Wildfly is going to use a different port that's hopefully not in use.
+
+== Fixing the port stealing issue
+
+Because I don't want to run outdated software on my computer and risk security issues, I'm going to choose the second option.
+After searching the https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers[list of available ports], I'm going to use the port 10127, which doesn't seem to be allocated to any software vendor.
+That being said, the offset value should be 137.
+
+To provide the `jboss.socket.binding.port-offset` System property, we have to do two changes:
+
+. The `arquillian.xml` should be changed as follows:
++
+[source,xml]
+----
+<group qualifier="Grid" default="true">
+    <container qualifier="container.active-1" mode="suite" default="true">
+        <configuration>
+            <property name="jbossHome">
+                ${buildDir}/wildfly-${wildflyVersion}
+            </property>
+            <property name="javaVmArguments">
+                -Djava.net.preferIPv4Stack=true
+                -Djgroups.bind_addr=127.0.0.1
+                -Djboss.socket.binding.port-offset=137
+            </property>
+        </configuration>
+    </container>
+</group>
+----
+
+. The gradle build script needs to provide the `jboss.socket.binding.port-offset` System property as well:
++
+[source,groovy]
+----
+test {
+    systemProperties['jboss.socket.binding.port-offset'] = 137
+}
+----
+
+That's it. Now the tests run just fine on Windows too.
+
+
