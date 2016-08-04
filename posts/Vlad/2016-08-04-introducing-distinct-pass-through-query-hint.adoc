@@ -4,7 +4,7 @@ Vlad Mihalcea
 :awestruct-layout: blog-post
 ---
 
-== Domain Model
+== Introduction
 
 When it comes to optimizing queries, you should listen to http://use-the-index-luke.com/about[Markus Winand].
 While reading http://use-the-index-luke.com/sql/join/nested-loops-join-n1-problem?langtype=java#orm-join[this great article about Nested Loops],
@@ -18,6 +18,8 @@ ____
 Markus is right. Not only that the `DISTINCT` keyword is redundant, but it's affecting performance as well.
 Because we want Hibernate to be a solution for https://leanpub.com/high-performance-java-persistence[high-performance data access systems], I created the https://hibernate.atlassian.net/browse/HHH-10965[HHH-10965] Jira issue which is fixed in Hibernate 5.2.2.
 This article is going to demonstrate the redundant `DISTINCT` problem, and how you can overcome it in Hibernate 5.2.2.
+
+== Domain Model
 
 For test sake, let's assume that we want to develop a book store application.
 The two most important entities within our system are the `Book` and the `Person` who's written the book.
