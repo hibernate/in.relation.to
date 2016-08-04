@@ -80,7 +80,7 @@ public class Book {
 
 Every `Book` has an `author` property indicating the `Person` who wrote it.
 
-== Navigating authors
+== Using DISTINCT
 
 Supposing we need to select a particular author, we might want to provide a list of last names so that the user can trim down the author list.
 This can be done easily with the following query:
@@ -192,7 +192,11 @@ LEFT OUTER JOIN book b ON p.id=b.author_id
 -- Author Vlad Mihalcea wrote 1 books
 ----
 
-There are no duplicates any more. However, have you spot the `DISTINCT` keyword in the SQL query?
+There are no duplicates any more. Duplicates are removed by Hibernate when building the graph of entities, after the ResultSet is fetched from JDBC.
+
+== Spotting the problem
+
+However, have you spot the `DISTINCT` keyword in the SQL query?
 In this particular case, `DISTINCT` does not bring any value since we don't have duplicated entries in the JDBC `ResultSet`.
 Not only this is redundant, but `DISTINCT` can cause performance problems because the result set must be sorted by the query executor.
 
@@ -282,6 +286,8 @@ but that requires an index that features the same columns in the same exact orde
 ====
 The `DISTINCT` SQL keyword is not cost free. For this reason, it should only be used when we really need to filter out duplicated records from the statement result set.
 ====
+
+== Fixing the problem
 
 That was the main reason for the https://hibernate.atlassian.net/browse/HHH-10965[HHH-10965] issue that was recently fixed, and which adds the following JPA-level Query Hint:
 
