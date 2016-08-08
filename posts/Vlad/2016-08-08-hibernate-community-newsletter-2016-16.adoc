@@ -1,0 +1,61 @@
+= Hibernate Community Newsletter 16/2016
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+http://www.kode12.com/kode12/hibernate-ogm/hibernate-ogm-basics-mongodb/[Hibernate OGM basics with MongoDB] is a short tutorial that demonstrates how easy you can persist JPA entities into MongoDB.
+
+I wrote an article about https://vladmihalcea.com/2016/07/26/the-best-way-to-map-a-onetoone-relationship-with-jpa-and-hibernate/[the best way to map a `@OneToOne` association].
+
+Baeldung wrote http://www.baeldung.com/hibernate-save-persist-update-merge-saveorupdate[an article about how `save`, `saveOrUpdate`, `update`, `persist`, and `merge` work in Hibernate].
+
+The Java In Code blog offers a very good article about the benefits of the http://java-in-code.blogspot.ro/2016/08/native-hibernate-configuration-although.html[Hibernate bootstrap mechanism].
+
+If you're running Windows and you happen to have an Nvidia Video Card, you might get into problems when running Wildfly with Arquillian.
+http://in.relation.to/2016/07/28/how-to-fix-arquillian-and-nvidia-port-stealing-issue/[This blog post shows you how you can tackle this issue].
+
+Anghel Leonard wrote a series of articles related to Hibernate:
+
+* http://java-ee-articles.blogspot.ro/2016/07/hibernate-batching-via-jparepository.html[Hibernate batch processing with Spring Data]
+* http://java-ee-articles.blogspot.ro/2016/07/hibernate-session-level-batching-via.html[Hibernate Session-level batching]
+* http://java-ee-articles.blogspot.ro/2016/08/hibernate-jpa-joins-via-spring-mvc-and.html[Hibernate Joins: Inner, Left, Left excluding, Right, Right excluding, Full]
+
+I've noticed many questions related to mapping Composite Keys on our forum and StackOverflow.
+For this reason, I decided to write https://vladmihalcea.com/2016/08/01/the-best-way-to-map-a-composite-primary-key-with-jpa-and-hibernate/[an article about the best way to map a Composite Key with JPA and Hibernate].
+
+Thorben Janssen wrote an article about http://www.thoughts-on-java.org/fetch-multiple-entities-id-hibernate/[fetching multiple entities by their identifiers in a single operation].
+
+In Hibernate 5.2.2, we added an improvement to the way DISTINCT is handled to improve performance. If you're interested in this topic, check out http://in.relation.to/2016/08/04/introducing-distinct-pass-through-query-hint/[the article on our blog].
+
+Debezium is a Change Data Capture tool which scans the database transaction log and extracts all data changes. For more on this topic, check out http://debezium.io/blog/2016/08/02/capturing-changes-from-mysql/[this post about capturing changes from MySQL].
+
+== Projects
+
+Mihai Costin developed a https://github.com/mihaicostin/hibernate-l2-memcached[library for using the Hibernate second level cache mechanism with Memcached].
+If your application already uses Memcached, it makes sense to store the https://vladmihalcea.com/2015/04/09/how-does-hibernate-store-second-level-cache-entries/[second level cache entries] in the same distributed caching system.
+This library is hosted on https://github.com/mihaicostin/hibernate-l2-memcached[GitHub] and available on Maven Central, so you can easily grab it and give it a try.
+
+== Time to upgrade
+
+We have released two versions of Hibernate ORM: http://in.relation.to/2016/07/31/hibernate-orm-5010-final-release/[5.0.10] and http://in.relation.to/2016/08/04/hibernate-orm-522-final-release/[5.2.2].
+
+== Questions and answers
+
+* https://www.quora.com/For-a-simple-web-application-whats-the-best-choice-for-JPA-implementation/answer/Vlad-Mihalcea-1[For a simple web application, what's the best choice for JPA implementation?]
+* https://www.quora.com/Am-I-using-the-right-hibernate-schema-for-a-Facebook-clone/answer/Vlad-Mihalcea-1[Am I using the right hibernate schema for a Facebook clone?]
+* https://www.quora.com/What-does-JPA-do-differently-or-better-than-JDBC/answer/Vlad-Mihalcea-1[What does JPA do differently or better than JDBC?]
+* http://stackoverflow.com/questions/38565495/how-to-handle-the-ora-00972-identifier-is-too-long-exception-with-hibernate-5-a/[How to handle the ORA-00972: identifier is too long Exception with Hibernate 5 a Naming Strategy?]
+* http://stackoverflow.com/questions/38578631/mapping-two-cacheconcurrencystrategy-for-the-same-hibernate-second-level-cache-r/38580814[Mapping two CacheConcurrencyStrategy for the same Hibernate second-level cache region]
+* http://stackoverflow.com/questions/38597534/hibernate-5-entity-listeners-with-guice/38604351[Hibernate 5 entity listeners with Guice]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043488&p=2490078[Clear Hibernate session cache before Query?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043494&p=2490087[How to create partial indexes with Hibernate]
+* http://stackoverflow.com/questions/38696214/how-to-model-a-one-to-one-relationship-in-jpa-when-the-parent-table-has-a-comp/38696704[How to model a one-to-one relationship in JPA when the _parent_ table has a composite PK?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043498[HSQLDB 2.2.8 java.sql.SQLException: This function is not supported]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043503[https://forum.hibernate.org/viewtopic.php?f=1&t=1043503]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043497[@OneToMany join table column names changed in Hibernate 5]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043507[Replacing @Formula with a proper @ElementCollection mapping]
