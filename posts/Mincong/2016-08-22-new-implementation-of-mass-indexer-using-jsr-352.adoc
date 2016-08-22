@@ -5,14 +5,16 @@ Mincong Huang
 :awestruct-layout: blog-post
 ---
 
-Hi, I’m Mincong, an engineering student in France. I’m glad to represent my
-Google Summer of Code 2016 project, which provides an alternative to the
+Hi, I'm Mincong, an engineering student in France. I'm glad to represent my
+https://developers.google.com/open-source/gsoc/[Google Summer of Code 2016] project, which provides an alternative to the
 current mass indexer implementation, using the Java Batch architecture
-(https://jcp.org/en/jsr/detail?id=352[JSR 352]). I’ve been working on this 
-project for 4 months. Before getting-started, I want to thank Google for 
+(https://jcp.org/en/jsr/detail?id=352[JSR 352]). I've been working on this
+project for 4 months. Before getting-started, I want to thank Google for
 sponsoring the project, the Hibernate team for accepting my proposal and my
-mentors Gunnar and Emmanuel for their helps during this period. Now, let’s
+mentors Gunnar and Emmanuel for their helps during this period. Now, let's
 begin!
+
+== What is it about?
 
 http://hibernate.org/search/[Hibernate Search] brings full-text search
 capabilities to your Hibernate/JPA applications by synchronizing the state of 
@@ -28,11 +30,10 @@ provided for this purpose by Hibernate Search. It was the goal of my GSoC
 project to develop an alternative to this using the API for Java batch
 applications standardized by JSR 352.
 
-
 == What do we gain from JSR 352?
 
 Implementing the mass indexing functionality using the standardized batching
-API let’s you use the known tools of your runtime environment for
+API let's you use the known tools of your runtime environment for
 starting/stopping and monitoring the status of the indexing process. E.g. in
 WildFly you can use the CLI to do so.
 
@@ -43,47 +44,46 @@ job will continue where it left off, not processing again those items already
 processed successfully.
 
 As JSR 352 defines common concepts of batch-oriented applications such as item
-readers, processors and writers, the job’s architecture and workflow is very
-easy to follow. In JSR 352, the workflow is written in an XML file, which is
+readers, processors and writers, the job's architecture and workflow is very
+easy to follow. In JSR 352, the workflow is written in an XML file (the "job XML"), which is
 used to specify a job, its steps and directs their execution. So you can
 understand the process without jumping into the code.
 
 [source, xml]
 ----
 <job id="massIndex">
-  <step id="beforeChunk" next="produceLuceneDoc">
-    <batchlet ref="beforeChunkBatchlet"/>
-  </step>
+    <step id="beforeChunk" next="produceLuceneDoc">
+        <batchlet ref="beforeChunkBatchlet"/>
+    </step>
 
-  <step id="produceLuceneDoc" next="afterChunk">
-    <chunk checkpoint-policy="custom">
-      <reader ref="entityReader"/>
-      <processor ref="luceneDocProducer"/>
-      <writer ref="luceneDocWriter"/>
-      <checkpoint-algorithm ref="checkpointAlgorithm"/>
-    </chunk>
-    ...
-  </step>
+    <step id="produceLuceneDoc" next="afterChunk">
+        <chunk checkpoint-policy="custom">
+            <reader ref="entityReader"/>
+            <processor ref="luceneDocProducer"/>
+            <writer ref="luceneDocWriter"/>
+            <checkpoint-algorithm ref="checkpointAlgorithm"/>
+        </chunk>
+        ...
+    </step>
 
-  <step id="afterChunk">
-    <batchlet ref="afterChunkBatchlet"/>
-  </step>
+    <step id="afterChunk">
+        <batchlet ref="afterChunkBatchlet"/>
+    </step>
 </job>
 ----
 
 As you see, it brings a pervasive batch-processing workload. Anyone who has
-experience in ETL process should have no difficulty to understand our new
+experience in ETL processes should have no difficulty to understand our new
 implementation.
-
 
 == Example usages
 
-Here’s the example usages of the new mass indexer under a draft version. It
-allows you to add one or multiple class types. If you’ve more than one root
-entity to index, then you can use the `addRootEntities(Class<?>…)` method. 
+Here's the example usages of the new mass indexer under a draft version. It
+allows you to add one or multiple class types. If you've more than one root
+entity to index, then you can use the `addRootEntities(Class<?>...)` method. 
 
 [source, java]
-.How to use the new MassIndexer ?
+.How to use the new MassIndexer
 ----
 long executionId = new MassIndexer()
         .addRootEntity( Company.class )
@@ -105,28 +105,26 @@ long executionId = new MassIndexer()
         .start();
 ----
 
-
 == Parallelism
 
 In order to maximize the performance, we highly recommend you to speed up the
 mass indexer using parallelism. Parallelism is activated by default. Under the
-standard JSR 352, the exact word is “partitioning”. The indexing step may run
+standard JSR 352, the exact word is "partitioning". The indexing step may run
 as multiple partitions, one per thread. Each partition has its own partition ID
-and parameters. If there’re more partitions than threads, partitions are
+and parameters. If there're more partitions than threads, partitions are
 considered as a queue to consume: each thread can only run one partition at a
-time and won’t consume the next partition until the previous one is finished.
+time and won't consume the next partition until the previous one is finished.
 
 [source, java]
 ----
 massIndexer = massIndexer.rowsPerPartition( 500 );
 ----
 
-
-== Checkpoint
+== Checkpoints
 
 Mass indexer supports checkpoint algorithm. If the job is interrupted for any
 reason, mass indexer can be restarted from the last checkpoint, stored by the
-batch runtime. And the entities already indexed won’t be lost, because they’re
+batch runtime. And the entities already indexed won't be lost, because they're
 already flushed to the directory provider. Assume that N is the value of
 checkpoint frequency, then a partition will reach at checkpoint every N items
 processed inside the partition. You can overwrite it to adapt your business
@@ -137,7 +135,6 @@ requirement.
 massIndexer = massIndexer.checkpointFreq( 1000 );
 ----
 
-
 == Run
 
 For further usage, please check my GitHub repo
@@ -146,13 +143,12 @@ solution, you can download the code and build it with Maven:
 
 [source]
 ----
-$ git clone git://github.com/mincong-h/gsoc-hsearch.git
+$ git clone -b 1.0 git://github.com/mincong-h/gsoc-hsearch.git
 $ cd gsoc-hsearch
 $ mvn install
 ----
 
-
-== Next steps
+== Current status and next steps
 
 Currently, the new implementation accepts different types of entity as entry,
 provides highly customizable job properties before the start and parallel
@@ -161,20 +157,19 @@ progress to enable restart from the last point of consistency. Load balancing
 has been considered to avoid overload of any single thread. This indexing batch
 job is available under Java SE and Java EE.
 
-There’re still many things to do, e.g. related to  performance improvements,
+There're still many things to do, e.g. related to  performance improvements,
 integration into WildFly, monitoring, more fine-grained selection of entities
-to be re-indexed etc. Here’re some of the ideas:
+to be re-indexed etc. Here're some of the ideas:
 
 - Core: partition mapping for composite ID
 - Integration: package the batch job as a WildFly module
-- Integration: start the indexing batch job from FullTextSession and FullTextEntityManager
+- Integration: start the indexing batch job from `FullTextSession` and `FullTextEntityManager`
 - Integration: embed this project to Hibernate Search
 - Monitoring: enhance the basic monitoring, e.g. progress status for restarted job
 - Performance: Ensure a great performance of this implementation
 
 These tasks are tracked by GitHub Issue, you can check the complete TODO list
 https://github.com/mincong-h/gsoc-hsearch/issues?q=is%3Aissue+is%3Aopen+label%3ATODO[here]. 
-
 
 == Feedback
 
@@ -188,4 +183,3 @@ us know about your feedback. Just drop a comment below or raise an issue on
 https://github.com/mincong-h/gsoc-hsearch/issues[GitHub].
 
 Looking forward to hearing from you!
-
