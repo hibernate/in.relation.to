@@ -1,0 +1,77 @@
+= "Hibernate Validator 5.3.0.CR1 is out"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+We are making good progress working on http://beanvalidation.org/[Bean Validation 2.0] and we decided to move the target version for BV 2.0 to Hibernate Validator 6 (see more at the end of this post!).
+
+We did not want to leave 5.3 half backed so we are preparing a 5.3 release with bugfixes, additional translations... and a few new features. This Candidate Release 1 is the first step towards this process. Expect a quick 5.3.0.Final release after that so please test this version as thoroughly as possible and report any bugs you may find in it!
+
+== Programmatic API for constraint definition and declaration
+
+The experimental notion of `ConstraintDefinitionContributor` has been removed in favor of a new fluid API, more consistent with what already existed in Validator.
+
+If you want to define a new `ValidPassengerCount` constraint annotation which relies on a `ValidPassengerCountValidator` validator, you can use the API as follows:
+
+[source,java]
+----
+ConstraintMapping constraintMapping = configuration.createConstraintMapping();
+
+constraintMapping
+    .constraintDefinition( ValidPassengerCount.class )
+        .validatedBy( ValidPassengerCountValidator.class );
+----
+
+It can also be used to replace the implementation of the validator used for a given annotation constraint. Say you need to support International Domain Names (IDN) in your URL validation, the default `URLValidator` won't work for you as it uses `java.net.URL` which does not support IDN. The fact is that we provide an alternative `RegexpURLValidator` and you might want to use it in this case:
+ 
+[source,java]
+----
+ConstraintMapping constraintMapping = configuration.createConstraintMapping();
+
+constraintMapping
+    .constraintDefinition( URL.class )
+        .includeExistingValidators( false )
+        .validatedBy( RegexpURLValidator.class );
+----
+
+== Constraint mapping contributor*s*
+
+Thanks to the new `hibernate.validator.constraint_mapping_contributors` property, you can now declare several constraint mapping contributors separated by a comma, whereas you were limited to only one before.
+
+Note that in 5.3, the existing `hibernate.validator.constraint_mapping_contributor` property is still supported but has been deprecated.
+
+The deprecated `hibernate.validator.constraint_mapping_contributor` property will be removed as of Hibernate Validator 6.
+
+== Email validation
+
+We changed the way email validation is done. It is now both more correct and stricter. We know of a few people running random tests on the constraints and they might have to update their tests: the domain of the email now needs to be a valid domain with each label (part between 2 dots) being at most 63 characters long. So you can't just generate a 80 characters long domain with random characters, you need to be a bit more careful.
+
+== Translations
+
+We added a few new translations of messages of the constraints we provide:
+
+* an Arabic translation thanks to Kathryn Killebrew
+* a Russian translation thanks to Andrey Derevyanko
+
+Several other translations were updated.
+
+== What else is there?
+
+Other changes of this release are an upgrade of all our Maven dependencies and a few fixes and polishing here and there.
+
+You can find the complete list of all addressed issues in the https://github.com/hibernate/hibernate-validator/blob/5.3.0.CR1/changelog.txt[change log].
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:5.3.0.CR1_.
+
+Alternatively, a distribution bundle containing all the bits is provided on on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.3.0.CR1/hibernate-validator-5.3.0.CR1-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.3.0.CR1/hibernate-validator-5.3.0.CR1-dist.zip/download[ZIP]).
+
+To get in touch, use the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
+== Next stop?
+
+We are actively working on Bean Validation 2.0 and Hibernate Validator 6 with a strong focus on supporting Java 8 new features (and much more!). The more the merrier, so feel free to join us: drop ideas, comment on others' proposals, now is the time to define the future of Bean Validation. You can find all the necessary information on the http://beanvalidation.org/[Bean Validation website].
+
