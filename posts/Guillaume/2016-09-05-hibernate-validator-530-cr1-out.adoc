@@ -22,7 +22,7 @@ constraintMapping
         .validatedBy( ValidPassengerCountValidator.class );
 ----
 
-It can also be used to replace the implementation of the validator used for a given annotation constraint. Say you need to support International Domain Names (IDN) in your URL validation, the default `URLValidator` won't work for you as it uses `java.net.URL` which does not support IDN. The fact is that we provide an alternative `RegexpURLValidator` and you might want to use it in this case:
+It can also be used to replace the implementation of the validator used for a given annotation constraint. Say you need to support International Domain Names (IDN) in your URL validation, the default `URLValidator` won't work for you as it uses `java.net.URL` which does not support IDN. We provide an alternative `RegexpURLValidator` and you might want to use it in this case:
  
 [source,java]
 ----
