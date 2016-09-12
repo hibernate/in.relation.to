@@ -1,0 +1,266 @@
+= How to store timestamps in UTC using the new hibernate.jdbc.time_zone configuration property
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+== Introduction
+
+When it comes to time zones, there is no easy way of handling timestamps generated across the globe.
+Prior to Java 1.8, the https://vladmihalcea.com/2014/11/17/a-beginners-guide-to-java-time-zone-handling/[Date and Calendar API was not helping this either].
+
+While the `java.time` package allows better handling of Date/Time objects when it comes to Relational Databases in general and JDBC in particular, the API is still very much based on the dreadful `java.util.Calendar`.
+
+In this post, I'm going to unravel a new configuration property that we added so that we can better handle timestamps at the JDBC level.
+
+== The problem
+
+Let's assume we have the following JPA entity:
+
+[source,java]
+----
+@Entity(name = "Person")
+public class Person {
+
+    @Id
+    private Long id;
+
+    private Timestamp createdOn;
+}
+----
+
+Since our application is available over the Internet, it is much simpler if every user saves all timestamp values in UTC format.
+This convention is very common
+
+
+When Alice, who's living in Los Angeles, inserts the following `Person` entity into the database:
+
+[source,java]
+----
+doInHibernate( this::sessionFactory, session -> {
+    Person person = new Person();
+    person.id = 1L;
+
+    //Y2K - 946684800000L
+    long y2kMillis = LocalDateTime.of( 2000, 1, 1, 0, 0, 0 )
+        .atZone( ZoneId.of( "UTC" ) )
+        .toInstant()
+        .toEpochMilli();
+    assertEquals(946684800000L, y2kMillis);
+
+    person.createdOn = new Timestamp(y2kMillis);
+    session.persist( person );
+} );
+----
+
+Hibernate executes the following INSERT statement:
+
+[source,sql]
+----
+INSERT INTO Person (createdOn, id)
+VALUES (?, ?)
+
+-- binding parameter [1] as [TIMESTAMP] - [1999-12-31 16:00:00.0]
+-- binding parameter [2] as [BIGINT]    - [1]
+----
+
+The timestamp value is set as `1999-12-31 16:00:00.0`, and that's what we get when we query it from the database:
+
+[source,java]
+----
+s.doWork( connection -> {
+    try (Statement st = connection.createStatement()) {
+        try (ResultSet rs = st.executeQuery(
+                "SELECT to_char(createdon, 'YYYY-MM-DD HH24:MI:SS.US') " +
+                "FROM person" )) {
+            while ( rs.next() ) {
+                assertEquals(
+                    "1999-12-31 16:00:00.000000",
+                    rs.getString( 1 )
+                );
+            }
+        }
+    }
+} );
+----
+
+What's just happened?
+
+Because Alice's time zone, Pacific Standard Time, is 8 hours behind UTC (UTC-8), the timestamp value was transposed in the local JVM timezone. But why?
+
+To answer this question, we have to first check how Hibernate saves the underlying timestamp value inside Hibernate 5.2.2 https://docs.jboss.org/hibernate/orm/5.2/javadocs/org/hibernate/type/descriptor/sql/TimestampTypeDescriptor.html[`TimestampTypeDescriptor`]:
+
+[source,java]
+----
+st.setTimestamp( name, timestamp );
+----
+
+If we take a look in the PostgreSQL JDBC Driver version 9.4.1210.jre7 (Sep. 2016) https://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html#setTimestamp-int-java.sql.Timestamp-[`PreparedStatement.setTimestamp()`] implementation,
+we are going to find the following logic:
+
+[source,java]
+----
+public void setTimestamp(int parameterIndex, Timestamp x)
+    throws SQLException {
+    setTimestamp(parameterIndex, x, null);
+}
+
+public void setTimestamp(int i, Timestamp t, java.util.Calendar cal)
+    throws SQLException {
+    checkClosed();
+
+    if (t == null) {
+      setNull(i, Types.TIMESTAMP);
+      return;
+    }
+
+    int oid = Oid.UNSPECIFIED;
+    if (t instanceof PGTimestamp) {
+      PGTimestamp pgTimestamp = (PGTimestamp) t;
+      if (pgTimestamp.getCalendar() == null) {
+        oid = Oid.TIMESTAMP;
+      } else {
+        oid = Oid.TIMESTAMPTZ;
+        cal = pgTimestamp.getCalendar();
+      }
+    }
+    if (cal == null) {
+      cal = getDefaultCalendar();
+    }
+    bindString(i, connection.getTimestampUtils().toString(cal, t), oid);
+}
+----
+
+So, if there is no `Calendar` being passed, the following default `Calendar` is going to be used:
+
+[source,java]
+----
+private Calendar getDefaultCalendar() {
+    TimestampUtils timestampUtils = connection.getTimestampUtils();
+
+    if (timestampUtils.hasFastDefaultTimeZone()) {
+      return timestampUtils.getSharedCalendar(null);
+    }
+    Calendar sharedCalendar = timestampUtils
+        .getSharedCalendar(defaultTimeZone);
+    if (defaultTimeZone == null) {
+      defaultTimeZone = sharedCalendar.getTimeZone();
+    }
+    return sharedCalendar;
+}
+----
+
+So, unless we are providing a default `java.util.Calendar`, PostgreSQL is going to use a default one, which falls back to the underlying JVM time zone.
+Also, maybe using local variables for `Calendar` and a local `StringBuilder` instead of the `StringBuffer` attribute might be a better choice than having to pay the price for `synchronized`.
+
+So now we have figured out why the timestamp has drifted from the original value.
+
+== A workaround
+
+Traditionally, to overcome this issue, the JVM time zone should be set to UTC:
+
+Either declaratively:
+
+[source,java]
+----
+java -Duser.timezone=UTC ...
+----
+
+or programmatically:
+
+[source,java]
+----
+TimeZone.setDefault( TimeZone.getTimeZone( "UTC" ) );
+----
+
+If the JVM time zone is set to UTC, Hibernate is going to execute the following insert statement:
+
+[source,sql]
+----
+INSERT INTO Person (createdOn, id)
+VALUES (?, ?)
+
+-- binding parameter [1] as [TIMESTAMP] - [2000-01-01 00:00:00.0]
+-- binding parameter [2] as [BIGINT]    - [1]
+----
+
+The same is tru when fetching the timestamp value from the database:
+
+[source,java]
+----
+s.doWork( connection -> {
+    try (Statement st = connection.createStatement()) {
+        try (ResultSet rs = st.executeQuery(
+                "SELECT to_char(createdon, 'YYYY-MM-DD HH24:MI:SS.US') " +
+                "FROM person" )) {
+            while ( rs.next() ) {
+                String timestamp = rs.getString( 1 );
+                assertEquals("2000-01-01 00:00:00.000000", timestamp);
+            }
+        }
+    }
+} );
+----
+
+Unfortunately, sometimes we cannot change the default time zone of the JVM because the UI requires it to render UTC-based timestamps into the user-specific locale and current time zone.
+
+== The JDBC time zone setting
+
+Starting from Hibernate 5.2.3, you'll be able to provide a JDBC-level time zone so that you don't have to change the default JVM setting.
+
+This is done via the `hibernate.jdbc.time_zone` `SessionFactory`-level configuration property:
+
+[source,java]
+----
+settings.put(
+    AvailableSettings.JDBC_TIME_ZONE,
+    TimeZone.getTimeZone( "UTC" )
+);
+----
+
+Once set, Hibernate is going to call the following JDBC https://docs.oracle.com/javase/8/docs/api/java/sql/PreparedStatement.html#setTimestamp-int-java.sql.Timestamp-java.util.Calendar-[`PreparedStatement.setTimestamp()`] method which takes a specific `Calendar` instance.
+
+Now, when executing the insert statement, Hibernate is going to log the following query parameters:
+
+[source,sql]
+----
+INSERT INTO Person (createdOn, id)
+VALUES (?, ?)
+
+-- binding parameter [1] as [TIMESTAMP] - [1999-12-31 16:00:00.0]
+-- binding parameter [2] as [BIGINT]    - [1]
+----
+
+This is expected since the `java.sql.Timestamp` uses Alice's JVM Calendar (e.g. Los Angeles) to display the underlying date/time value.
+When fetching the actual timestamp value from the database, we can see that the UTC value was actually saved:
+
+[source,java]
+----
+s.doWork( connection -> {
+    try (Statement st = connection.createStatement()) {
+        try (ResultSet rs = st.executeQuery(
+                "SELECT " +
+                "   to_char(createdon, 'YYYY-MM-DD HH24:MI:SS.US') " +
+                "FROM person" )) {
+            while ( rs.next() ) {
+                String timestamp = rs.getString( 1 );
+                assertEquals("2000-01-01 00:00:00.000000", timestamp);
+            }
+        }
+    }
+} );
+----
+
+You can even override this setting on a per `Session` level:
+
+[source,java]
+----
+Session session = sessionFactory()
+    .withOptions()
+    .jdbcTimeZone( TimeZone.getTimeZone( "UTC" ) )
+    .openSession();
+----
+
+Since many applications tend to use the same time zone (usually UTC) when storing timestamps, this change is going to be very useful, especially for front-end nodes which need to retain the default JVM time zone for UI rendering.
+In future, we plan on adding field-based configurations so that you can customize the time zone for different entity properties, so stay tuned!
+
