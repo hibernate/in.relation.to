@@ -86,7 +86,7 @@ s.doWork( connection -> {
 
 What's just happened?
 
-Because Alice's time zone, Pacific Standard Time, is 8 hours behind UTC (UTC-8), the timestamp value was transposed in the local JVM timezone. But why?
+Because Alice's time zone, *Pacific Standard Time*, is 8 hours behind UTC (UTC-8), the timestamp value was transposed in the local JVM timezone. But why?
 
 To answer this question, we have to first check how Hibernate saves the underlying timestamp value inside Hibernate 5.2.2 https://docs.jboss.org/hibernate/orm/5.2/javadocs/org/hibernate/type/descriptor/sql/TimestampTypeDescriptor.html[`TimestampTypeDescriptor`]:
 
@@ -151,9 +151,6 @@ private Calendar getDefaultCalendar() {
 ----
 
 So, unless we are providing a default `java.util.Calendar`, PostgreSQL is going to use a default one, which falls back to the underlying JVM time zone.
-Also, maybe using local variables for `Calendar` and a local `StringBuilder` instead of the `StringBuffer` attribute might be a better choice than having to pay the price for `synchronized`.
-
-So now we have figured out why the timestamp has drifted from the original value.
 
 == A workaround
 
