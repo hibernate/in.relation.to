@@ -1,0 +1,63 @@
+= Hibernate Community Newsletter 18/2016
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Videos
+
+Both Gunnar and I have participated in the wonderful https://2016.javazone.no/[JavaZone] conference.
+
+Gunnar's presentation outlines the benefits of Hibernate Search and demonstrates https://vimeo.com/181788146[how easily you can propagate JPA entity changes to ElasticSearch].
+
+My https://vimeo.com/181896822[High-Performance Hibernate presentation] shows how you can run Hibernate ORM at warp-speed.
+
+== Articles
+
+The pick for this newsletter is http://info.michael-simons.eu/2016/09/06/hibernate-search-and-spring-boot-simple-yet-powerful-archiving/[Michael Simons' article about Hibernate Search].
+In this blog post, Michael uses Hibernate Search to index his tweets and then demonstrates the power of the Fulltext-Search Query DSL.
+
+Because Concurrency Control is very important for every enterprise application, Hibernate offers both optimistic and pessimistic locking right out of the box.
+However, sometimes you might need to coordinate the child entity state with a common parent entity, in which case, you need to provide some custom entity listeners.
+This article demonstrates https://vladmihalcea.com/2016/08/30/how-to-increment-the-parent-entity-version-whenever-a-child-entity-gets-modified-with-jpa-and-hibernate/[how you can trigger a parent entity version change whenever a child entity is added, removed or even modified].
+
+The Vertabelo's blog features an article about Composite Primary Keys and http://www.vertabelo.com/blog/technical-articles/how-to-set-up-a-composite-primary-key-in-jooq-and-hibernate[how to map them using Hibernate and jOOQ].
+The article makes a remark which might confuse the reader into thinking that Hibernate didn't support Database-First mapping:
+
+[quote]
+____
+Hibernate is a Java object-relational mapper that follows the “Object-First” approach. This means that the appropriate database structures are generated based on the Java code.
+____
+
+Not only Hibernate can be used to generate a database schema from the entity mapping, but in reality, you want to have the database schema managed by an automatic migration tool such a https://flywaydb.org/[FlywayDB].
+
+Thorben Janssen shows you http://www.thoughts-on-java.org/hibernate-tips-count-executed-queries-session/[how you can count queries using Hibernate Statistics].
+You can take this idea one step further and monitor to any SQL statement type (e.g. insert, update, delete), and you can even build a tool that automatically discovers N+1 statements, as demonstrated in https://vladmihalcea.com/2014/02/01/taming-jpa-with-the-sql-statement-count-validator/[this blog post].
+
+I also wrote an article which aims to warn the reader about https://vladmihalcea.com/2016/09/05/the-hibernate-enable_lazy_load_no_trans-anti-pattern/[the dangers of using the `hibernate.enable_lazy_load_no_trans` configuration property].
+
+== Time to upgrade
+
+Hibernate Search is getting closer and closer to releasing the Final release of the http://in.relation.to/2016/09/06/ElasticsearchIntegrationBeta2/[ElasticSearch integration].
+Now, it's the right time to shape this new API, so we'd really love you give us feedback on this topic.
+
+http://in.relation.to/2016/09/05/hibernate-validator-530-cr1-out/[Hibernate Validator 5.3.0.CR1 is out], so feel free to try it out and tell us what you think.
+
+== Questions and answers
+
+* https://www.quora.com/What-is-the-difference-between-Hibernate-and-JPA/answer/Vlad-Mihalcea-1[What is the difference between Hibernate and JPA?]
+* http://stackoverflow.com/questions/39316487/busines-check-in-concurrency-service-layer/39330163#39330163[How to guarantee a row-level unique constraint in a transactional service method?]
+* http://stackoverflow.com/questions/39382213/can-you-give-me-some-tips-for-hibernate-performance-tuning/39409010#39409010[Can you give me some tips for Hibernate performance tuning?]
+* http://stackoverflow.com/questions/39393773/how-to-configure-multiple-schemas-in-hibernate/39409168#39409168[How to configure multiple schemas with Hibernate?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043578[Schema name not "quoted" for SQLServer in generated SQL]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043583[How to tune an Oracle query which is very slow when executing through Hibernate?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043585[Hibernate Sessions and Read Committed Isolation Level]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043588[Criteria nested select using max of child collection]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043593[IdentifierGenerator.generate() throws AbstractMethodError]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043594[HibernateOptimisticLockingFailureException on MariaDB]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043589[Postgres 9.5 Invalid endian flag value PostGIS]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043596[Cartesian Products when lazy loading collection]
+
+
