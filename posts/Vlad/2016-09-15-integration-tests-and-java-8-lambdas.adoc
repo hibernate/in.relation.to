@@ -1,0 +1,92 @@
+= How to simplify JPA and Hibernate integration testing using Java 8 lambdas
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+== Introduction
+
+Hibernate 5.2 has migrated to Java 1.8.
+In this article, I'm going to show you how easily you can now test JPA logic using Java 1.8 lambdas.
+
+== Integration testing
+
+Hibernate has thousands of integration tests, and each unit test runs in isolation.
+Traditionally, every test required to open an `EntityManager`, as well as to coordinate the underlying database transaction by calling begin, commit, and rollback.
+
+[source,java]
+----
+EntityManager entityManager = getOrCreateEntityManager();
+entityManager.getTransaction().begin();
+try {
+    entityManager.persist( item );
+    assertTrue( entityManager.contains( item ) );
+    entityManager.getTransaction().commit();
+}
+catch (Exception e){
+    if ( entityManager.getTransaction() != null &&
+         entityManager.getTransaction().isActive() ) {
+        entityManager.getTransaction().rollback();
+    }
+    throw e;
+}
+finally {
+    entityManager.close();
+}
+----
+
+That's very verbose because we need to ensure that the `EntityManager` always gets closed so that connections are released back to the pool.
+More, the database transaction must be rolled back on every failure as otherwise locks might be held, therefore preventing a schema-drop process.
+
+For this reason, we decided to extract the whole `EntityManager` and JPA transaction management logic into a common utility class:
+
+[source,java]
+----
+import static org.hibernate.testing.transaction.TransactionUtil.*;
+----
+
+What's great about these utilities is that you don't even need to create them. We've got you covered!
+
+You only have to add the following dependency to your Maven `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-testing</artifactId>
+    <version>5.2.2.Final</version>
+</dependency>
+----
+
+Therefore, the previous test case is reduced to four lines of code:
+
+[source,java]
+----
+doInJPA( this::entityManagerFactory, entityManager -> {
+    entityManager.persist( item );
+    assertTrue( entityManager.contains( item ) );
+} );
+----
+
+Brilliant!
+
+The aforementioned example relies on the presence of the `entityManagerFactory()` method that returns an `EntityManagerFactory` instance.
+
+If you prefer the Hibernate native API, you can do it as follows:
+
+[source,java]
+----
+doInHibernate( this::sessionFactory, session -> {
+    session.persist( item );
+    assertTrue( session.contains( item ) );
+} );
+----
+
+Analogous to the previous example, a `sessionFactory()` method is assumed to be existing in the test class.
+However, you can name these methods any way you like and just make sure to update the first argument of the `doInJPA` or `doInHibernate` methods.
+
+== Behind the scenes
+
+If you're interested in the underlying implementations, then check out the https://github.com/hibernate/hibernate-orm/blob/master/hibernate-testing/src/main/java/org/hibernate/testing/transaction/TransactionUtil.java[source code on GitHub].
+
+Enjoy testing!
