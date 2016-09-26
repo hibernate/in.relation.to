@@ -1,0 +1,52 @@
+= Hibernate Community Newsletter 19/2016
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+Michael Simons wrote a very good article about http://info.michael-simons.eu/2016/09/20/running-hibernate-search-with-elasticsearch-on-pivotal-cf/[using Hibernate Search with Elasticsearch on Pivotal Cloud Foundry].
+
+On our blog, I wrote an article about configuring Hibernate to http://in.relation.to/2016/09/12/jdbc-time-zone-configuration-property/[use a custom timezone (e.g. UTC)] that's different than the default JVM one.
+
+For out Russian-speaking readers, Николай Алименков has written a very good post about http://xpinjection.com/articles/hibernate-ruined-your-project-no-it-was-you/[Hibernate usage scenarios].
+Nikolai is one of the organizers of JEEConf, and together with Igor Dmitriev, they gave several presentations about http://www.slideshare.net/alimenkou/hibernate-performance-tuning-62267846[Hibernate performance tuning].
+
+If you want to learn what is the best way to handle the infamous `LazyInitializationException`, check out https://vladmihalcea.com/2016/09/13/the-best-way-to-handle-the-lazyinitializationexception/[this article].
+
+Alejandro Gervasio wrote a very good article, https://www.sitepoint.com/hibernate-introduction-persisting-java-objects/[Persisting Java Objects the Easy Way] on SitePoint.
+
+Hibernate offers a very various ways to load entity attributes lazily. Check out https://vladmihalcea.com/2016/09/20/the-best-way-to-lazy-load-entity-attributes-using-jpa-and-hibernate/[this article for more details].
+
+Thomas Kratz has written a very article about http://thomaskratz.blogspot.ro/2016/09/hibernate-json-types-in-kotlin_14.html[using Hibernate JSON types with Kotlin].
+
+When developing Hibernate, we are using the `hibernate-testing` module to simplify Session/Transaction management, as described in http://in.relation.to/2016/09/15/integration-tests-and-java-8-lambdas/[this article].
+The `hibernate-testing` library is available on Maven Central, so it's very easy to make use of it in your project. Happy testing!
+
+I also wrote an article about https://vladmihalcea.com/2016/09/22/how-to-implement-a-custom-basic-type-using-hibernate-usertype/[implementing custom basic types using the legacy `UserType` mechanism].
+
+== Presentations
+
+Patrycja Wegrzynowicz gave a very interesting presentation at Java One about http://www.slideshare.net/patrycjawegrzynowicz3/second-level-cache-in-jpa-explained[Second-level Caching].
+The presentation goes from defining what response time is and how you can level it up using caching.
+At the end of the presentation, Patrycja discusses how Ehacache and Infinispan implement the Hibernate second-level caching contract.
+
+== Questions and answers
+
+* http://stackoverflow.com/questions/97197/what-is-the-n1-selects-issue/39696775#39696775[What is the N+1 query issue]?
+* http://stackoverflow.com/questions/39615788/change-hibernates-charactertypedescriptor/39636861#39636861[How to change the Hibernate `CharacterTypeDescriptor` to handle empty column values?]
+* https://www.quora.com/When-does-the-persistence-object-synchronize-with-the-database-in-hibernate/answer/Vlad-Mihalcea-1[When does the persistence object synchronize with the database in Hibernate?]
+* http://stackoverflow.com/questions/10041938/how-to-choose-the-id-generation-strategy-when-using-hibernate/38391106#38391106[How to choose the id generation strategy when using Hibernate?]
+* https://www.quora.com/Where-should-I-use-hibernate-framework/answer/Vlad-Mihalcea-1[When should I use Hibernate?]
+* http://stackoverflow.com/questions/16765886/lazy-loading-of-an-attribute-of-an-entity-in-jpa/39586542#39586542[Lazy Loading of an Attribute of an Entity in JPA]
+* https://www.quora.com/What-are-the-fetching-strategies-in-hibernate-How-are-they-used/answer/Vlad-Mihalcea-1[What are the fetching strategies in Hibernate? How are they used?]
+* http://stackoverflow.com/questions/8344538/how-to-persist-class-that-depends-on-internal-list-using-hibernate/39655680#39655680[How to persist class that depends on an internal list using Hibernate?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043613[Null `@Id` attributes in instrumented entity class]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043602[StatefulPersistenceContext taking lot of memory]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043570[`@ManyToOne` mapped by composite natural key should be cached?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043617[`NoSuchMethodError`: SessionFactoryImplementor.getProperties()]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043635[HQL with group by across multiple tables]
+
