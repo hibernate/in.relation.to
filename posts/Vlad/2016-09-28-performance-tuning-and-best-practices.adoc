@@ -136,12 +136,14 @@ For collections, the association can be either:
 For unidirectional collections, `Sets` are the best choice because they generate the most efficient SQL statements.
 https://vladmihalcea.com/2015/05/04/how-to-optimize-unidirectional-collections-with-jpa-and-hibernate/[Unidirectional `Lists`] are less efficient than a `@ManyToOne` association.
 
-Bidirectional associations are usually a better choice because the `@ManyToOne` controls the association.
+Bidirectional associations are usually a better choice because the `@ManyToOne` side controls the association.
+
+Embeddable collections (``@ElementCollection`) are unidirectional associations, hence `Sets` are the most efficient, followed by ordered `Lists`, whereas bags (unordered `Lists`) are the least efficient.
 
 The `@ManyToMany` annotation is rarely a good choice because it treats both sides as unidirectional associations.
 
 For this reason, it's much better to map the link table as depicted in the <<chapters/domain/associations.adoc#associations-many-to-many-bidirectional-with-link-entity-lifecycle-example,Bidirectional many-to-many with link entity lifecycle>> section.
-Each `FOREIGN KEY column will be mapped as a `@ManyToOne` association.
+Each `FOREIGN KEY` column will be mapped as a `@ManyToOne` association.
 On each parent-side, a bidirectional `@OneToMany` association is going to map to the aforementioned `@ManyToOne` relationship in the link entity.
 
 [TIP]
@@ -171,7 +173,7 @@ Fetching too much data is the number one performance issue for the vast majority
 Hibernate supports both entity queries (JPQL/HQL and Criteria API) and native SQL statements.
 Entity queries are useful only if you need to modify the fetched entities, therefore benefiting from the https://vladmihalcea.com/2014/08/21/the-anatomy-of-hibernate-dirty-checking/[automatic dirty checking mechanism].
 
-For read-only transactions, you should fetch DTO projections because they allow you to fetch just as many columns as you need to fulfill a certain business use case.
+For read-only transactions, you should fetch DTO projections because they allow you to select just as many columns as you need to fulfill a certain business use case.
 This has many benefits like reducing the load on the currently running Persistence Context because DTO projections don't need to be managed.
 
 ==== Fetching associations
