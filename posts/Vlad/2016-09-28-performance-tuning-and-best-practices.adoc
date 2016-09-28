@@ -69,7 +69,7 @@ Check out https://vladmihalcea.com/2015/03/18/how-to-batch-insert-and-update-sta
 
 For `DELETE` statements, there is no option to order parent and child statements, so https://vladmihalcea.com/2015/03/26/how-to-batch-delete-statements-with-hibernate/[cascading can interfere with the JDBC batching process].
 
-Unlike any other framework which doesn't automate SQL statement generation, Hibernate makes it very easy to activate JDBC-level batching as indicated in the <<chapters/batch/Batching.adoc#batch,Batching chapter>>.
+Unlike any other framework which doesn't automate SQL statement generation, Hibernate makes it very easy to activate JDBC-level batching as indicated in the http://docs.jboss.org/hibernate/orm/5.2/userguide/html_single/Hibernate_User_Guide.html#batch[Batching chapter], in our User Guide.
 
 == Mapping
 
@@ -140,7 +140,7 @@ Embeddable collections (``@ElementCollection`) are unidirectional associations, 
 
 The `@ManyToMany` annotation is rarely a good choice because it treats both sides as unidirectional associations.
 
-For this reason, it's much better to map the link table as depicted in the <<chapters/domain/associations.adoc#associations-many-to-many-bidirectional-with-link-entity-lifecycle-example,Bidirectional many-to-many with link entity lifecycle>> section.
+For this reason, it's much better to map the link table as depicted in the http://docs.jboss.org/hibernate/orm/5.2/userguide/html_single/Hibernate_User_Guide.html#associations-many-to-many-bidirectional-with-link-entity-lifecycle-example[Bidirectional many-to-many with link entity lifecycle] User Guide section.
 Each `FOREIGN KEY` column will be mapped as a `@ManyToOne` association.
 On each parent-side, a bidirectional `@OneToMany` association is going to map to the aforementioned `@ManyToOne` relationship in the link entity.
 
