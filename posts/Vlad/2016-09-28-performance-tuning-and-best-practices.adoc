@@ -7,12 +7,10 @@ Vlad Mihalcea
 This article is based on the latest chapter that's been added to the Hibernate User Guide.
 The *Performance Tuning and Best Practices* chapter aims to help the application developer to get the most out of their Hibernate persistence layer.
 
-== Performance Tuning and Best Practices
-
 Every enterprise system is unique. However, having a very efficient data access layer is a common requirement for many enterprise applications.
 Hibernate comes with a great variety of features that can help you tune the data access layer.
 
-=== Schema management
+== Schema management
 
 Although Hibernate provides the `update` option for the `hibernate.hbm2ddl.auto` configuration property,
 this feature is not suitable for a production environment.
@@ -27,7 +25,7 @@ When the application is deployed on a production-like QA environment, and the de
 You should always use an automatic schema migration tool and have all the migration scripts stored in the Version Control System.
 ====
 
-=== Logging
+== Logging
 
 Whenever you're using a framework that generates SQL statements on your behalf, you have to ensure that the generated statements are the ones that you intended in the first place.
 
@@ -60,7 +58,7 @@ This way, you can have the integration tests fail https://vladmihalcea.com/2014/
 While simple statement logging is fine, using https://github.com/ttddyy/datasource-proxy[datasource-proxy] or https://github.com/p6spy/p6spy[p6spy] is even better.
 ====
 
-=== JDBC batching
+== JDBC batching
 
 JDBC allows us to batch multiple SQL statements and to send them to the database server into a single request.
 This saves database roundtrips, and so it https://leanpub.com/high-performance-java-persistence/read#jdbc-batch-updates[reduces response time significantly].
@@ -73,12 +71,12 @@ For `DELETE` statements, there is no option to order parent and child statements
 
 Unlike any other framework which doesn't automate SQL statement generation, Hibernate makes it very easy to activate JDBC-level batching as indicated in the <<chapters/batch/Batching.adoc#batch,Batching chapter>>.
 
-=== Mapping
+== Mapping
 
 Choosing the right mappings is very important for a high-performance data access layer.
 From the identifier generators to associations, there are many options to choose from, yet not all choices are equal from a performance perspective.
 
-==== Identifiers
+=== Identifiers
 
 When it comes to identifiers, you can either choose a natural id or a synthetic key.
 
@@ -105,7 +103,7 @@ However, you should keep in mind that the `IDENTITY` generators disables JDBC ba
 If you're using the `SEQUENCE` generator, then you should be using the enhanced identifier generators that were enabled by default in Hibernate 5.
 The https://vladmihalcea.com/2014/07/21/hibernate-hidden-gem-the-pooled-lo-optimizer/[*pooled* and the *pooled-lo* optimizers] are very useful to reduce the number of database roundtrips when writing multiple entities per database transaction.
 
-==== Associations
+=== Associations
 
 JPA offers four entity association types:
 
@@ -153,7 +151,7 @@ Just because you have support for collections, it does not mean that you have to
 Sometimes, a `@ManyToOne` association is sufficient, and the collection can be simply replaced by an entity query which is easier to paginate or filter.
 ====
 
-=== Inheritance
+== Inheritance
 
 JPA offers `SINGLE_TABLE`, `JOINED`, and `TABLE_PER_CLASS` to deal with inheritance mapping, and each of these strategies has advantages and disadvantages.
 
@@ -163,7 +161,7 @@ JPA offers `SINGLE_TABLE`, `JOINED`, and `TABLE_PER_CLASS` to deal with inherita
    However, polymorphic @ManyToOne` associations are fine, and they can provide a lot of value.
 - `TABLE_PER_CLASS` should be avoided since it does not render efficient SQL statements.
 
-=== Fetching
+== Fetching
 
 [TIP]
 ====
@@ -176,7 +174,7 @@ Entity queries are useful only if you need to modify the fetched entities, there
 For read-only transactions, you should fetch DTO projections because they allow you to select just as many columns as you need to fulfill a certain business use case.
 This has many benefits like reducing the load on the currently running Persistence Context because DTO projections don't need to be managed.
 
-==== Fetching associations
+=== Fetching associations
 
 Related to associations, there are two major fetch strategies:
 
@@ -203,7 +201,7 @@ https://vladmihalcea.com/2016/09/13/the-best-way-to-handle-the-lazyinitializatio
 The `JOIN FETCH` directive is goof for `@ManyToOne` and `OneToOne` associations, and for at most one collection (e.g. `@OneToMany` or `@ManyToMany`).
 If you need to fetch multiple collections, to avoid a Cartesian Product, you should use secondary queries which are triggered either by navigating the `LAZY` association or by calling `Hibernate#initialize(proxy)` method.
 
-=== Caching
+== Caching
 
 Hibernate has two caching layers:
 
