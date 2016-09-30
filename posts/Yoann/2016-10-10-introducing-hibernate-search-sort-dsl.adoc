@@ -1,0 +1,98 @@
+= Introducing Hibernate Search Sort DSL
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search" ]
+:awestruct-layout: blog-post
+---
+With Elasticsearch support coming as a technological preview in Hibernate Search 5.6, you would think we're leaving out other features. Well, think again! Enters the Sort DSL, which will work with Elasticsearch of course, but also with the good ol' Lucene backend.
+
+The point here is to provide an API to build sort descriptions easily, without knowing everything about Hibernate Search features added on top of Lucene, such as `DistanceSortField`. And while we're at it, we're making it a modern, fluid API.
+
+== Most common case: sorting by field
+
+The QueryBuilder interface now has an additional `sort()` method:
+
+[source, JAVA]
+----
+QueryBuilder builder = fullTextSession.getSearchFactory()
+  .buildQueryBuilder().forEntity(Book.class).get();
+Query luceneQuery = builder.all().createQuery();
+FullTextQuery query = fullTextSession.createFullTextQuery( luceneQuery, Book.class );
+Sort sort = builder
+  .sort()
+    .byField("author").desc() // Descending order
+    .andByField("title") // Default order (ascending)
+  .createSort();
+query.setSort(sort);
+List results = query.list();
+----
+
+Of course, other kinds of sort are available. Let's have a look!
+
+== Sorting by relevance
+
+The relevance sort is also available with `byScore()`. Obviously, there's one key difference with that one: the sort is descending by default, so you get the most relevant results (higher scores) first. If you need the least relevant results, fear not, we got you covered with `byScore().asc()`.
+
+== Sorting by distance
+
+If your entity has some https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/?v=5.5#spatial[spatial fields] you may also build spatial sorts:
+
+[source, JAVA]
+----
+  .sort()
+    .byDistance()
+      .onField("location")
+      .fromLatitude(24.0d)
+      .andLongitude(32.0d)
+  .createSort()
+----
+
+== Stabilizing with `byIndexOrder()`
+
+`byIndexOrder` offers an arbitrary, yet deterministic sort. This comes handy when you want to stabilize your sort:
+
+[source, JAVA]
+----
+  .sort()
+    .byField("title")
+    .andByIndexOrder()
+  .createSort()
+----
+
+That way, if there are two books with the same title in your index, they will always keep the same relative order from one query to another.
+
+== Handling missing values
+
+What if you're sorting books by publishing date, and some of them haven't even been published yet? No worry, you may decide whether the unpublished books will appear first or last:
+
+[source, JAVA]
+----
+  .sort()
+    .byField("publishingDate_sort").desc() // Most recently published first 
+      .onMissingValue().sortFirst() // Not published yet => put this upper on the list
+    .andByField("custom_id_sort") // Default for the case when multiple books have no publishing date
+  .createSort()
+----
+
+== Accessing native features 
+
+Let's assume you're using an external backend, such as Elasticsearch. You may want to take advantage of a brand-new feature that appeared in the last snapshot of this backend, that feature you just spotted this morning and that would really save you of a lot of trouble on your project. But, hey, the Hibernate Search team is not on the same time zone, and even if they're providing fast support, you're not getting the feature pushed into Hibernate Search in time to meet your deadline. Which is this evening, by the way.
+
+Well, guess what: you can use that feature anyway. The sorting API also allows using native sorts. When using the Elasticsearch backend, it means passing the JSON description of this sort, which will be added to the Elasticsearch query as is:
+
+[source, JAVA]
+----
+  .sort()
+    .byNative("authors.name", "{'order':'asc', 'mode': 'min'}")
+    .andByField("title")
+  .createSort()
+----
+
+== Next...
+
+Of course, one could point out that this API is not really backend-independent. The API itself, its interfaces and methods, mostly are, but the returned type (`Sort`) is clearly bound to Apache Lucene.
+
+Well, one day at a time: the API in its current form *can* be adapted to be completely backend-agnostic, so it's paving the way to http://hibernate.org/search/roadmap/#hibernate-search-6-x[Hibernate Search 6.x], while still requiring no change to any other contract such as `FullTextQuery.setSort(Sort)`. And that means it's available directly in http://in.relation.to/2016/10/06/TripleHibernateSearchRelease/[5.6.0.Beta3]!
+
+So be sure to check it out, and to check https://docs.jboss.org/hibernate/search/5.6/reference/en-US/html_single/#query-sorting[the documentation] for more information. Or, you know, since it's a fluid API, you can simply use your IDE autocomplete feature and see what's available!
+
+In any case, feel free to https://github.com/hibernate/hibernate-search#contact[contact us] for any question, problem or simply to give us your feedback!
