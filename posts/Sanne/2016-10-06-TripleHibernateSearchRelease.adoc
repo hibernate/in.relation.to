@@ -1,0 +1,54 @@
+= Triple Hibernate Search release
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Today we have three releases of Hibernate Search!
+
+I'm proud to announce our team is a bit larger nowadays, and more contributors are volunteering too, so we managed to increase the development pace. Today we release version `5.6.0.Beta3`, `5.7.0.Alpha1` and `5.5.5.Final`.
+
+Version 5.6.0.Beta3:: the latest version of our main development branch, with experimental Elasticsearch integration.
+
+Version 5.7.0.Alpha1:: essentially the same as `5.6.0.Beta3`, but compatible with Hibernate ORM version `5.2.x`.
+
+Version 5.5.5.Final:: a maintenance release of our stable branch.
+
+== A 5.7 preview released when 5.6 isn't out yet?
+
+Let me explain this unusual decision was taken to accomodate for the needs of you all.
+
+The `5.6` series is creating a lot of anticipation with the Elasticsearch integration being a very welcome new feature; it's meant to be an experimental new feature as we won't break our APIs yet while all integration needs are analyzed, still it's taking a bit longer than expected and even though it's and experimental feature we don't want to rush it and need to finish it up properly.
+
+In the meantime the Hibernate ORM project released a series `5.2.x`, and several users have been asking to get an Hibernate Search version compatible with it. We could not upgrade our `5.6` series yet, as then people using an older Hibernate ORM would not be able to play with the Elasticsearch integration.
+
+So now that `5.6` is in good shape - we decided the next release will be a candidate release - we felt we could already publish a `5.7` version, which is just exactly the same but in a new branch made compatible with the very latest Hibernate ORM.
+
+== How is the Elasticsearch integration coming?
+
+It's maturing at high speed. The biggest obstacles have been resolved, so we definitely look out for more feedback at this point; as mentioned, the next version will be a candidate release.
+
+Hibernate Search now has a proper *Sorting API*: watch this space as we'll publish a dedicated blog about it, or get a peek at the
+https://docs.jboss.org/hibernate/search/5.6/reference/en-US/html_single/#query-sorting[query sorting] paragraph in the documentation.
+
+This is an important milestone, as it makes sorting queries on Elasticsearch possible through our DSL.
+
+== How to get these releases
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.6.0.Beta3</version>
+</dependency>
+----
+====
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
