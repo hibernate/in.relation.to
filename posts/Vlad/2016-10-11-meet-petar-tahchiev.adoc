@@ -1,0 +1,77 @@
+= Meet Petar Tahchiev
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate OGM" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/ptahchiev[Petar Tahchiev], a long-time Hibernate user, and open-source contributor.
+
+I had the chance of meeting Petar in Cluj-Napoca.
+Here you can see Petar opening a Hibernate Pull Request that he recently sent us for review.
+
+image::PetarTahchiev.jpg["Petar Tahchiev, align="center"]
+
+. *Hi, Petar. Would you like to introduce yourself and tell us a little bit about your developer experience?*
++
+Hi Vlad, thanks for having me.
+My name is Petar Tahchiev, and I am a Java developer from Bulgaria.
+My experience with open-source dates back to 2006 when I joined the Apache Software Foundation as http://jakarta.apache.org/cactus/[Jakarta Cactus] lead developer.
+I also became an Apache Maven committer later that year, and I also co-authored the second edition of http://manning.com/tahchiev[JUnit in Action].
++
+While I kept the open-source as a hobby, on a professional level I spent the last eight years of my life implementing e-commerce projects for some of the largest corporations in the world using proprietary software.
+Then, I finally decided that I can build a way better e-commerce platform using the latest and greatest of the open-source software and thus combine my hobby with my job.
+And this is actually how http://nemesis.io/[Nemesis Software] was born.
++
+. *You are developing the Nemesis platform. Can you tell us what's the main goal of such a platform?*
++
+Sure thing.
++
+Well, Nemesis is an e-commerce platform, although e-commerce is just one of many other modules.
+It's basically a https://projects.spring.io/spring-boot/[Spring Boot] application with a modular architecture where customers can select the different modules they want to use so they can specify what kind of project they are going to build.
+Each module has a Spring Boot auto-configuration and consists of a set of JPA entities,
+a set of services that operate with those entities and different configuration properties to allow you to customize the given module.
++
+The modules of the nemesis platform allow you to customize completely the purpose of the platform.
+We have modules for e-commerce, B2B commerce, CMS, analytics, financial services, you name it.
+This way you can pick the right modules for you and initialize the database with the right columns/tables, etc.
++
+For initializing the database, we use Hibernate's hbm2ddl schema export tool which produces SQL scripts and then we also use https://flywaydb.org/[FlywayDB] to execute the SQL scripts and version the database.
++
+Our platform also comes with a Maven archetype so our customers can generate a project and have it up-and-running in less than 5 minutes, and on top of all that the generated project is designed to be a 12-factor app so you can easily deploy it to any cloud provider out there.
+
+. *Nemesis is using Hibernate for data persistence. Why did you choose Hibernate and did it match your expectations?*
++
+Yes indeed, although most of our clients are huge corporations and sometimes they are biased on the products they want to use
+So, we want it to be easy for us to switch the JPA provider if such a need ever occurs.
+That is the reason why we want to stay as close as possible to any JSR standard.
++
+Nevertheless, out-of-the-box our platform comes with Hibernate as a JPA provider, and this is what we recommend to our clients.
+The reasons behind this are several.
+While we have researched most of the JPA providers, we consider Hibernate to be the most mature project with the largest community out there.
+That's something really important for us - we want to provide our clients with the fastest time-to-market development, and to be able to do that, we need to use a technology stack that is closest to most of the developers.
++
+It turned out that Hibernate is one of the most popular Java projects among regular developers.
+Another reason we chose Hibernate is that it has a very carefully planned release schedule so we know exactly when a new feature or a fix will be shipped.
+So far, it has proven to be an excellent choice.
+
+. *Your platform competes with SAP. Do you think that using open-source frameworks like Spring and Hibernate is a competitive advantage for you?*
++
+Absolutely!
++
+I can spend days if not weeks talking about the importance of using open-source tools like Spring and Hibernate compared to proprietary software like SAP, or IBM.
++
+On the one hand, you get access to a large pool of resources - developers all over the world they know Spring, Hibernate, Tomcat, Drools, etc.
+So, it's a lot easier for them to pick up the software and just be productive.
++
+Having to choose from a large pool of resources means cheaper implementation costs for our customers compared to niche products.
++
+When using open-source software our customers also get to use first-class documentation (great work on the http://hibernate.org/orm/documentation/5.2/[Hibernate documentation] by the way).
+And, if by any chance they can't find anything in the documentation, they can always download the source code and debug to see what's happening, or even patch it and contribute back to the community.
++
+And that's just the tip of the iceberg - the biggest benefit of all is that our clients actually get one more level of support.
+If our customer's development team has troubles with the open-source tools, they can always google the error they get, and,
+only when they don't find what they are looking for, they come to our customer support.
++
+This actually saves us a lot of time because we know when someone comes to us, it is most likely because of an issue in our own software.
+
+*Thank you, Petar, for taking your time. It is a great honor to have you here. To reach Petar, you can follow him on https://twitter.com/ptahchiev[Twitter].*
