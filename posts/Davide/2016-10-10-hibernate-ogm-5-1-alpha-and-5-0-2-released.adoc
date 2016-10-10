@@ -5,29 +5,33 @@ Davide D'Alto
 ---
 
 Good news!
+
 We released http://hibernate.org/ogm/[Hibernate OGM] 5.1 Alpha1 and 5.0.2 Final!
 
 == What's new?
 
 === Hibernate OGM 5.0.2.Final
-The main reason to release 5.0.2.Final is the added support for http://www.mongodb.com[MongoDB] 3.2.
+Hibernate OGM 5.0.2.Final supports now http://www.mongodb.com[MongoDB] 3.2 and it's stll
+compatible backward compatible with Hibernate OGM 5.0.1.Final,
 
-This release is backward compatible with Hibernate OGM 5.0.0.Final but
-if you need to upgrade from a previous version, you can find help on the
+If you need to upgrade from a previous version, you can find help on the
 https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes].
 
-You can find all the details in the
-https://github.com/hibernate/hibernate-ogm/blob/5.0.2.Final/changelog.txt[5.0.2.Final changelog].
+The 
+https://github.com/hibernate/hibernate-ogm/blob/5.0.2.Final/changelog.txt[5.0.2.Final changelog]
+contains all the details about the changes in this release
 
 === Hibernate OGM 5.1.0.Alpha1
 Hibernate OGM 5.1.0.Alpha1 contains our first attempt to support https://neo4j.com[Neo4j] in
-remote mode with the option of using the Bolt protocol or the HTTP interface.
+remote mode. The user will have the option to choose between the better performance of the Bolt
+protocol or the familiarity of the HTTP interface.
 
-We also started to re-work the way Hibernate OGM group operations before running them, this will
-to execute less call to the datastore leading to better performance.
+We also started to re-work the way Hibernate OGM groups operations before running them; this reduce
+the number of calls and commands to execute on the datstore, leading to the better performance.
 
-You can find all the details in the
-https://github.com/hibernate/hibernate-ogm/blob/5.1.0.Alpha1/changelog.txt[5.1.0.Alpha1 changelog].
+The 
+https://github.com/hibernate/hibernate-ogm/blob/5.1.0.Alpha1/changelog.txt[5.1.0.Alpha1 changelog]
+contains all the details about the changes in this release.
 
 == How can I try the remote Neo4j dialect?
 
@@ -59,13 +63,12 @@ https://docs.jboss.org/hibernate/ogm/5.1/reference/en-US/html_single/#ogm-neo4j[
 
 == Where can I get them?
 
-Once you decided which version you want to use you can get the core library using one of the
-following Maven coordinates:
+=== 5.0.2.Final
+You can get the required core library using the following Maven coordinates:
 
 * _org.hibernate.ogm:hibernate-ogm-core:5.0.2.Final_ 
-* _org.hibernate.ogm:hibernate-ogm-core:5.1.Alpha1_
 
-and these are the back-ends currently available for 5.0.2.Final:
+and these are the back-ends currently available:
 
 * http://cassandra.apache.org[Cassandra]: _org.hibernate.ogm:hibernate-ogm-cassandra:5.0.2.Final_
 * http://couchdb.apache.org[CouchDB]: _org.hibernate.ogm:hibernate-ogm-couchdb:5.0.2.Final_
@@ -75,7 +78,16 @@ and these are the back-ends currently available for 5.0.2.Final:
 * http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.0.2.Final_
 * http://redis.io[Redis]: _org.hibernate.ogm:hibernate-ogm-redis:5.0.2.Final_
 
-and for 5.1.0.Alpha1:
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.0.2.Final[from Sourceforge].
+
+=== 5.1.0.Alpha1
+
+You can get the required core library using the following Maven coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-core:5.1.0.Alpha1_ 
+
+and these are the back-ends currently available for 5.0.2.Final:
 
 * http://cassandra.apache.org[Cassandra]: _org.hibernate.ogm:hibernate-ogm-cassandra:5.1.0.Alpha1_
 * http://couchdb.apache.org[CouchDB]: _org.hibernate.ogm:hibernate-ogm-couchdb:5.1.0.Alpha1_
@@ -86,9 +98,7 @@ and for 5.1.0.Alpha1:
 * http://redis.io[Redis]: _org.hibernate.ogm:hibernate-ogm-redis:5.1.0.Alpha1_
 
 Alternatively, you can download archives containing all the binaries, source code and documentation
-from Sourceforge:
-* 5.0.2.Final: https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.0.2.Final
-* 5.1.0.Alpha1: https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.1.0.Alpha1
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.1.0.Alpha1[from Sourceforge].
 
 == What's next?
 
