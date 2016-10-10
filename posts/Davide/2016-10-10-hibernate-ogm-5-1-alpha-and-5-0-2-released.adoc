@@ -1,0 +1,109 @@
+= "The first hibernate OGM 5.1 Alpha and 5.0 maintenance release"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Good news!
+We released http://hibernate.org/ogm/[Hibernate OGM] 5.1 Alpha1 and 5.0.2 Final!
+
+== What's new?
+
+=== Hibernate OGM 5.0.2.Final
+The main reason to release 5.0.2.Final is the added support for http://www.mongodb.com[MongoDB] 3.2.
+
+This release is backward compatible with Hibernate OGM 5.0.0.Final but
+if you need to upgrade from a previous version, you can find help on the
+https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes].
+
+You can find all the details in the
+https://github.com/hibernate/hibernate-ogm/blob/5.0.2.Final/changelog.txt[5.0.2.Final changelog].
+
+=== Hibernate OGM 5.1.0.Alpha1
+Hibernate OGM 5.1.0.Alpha1 contains our first attempt to support https://neo4j.com[Neo4j] in
+remote mode with the option of using the Bolt protocol or the HTTP interface.
+
+We also started to re-work the way Hibernate OGM group operations before running them, this will
+to execute less call to the datastore leading to better performance.
+
+You can find all the details in the
+https://github.com/hibernate/hibernate-ogm/blob/5.1.0.Alpha1/changelog.txt[5.1.0.Alpha1 changelog].
+
+== How can I try the remote Neo4j dialect?
+
+You can test Hibernate OGM support for Neo4j adding the following dependency to your project:
+
+[source, XML]
+----
+<dependency>
+    <groupId>org.hibernate.ogm</groupId>
+    <artifactId>hibernate-ogm-neo4j</artifactId>
+    <version>5.1.0.Alpha1</version>
+</dependency>
+----
+
+and setting the following properties:
+
+----
+# Required
+hibernate.ogm.datastore.provider = neo4j_bolt # or neo4j_http
+
+# Optional
+hibernate.ogm.datastore.host = myproject.example.com:8989
+hibernate.ogm.datastore.username = example_username
+hibernate.ogm.datastore.password = example_password
+----
+
+You can get more information about this integration and how to configure it in the
+https://docs.jboss.org/hibernate/ogm/5.1/reference/en-US/html_single/#ogm-neo4j[Neo4j section of the documentation].
+
+== Where can I get them?
+
+Once you decided which version you want to use you can get the core library using one of the
+following Maven coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-core:5.0.2.Final_ 
+* _org.hibernate.ogm:hibernate-ogm-core:5.1.Alpha1_
+
+and these are the back-ends currently available for 5.0.2.Final:
+
+* http://cassandra.apache.org[Cassandra]: _org.hibernate.ogm:hibernate-ogm-cassandra:5.0.2.Final_
+* http://couchdb.apache.org[CouchDB]: _org.hibernate.ogm:hibernate-ogm-couchdb:5.0.2.Final_
+* http://infinispan.org[Infinispan]: _org.hibernate.ogm:hibernate-ogm-infinispan:5.0.2.Final_
+* http://www.ehcache.org[Ehcache]: _org.hibernate.ogm:hibernate-ogm-ehcache:5.0.2.Final_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.0.2.Final_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.0.2.Final_
+* http://redis.io[Redis]: _org.hibernate.ogm:hibernate-ogm-redis:5.0.2.Final_
+
+and for 5.1.0.Alpha1:
+
+* http://cassandra.apache.org[Cassandra]: _org.hibernate.ogm:hibernate-ogm-cassandra:5.1.0.Alpha1_
+* http://couchdb.apache.org[CouchDB]: _org.hibernate.ogm:hibernate-ogm-couchdb:5.1.0.Alpha1_
+* http://infinispan.org[Infinispan]: _org.hibernate.ogm:hibernate-ogm-infinispan:5.1.0.Alpha1_
+* http://www.ehcache.org[Ehcache]: _org.hibernate.ogm:hibernate-ogm-ehcache:5.1.0.Alpha1_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.1.0.Alpha1_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.1.0.Alpha1_
+* http://redis.io[Redis]: _org.hibernate.ogm:hibernate-ogm-redis:5.1.0.Alpha1_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+from Sourceforge:
+* 5.0.2.Final: https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.0.2.Final
+* 5.1.0.Alpha1: https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.1.0.Alpha1
+
+== What's next?
+
+The major addition in the next release will be the integration with
+http://infinispan.org/[Infinispan] remote via the HotRod protocol.
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+We are looking forward to hear your feedback!
+
