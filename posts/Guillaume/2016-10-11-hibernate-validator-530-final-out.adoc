@@ -1,0 +1,50 @@
+= "Hibernate Validator 5.3.0.Final is out"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+There has been a lot of release activity on the Hibernate front lately and it is my pleasure to announce that Hibernate Validator just joined the party with the release of Hibernate Validator 5.3.0.Final.
+
+== What's new since 5.3.0.CR1
+
+5.3.0.CR1 was a candidate release so we did not change much!
+
+Marco Davi http://stackoverflow.com/questions/39872625/type-use-annotation-in-hibernate-validator[reported on Stackoverflow] that the property path generated for type arguments constraints could be improved so we fixed it. You should now be able to exploit type arguments constraints violations more easily.
+
+Ahmed Al Hafoudh contributed a translation for Slovak for our default messages.
+
+You can find the complete list of all addressed issues in the https://github.com/hibernate/hibernate-validator/blob/5.3.0.Final/changelog.txt[change log].
+
+== Hey! I missed the previous announcements!
+
+If you missed what we already announced for 5.3.0, the most important changes are:
+
+ * Dynamic payloads for constraints
+ * A new programmatic API for constraint definition and declaration
+
+Please consult the announcements for more information:
+
+ * http://in.relation.to/2016/09/05/hibernate-validator-530-cr1-out/[Hibernate Validator 5.3.0.CR1 announcement]
+ * http://in.relation.to/2016/01/18/hibernate-validator-530-alpha1-out/[Hibernate Validator 5.3.0.Alpha1 announcement]
+
+== Getting the release
+
+Hibernate Validator 5.3.0.Final should be a drop-in replacement in most cases. Please consult https://developer.jboss.org/wiki/HibernateValidatorMigrationGuide[our migration guide] before upgrading your application to 5.3.0.Final.
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:5.3.0.Final_.
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.3.0.Final/hibernate-validator-5.3.0.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.3.0.Final/hibernate-validator-5.3.0.Final-dist.zip/download[ZIP]).
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
+== What's next?
+
+We are going to prepare a 5.4 release with support for javax.money validation contributed by Lukas Niemeier and Willi Schönborn from Zalando and a lot of improvements to the annotation processor thanks to the great work of Marko Bekhta.
+
+We are actively working on Bean Validation 2.0 and Hibernate Validator 6 with a strong focus on supporting Java 8 new features (and much more!). The more the merrier, so feel free to join us: drop ideas, comment on others' proposals, now is the time to define the future of Bean Validation. You can find all the necessary information on the http://beanvalidation.org/[Bean Validation website].
+
