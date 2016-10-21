@@ -1,0 +1,126 @@
+= Meet Michael Simons
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate OGM" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/rotnroll666[Michael Simons], a long-time Sping and Hibernate user, and https://jaxenter.com/netbeans/seven-new-netbeans-dream-team-members[NetBeans Dream Team member].
+
+image::MichaelSimons.jpg["Michael Simons, align="center"]
+
+. *Hi, Michael. Would you like to introduce yourself and tell us a little bit about your developer experience?*
++
+My name is Michael Simons, https://twitter.com/rotnroll666[@rotnroll666] on Twitter.
++
+I am a 37 year old developer living in Aachen, Germany. As such, I qualify at least age wise as a senior developer. 
+I've been in the software industry for nearly 15 years now. 
+I do have a technical apprenticeship and half finished degree in applied Mathematics. 
+I never finished those studies as I landed in the company I still work with, ENERKO INFORMATIK.
++
+Apart from being a husband and a father of two, I run our local JUG, the http://www.euregjug.eu/[Euregio JUG].
++
+I'm also a member of the https://jaxenter.com/netbeans/seven-new-netbeans-dream-team-members[NetBeans Dream Team].
++
+We, at ENERKO INFORMATIK, create software in the energy and utility markets and work both in the technical and geographical parts as well as sales.
++
+I did really database-centric software for at least 4 years and, I am still fluent in SQL and also PL/SQL. 
+We once did XML processing inside Oracle databases, which works surprisingly well.
+After the slow death of Oracle Forms Client / Server, we migrated our desktop applications from 2004 onwards to Java Swing.
++
+Around that time I played around with Hibernate for the first time. 
+It seemed like the golden bullet back then to get table rows into objects. 
+It wasn't. 
+But that I learned much later. As https://plus.google.com/+GavinKing/posts/LGJU1NorAvY[Gavin King said]: „Just because you're using Hibernate, doesn't mean you have to use it for everything.“
++
+Apart from „boring“ business application, I've been not only blogging for a long time but ran several online communities, one of them still alive. 
+https://dailyfratze.de[Daily Fratze] is a daily photo project started in 2005 as a PHP application. 
+Then, in 2006 became a Ruby on Rails site and by 2010, I started migrating it to a Spring and Hibernate backend.
++
+Looking back at that code I notice how much I didn't know about the purpose and intention of JPA / Hibernate. 
+As it is true for a lot of stuff, you have to know your tools and the stuff they are designed for.
+Not all relations are meant to be materialized in objects, not all queries can be generated. 
+And knowledge about when a `Session` is flushed and when not is essential.
+It's not enough to know SQL to fully utilize Hibernate, but it's also not enough to know Hibernate for abstracting persistence away.
+I changed the flaws in the site code, but you as the reader of this interview must not learn it the hard way,
+I really recommend https://vladmihalcea.com/[Vlad Mihalcea]'s book https://leanpub.com/high-performance-java-persistence[High-Performance Java Persistence].
++
+My https://biking.michael-simons.eu[biking project] and the site and API of the Euregio JUG are my latest public projects that represent the stuff learned with the experience above.
+I use those projects as reference projects for my work.
++
+Since several years, I mostly use NetBeans exclusively for all kind of software development.
+It supports me for plain Java, Spring, insanely well for JPA entities (build in checks for queries, coding style), for front-end (HTML as well as JavaScript).
+Most important, it has great integration for code quality related tools like JaCoCo, Sonar and more.
+
+. *You've designed the Java User Group Euregio Maas-Rhine site. Can you tell us what frameworks have you used?*
++
+For http://euregjug.eu[Euregio JUG] (source is on https://github.com/EuregJUG-Maas-Rhine/site[GitHub]), I chose the following:
+
+* Spring Boot as the application container and glue for
+** Spring Framework and MVC
+** JPA and its implementation Hibernate
+** Spring Data JPA
+* The frontend is done pretty old school by server side rendered templates using Thymeleaf.
++
+As a rule of the thumb I'd choose the following stack when using any kind of SQL data store:
+
+* automatic database migrations using https://flywaydb.org/[Flyway] or http://www.liquibase.org/[Liquibase]
+* JPA / Hibernate together with Spring Data JPA as long as I can express my domain model as entities _and_ tables
+* JPQL queries if necessary with the benefit that they are checked at application start
+* No native queries hidden away in some annotations
+* If I have to do native queries, I'll choose Springs JDBC template or since 2015 jOOQ if applicable.
+* My rule for switching to native queries is when I do have projections or „hard“ analytics that would take an awful lot of Java Code instead of a few lines SQL.
+
+. *Why did you choose Hibernate ORM and Search over other frameworks and did it match your expectations?*
++
+From my background, the data model has always been essential. 
+I worked with awesome models and not so great ones.
+If you can map your domain to a data model, having a working domain driven design, 
+Hibernate helps you a lot to materialize it back into Java.
++
+We want to publish articles (posts) and events on the site. 
+People should be able to register for those events, one time each.
+This fits perfectly into a simple and well understandable domain model that maps perfectly to objects and entities.
++
+Why bother writing those plain SQL statements for selecting and updating stuff myself?
++
+I chose the combination of Hibernate and Spring Data JPA for a reason:
+The domain I map in Hibernate facilitates all the „magic“ Spring Data JPA does:
+Generating queries, conditions and such: I hardly have to write anything myself.
++
+If you chose JPA / Hibernate ORM in your project, I really recommend adding Spring Data JPA to the mix.
+Even if it's a Java EE project.
+Spring Data JPA is a bit harder to configure there but provides the user with a lot of helpful stuff.
++
+Using http://hibernate.org/search/[Hibernate Search] integration was an experiment.
+I'm using it for a long time now on my daily photo project.
+With little effort, my entities provide access to a Lucene based index and I don't have to fight with SOLR.
++
+The EuregJUG site has no local storage in contrast to my daily photo project.
+So, I had to test drive the upcoming Elastic Search integration in 5.6.0, which works with the same set of annotations, the same entities but not against a local index but against a remote Elastic search index.
+You can see it in those commits described http://info.michael-simons.eu/2016/09/20/running-hibernate-search-with-elasticsearch-on-pivotal-cf/[here] and use it http://www.euregjug.eu/archive[here].
++
+It really isn't much stuff added, it fits into the repository / DDD approach and matches my expectations.
++
+Regarding Spring Boot, I've been doing Spring now for more than 7 years and Boot since early 2014.
+It has an awesome community and actually never disappointed me.
+
+. *We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?*
++
+As a Hibernate user the most common problems I had during the time which I didn't know exactly what I was doing: Having problems mapping my tables, slow queries and such.
+Also throwing Hibernate at problems that would have been a better fit for plain SQL caused problems.
+In both cases, those problems could be solved on my end.
++
+The experience in Hibernates bug tracker is improving a lot lately and I would appreciate an even better integration with Spring Data JPA.
++
+To close this, I have to say that I really like the stack mentioned above.
+We have reached a quality of component where you can really work well from a Domain Driven Design perspective, switch to SQL if needed and still having a clean architecture with clean, testable code.
+Problems that have been around 10 years ago most often gone.
++
+It's really not hard to get an application up and running, including unit and integration tests.
+If you leave aside the *hypes*, you can concentrate on both actual problems and on enabling people to learn and do their jobs.
++
+I really like the fact that http://docs.jboss.org/hibernate/orm/5.2/userguide/html_single/Hibernate_User_Guide.html#spatial[Hibernate Spatial] find its way into ORM itself.
+If you have correctly mapped entities and you need to query them via spatial regions, that stuff is really helpful and works quite well.
+I'd appreciate more information there.
+
+*Thank you, Michael, for taking your time. It is a great honor to have you here. To reach Michael, you can follow him on https://twitter.com/rotnroll666[Twitter].*
