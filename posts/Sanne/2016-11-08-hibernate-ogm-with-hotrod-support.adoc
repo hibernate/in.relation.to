@@ -1,0 +1,137 @@
+= "Hibernate OGM now supports Infinispan datagrid over Hot Rod"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate OGM", "Releases", "Infinispan"]
+:awestruct-layout: blog-post
+---
+
+Today we release http://hibernate.org/ogm/[Hibernate OGM] `5.1.0.Beta1` and `5.0.3.Final`.
+
+In version 5.1 we introduce an amazing new feature: support for storing data in http://infinispan.org/docs/8.2.x/infinispan_server_guide/infinispan_server_guide.html[_Infinispan Server_]
+using the http://infinispan.org/hotrod-clients/[Java Hot Rod client], encoding your data into https://developers.google.com/protocol-buffers/[_Google Protobuffers_],
+while handling all the nasty mapping automatically.
+
+== Hot Rod support?
+
+_Hot Rod_ is the protocol used by "intelligent clients" of an Infinispan Server, which implies
+the client is smart enough to implement a series of performance optimisation tricks; for example
+it is able to connect to the most suited server in the cluster depending on the data
+being requested (or written), greatly reducing the latency of operations.
+
+While Infinispan is most known as an high-performance key/value store, when it comes to remote
+clients the recommended approach is to encode your data in Google Protobuffers.
+This allows for evolution of your storage schema without breaking decoding of existing
+data, allows server side queries and functions to interpret the stored data, and allows
+interoperability with Hot Rod clients from other programming languages.
+It allows for example to read the POJOs we write using the Java client from a Python client, and
+have the data converted into reasonable Python Objects.
+
+Unfortunately dealing with an Hot Rod client can be tedious!
+
+* It's a key-value store: manual handling of relations is error prone
+* You'll need to write and maintain a matching Protobuf Schema for all your entities
+* You'll have to setup Protostream and configure it as Marshaller for the Hot Rod client
+
+Most importantly, it requires new skills.
+
+You'll have to learn how a Protobuf Schema is best defined, and how to use Protostream.
+Finally, you'll have to learn the Hot Rod API and how to make the most of its
+advanced flags to tune each operation, and consider carefully how you want to represent relations.
+
+=== Use something familiar instead?
+
+Hibernate OGM can automate the tedious parts, and let you focus on what matters.
+
+==== Add this dependency:
+
+[source, XML]
+[subs="verbatim,attributes"]
+----
+<dependency>
+    <groupId>org.hibernate.ogm</groupId>
+    <artifactId>hibernate-ogm-infinispan</artifactId>
+    <version>5.1.0.Beta1</version>
+</dependency>
+----
+
+==== Enable OGM's Hot Rod super powers in your persistence.xml :
+
+====
+[source, XML]
+----
+<?xml version="1.0"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
+
+	<persistence-unit name="ogm-with-hotrod">
+		<provider>org.hibernate.ogm.jpa.HibernateOgmPersistence</provider> # <1>
+		<properties>
+			<property name="hibernate.ogm.datastore.provider"
+				value="infinispan_remote" /> # <2>
+			<property name="hibernate.ogm.infinispan_remote.client.server_list"
+				value="127.0.0.1:11222" /> # <3>
+		</properties>
+	</persistence-unit>
+</persistence>
+----
+<1> Choose Hibernate OGM as JPA Provider
+<2> pick `infinispan_remote` as datastore
+<3> include Hot Rod configuration properties, just replacing/adding the OGM prefix.
+====
+
+==== Start Hibernate OGM!
+
+====
+[source, Java]
+----
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("ogm-with-hotrod");
+----
+====
+
+That's enough to create Hibernate `EntityManager`s which knows how to perform CRUD of your model,
+encoding and decoding your data into Hot Rod!
+
+This will:
+
+ * Start and manage the Hot Rod client, have it initialize connections to your _Infinispan Server_
+ * Generate an appropriate Protobuf Schema for your model
+ * Deploy the schema to the _Infinispan Server_
+ * Initialize all the internal Protobuf encoders and decoders using Protostream
+ * Properly implement sequences / autoincrements (a feature lacking in native Hot Rod)
+
+There are some limitations.
+
+The most notable one is that you will have to manually create
+the Cache definitions that it will need on your _Infinispan Server_ configuration, as
+at this time this is an operation which can't be performed over Hot Rod (but the frienfly
+Infinispan team is working on a solution).
+
+Another limitation is that at this time we don't suppor running JPQL queries on this backend.
+
+You can find many more interesting details on our https://docs.jboss.org/hibernate/ogm/5.1/reference/en-US/html/ch09.html[Infinispan integration reference guide]; I've included a section to help you choose between Infinispan Embedded
+and Infinispan Remote (over Hot Rod).
+
+=== Hibernate OGM 5.0.3.Final
+
+We also released Hibernate OGM version `5.0.3.Final`, to address a single mapping issue:
+many thanks to Simone Manetti for http://stackoverflow.com/questions/40288481/persist-a-tree-with-hibernate-ogm-and-mongodb-the-collections-that-represent-th[reporting] https://hibernate.atlassian.net/browse/OGM-1198[OGM-1198], now resolved in this version.
+
+If you need to upgrade from a version before 5.0, you can find help on the
+https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes].
+
+== What's next?
+
+Version 5.1 is feature complete now. We're looking forward for your feedback!
+
+==== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+
