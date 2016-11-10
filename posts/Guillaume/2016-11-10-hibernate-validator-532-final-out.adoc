@@ -1,0 +1,44 @@
+= "Hibernate Validator 5.3.2.Final is out"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+So, today is my birthday which is in no way related to this blog post but is definitely worth knowing! This special day for me seems to be a good occasion to announce the second maintenance release of Hibernate Validator 5.3.
+
+== Why so soon?
+
+If you are using the default `ResourceBundleMessageInterpolator` as your message interpolator and you have the javax.el API in your classpath but not the implementation (which would break at runtime anyway), 5.3.1.Final would throw a nasty `javax.el.ELException: Provider com.sun.el.ExpressionFactoryImpl not found`. This exception breaks the promise we made to you, our beloved users, to throw a nice `javax.validation.ValidationException` with a clear error message.
+
+The story behind it is that, in 5.3.1.Final, we changed the way the `javax.el.ExpressionFactory` is initialized when using `ResourceBundleMessageInterpolator`. This latter class is the default message interpolator used to interpolate the constraint violations messages using the Expression Language. Prior to this change, the `ExpressionFactory` was initialized at runtime for each interpolation which was not a good thing, as you can imagine.
+
+Starting with 5.3.1.Final, we initialize once and for all the `ExpressionFactory` when initializing the `ResourceBundleMessageInterpolator`. Thus, even if no messages are interpolated, if you use the default message interpolator, you now need the javax.el API **and** the javax.el implementation in your classpath. Before this change, only the API was required at bootstrap.
+
+You shouldn't notice this difference in a normal Hibernate Validator usage as there is a good chance you would need to interpolate a message: the good news is that you now have an error at bootstrap instead of at runtime if your classpath is not correct.
+
+So, at the end of the day, this release is all about fixing https://hibernate.atlassian.net/browse/HV-1153[this issue].
+
+We also backported a few totally unrelated Java 9 build improvements. 
+
+You can find the complete list of all addressed issues in the https://github.com/hibernate/hibernate-validator/blob/5.3.2.Final/changelog.txt[change log].
+
+== Getting the release
+
+Hibernate Validator 5.3.2.Final is a drop-in replacement of Hibernate Validator 5.3.1.Final.
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:5.3.2.Final_.
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.3.2.Final/hibernate-validator-5.3.2.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.3.2.Final/hibernate-validator-5.3.2.Final-dist.zip/download[ZIP]).
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
+== What's next?
+
+We are going to prepare a 5.4 release with support for javax.money validation contributed by Lukas Niemeier and Willi Schönborn from Zalando and a lot of improvements to the annotation processor thanks to the great work of Marko Bekhta.
+
+We are actively working on Bean Validation 2.0 and Hibernate Validator 6 with a strong focus on supporting Java 8 new features (and much more!). The more the merrier, so feel free to join us: drop ideas, comment on others' proposals, now is the time to define the future of Bean Validation. You can find all the necessary information on the http://beanvalidation.org/[Bean Validation website].
+
