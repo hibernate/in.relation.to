@@ -1,0 +1,58 @@
+= Meet Julien Dubois and JHipster
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/juliendubois[Julien Dubois], the Team Leader of https://twitter.com/java_hipster[JHipster].
+
+image::JulienDubois.jpg["Julien Dubois, align="center", width="400"]
+
+. *Hi, Julien. Would you like to introduce yourself and tell us a little bit about your developer experience?*
++
+Hi Vlad, I'm Julien Dubois, and I've been a software developer for the last 20 years, mainly focusing on Java and Web development.
++
+I'm involved in the Open Source and Java communities: I've written a book on the http://www.julien-dubois.com/book.html[Spring Framework],
+contributed to many different OSS projects, and talked at a lot of conferences.
++
+Currently, I'm Chief Innovation Officer at http://www.ippon.fr/[Ippon Technologies],
+a Java consultancy with offices in France, the US and Australia.
+I'm also the CTO of http://datamc.io/[DataMC], a VC-backed startup specialized in Big Data solutions.
+
+. *You are the team leader of JHipster. Can you tell us about the goals of this open-source framework?*
++
+It's all about having a great developer experience: we integrate a lot of cool technologies like Spring Boot, Hibernate, AngularJS and Docker,
+and automate all the tasks you would usually do manually.
+In the end, you win a lot of time, and your project has a much higher quality.
++
+We, of course, have great Hibernate support, and even have http://jhipster.github.io/jdl-studio/[an online IDE] to help generate complex data models.
++
+Another great thing is that we have a huge community, with lots of people and companies contributing.
+This ensures we have tons of ideas, patches and best practices, which is something nobody could ever achieve alone.
+
+. *JHipster uses Hibernate ORM for data. Why did you choose Hibernate over other JPA providers?*
++
+At Ippon Technologies, I have seen many projects, probably more than 50 in the last 5 years.
+I'd say 80% of people use JPA and Hibernate together, and the rest have either some custom JDBC code, a proprietary framework (like Jalo, which comes with Hybris),
+or an Open Source alternative (like MyBatis).
++
+But I haven't seen anyone using another JPA provider for a very long time.
+A couple of years ago, I saw one project which wanted to test Batoo JPA, but that implementation is not maintained anymore.
++
+So, for JHipster, we use Hibernate because it's the most widely-used, better-maintained implementation,
+and also because I trust Red Hat to be a great sponsor for the project.
+
+. *We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?*
++
+My main issue with Hibernate on JHipster is the startup time.
+On my laptop, I need 10 seconds to start a Hibernate application, compared to 7 seconds for a MongoDB application.
+All this time isn't caused by Hibernate itself, as there are also the connection pool and the 2nd-level cache to start, but the whole stack is a bit heavy when coding.
++
+In production mode, we also need something that starts up really fast, and that's definitely the biggest issue for me.
+For instance, when using microservices with Docker, or when using cloud providers like Heroku or Cloud Foundry,
+this really goes against https://12factor.net/disposability[Disposability (the number 9 of the 12 factors)].
++
+So I'm wondering if we could have an option where Hibernate starts quickly without doing any check, and then fails fast on any error,
+like an incorrectly-written query.
+
+*Thank you, Julien, for taking your time. It is a great honor to have you here. To reach Julien, you can follow him on https://twitter.com/juliendubois[Twitter].*
