@@ -1,0 +1,86 @@
+= Meet Rafael Winterhalter and JHipster
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/rafaelcodes[Rafael Winterhalter],
+https://blogs.oracle.com/java/new-java-champion-rafael-winterhalter[Java Champion],
+JavaZone conference organizer,
+and Team Leader of http://bytebuddy.net/[Byte Buddy].
+
+Rafael has done a great job https://github.com/hibernate/hibernate-orm/pull/1622[migrating Hibernate from Javassist to Byte Buddy],
+for which we are very grateful.
+
+image::RafaelWinterhalter.jpg["Rafael Winterhalter, align="center", width="400"]
+
+. *Hi, Rafael. Would you like to introduce yourself and tell us a little bit about your developer experience?*
++
+Hei, I am Rafael, a native German who is living in Oslo, Norway where I work as a software consultant.
++
+Before that, I was in academia where I did a fair share of statistical analysis what evoked an interest in computer performance.
+After I left university, I have been working mostly with the JVM where I still enjoy working with performance critical systems
+but where I also do a lot of enterprise software development.
++
+I am also quite active in open source and as a conference speaker and organizer.
+
+. *You are the Team Leader of the Byte Buddy open-source framework. Can you tell what's the goal of Byte Buddy?*
++
+Byte Buddy originated out of frustration over https://github.com/cglib/cglib[cglib],
+a commonly used library for code generation that got abandoned a few years back.
+I was working on a proxy component that needed to retain the annotations of the proxied methods.
++
+Proxies are often implemented as subclasses where these annotations disappear as method annotations are never inherited.
+Many libraries such as Hibernate do however use annotations as part of their API what breaks this pattern.
+I got stuck and wrote a tiny library as a replacement for cglib which later evolved into what is Byte Buddy today.
++
+Today, the library‘s goal is to be the fastest and easiest way to define or modify Java classes at runtime.
+As a side goal, I wanted to offer some support for Android which was previously lacking a runtime code generation library and I wanted to make it easy to define Java agents.
+
+. *In 2013, you wrote the http://mydailyjava.blogspot.ro/2013/11/cglib-missing-manual.html[cglib: The missing manual] article.
+   How does Byte Buddy compare to cglib or javassist?*
++
+I wrote this article as a heavy user of code generation libraries in open source and to share a bit of my knowledge of cglib which is not supplemented by any documentation.
+I still believe that this is one major issue of code generation libraries;
+due to the lack of documentation, many people fear using them for not understanding how they work despite their usefulness.
++
+Other than Byte Buddy, cglib is limited to creating subclasses of existing types where it can override existing methods.
+Byte Buddy gives you full freedom in defining additional fields or methods and allows you to implement methods arbitrarily.
+In practice, this often results in thinner byte code and better performance.
++
+Also, Byte Buddy does not require you to include any library-specific classes into the generated code what is crucial for OSGi-environments.
+Also, this will become a necessity when working with Java 9 modules which the authors of cglib did of course not anticipate 15 years back.
++
+http://jboss-javassist.github.io/javassist/[Javassist] has a proxy API that is similar to cglib which does, however, come with the identical limitations.
+Additionally, Javassist allows for arbitrary modifications of classes using a different API by supplying Java code as strings.
+While this approach gives you full freedom, it is very vulnerable to API-changes which then yield runtime errors and also opens up to code-injection when processing user input,
+similar to SQL-injection when using JDBC.
++
+Byte Buddy rather works with precompiled code which can be written in any JVM language and which can be inlined at runtime.
+Avoiding runtime compilation makes Byte Buddy’s transformations type-safe and much faster to apply at runtime.
+
+. *You have contributed to many open-source projects, Byte Buddy, Mockito, and now Hibernate ORM.
+   Can you tell us more about the Hibernate and Byte Buddy integration?*
++
+The usage of Byte Buddy in Hibernate ORM and Mockito differs a lot.
++
+Hibernate mostly uses code generation to implement runtime proxies.
+For the Hibernate enhancer, it does, however, require some rather fundamental changes of a code base by installing its own callbacks into classes in order to better monitor an object’s state.
+Fortunately, all such enhancement is done in a dedicated step what makes the code manipulation quite predictable.
++
+In Mockito, we traditionally only required simple subclass proxies.
+In Mockito 2, we added, however, a new mock maker that inlines the mocking logic at runtime.
+This way, it becomes possible to mock final classes and methods what is important in order to support new JVM languages such as Kotlin where, by default, all methods are final.
+With this new mock maker, Byte Buddy needs to rewrite large fractions of a class.
+
+. *We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?*
++
+Hibernate has been my first choice for an ORM-mapper in many years, and I am very happy how well it works.
+One critique I had was the lack of documentation.
++
+People are often abusing the library’s capabilities or run into performance issues because they do not understand what the library is doing and what its intended use case is.
+And to be fair, this is not always easy to figure out.
++
+I feel like the state of documentation has improved a lot in the last time, and I very much welcome this effort.
+
+*Thank you, Rafael, for taking your time. It is a great honor to have you here. To reach Rafael, you can follow him on https://twitter.com/rafaelcodes[Twitter].*
