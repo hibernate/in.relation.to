@@ -1,0 +1,82 @@
+= Meet Christian Beikov and Blaze Persistence
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/c_beikov[Christian Beikov],
+who is one of the most active Hibernate contributors.
+
+image::ChristianBeikov.jpg["Christian Beikov, align="center", width="400"]
+
+. *Hi, Christian. Would you like to introduce yourself and tell us a little bit about your developer experience?*
++
+Hey, Vlad. My name is Christian Beikov, and I am 25.
+I'm living with my girlfriend in Vienna, the capital city of Austria.
+I started working with Java EE technologies in school and continued to do so at my first job where I am still employed part-time.
+Next to my job, I am doing my master studies in Software Engineering at TU Wien which I am hopefully finishing next year.
++
+My main interests are in distributed systems, database technologies and everything Java/JVM-related.
+In school, I came into contact with Java EE for the first time when I was by developing a JSF-based web app with Hibernate on top of GlassFish with NetBeans.
+When I started my job at Curecomp GmbH, I mainly worked with Eclipse and WebSphere and about 2 years ago,
+I managed to fully migrate the company's development stack to WildFly and IntelliJ IDEA.
+During these migrations and the countless university assignment projects in which I have used Hibernate, I've stumbled upon one or another bug.
+
+. *You've been very active in the Hibernate ecosystem, sending Pull Requests and getting involved in future design discussions.
+  How do you manage to blend the open-source involvement with your day job?*
++
+The work I am doing in open-source projects happens mostly in my free time.
+I like to give back something to the community, even if it's just bug reports.
+Since I use Hibernate in so many projects, I also see my contributions as an investment in improving the overall quality of the projects I do.
++
+At my day job, I am sometimes facing problems that I simply can't workaround or doing a proper fix seems equally hard to me, which is how I justify fixing the Hibernate bug in the core.
+The deep knowledge that I gain from analyzing bugs and discussing features also helps me in my day job when reasoning about the behavior of Hibernate in certain situations which is a big plus.
+
+. *You are also developing https://github.com/Blazebit/blaze-persistence[Blaze Persistence]. Can you tell us a little bit about this framework and how does it compare to Criteria API?*
++
+https://github.com/Blazebit/blaze-persistence[Blaze-Persistence] is a library on top of the JPA APIs. The core module provides a fluent query builder API that allows you to express queries
+in a Java DSL which should feel mostly intuitive. In addition to the standard features that are defined in JPA 2.1, it also implements support for
+some common functionality that already every JPA provider supports like for example aliasing fetch joins or entity joins. On top of that,
+Blaze-Persistence also provides deep integration with the JPA provider to support features like (recursive) CTEs or set operations like UNION, etc.
+Beware that the deep integration is currently only available for Hibernate since it is the provider I am mostly familiar with, but support for others is planned.
++
+One of the greatest features that Blaze-Persistence makes possible are Entity Views which are to JPA entities roughly what views are to tables in the RDBMS sense.
+An Entity View is an interface or abstract class that represents the structure of a projection for an entity. It's basically the definition of a DTO, with the difference
+that you only need to specify getter methods along with the projection for that attribute as JPQL expression.
+When you then apply the Entity View on a base query, it will contribute the JPQL expressions as select items, thus creating an optimized JPQL and SQL query.
+The result of such a query, of course, is a list of objects that are a subtype of the Entity View. Apart from avoiding all the manual plumbing code to get the data into shape,
+you can make use of features like Collection mappings, Subviews or SubqueryProviders which let you define complex projections that one would normally not do.
++
+The Criteria API provided by JPA is hard to use as it requires a lot of typing and also some kind of skill. You need to know how to wire things up which
+is one of the big pain points that I tried to solve by introducing a fluent API. Sure the JPA Criteria API is type-safe, but that comes at the cost of obfuscating your query.
+A type-safe variant of the Blaze-Persistence core API or maybe even just some additional methods in the existing API are already on my roadmap, so I will also try to fill this gap while retaining readability.
++
+Since I don't expect everyone to rewrite his existing JPA Criteria API based queries, I also implemented the JPA Criteria API on top of the Blaze-Persistence core API.
+You can even let your existing code build the queries with the JPA Criteria API and retrieve a Blaze-Persistence query builder from it. The resulting query builder can be used
+just like any other query builder which means you can use CTEs and all the other great features.
+
+. *Blaze Persistence works with any JPA provider. From your experience, how does Hibernate ORM compare to EclipseLink or OpenJPA?*
++
+Just as a disclaimer, I haven't dug too much into the communities of the other JPA providers as I don't use them in any of my projects.
+Also, beware that I might be biased now since I know people from the Hibernate team and know who to contact if I have a problem, but I'll try to be as neutral as possible.
++
+I got the feeling that the EclipseLink community didn't care about the bugs I reported or forum posts I did, but apart from that, the implementation seems ok.
+It has some quirks like e.g. allowing lazy loading although the underlying entity manager is closed, but maybe that's a feature :D
++
+DataNucleus which is one of the lesser known JPA providers is actually pretty good and the main developer there reacts super fast to bug reports.
+I found some bugs and also proposed some features to increase Hibernate compatibility and as far as I know, all of these issues have been resolved by now.
++
+I can't tell you much about OpenJPA except that it seems rather dead or in maintenance mode only to me. The latest version is only JPA 2.0 compatible and unfortunately,
+lacks even proprietary ways to do certain things that are possible with other JPA providers.
++
+The thing I am mostly unsatisfied with is that most of the issues I found with any JPA provider are pretty basic things and should be asserted by the JPA TCK.
+I hope some Oracle guy who can actually do something reads this and pushes harder to make the JPA TCK open-source :)
+
+. *We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?*
++
+I think Hibernate already does a very good job. What I really would like to see is the decoupling of the SQL generation and execution from the ORM specifics.
+This is something I often would have needed in one way or another to workaround bugs or simply to execute the SQL that is needed for a specific task. Imagine you could specify
+a HQL query that just describes how the result mapping should be done, but specify your own SQL. This is something I am doing internally in Blaze-Persistence all the time for advanced queries.
+I hope the SQM feature that is planned for Hibernate 6 will allow me to do that so I can get rid of the dirty tricks I have to do right now to get stuff done.
+
+*Thank you, Christian, for taking your time. It is a great honor to have you here. To reach Christian, you can follow him on https://twitter.com/c_beikov[Twitter].*
