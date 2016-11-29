@@ -16,11 +16,11 @@ Version 5.7.0.Beta1 brings the exact same changes as 5.6.0.Beta1, but on top of 
  * https://hibernate.atlassian.net/browse/HSEARCH-2260[HSEARCH-2260]: A new `VALIDATE` index schema management strategy has been added for Elasticsearch, allowing you to automatically check on startup that your Hibernate Search mappings are in line with the Elasticsearch mappings.
  * Issues with `@IndexedEmbedded` in the Elasticsearch integration have be addressed: everything should now work properly, with the notable exception of https://hibernate.atlassian.net/browse/HSEARCH-2389[`@IndexedEmbedded.indexNullAs`] (not to be confused with `@Field.indexNullAs`).
  * https://hibernate.atlassian.net/browse/HSEARCH-2235[HSEARCH-2235]: You can now configure Hibernate Search to send requests to Elasticsearch servers in round-robin, enabling load-balancing. Failover is not supported yet, but https://hibernate.atlassian.net/browse/HSEARCH-2469[we'll be working on it].
- * https://hibernate.atlassian. net/browse/HSEARCH-2360[HSEARCH-2360]: Elasticsearch projections now use source filtering, greatly reducing the bandwidth needs when retrieving results.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2360[HSEARCH-2360]: Elasticsearch projections now use source filtering, greatly reducing the bandwidth needs when retrieving results.
  * We now test our Elasticsearch integration against version 2.4.2, which fixed https://hibernate.atlassian.net/browse/HSEARCH-2414[an issue with date formats] that impacted Hibernate Search. We strongly recommend to update your 2.4.x instances to the lastest available version in the 2.4.x series.
  * ... and much more. The full change log can be found on https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=25250[our JIRA instance] or on https://github.com/hibernate/hibernate-search/blob/5.6.0.Beta4/changelog.txt[our GitHub repository].
 
-== When will this 5.6.0 be actually released?
+== When will this 5.6.0 be released?
 
 We've been caught up in the polishing work with the Elasticsearch integration lately, but we're seeing the end of the tunnel: the list of open tasks is getting https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HSEARCH%20AND%20status%20in%20(Open%2C%20Reopened%2C%20%22Awaiting%20Test%20Case%22)%20AND%20fixVersion%20%3D%205.6.0.CR1[shorter and shorter]. The first release candidate for Hibernate Search 5.6.0 will land by the end of next week.
 
