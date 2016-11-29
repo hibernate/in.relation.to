@@ -1,0 +1,85 @@
+= Hibernate Search 5.6.0.Beta4 and 5.7.0.Beta1 are out!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Today we are releasing two new versions of Hibernate Search: 5.6.0.Beta4 and 5.7.0.Beta1!
+
+Version 5.6.0.Beta4 brings the https://hibernate.atlassian.net/issues/?jql=fixVersion%20%3D%205.6.0.Beta4[latest bugfixes and previously missing features] for our experimental Elasticsearch integration. This is the version to use with Hibernate ORM versions 5.0.x and 5.1.x.
+
+Version 5.7.0.Beta1 brings the exact same changes as 5.6.0.Beta1, but on top of the compatibility with Hibernate ORM version 5.2.x that was introduced with 5.7.0.Alpha1.
+
+== What's new?
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-402[HSEARCH-402]: A new `async` reader strategy has been added for the Lucene indexing service, bringing performance boosts when you are okay with your queries being run on an out-of-date index (how much out-of-date is configurable).
+ * https://hibernate.atlassian.net/browse/HSEARCH-2260[HSEARCH-2260]: A new `VALIDATE` index schema management strategy has been added for Elasticsearch, allowing you to automatically check on startup that your Hibernate Search mappings are in line with the Elasticsearch mappings.
+ * Issues with `@IndexedEmbedded` in the Elasticsearch integration have be addressed: everything should now work properly, with the notable exception of https://hibernate.atlassian.net/browse/HSEARCH-2389[`@IndexedEmbedded.indexNullAs`] (not to be confused with `@Field.indexNullAs`).
+ * https://hibernate.atlassian.net/browse/HSEARCH-2235[HSEARCH-2235]: You can now configure Hibernate Search to send requests to Elasticsearch servers in round-robin, enabling load-balancing. Failover is not supported yet, but https://hibernate.atlassian.net/browse/HSEARCH-2469[we'll be working on it].
+ * https://hibernate.atlassian. net/browse/HSEARCH-2360[HSEARCH-2360]: Elasticsearch projections now use source filtering, greatly reducing the bandwidth needs when retrieving results.
+ * We now test our Elasticsearch integration against version 2.4.2, which fixed https://hibernate.atlassian.net/browse/HSEARCH-2414[an issue with date formats] that impacted Hibernate Search. We strongly recommend to update your 2.4.x instances to the lastest available version in the 2.4.x series.
+ * ... and much more. The full change log can be found on https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=25250[our JIRA instance] or on https://github.com/hibernate/hibernate-search/blob/5.6.0.Beta4/changelog.txt[our GitHub repository].
+
+== When will this 5.6.0 be actually released?
+
+We've been caught up in the polishing work with the Elasticsearch integration lately, but we're seeing the end of the tunnel: the list of open tasks is getting https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HSEARCH%20AND%20status%20in%20(Open%2C%20Reopened%2C%20%22Awaiting%20Test%20Case%22)%20AND%20fixVersion%20%3D%205.6.0.CR1[shorter and shorter]. The first release candidate for Hibernate Search 5.6.0 will land by the end of next week.
+
+So, if you haven't tested 5.6 already, now's the time! Should you find any bug, please report them on https://hibernate.atlassian.net/projects/HSEARCH/issues[our JIRA instance].
+
+== What about Elasticsearch 5 support?
+
+Please be aware that we're not currently supporting Elasticsearch 5.x. The main reason is it brings several backward-incompatible changes that would require quite a bit of work if we still want to support the 2.x series. And we don't want to postpone the Hibernate Search 5.6.0 release any more.
+
+Our plan is to release a 5.6.0 supporting Elasticsearch 2.x, and add Elasticsearch 5 support in Hibernate Search 6.0 or, maybe, in an early 5.8 release. You may refer to https://hibernate.atlassian.net/browse/HSEARCH-2434[HSEARCH-2434] to track the status of Elasticsearch 5.0 support.
+
+== When will 5.7.0 be released?
+
+Everything is going smoothly with this version, and very few bugs have been reported. As soon as 5.6.0 will be released, we'll publish the candidate release for 5.7.0.
+
+== How to get these releases
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.6.0.Beta4</version>
+</dependency>
+----
+====
+
+Or, for Hibernate Search 5.7:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.7.0.Beta1</version>
+</dependency>
+----
+====
+
+To use the experimental Elasticsearch integration you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch</artifactId>
+   <version>5.6.0.Beta4</version>
+</dependency>
+----
+====
+
+(Change the version to `5.7.0.Beta1` in order to test the Elasticsearch integration within Hibernate Search 5.7) 
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
