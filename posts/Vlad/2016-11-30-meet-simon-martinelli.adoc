@@ -1,0 +1,63 @@
+= Meet Simon Martinelli and QLRM (Query Language Result Mapper)
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/simas_ch[Simon Martinelli], who, among many other things, is teaching Java EE and JPA at the University of Applied Sciences in Berne.
+
+image::SimonMartinelli.jpg["Simon Martinelli, align="center", width="400"]
+
+. *Hi, Simon. Would you like to introduce yourself and tell us a little bit about your developer experience?*
++
+I'm a software architect, developer, and trainer from Switzerland working for https://www.simas.ch/[simas GmbH].
+Besides that, I'm a lecturer for Java EE, architecture and design and persistence technologies at the University of Applied Sciences in Berne.
+In my spare time, I'm working on some open source projects and as I'm an expert group member of JSR 352 Batch and JSR 354 Money and Currency API.
++
+I started my IT career in 1995 as a Cobol developer on IBM mainframe.
+Since 2000, I've been working in many enterprise projects as a developer, architect, and technical lead, using J2EE/Java EE, Spring framework, and from time to time .NET.
+My first contact with OR-Mapping was in 2000 when we used TopLink in a project for Swiss Railways.
+
+. *You have an open-source project on GitHub called https://github.com/simasch/qlrm[Query Language Result Mapper].
+  Can you tell us what's the goal of this framework?*
++
+I love the JPA constructor expression.
+In my opinion, it's the best way to get around the common performance problems when using JPA in a naive way.
+But the constructor expression only works with JPQL or Criteria API and sometimes you need to execute a SQL query but don't want to use a fully featured SQL framework like jOOQ.
++
+Sure, JPA comes with the ConstructorResult but I find it too complicated, and it was not available with JPA 1.0.
+Hibernate has the https://docs.jboss.org/hibernate/orm/5.2/javadocs/org/hibernate/transform/ResultTransformer.html[`ResultTransformer`], but this only works with Hibernate.
+So I decided to start Query Language Result Mapper (QLRM).
++
+QLRM simply tries to find a matching constructor based on a JPA native query result or, when using plain JDBC, a JDBC `ResultSet`.
+It's simple, small and not related to a specific JPA implementation.
+
+. *You are also teaching Java EE and Java Persistence API at the University of Applied Science in Berne.
+  Is JPA easy to learn? What do your students think of this Java Persistence standard?*
++
+JPA is by far the most complicated part of Java EE to learn.
+Because it's leaky abstraction, you have to know a lot about SQL databases and what's going on behind the scenes.
+It's also the most common source of performance problems.
+While teaching, I always try to focus on how to avoid these performance problems.
++
+My students usually like JPA because it makes data access much easier.
+For those who don't know the history of OR-Mapping, it's hard to understand that the JPA implementation behaves differently in some situations.
+What they don't like is that (currently) JPA does not support the Java 8 Date Time API.
+
+. *Since I started blogging, I realized that explaining a subject helps me better understand it.
+  Do you think all developers should be involved in teaching or writing articles or books about the subjects they want to master?*
++
+Absolutely! I'm teaching JPA since 2007, and this forces me to get a deep understanding of the topic because the questions of the students can be very challenging.
+Sometimes I even have to look at the code of the JPA implementation to understand what happens under the hood.
+In return, this know-how helps me to write better and faster applications.
++
+As Albert Einstein said: "If you can't explain it simply, you don't understand it well enough."
+
+. We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?
++
+I think the whole Hibernate team is doing a great job! It's more than feature-complete (it's hard to know every feature, though).
++
+Just one minor thing: When reading the documentation it's often hard to differentiate what's JPA standard and what's Hibernate specific.
+But I don't think that this is very important because not many developers are switching the JPA implementation in a project.
+
+*Thank you, Simon, for taking your time. It is a great honor to have you here. To reach Simon, you can follow him on https://twitter.com/simas_ch[Twitter].*
