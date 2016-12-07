@@ -12,7 +12,7 @@ Today, we announce the release of two Hibernate Validator versions: the first be
 
  * lots of improvements to the annotation processor thanks to Marko Bekhta. For the last 2 months, Marko did a tremendous work getting the annotation processor up to speed: it will now report many more issues you might have with your annotations. We are especially interested in feedback on this feature so that we are sure we don't report issues for configurations that should just work. So, if you have some time, give it a try on your project and, if you see something fishy, report it to us.
  * another contribution came in the form of the http://javamoney.github.io/[JavaMoney (JSR 354)] support, contributed by Lukas Niemeier and Willi Schönborn from Zalando. 
- * instead of the WildFly modules, we now provide a WildFly patch based on WildFly's patching infrastructure.
+ * we now provide a WildFly patch based on WildFly's patching infrastructure to allow testing a new version of HV on WildFly.
  * a couple of other improvements such as cleanups backported from our 6.0 work, a Ukrainian translation, constraints annotations for the various Polish identification numbers, improvements to the `@Email` constraint...
 
 You can find the complete list of all addressed issues in the https://github.com/hibernate/hibernate-validator/blob/5.4.0.Beta1/changelog.txt[change log].
@@ -54,15 +54,15 @@ public class Order {
 
 === Applying a WildFly patch
 
-We used to provide WildFly modules so that you could benefit from the progress we make on Hibernate Validator on WildFly. It was not very convenient as you would override Validator for your deployment environment but not for the modules natively present in WildFly such as Jax-RS.
+The WildFly application server in its latest stable version (10.1.0.Final) embeds Hibernate Validator 5.2.4.Final but you might want to give our new features a try.
 
 WildFly 8 introduced a patching infrastructure that allows you to apply patches to WildFly with a lot of nice features: you can list the applied patches, rollback a specific patch...
 
-In HV 5.4, we leverage this infrastructure to provide you with the capability to upgrade the core Hibernate Validator modules with an updated version:
+Starting with HV 5.4, we leverage this infrastructure to provide you with the capability to upgrade the core Hibernate Validator modules with an updated version. As the patch overrides the core modules, the new features of 5.4.0.Beta1 are available to all the WildFly components using HV (e.g. Jax-RS for instance).
 
 The patch file can be downloaded from http://repo.maven.apache.org/maven2/org/hibernate/hibernate-validator-modules/5.4.0.Beta1/hibernate-validator-modules-5.4.0.Beta1-wildfly-10.1.0.Final-patch.zip[Maven Central] or from http://sourceforge.net/projects/hibernate/files/hibernate-validator/5.4.0.Beta1/hibernate-validator-5.4.0.Beta1-dist.tar.gz/download[our distribution].
 
-You can apply the HV 5.4.0.Beta1 update with the following command:
+You can apply the HV 5.4.0.Beta1 update on top of WildFly 10.1.0.Final with the following command:
 ```
 $JBOSS_HOME/bin/jboss-cli.sh patch apply hibernate-validator-modules-5.4.0.Beta1-wildfly-10.1.0.Final-patch.zip
 ```
