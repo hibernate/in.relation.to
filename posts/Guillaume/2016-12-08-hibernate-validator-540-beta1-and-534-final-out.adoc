@@ -10,10 +10,10 @@ Today, we announce the release of two Hibernate Validator versions: the first be
 
 5.4.0.Beta1 contains a lot of good things coming from the Hibernate Validator community:
 
- * lots of improvements to the annotation processor thanks to Marko Bekhta. For the last 2 months, Marko did a tremendous work getting the annotation processor up to speed: it will now report many more issues you might have with your annotations. We are especially interested in feedback on this feature so that we are sure we don't report issues for configurations that should just work. So, if you have some time, give it a try on your project and, if you see something fishy, report it to us.
+ * lots of improvements to the http://docs.jboss.org/hibernate/validator/5.4/reference/en-US/html_single/#validator-annotation-processor[annotation processor] thanks to Marko Bekhta. For the last 2 months, Marko did a tremendous work getting the annotation processor up to speed: it will now report many more issues you might have with your annotations. We are especially interested in feedback on this feature so that we are sure we don't report issues for configurations that should just work. So, if you have some time, give it a try on your project and, if you see something fishy, report it to us.
  * another contribution came in the form of the http://javamoney.github.io/[JavaMoney (JSR 354)] support, contributed by Lukas Niemeier and Willi Schönborn from Zalando. 
  * we now provide a WildFly patch based on WildFly's patching infrastructure to allow testing a new version of HV on WildFly.
- * a couple of other improvements such as cleanups backported from our 6.0 work, a Ukrainian translation, constraints annotations for the various Polish identification numbers, improvements to the `@Email` constraint...
+ * a couple of other improvements such as cleanups backported from our 6.0 work, a Ukrainian translation, constraint annotations for the various Polish identification numbers, improvements to the `@Email` constraint...
 
 You can find the complete list of all addressed issues in the https://github.com/hibernate/hibernate-validator/blob/5.4.0.Beta1/changelog.txt[change log].
 
@@ -34,7 +34,7 @@ The JavaMoney API is now an optional dependency of Hibernate Validator. So addin
 </dependency>
 ```
 
-You'll then be able to validate your `Order` bean containing a `MonetaryAmount` property with the `@DecimalMin` annotation.
+You'll then be able to validate your `Order` bean containing a `MonetaryAmount` property with the `@DecimalMin` annotation:
 
 ```java
 public class Order {
@@ -67,7 +67,8 @@ You can apply the HV 5.4.0.Beta1 update on top of WildFly 10.1.0.Final with the 
 $JBOSS_HOME/bin/jboss-cli.sh patch apply hibernate-validator-modules-5.4.0.Beta1-wildfly-10.1.0.Final-patch.zip
 ```
 
-And you can easily revert it:
+And if you want to go back to the original version, you can easily revert the update:
+
 ```
 $JBOSS_HOME/bin/jboss-cli.sh patch rollback --reset-configuration=true
 ```
@@ -80,10 +81,11 @@ Alternatively, a distribution bundle containing all the bits is provided on Sour
 
 == 5.3.4.Final
 
-Our fourth maintenance release of Hibernate Validator 5.3 comes with 2 important bugfixes for the type arguments support:
+Our fourth maintenance release of Hibernate Validator 5.3 comes with a few important bugfixes:
 
 * https://hibernate.atlassian.net/browse/HV-1165[HV-1165] - this is a regression introduced in 5.3.0.CR1 when we fixed the type arguments support for ``Map``s: we broke the support for ``Set``s. The issue is now fixed and we added a comprehensive suite of regression tests for all the existing cases.
-* https://hibernate.atlassian.net/browse/HV-1176[HV-1176] - validation of type arguments constraints on `Optional` parameters or return value of a method could be ignored if there were no other constraints applied on the method.
+* https://hibernate.atlassian.net/browse/HV-1176[HV-1176] - validation of type arguments constraints on `Optional` parameters or return value of a method could be ignored if there were no other constraints applied on the method
+* https://hibernate.atlassian.net/browse/HV-1164[HV-1164] - a bugfix related to dynamic constraint payloads contributed by Sebastian Bayerl
 
 You can find the complete list of all addressed issues in the https://github.com/hibernate/hibernate-validator/blob/5.3.4.Final/changelog.txt[change log].
 
