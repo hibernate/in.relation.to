@@ -97,6 +97,9 @@ def convert_tag(tag)
   when /Photography/i
     "Off topic"
 
+  when /Interview/i
+     "Interview"
+
   # Look for Jboss AS but skip JBoss Asylum
   when /(Jboss as[^(ylum)])|(jboss modules)|(as7)|(jboss5)/i
     "JBoss AS"
