@@ -1,0 +1,60 @@
+= Hibernate Community Newsletter 25/2016
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+Sanne Grinovero and John Griffin have worked on the https://dzone.com/refcardz/getting-started-with-hibernate[*Getting Started with Hibernate Search*] RefCard on DZone.
+Check out the PDF version which is even more detailed than the web version.
+
+If you want to customize the JOIN clause of an entity association, you can use the Hibernate `@JoinFormula` annotation,
+as explained in https://vladmihalcea.com/2016/12/06/how-to-customize-an-entity-association-join-on-clause-with-hibernate-joinformula/[this article].
+
+There are multiple ways to delete a JPA entity, as illustrated in http://www.baeldung.com/delete-with-hibernate[this article on Baeldung].
+
+Thorben Janssen wrote a http://www.thoughts-on-java.org/hibernate-envers-getting-started/[Getting Started article for Hibernate Envers]
+and another one about http://www.thoughts-on-java.org/hibernate-envers-query-data-audit-log/[querying audit log entries].
+
+Dimo Velev gives http://dimovelev.blogspot.ro/2015/02/performance-pitfalls-hibernate-criteria.html[a very detailed explanation] of why `Class.forName` can cause lock contention.
+The https://hibernate.atlassian.net/browse/HHH-4959[HHH-4959] was affecting both JPQL and Criteria API entity queries,
+and https://vladmihalcea.com/2016/12/14/the-performance-penalty-of-class-forname-when-parsing-jpql-and-criteria-queries/[the fix will be available starting from Hibernate ORM 5.2.6].
+
+If you want to use Hibernate ORM with SQL Server, then you should read http://www.sqlservercentral.com/articles/Hibernate/148907/[this article].
+There are plenty of tips related to optimal data access patterns and indexing considerations.
+
+Jakub Kubrynski explains http://www.kubrynski.com/2016/12/why-should-you-care-about-equals-and.html[why you should care about equals and hashCode],
+especially when dealing with JPA entities.
+
+[SQL injection attacks are real](https://vladmihalcea.com/2016/11/08/a-beginners-guide-to-sql-injection-and-how-you-should-prevent-it/),
+and http://blog.h3xstream.com/2014/02/hql-for-pentesters.html[HQL and JPQL queries can be vulnerable to SQL Injection] if String concatenation is being used.
+
+== Time to upgrade
+
+* http://in.relation.to/2016/12/08/hibernate-validator-540-beta1-and-534-final-out/[Hibernate Validator 5.4.0 Beta1 and 5.3.4 are out].
+
+== Questions and answers
+
+* https://www.quora.com/Is-it-necessary-to-define-Hibernate-Mappings/answer/Vlad-Mihalcea-1[Considering a given database schema, is it necessary to define JPA or Hibernate Mappings?]
+* http://stackoverflow.com/questions/1989672/create-entity-manager-without-persistence-xml/39595232#39595232[Create JPA `EntityManager` without `persistence.xml` configuration file]
+* http://stackoverflow.com/questions/31470414/orphan-removal-does-not-work-for-onetoone-relations/31471415#31471415[JPA orphan removal does not work for `@OneToOne` relations]
+* http://stackoverflow.com/questions/28223394/jpa-hibernate-several-jdbc-connections/28225646#28225646[Hibernate obtains multiple JDBC Connections from the pool during a JTA transaction]
+* http://stackoverflow.com/questions/41006337/spring-boot-and-hibernate-start-an-application-even-if-a-connection-to-the-data/41042847#41042847[Spring Boot and Hibernate: Start an application even if a connection to the database is not available]
+* http://stackoverflow.com/questions/30955910/hibernate-if-i-modify-the-object-after-doing-a-save-when-i-commit-would-the-ch/30959080#30959080[If I modify a Hibernate entity, after doing a save, when I commit would the changes be saved to the database]
+* http://stackoverflow.com/questions/26562787/hibernateexception-couldnt-obtain-transaction-synchronized-session-for-current/26640603#26640603[HibernateException: Couldn't obtain transaction-synchronized Session for current thread]
+* http://stackoverflow.com/questions/197474/jpa-and-hibernate-criteria-vs-jpql-or-hql/26825988#26825988[JPA and Hibernate - Criteria vs. JPQL or HQL]
+* http://stackoverflow.com/questions/28757257/difference-between-hibernate-jdbc-fetch-size-and-batch-fetch-strategy-batchsize/28761950#28761950[Difference between `hibernate.jdbc.fetch_size` and batch fetch strategy `@BatchSize`]
+* http://stackoverflow.com/questions/35547129/hibernate-jpa-2-1-dependency/35547527#35547527[Hibernate JPA 2.1 dependency]
+* http://stackoverflow.com/questions/21574236/org-hibernate-lazyinitializationexception-could-not-initialize-proxy-no-sess/39465150#39465150[`org.hibernate.LazyInitializationException` - could not initialize proxy - no Session]
+* http://stackoverflow.com/questions/41140102/java-repository-service-responsibilities-where-to-put-entities-dtos-when-to/41140791#41140791[Do JPA entities and DTOs belong to Service or Spring Repository layer?]
+* http://stackoverflow.com/questions/41119537/invalidating-lazy-loaded-collection-in-hibernate/41160739#41160739[How to persist a Hibernate child entity without loading the parent-side Set collection?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043852&p=2491080[`@PersistenceContext` - JTA problem?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043840&p=2491030[Hibernate 5.2.0 changed the behavior of rollback]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043844&p=2491043[Hibernate does not delete detached entities via JPA]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043857&p=2491098[Refresh causes assertion failure on OneToMany (cascaded)]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043827&p=2491008[Hibernate Events vs. Interceptors]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043828&p=2491001[`@EmbeddedId` has some nullable columns]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043836&p=2491016[`ClassNotFoundException`: `org.jboss.logging.BasicLogger`]
