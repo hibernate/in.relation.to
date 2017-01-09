@@ -1,0 +1,47 @@
+= Hibernate Search 5.5.6.Final is out
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate Search 5.5.6.Final is here!
+
+This is a maintenance release and contains exclusively https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HSEARCH%20AND%20fixVersion%20%3D%205.5.6.Final[bugfixes].
+
+== What's new?
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-2494[HSEARCH-2494]: `@TikaBridge` will now work correctly on properties of type `byte[]`.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2535[HSEARCH-2535]: `@Facet` with string encoding will now work properly on multi-valued properties (such as `String[]` or `List<String>`).
+ * https://hibernate.atlassian.net/browse/HSEARCH-2486[HSEARCH-2486]: `@ContainedIn` in a superclass will now be taken into account even if the concrete class does not carry any Hibernate Search annotation.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2479[HSEARCH-2479]: building phrase queries with the Hibernate Search DSL used to trigger an `IllegalArgumentException` in some specific cases; this has been fixed.
+ * ... and more: the full change log can be found on https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=25505[our JIRA instance].
+ 
+Thanks to Julien Bénichou, Andrew Robie and Timo Tretter for reporting issues, and even fixing one!
+
+== How to get this release
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.5.6.Final</version>
+</dependency>
+----
+====
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=9[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
