@@ -1,0 +1,75 @@
+= Meet Dmitry Alexandrov
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/bercut2000[Dmitry Alexandrov], who, not only that he's a well known Java technologist and conference speaker,
+but he's also a polyglot, speaking 6 languages (e.g. Russian, Bulgarian, Ukrainian, English, German, and French).
+
+image::DmitryAlexandrov.jpg["Dmitry Alexandrov, align="center", width="400"]
+
+. *Hi, Dmitry. Would you like to introduce yourself and tell us a little bit about your developer experience?*
++
+Hi! My name is Dmitry Aleksandrov and currently for more than a year I'm a Principal expert developer and architect at T-Systems.
+I've got 10 years experience mainly in Java EE/Spring stack.
++
+Most of my time I was dealing with big enterprise projects in banking, insurance, and telecoms.
+Along with four other awesome guys, I'm a co-lead in the https://jug.bg/en/[Bulgarian Java User Group] and http://jprime.io/[jPrime] conference co-organizer.
+
+. *You have recently published an article about a major performance optimization you underwent in one enterprise project.
+   Can you tell us what are the most common performance issues in enterprise systems?*
++
+Surprisingly, or actually not so much surprisingly, the most of the optimizations in enterprise projects are made on the persistence layer.
+The way the data is stored and accessed is essential as the most of the latency may come out of there.
++
+The other source of latency may be the remote calls, but the only way gain performance there is to reduce their quantity and upgrade the hardware architecture.
+As for the persistence much more can be done in this field.
+It is essential to really pay attention to what is taken out the DB and what is shown to the user.
+Heavy CPU processing is rarely seen, at least from my experience.
++
+So. it is really important to invest time in a good design of the persistence layer.
+ORMs are doing really great job, and the automation they have brought saves tremendous efforts, time and money.
+But at the same time, the users of the ORMs are a little bit spoiled of the _magic_ they bring.
++
+The developers and architects tend to design the object model as the primary source of data and the DB schemas as a product of the model and heavily rely on the ORM to manage this.
+This quite often leads to very suboptimal data representation in the RDBMS thus performance issues, since the mathematics in Relational Databases are much different from those of the programming language objects.
+And those mistakes are often very hard and expensive to fix, as DB schemas are extremely hard to change especially when they are in production already.
++
+And the ORM, although it is an extremely smart tool nowadays, is still not an AI (yet).
+So to deal with those problems, I believe that every enterprise or full stack developer should invest more time in educating in Databases and the way their programming language interacts with them.
+A good persistence layer design may solve the most of the performance issues or even fully prevent them from happening.
+
+. *Hibernate offers many optimizations that aim to increase application performance. Has Hibernate met your goals in the projects you've been involved with?*
++
+Yes, definitely. Although we try to use as much standard JPA as possible, on our final customer deployments we also do Hibernate specific optimizations, like pre-build code instrumentation if we use Hibernate version 5.
+In one of my previous project we have used some second-level caching, and Hibernate integrated almost seamlessly.
+
+. *You are a Java EE aficionado and international speaker.
+   How to you see the future of Java EE and JPA in the context of cloud computing and Microservices architectures?*
++
+Java EE is a subject of many discussions recently. Quite a lot of even fatal prognoses were made, but I personally believe Java EE will still be there and make big progress.
+There is a huge аmount of companies and enterprises that build their business with Java EE technologies, and they won't disappear soon since EE is a proven standard.
++
+Actually, this is the main advantage of Java EE – it is a standard. It means it is guaranteed, a reliable and tested set of functionalities that have the same behavior and results on all supported platforms.
+And a standard is not something that is just assigned, standards are established based on what's the best and most valuable in current technology at the moment.
+And the establishment of these technologies the most often comes from the community.
++
+A good example of community effort is exactly the http://microprofile.io/[Microprofile] initiative, which is driven by Independent Java EE Server vendors.
+As Microservices are now very popular, the activists try to create a really common solution for the best utilization of this architecture on Java EE.
++
+Although there are some controversies about what should this profile include, there is a starting point.
+The discussion is open, and everybody is welcome to contribute. Actually, it is very curious to see how a standard is being born! The guys are doing a great job!
+Another example is the Java EE Guardians who are doing great input in all aspects of the Java EE evolution!
++
+As for the cloud, Oracle has made some promises that they will put more efforts in a better Java EE cloud integration.
+But as for now in our environments, we have a mixture of PaaS and IaaS solutions.
+Like some of the servers are Dockerized or packed as executable jars and running somewhere in the cloud, and the databases are provided like services.
+But there we have some issues with the latency.
+
+. *We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?*
++
+I am now waiting for the full support of the Entity Graph functionality.
+I personally believe that's a very handy way to have a good fine control over what you fetch and can give some really good performance improvements, especially on systems which are in production already.
+
+*Thank you, Dmitry, for taking your time. It is a great honor to have you here. To reach Dmitry, you can follow him on https://twitter.com/bercut2000[Twitter].*
