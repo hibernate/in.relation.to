@@ -1,0 +1,68 @@
+= Hibernate Community Newsletter 1/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Interviews
+
+Don't miss our Hibernate developer interview with http://in.relation.to/2017/01/16/meet-dmitry-alexandrov/[Dmitry Alexandrov].
+
+If you want to share your story about Hibernate, let us know, and we can share it with our huge community of passionate developers.
+
+== Articles
+
+I was told about a new blog post which proclaims that http://letstalkaboutjava.blogspot.ro/2017/01/lazy-loading-is-code-smell.html[Lazy loading is a code smell].
+Well, in my experience, this is exactly the opposite since I'm a strong believer that https://vladmihalcea.com/2014/12/15/eager-fetching-is-a-code-smell/[EAGER fetching]
+is almost always a bad way of fetching data.
+After reading Sebastian Malaca's article, I managed to find http://scabl.blogspot.ro/p/advancing-enterprise-ddd.html[a very interesting series of article on mixing JPA and DDD (Domain-driven design)].
+
+DDD is a great approach. However, trying to treat a relational database as if it were a document store can be very detrimental to application performance.
+All in all, JPA entities are not the same as DDD entities. In fact, JPA entities are just the persistent state of the Domain Model.
+
+Orlando L Otero wrote a tutorial about http://tech.asimio.net/2017/01/17/Multitenant-applications-using-Spring-Boot-JPA-Hibernate-and-Postgres.html[implementing a Multitenant architecture on top of Spring, Hibernate, and PostgreSQL].
+Related to Multitenancy, I found https://msdn.microsoft.com/en-us/library/aa479086.aspx#mlttntda_tvf[this Microsoft article from 2006] very relevant to the day.
+
+Choosing the right entity identifier strategy requires some knowledge of the underlying JPA provider.
+For this reason, if you want portability, check out how you can
+https://vladmihalcea.com/2017/01/17/how-to-replace-the-table-identifier-generator-with-either-sequence-or-identity-in-a-portable-way/[replace the suboptimal `TABLE` strategy with `SEQUENCE` or `IDENTITY`].
+
+Mike Rocke wrote a http://www.mikerocke.co.uk/2017/01/review-of-high-performance-java.html[very nice review of the High-Performance Java Persistence book].
+
+Thorben Janssen wrote a short guide which introduces several http://www.thoughts-on-java.org/jpql/[JPQL query features].
+For more on this topic, check out the exhaustive http://docs.jboss.org/hibernate/orm/5.2/userguide/html_single/Hibernate_User_Guide.html#hql[JPQL and HQL chapter in the Hibernate 5 User Guide].
+
+Gregg Bolinger offers a very nice solution to http://www.greggbolinger.com/truncate-all-tables-in-spring-boot-jpa-app/[truncating all tables when running integration tests with Spring Boot and Hibernate].
+
+Hibernate entity queries are suitable when you want to modify the fetched entities, and taking advantage of the https://vladmihalcea.com/2014/08/21/the-anatomy-of-hibernate-dirty-checking/[dirty checking mechanism].
+However, if you want to take advantage of advanced SQL query capabilities, you need native SQL queries.
+Check out this article to learn why https://vladmihalcea.com/2017/01/18/the-jpa-entitymanager-createnativequery-is-a-magic-wand/[native SQL queries are a Magic Wand].
+
+== Time to upgrade
+
+* Hibernate ORM http://in.relation.to/2017/01/19/hibernate-orm-527-final-release/[5.2.7], as well as http://in.relation.to/2017/01/19/hibernate-orm-5012-final-and-514-final-release/[5.1.4 and 5.0.12] have been released.
+* Hibernate Validator http://in.relation.to/2017/01/12/hibernate-validator-540-cr1-final-out/[5.4.0 CR1] is out.
+
+== Questions and answers
+
+* https://www.quora.com/How-do-I-learn-Hibernate-ORM/answer/Vlad-Mihalcea-1[How do I learn Hibernate ORM?]
+* https://www.quora.com/Shall-I-learn-springs-without-learning-hibernate/answer/Vlad-Mihalcea-1[Shall I learn Spring framework without learning Hibernate?]
+* https://www.quora.com/How-do-I-make-hibernate-session-thread-safe/answer/Vlad-Mihalcea-1[How do I make the Hibernate Session thread safe?]
+* https://www.quora.com/When-do-you-decide-that-it-is-time-to-create-DataBase-View/answer/Vlad-Mihalcea-1[https://www.quora.com/When-do-you-decide-that-it-is-time-to-create-database-View]
+* http://stackoverflow.com/questions/23862994/what-is-the-difference-between-hibernate-and-spring-data-jpa/23863416#23863416[What is the difference between Hibernate and Spring Data JPA?]
+* http://stackoverflow.com/questions/6000336/how-to-debug-lock-wait-timeout-exceeded/23799980#23799980[How to debug Lock wait timeout exceeded on MySQL?]
+* http://stackoverflow.com/questions/4524841/how-can-we-call-a-stored-procedure-with-hibernate/41507047#41507047[How can we call a stored procedure with Hibernate and JPA?]
+* http://stackoverflow.com/questions/41733699/using-hibernate-2nd-level-cache-and-multitenancy/41735629#41735629[Using Hibernate 2nd Level Cache and Multitenancy]
+* http://stackoverflow.com/questions/15677203/how-to-make-this-select-from-two-joined-tables-query-in-hql-form/35367623#35367623[How to make this `SELECT * FROM` 2 joined tables query in HQL?]
+* http://stackoverflow.com/questions/30163484/hibernate-creating-indexes-using-hibernate-for-postgresql/30167969#30167969[How to create indexes using Hibernate for PostgreSQL?]
+* http://stackoverflow.com/questions/41763078/spring-data-rest-jpa-remove-from-onetomany-collection-not-owner-side/41763464#41763464[Spring Data REST + JPA remove from OneToMany collection [not owner side]]
+* http://stackoverflow.com/questions/40286906/jpa-hibernate-cascade-delete-onetomany-nothing-works/41778482#41778482[JPA/Hibernate Cascade DELETE OneToMany - Nothing Works]
+* http://stackoverflow.com/questions/20349227/how-to-call-a-stored-procedure-from-hibernate-having-both-in-and-out-parameters/40419296#40419296[How to call a Stored Procedure from Hibernate having both IN and OUT parameters?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043929[How to speed up a slow parameterized query with Hibernate?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043920[How to lazy load fields with Hibernate?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043905[QueryCache is not working when record is not available in the Database]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043918[How to fetch lazy collections along with the child PK?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043925[Removing entity from a `@ManyToMany` bidirectional association]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043926[HQL query over a Period using PostgresDB]
