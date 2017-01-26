@@ -1,0 +1,111 @@
+= Hibernate Search with Elasticsearch - the 5.6.0.Final release is here!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+After a relatively quiet candidate release, we just published Hibernate Search version 5.6.0.Final with experimental
+Elasticsearch integration, along with 5.7.0.CR1.
+
+Version 5.6.0.Final brings the https://hibernate.atlassian.net/issues/?jql=fixVersion%20%3D%205.6.0.Final[latest bugfixes]
+for our experimental Elasticsearch integration. This is the version to use with Hibernate ORM versions 5.0 and 5.1.
+
+Version 5.7.0.CR1 brings the exact same changes as 5.6.0.Final, and now features the compatibility with Hibernate ORM
+version 5.2.7 (but not lower 5.2.x, see more on this further down).
+
+== What's new on 5.6 since the candidate release?
+
+Below are the main changes since the candidate release.
+
+For a full list of changes since 5.6.0.CR1, please see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version=26400&projectId=10061[the release notes].
+For a full list of changes since 5.5, please see https://hibernate.atlassian.net/issues/?jql=fixVersion%20in%20(5.6.0.Alpha1%2C%205.6.0.Alpha2%2C%205.6.0.Alpha3%2C%205.6.0.Beta1%2C%205.6.0.Beta2%2C%205.6.0.Beta3%2C%205.6.0.Beta4%2C%205.6.0.CR1%2C%205.6.0.Final)[this list of tickets on our JIRA instance].
+
+=== Common changes
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-2547[HSEARCH-2547]: nesting an `@IndexedEmbedded` with `includePaths`
+ within an `@IndexedEmbedded` without an `includePaths` will now work properly.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2535[HSEARCH-2535]: `@Facet` with string encoding will now work properly
+ on multi-valued properties (such as `String[]` or `List<String>`).
+ 
+=== Elasticsearch-specific changes
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-2501[HSEARCH-2501]: the handling of `@CalendarBridge.resolution` with
+ Elasticsearch was aligned on the one with Lucene: they are now consistent.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2531[HSEARCH-2531]: with Elasticsearch, index names can now be
+overridden using configuration properties, just like when using Lucene.
+   Thanks to Cary Yu for reporting the issue!
+ * https://hibernate.atlassian.net/browse/HSEARCH-2519[HSEARCH-2519] and https://hibernate.atlassian.net/browse/HSEARCH-2520[HSEARCH-2520]:
+ the Elasticsearch `VALIDATE` and `MERGE` index management strategies now handle analyzer definitions.
+This will only affect you if you were using `@AnalyzerDef`-defined analyzers on entities that are indexed in 
+Elasticsearch. If you are, please be aware that the `MERGE` strategy may now close/reopen your index automatically during
+bootstrap! See https://docs.jboss.org/hibernate/search/5.6/reference/en-US/html_single/#__anchor_xml_id_elasticsearch_integration_configuration_xreflabel_elasticsearch_integration_configuration_configuration[the reference documentation] for more information about the `MERGE` strategy.
+
+== What's new on 5.7?
+
+The main change in 5.7.0.CR1 since 5.7.0.Beta2 is the upgrade to Hibernate ORM 5.2.7. For a full list of changes, see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version=27200&projectId=10061[the release notes].
+
+Please note that Hibernate Search 5.7 now requires Hibernate ORM 5.2.7 onwards,
+and cannot be used with previous Hibernate ORM versions.
+
+== When will 5.7 be released?
+
+5.7 is beginning its candidate release period, meaning that as far as we are concerned, it is already ready.
+We are giving a last chance for the community to report bugs, and unless we are delayed by major bugs,
+the actual 5.7.0.Final release should happen in mid-February.
+
+== How to get these releases
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.6.0.Final</version>
+</dependency>
+----
+====
+
+Or, for Hibernate Search 5.7:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.7.0.CR1</version>
+</dependency>
+----
+====
+
+To use the experimental Elasticsearch integration you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch</artifactId>
+   <version>5.6.0.Final</version>
+</dependency>
+----
+====
+
+Change the version to `5.7.0.CR1` in order to test the Hibernate ORM 5.2 integration.
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=9[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
