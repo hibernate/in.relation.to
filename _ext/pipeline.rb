@@ -21,6 +21,7 @@ require 'paginator'
 require 'posts'
 require 'date'
 require 'i18n'
+require 'json_feed_generator'
 
 # custom extensions
 require 'legacy_post_code_highlighter'
@@ -97,6 +98,8 @@ Awestruct::Extensions::Pipeline.new do
                                                    :template=>File.join(File.dirname(__FILE__), '../_templates/template.atom.haml'),
                                                    :feed_title=>'In Relation To Blog')
   end
+
+  extension InRelationTo::Extensions::JsonFeedGenerator.new( :posts, 'feeds', [ 'Hibernate ORM', 'Hibernate Search', 'Hibernate Validator', 'Hibernate OGM', 'JBoss Tools' ], 5)
 
   extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>10, :per_page_init=>10 )
   extension InRelationTo::Extensions::PaginationLinkRenderer.new()
