@@ -1,0 +1,227 @@
+= "Tool Time: Preventing leaky APIs with jQAssistant"
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+If you've ever watched the great show "Home Improvement", you'll know that a https://en.wikipedia.org/wiki/List_of_Home_Improvement_characters#Tim_Taylor[fool with a tool] is still a fool.
+At the same time though, the right tool used in the right way can be very effective for solving complex issues.
+
+In this post I'd like to introduce a tool called https://jqassistant.org/[jQAssistant] which I've found very useful for running all sorts of analyses of a project's code base,
+e.g. for preventing the leakage of internal types in the public API of a library.
+This is planned to be the first post in a blog series on developer-centric tools we've come to value when working on the different libraries of the Hibernate family.
+
+== Keeping your API clean
+
+When providing a library it is an established best practice to clearly distinguish between those parts of the code base intended to be accessed by users (the API of the library) and those parts not meant for outside access.
+
+Having a clearly defined API helps to reduce complexity for the user
+(they only need to learn and understand the API classes but not all the implementation details),
+while giving the library authors freedom to refactor and alter implementation classes as they deem it necessary.
+Usually, the separation of API and implementation types is achieved by using specific package names, with all the non-public parts being located under a package named `internal`, `impl` or similar.
+
+One thing you have to be very careful about though is to not leak any internal types in the API.
+E.g. a method definition like the following is something which should be avoided:
+
+[source,java]
+----
+package com.example;
+
+import com.example.internal.Foo;
+
+public interface MyPublicService {
+
+    Foo doFoo();
+}
+----
+
+`MyPublicService` is part of the public API (as it is not part of an `internal` package),
+but the `doFoo()` method returns the internal type `Foo`.
+Users of `doFoo()` thus would have to deal with an implementation type, which is exactly what you wanted to prevent when splitting the API and implementation parts of the library.
+
+Unfortunately, inconsistent APIs like this are defined easily if one isn't very careful.
+This is where tooling is helpful: by searching for such malformed APIs in an automated way,
+they can be spotted early on and be avoided.
+
+== Introducing jQAssistant
+
+https://jqassistant.org/[jQAssistant] is an open-source tool allowing you to do exactly that.
+It parses a project's code base and creates a model of all the classes, methods, fields etc. in a https://neo4j.com/[Neo4j graph database].
+Using Neo4j's powerful https://neo4j.com/developer/cypher-query-language/[Cypher] query language, you then can execute queries to detect specific patterns and structures in your code base you are interested in.
+
+Setting up jQAssistant for your project is fairly simple.
+Assuming you are working with Maven, all that's needed is the following plug-in configuration in your _pom.xml_
+(refer to the http://buschmais.github.io/jqassistant/doc/1.2.0/#_maven[official documentation] for further details and configuration options):
+
+[source,xml]
+._pom.xml_
+----
+...
+<build>
+    <plugins>
+        <plugin>
+            <groupId>com.buschmais.jqassistant.scm</groupId>
+            <artifactId>jqassistant-maven-plugin</artifactId>
+            <version>1.1.4</version>
+            <executions>
+                <execution>
+                    <goals>
+                        <goal>scan</goal>
+                        <goal>analyze</goal>
+                    </goals>
+                    <configuration>
+                        <failOnViolations>true</failOnViolations>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+...
+----
+
+With the plug-in in place, we can define a Cypher query which finds any API method with an internal return type:
+
+[source,xml]
+._jqassistant/rules.xml_
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jqa:jqassistant-rules xmlns:jqa="http://www.buschmais.com/jqassistant/core/analysis/rules/schema/v1.0">
+
+    <constraint id="my-rules:PublicMethodsMayNotExposeInternalTypes">
+        <description>API/SPI methods must not expose internal types.</description>
+        <cypher><![CDATA[
+            MATCH
+                (class)-[:`DECLARES`]->(method)-[:`RETURNS`]->(returntype)
+            WHERE
+                NOT class.fqn =~ ".*\\.internal\\..*"
+                AND (method.visibility="public" OR method.visibility="protected")
+                AND returntype.fqn =~ ".*\\.internal\\..*"
+            RETURN
+                method
+        ]]></cypher>
+    </constraint>
+
+    <group id="default">
+        <includeConstraint refId="my-rules:PublicMethodsMayNotExposeInternalTypes" />
+    </group>
+
+</jqa:jqassistant-rules>
+----
+
+jQAssistant rules are given in a file named _jqassistant/rules.xml_ by default.
+
+The rules themselves are defined using the Cypher query language.
+If you haven't used Cypher before, it may feel a bit uncommon at first,
+but from my own experience I can tell you that one gets the hang of it pretty quickly.
+Essentially, you describe patterns of graph nodes, their properties, their type (as expressed via "labels", a kind of tag) and their relationships.
+
+In the query above, we use a pattern including three nodes ("class", "method" and "returntype") and two relationships.
+There must be a relationship of type "DECLARES" from the "class" node to the "method" node
+and another relationship of type "RETURNS" from the "method" to the "returntype" node.
+
+As we are only interested in methods leaking internal types through the API,
+the `WHERE` clause is used to further refine the selection:
+
+* The declaring class must be part of the API (it must not be in an `internal` package, as expressed by filtering on the fully-qualified class name),
+* the method must either have public or protected visibility and
+* the return type must be located in an `internal`.
+
+To execute the rule, simply build the project with the jQAssistant Maven plug-in configured as above.
+The plug-in will automatically execute all rules of the default group given in the rules file.
+If there is any result for any of the executed rules, the build will fail, displaying the result(s) of the affected rules:
+
+[source]
+----
+[INFO] --- jqassistant-maven-plugin:1.1.4:analyze (default) @ hibernate-validator ---
+...
+[ERROR] --[ Constraint Violation ]-----------------------------------------
+[ERROR] Constraint: my-rules:PublicMethodsMayNotExposeInternalTypes
+[ERROR] Severity: INFO
+[ERROR] API/SPI methods must not expose internal types.
+[ERROR]   method=com.example.MyPublicService#com.example.internal.Foo doFoo()
+[ERROR] -------------------------------------------------------------------
+...
+[INFO] BUILD FAILURE
+----
+
+API methods should only return API types, but they also should only take API types as parameters.
+Let's expand the Cypher query to cover this case, too:
+
+[source,xml]
+._jqassistant/rules.xml_
+----
+...
+<constraint id="my-rules:PublicMethodsMayNotExposeInternalTypes">
+    <description>API/SPI methods must not expose internal types.</description>
+    <cypher><![CDATA[
+      // return values
+      MATCH
+          (class)-[:`DECLARES`]->(method)-[:`RETURNS`]->(returntype)
+      WHERE
+          NOT class.fqn =~ ".*\\.internal\\..*"
+          AND (method.visibility="public" OR method.visibility="protected")
+          AND returntype.fqn =~ ".*\\.internal\\..*"
+      RETURN
+          method
+
+      // parameters
+      UNION ALL
+      MATCH
+          (class)-[:`DECLARES`]->(method)-[:`HAS`]->(parameter)-[:`OF_TYPE`]->(parametertype)
+      WHERE
+          NOT class.fqn =~ ".*\\.internal\\..*"
+          AND (method.visibility="public" OR method.visibility="protected")
+          AND parametertype.fqn =~ ".*\\.internal\\..*"
+      RETURN
+          method
+    ]]></cypher>
+</constraint>
+...
+----
+
+Similar to SQL we can add further results using the `UNION ALL` clause.
+Searching for leaking parameters is done in a similar way as for return values,
+the only difference is the node pattern we need to detect: there must be a node (the class)
+with a `DECLARES` relationship to another node (the method) which has a relationship of type `HAS` to a third node (the parameter) which finally has a `OF_TYPE` relationship to a fourth node representing the parameter's type.
+The same rules for package names and the method's visibility apply as for the return value check.
+
+== Browsing the model of your project
+
+When declaring rules as the one above, it is vital to know the meta-model of your project's graph representation,
+e.g. which types of nodes there are (i.e. which labels they have), what types of relationships there are, which properties the nodes have and so on.
+This is described in great depth in the jQAssistant http://buschmais.github.io/jqassistant/doc/1.2.0/#_java_plugin[reference documentation].
+
+But as jQAssistant is based on Neo4j, you also can use the browser app coming with the database for interactively exploring your project's structure.
+To do so, simply run the following command:
+
+[source]
+----
+mvn jqassistant:scan jqassistant:server
+----
+
+This will populate jQAssistant's embedded Neo4j database with your project's structure and start a Neo4j server.
+In a browser, go to http://localhost:7474/browser/ and you can explore the project code base, run Cypher queries etc.
+Start by selecting a node label or relationship type on the left or by submitting a Cypher query:
+
+image::jqassistant-browser.png["Browsing a jQAssistant model in Neo4j, align="center", width="800"]
+
+== Trying it out yourself
+
+You can find a complete example of using jQAssistant in a Maven project https://github.com/gunnarmorling/jqassistant-demo[here on GitHub].
+You also may take a look at the https://github.com/hibernate/hibernate-validator/blob/master/jqassistant/rules.xml[rules file] used by Hibernate Validator.
+Besides the check for methods exposing internal types this file defines some more rules:
+
+* public fields in API types must not expose implementation types
+* API types must not extend implementation types
+
+These checks run regularly on our CI server, preventing the accidental introduction of leaky APIs very effectively.
+
+Creating a model of a software project in a graph database is a great idea.
+The powerful Cypher query language allows to search for interesting structures and patterns in your project in a rather intuitive way.
+The detection of leaky APIs is just one example.
+For instance you may define a layered architecture of your business application and ensure that there are no illegal dependencies between the application layers.
+
+Also jQAssistant is not limited to Java classes.
+Besides the Java plug-in the tool provides many other scanners,
+e.g. for http://buschmais.github.io/jqassistant/doc/1.2.0/#_maven_3_plugin[Maven POM files], http://buschmais.github.io/jqassistant/doc/1.2.0/#_jpa_2_plugin[JPA persistence units] or http://buschmais.github.io/jqassistant/doc/1.2.0/#_xml_plugin[XML files], allowing you to run all kinds of analyses tailored to the specific needs of your project.
