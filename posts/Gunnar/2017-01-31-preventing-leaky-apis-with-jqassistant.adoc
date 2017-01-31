@@ -47,7 +47,8 @@ they can be spotted early on and be avoided.
 
 https://jqassistant.org/[jQAssistant] is an open-source tool allowing you to do exactly that.
 It parses a project's code base and creates a model of all the classes, methods, fields etc. in a https://neo4j.com/[Neo4j graph database].
-Using Neo4j's powerful https://neo4j.com/developer/cypher-query-language/[Cypher] query language, you then can execute queries to detect specific patterns and structures in your code base you are interested in.
+Using Neo4j's powerful https://neo4j.com/developer/cypher-query-language/[Cypher] query language,
+you then can execute queries to detect specific patterns and structures in your code base which you are interested in.
 
 Setting up jQAssistant for your project is fairly simple.
 Assuming you are working with Maven, all that's needed is the following plug-in configuration in your _pom.xml_
@@ -125,7 +126,7 @@ the `WHERE` clause is used to further refine the selection:
 
 * The declaring class must be part of the API (it must not be in an `internal` package, as expressed by filtering on the fully-qualified class name),
 * the method must either have public or protected visibility and
-* the return type must be located in an `internal`.
+* the return type must be located in an `internal` package.
 
 To execute the rule, simply build the project with the jQAssistant Maven plug-in configured as above.
 The plug-in will automatically execute all rules of the default group given in the rules file.
@@ -133,7 +134,7 @@ If there is any result for any of the executed rules, the build will fail, displ
 
 [source]
 ----
-[INFO] --- jqassistant-maven-plugin:1.1.4:analyze (default) @ hibernate-validator ---
+[INFO] --- jqassistant-maven-plugin:1.1.4:analyze (default) @ jqassistant-demo ---
 ...
 [ERROR] --[ Constraint Violation ]-----------------------------------------
 [ERROR] Constraint: my-rules:PublicMethodsMayNotExposeInternalTypes
