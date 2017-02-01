@@ -1,0 +1,492 @@
+= Bulk-id strategies when you can't use temporary tables
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+This article is about the https://hibernate.atlassian.net/browse/HHH-11262[HHH-11262] JIRA issue which now allows the bulk-id
+strategies to work even when you cannot create temporary tables.
+
+== Class diagram
+
+Considering we have the following entities:
+
+image::NonTempTableEntityClassDiagram.png["Class diagram, align="center", width="400"]
+
+The `Person` entity is the base class of this entity inheritance model, and is mapped as follows:
+
+[source,java]
+----
+Entity(name = "Person")
+@Inheritance(
+    strategy = InheritanceType.JOINED
+)
+public class Person
+    implements Serializable {
+
+    @Id
+    private Integer id;
+
+    @Id
+    private String companyName;
+
+    private String name;
+
+    private boolean employed;
+
+    //Getters and setters omitted for brevity
+
+    @Override
+    public boolean equals(Object o) {
+        if ( this == o ) {
+            return true;
+        }
+        if ( !( o instanceof Person ) ) {
+            return false;
+        }
+        Person person = (Person) o;
+        return Objects.equals(
+            getId(),
+            person.getId()
+        ) &&
+        Objects.equals(
+            getCompanyName(),
+            person.getCompanyName()
+        );
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+            getId(), getCompanyName()
+        );
+    }
+}
+----
+
+Both the `Doctor` and `Engineer` entity classes extend the `Person` base class:
+
+[source,java]
+----
+@Entity(name = "Doctor")
+public class Doctor
+    extends Person {
+}
+
+@Entity(name = "Engineer")
+public class Engineer
+    extends Person {
+
+    private boolean fellow;
+
+    //Getters and setters omitted for brevity
+}
+----
+
+== Inheritance tree bulk processing
+
+Now, when you try to execute a bulk entity query:
+
+[source,java]
+----
+int updateCount = session.createQuery(
+    "delete from Person where employed = :employed" )
+.setParameter( "employed", false )
+.executeUpdate();
+----
+
+Hibernate executes the following statements:
+
+[source,sql]
+----
+create temporary table
+    HT_Person
+(
+    id int4 not null,
+    companyName varchar(255) not null
+)
+
+insert
+into
+    HT_Person
+    select
+        p.id as id,
+        p.companyName as companyName
+    from
+        Person p
+    where
+        p.employed = ?
+
+delete
+from
+    Engineer
+where
+    (
+        id, companyName
+    ) IN (
+        select
+            id,
+            companyName
+        from
+            HT_Person
+    )
+
+delete
+from
+    Doctor
+where
+    (
+        id, companyName
+    ) IN (
+        select
+            id,
+            companyName
+        from
+            HT_Person
+    )
+
+delete
+from
+    Person
+where
+    (
+        id, companyName
+    ) IN (
+        select
+            id,
+            companyName
+        from
+            HT_Person
+    )
+----
+
+`HT_Person` is a temporary table that Hibernate creates to hold all the entity identifiers that are to be updated or deleted by the bulk id operation.
+The temporary table can be either global or local, depending on the underlying database capabilities.
+
+== What if you cannot create a temporary table?
+
+As the https://hibernate.atlassian.net/browse/HHH-11262[HHH-11262] issue describes, there are use cases when the application developer cannot use temporary tables because
+the database user lacks this privilege.
+
+In this case, we defined several options which you can choose depending on your database capabilities:
+
+- `InlineIdsInClauseBulkIdStrategy`
+- `InlineIdsSubSelectValueListBulkIdStrategy`
+- `InlineIdsOrClauseBulkIdStrategy`
+- `CteValuesListBulkIdStrategy`
+
+=== `InlineIdsInClauseBulkIdStrategy`
+
+To use this strategy, you need to configure the following configuration property:
+
+[source,xml]
+----
+<property name="hibernate.hql.bulk_id_strategy"
+          value="org.hibernate.hql.spi.id.inline.InlineIdsInClauseBulkIdStrategy"
+/>
+----
+
+Now, when running the previous test case, Hibernate generates the following SQL statements:
+
+[source,sql]
+----
+select
+    p.id as id,
+    p.companyName as companyName
+from
+    Person p
+where
+    p.employed = ?
+
+delete
+from
+    Engineer
+where
+        ( id, companyName )
+    in (
+        ( 1,'Red Hat USA' ),
+        ( 3,'Red Hat USA' ),
+        ( 1,'Red Hat Europe' ),
+        ( 3,'Red Hat Europe' )
+    )
+
+delete
+from
+    Doctor
+where
+        ( id, companyName )
+    in (
+        ( 1,'Red Hat USA' ),
+        ( 3,'Red Hat USA' ),
+        ( 1,'Red Hat Europe' ),
+        ( 3,'Red Hat Europe' )
+    )
+
+delete
+from
+    Person
+where
+        ( id, companyName )
+    in (
+        ( 1,'Red Hat USA' ),
+        ( 3,'Red Hat USA' ),
+        ( 1,'Red Hat Europe' ),
+        ( 3,'Red Hat Europe' )
+    )
+----
+
+So, the entity identifiers are selected first and used for each particular update or delete statement.
+
+[TIP]
+====
+The IN clause row value expression has long been supported by Oracle, PostgreSQL, and nowadays by MySQL 5.7.
+However, SQL Server 2014 does not support this syntax, so you'll have to use a different strategy.
+====
+
+=== `InlineIdsSubSelectValueListBulkIdStrategy`
+
+To use this strategy, you need to configure the following configuration property:
+
+[source,xml]
+----
+<property name="hibernate.hql.bulk_id_strategy"
+          value="org.hibernate.hql.spi.id.inline.InlineIdsSubSelectValueListBulkIdStrategy"
+/>
+----
+
+Now, when running the previous test case, Hibernate generates the following SQL statements:
+
+[source,sql]
+----
+select
+    p.id as id,
+    p.companyName as companyName
+from
+    Person p
+where
+    p.employed = ?
+
+delete
+from
+    Engineer
+where
+    ( id, companyName ) in (
+        select
+            id,
+            companyName
+        from (
+        values
+            ( 1,'Red Hat USA' ),
+            ( 3,'Red Hat USA' ),
+            ( 1,'Red Hat Europe' ),
+            ( 3,'Red Hat Europe' )
+        ) as HT
+            (id, companyName)
+    )
+
+delete
+from
+    Doctor
+where
+    ( id, companyName ) in (
+         select
+            id,
+            companyName
+        from (
+        values
+            ( 1,'Red Hat USA' ),
+            ( 3,'Red Hat USA' ),
+            ( 1,'Red Hat Europe' ),
+            ( 3,'Red Hat Europe' )
+        ) as HT
+            (id, companyName)
+    )
+
+delete
+from
+    Person
+where
+    ( id, companyName ) in (
+        select
+            id,
+            companyName
+        from (
+        values
+            ( 1,'Red Hat USA' ),
+            ( 3,'Red Hat USA' ),
+            ( 1,'Red Hat Europe' ),
+            ( 3,'Red Hat Europe' )
+        ) as HT
+            (id, companyName)
+    )
+----
+
+[TIP]
+====
+The underlying database must support the VALUES list clause, like PostgreSQL or SQL Server 2008.
+However, this strategy requires the IN-clause row value expression for composite identifiers so you can use this strategy only with PostgreSQL.
+====
+
+=== `InlineIdsOrClauseBulkIdStrategy`
+
+To use this strategy, you need to configure the following configuration property:
+
+[source,xml]
+----
+<property name="hibernate.hql.bulk_id_strategy"
+          value="org.hibernate.hql.spi.id.inline.InlineIdsOrClauseBulkIdStrategy"
+/>
+----
+
+Now, when running the previous test case, Hibernate generates the following SQL statements:
+
+[source,sql]
+----
+select
+    p.id as id,
+    p.companyName as companyName
+from
+    Person p
+where
+    p.employed = ?
+
+delete
+from
+    Engineer
+where
+    ( id = 1 and companyName = 'Red Hat USA' )
+or  ( id = 3 and companyName = 'Red Hat USA' )
+or  ( id = 1 and companyName = 'Red Hat Europe' )
+or  ( id = 3 and companyName = 'Red Hat Europe' )
+
+delete
+from
+    Doctor
+where
+    ( id = 1 and companyName = 'Red Hat USA' )
+or  ( id = 3 and companyName = 'Red Hat USA' )
+or  ( id = 1 and companyName = 'Red Hat Europe' )
+or  ( id = 3 and companyName = 'Red Hat Europe' )
+
+delete
+from
+    Person
+where
+    ( id = 1 and companyName = 'Red Hat USA' )
+or  ( id = 3 and companyName = 'Red Hat USA' )
+or  ( id = 1 and companyName = 'Red Hat Europe' )
+or  ( id = 3 and companyName = 'Red Hat Europe' )
+----
+
+[TIP]
+====
+This strategy has the advantage of being supported by all the major relational database systems (e.g. Oracle, SQL Server, MySQL, and PostgreSQL).
+====
+
+=== `CteValuesListBulkIdStrategy`
+
+To use this strategy, you need to configure the following configuration property:
+
+[source,xml]
+----
+<property name="hibernate.hql.bulk_id_strategy"
+          value="org.hibernate.hql.spi.id.inline.CteValuesListBulkIdStrategy"
+/>
+----
+
+Now, when running the previous test case, Hibernate generates the following SQL statements:
+
+[source,sql]
+----
+select
+    p.id as id,
+    p.companyName as companyName
+from
+    Person p
+where
+    p.employed = ?
+
+with HT_Person (id,companyName ) as (
+    select id, companyName
+    from (
+    values
+        (?, ?),
+        (?, ?),
+        (?, ?),
+        (?, ?)
+    ) as HT (id, companyName) )
+delete
+from
+    Engineer
+where
+    ( id, companyName ) in (
+        select
+            id, companyName
+        from
+            HT_Person
+    )
+
+with HT_Person (id,companyName ) as (
+    select id, companyName
+    from (
+    values
+        (?, ?),
+        (?, ?),
+        (?, ?),
+        (?, ?)
+    ) as HT (id, companyName) )
+delete
+from
+    Doctor
+where
+    ( id, companyName ) in (
+        select
+            id, companyName
+        from
+            HT_Person
+    )
+
+
+with HT_Person (id,companyName ) as (
+    select id, companyName
+    from (
+    values
+        (?, ?),
+        (?, ?),
+        (?, ?),
+        (?, ?)
+    ) as HT (id, companyName) )
+delete
+from
+    Person
+where
+    ( id, companyName ) in (
+        select
+            id, companyName
+        from
+            HT_Person
+    )
+----
+
+[TIP]
+====
+The underlying database must support the CTE (Common Table Expressions) that can be referenced from non-query statements as well, like PostgreSQL since 9.1 or SQL Server since 2005.
+The underlying database must also support the VALUES list clause, like PostgreSQL or SQL Server 2008.
+
+However, this strategy requires the IN-clause row value expression for composite identifiers, so you can only use this strategy only with PostgreSQL.
+====
+
+== Conclusion
+
+If you can use temporary tables, that's probably the best choice.
+However, if you are not allowed to create temporary tables, you must pick one of these four strategies that works with your underlying database.
+Before making your mind, you should benchmark which one works best for your current workload.
+For instance, http://blog.2ndquadrant.com/postgresql-ctes-are-optimization-fences/[CTE are optimization fences in PostgreSQL], so make sure you measure before taking a decision.
+
+If you're using Oracle or MySQL 5.7, you can choose either `InlineIdsOrClauseBulkIdStrategy` or `InlineIdsInClauseBulkIdStrategy`.
+For older version of MySQL, then you can only use `InlineIdsOrClauseBulkIdStrategy`.
+
+If you're using SQL Server, `InlineIdsOrClauseBulkIdStrategy` is the only option for you.
+
+If you're using PostgreSQL, then you  have the luxury of choosing any of these four strategies.
+
