@@ -48,6 +48,10 @@ module InRelationTo
         @limit = limit
       end
 
+      def to_blog_entry(site, feed_entry)
+        BlogEntry.new( HTMLEntities.new.decode( feed_entry.title ), feed_entry.date, HTMLEntities.new.decode( summarize( html_to_text( feed_entry.content ) , 50 ) ), "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}" )
+      end
+
       def execute(site)
         @tags = {}
         @global_entries = []
@@ -60,7 +64,7 @@ module InRelationTo
           feed_entry.date = feed_entry.timestamp.nil? ? entry.date.xmlschema : feed_entry.timestamp.xmlschema
 
           if @global_entries.size <= @limit
-            @global_entries << BlogEntry.new( HTMLEntities.new.decode( feed_entry.title ), feed_entry.date, HTMLEntities.new.decode( summarize( html_to_text( feed_entry.content ) , 50 ) ), "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}" )
+            @global_entries << to_blog_entry( site, feed_entry )
           end
 
           tags = entry.tags
@@ -69,7 +73,7 @@ module InRelationTo
               tag = tag.to_s
               next if ( !@tags_to_generate.include?(tag) || ( @tags.has_key?(tag) && @tags[tag].entries.size > @limit ) )
               @tags[tag] ||= TagStat.new( tag, [] )
-              @tags[tag].entries << BlogEntry.new( feed_entry.title, feed_entry.date, "#{summarize( html_to_text( feed_entry.content ), 50 )}", "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}" )
+              @tags[tag].entries << to_blog_entry( site, feed_entry )
             end
           end
         end
