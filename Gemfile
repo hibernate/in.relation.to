@@ -9,6 +9,7 @@ gem 'htmlcompressor'   # Adds in HTML minification, helps remove the warning on 
 gem 'redcarpet'        # Markdown processing
 gem 'asciidoctor'      # Asciidoc renderer
 gem 'i18n'             # Deal with non Ascii names
+gem 'htmlentities'     # Escape/unescape HTML entities
 
 ## Non Windows
 gem 'libv8', '3.16.14.7'

@@ -1,4 +1,5 @@
 require 'awestruct/context_helper'
+require 'htmlentities'
 
 module InRelationTo
   module Extensions
@@ -54,12 +55,12 @@ module InRelationTo
         self.extend( Awestruct::ContextHelper )
 
         entries.each do |entry|
-          feed_entry = site.engine.load_page(entry.source_path, :relative_path => entry.relative_source_path, :html_entities => false)
+          feed_entry = site.engine.load_page(entry.source_path, :relative_path => entry.relative_source_path)
           feed_entry.output_path = entry.output_path
           feed_entry.date = feed_entry.timestamp.nil? ? entry.date.xmlschema : feed_entry.timestamp.xmlschema
 
           if @global_entries.size <= @limit
-            @global_entries << BlogEntry.new( feed_entry.title, feed_entry.date, "#{summarize( html_to_text( feed_entry.content ), 50 )}", "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}" )
+            @global_entries << BlogEntry.new( HTMLEntities.new.decode( feed_entry.title ), feed_entry.date, HTMLEntities.new.decode( summarize( html_to_text( feed_entry.content ) , 50 ) ), "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}" )
           end
 
           tags = entry.tags
