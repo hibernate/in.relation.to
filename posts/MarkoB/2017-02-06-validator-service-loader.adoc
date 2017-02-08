@@ -24,152 +24,6 @@ First let's consider a case when you would want one (or few) of standard bean va
 annotations (or not as standard Hibernate Validator ones) to support some other type, besides
 the ones that are already supported.
 
-=== Email example
-Let us start with a simple example. Consider that you have next POJO representing an email address:
-
-```java
-public class Email {
-
-	private String userName;
-
-	private String domain;
-
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
-
-	public String getDomain() {
-		return domain;
-	}
-
-	public void setDomain(String domain) {
-		this.domain = domain;
-	}
-}
-```
-As you can see it's not a regular `String` representation of an email address,
-but a POJO that contains local part (`userName`) and domain separately. And what would happen if one
-would want to validate a property of such type? The first thing that comes to mind is to use Bean Validation,
-and Hibernate Validator in particular as it already contains a validator for email addresses.
-
-So we'll put `@Email` annotation on our `EmailAddress` property in `User` class:
-
-```java
-public class User {
-
-	@Email
-	private EmailAddress email;
-
-	private String firstName;
-
-	private String lastName;
-	...
-}
-```
-On a first glimpse all seems legit. You have your bean with your `EmailAddress` property, you've put `@Email`
-annotation on it so all should be fine, right? So let's test it and see what happens:
-
-```java
-class UserTest {
-
-	private Validator validator;
-
-	@BeforeEach
-	public void setUp() {
-		final Configuration<HibernateValidatorConfiguration> configuration = Validation.byProvider( HibernateValidator.class ).configure();
-		validator = configuration.buildValidatorFactory().getValidator();
-	}
-
-	@Test
-	public void validateBeanTest() {
-		User user = new User( new EmailAddress( "user", "domain" ), "first", "last" );
-		Assertions.assertTrue( validator.validate( user ).isEmpty(), "Should pass validation" );
-
-		User invalidUser = new User( new EmailAddress( null, "domain" ), "first", "last" );
-		Assertions.assertEquals( 1, validator.validate( invalidUser ).size(), "Should produce an error" );
-	}
-}
-```
-
-Even though the compiler is happy with such code - during execution, this test will throw an exception:
-
-	javax.validation.UnexpectedTypeException: HV000030: No validator could be found for constraint
-	'javax.validation.constraints.Pattern' validating type 'EmailAddress'. Check configuration for 'email'
-
-So what can we do about it? Obviously you can write your own constraint annotation and validator for `EmailAddress`.
-But what if you want to use existing `@Email` annotation and just extend its functionality for your custom class?
-As was mentioned before this can be done with Hibernate Validator using ServiceLoader.
-Let us try this approach on practice. First of all we need to create a validator which would be able to
-validate our `EmailAddress`. A possible implementation can be next:
-
-```java
-public class EmailAddressValidator implements ConstraintValidator<Email, EmailAddress> {
-
-	public void initialize(Email constraintAnnotation) {
-		// do nothing
-	}
-
-	public boolean isValid(EmailAddress value, ConstraintValidatorContext context) {
-		if ( value == null ) {
-			return false;
-		}
-		if ( isBlank( value.getUserName() ) || isBlank( value.getDomain() ) ) {
-			return false;
-		}
-		return true;
-	}
-
-	private boolean isBlank(String value) {
-		return value == null || value.trim().isEmpty();
-	}
-}
-```
-Also looking at `@Email` you can see that it is build using `@Pattern` annotation.
-```java
-....
-@Constraint(
-    validatedBy = {}
-)
-@ReportAsSingleViolation
-@Pattern(
-    regexp = ""
-)
-public @interface Email {
-....
-```
-So we would need to provide
-a validator for `@Pattern` and `EmailAddress` as well. Let's allow all `EmailAddress` values to pass this pattern
-validation:
-```java
-public class PatternEmailAddressValidator implements ConstraintValidator<Pattern, EmailAddress> {
-
-	public void initialize(Pattern constraintAnnotation) {
-		// do nothing
-	}
-
-	public boolean isValid(EmailAddress value, ConstraintValidatorContext context) {
-		return true;
-	}
-}
-```
-
-As you can see we are not doing any fancy email validation here as it's enough for our purposes.
-So we have these `EmailAddressValidator` and `PatternEmailAddressValidator` in their own jar. For
-Hibernate Validator to be able to pick them up we would need to add a `javax.validation.ConstraintValidator`
-file to `META-INF` folder of this jar, listing our new validators. So let's put next lines into
-`META-INF/services/javax.validation.ConstraintValidator` in resources directory of our project:
-
-	#providing a list of new validators for @Email and @Pattern to be able to validate EmailAddress classes
-    org.hibernate.validator.example.constraintvalidator.EmailAddressValidator
-    org.hibernate.validator.example.constraintvalidator.PatternEmailAddressValidator
-
-Now after adding our new lib, containing validators, to a classpath of our test we can try to run a test again,
-and see that there are no more errors/exceptions.
-
 === ThreeTen Extra types validation
 
 So what can be a real life scenario for building your own lib with constraints and sharing it? Well let's say that
@@ -181,18 +35,15 @@ Which can be picked up by HV and used to validate your data classes.
 In this section we will look at http://www.threeten.org/threeten-extra/[ThreeTen Extra types] - a great lib
 that provides additional date-time classes to complement those already present in Java.
 
-As you may already know HV provides support for the https://jcp.org/en/jsr/detail?id=310[JSR 310] date types
-(javax.time API), by the use of `@Past`/`@Future` annotations. So we would want to use these annotations on
-ThreeTen Extra types as well.
-
-The approach for providing validation for these data types will be the same as in the previous case with
-`EmailAddress`.
+As you may already know, Bean Validation (and Hibernate Validator in particular) provides support for the range of
+the https://jcp.org/en/jsr/detail?id=310[JSR 310] date types (javax.time API), by the use of
+`@Past`/`@Future` annotations. So we would want to use these annotations on ThreeTen Extra types as well.
 
 To still keep this example simple we will provide validators only for http://www.threeten.org/threeten-extra/apidocs/org/threeten/extra/DayOfMonth.html[`DayOfMonth`]
 and http://www.threeten.org/threeten-extra/apidocs/org/threeten/extra/Quarter.html[`Quarter`].
 
 We will create a maven project with two modules - one will contain validators, another will contain tests.
-You can look at complete results at https://github.com/marko-bekhta/threeten-extra-validator-example[github].
+You can look at complete code at http://some-valid-github-link-to-hibernate-demo-repo-will-be-here[github].
 Here's a list of dependencies needed for our validators:
 
 [source,xml]
@@ -229,9 +80,10 @@ Here's a list of dependencies needed for our validators:
 </dependencies>
 
 Validator module does not require whole Hibernate Validator but just validation api (`validation-api`) to get
- `@Past` \ `@Future` annotations and `ConstraintValidator` interface. As for the tests we will need
- Hibernate validator as an implementation of BV.
+ `@Past` \ `@Future` annotations and `ConstraintValidator` interface, which should be implemented by your
+validator. As for the tests we will need Hibernate validator as a reference implementation of Bean Validation.
 
+Where should we start? Well without an implementation of a validator we will not get far. So let's start with it.
 A possible FutureDayOfMonthValidator can look like this:
 
 ```java
@@ -245,7 +97,7 @@ public class FutureDayOfMonthValidator implements ConstraintValidator<Future, Da
 
 In a same manner we can implement others - `FutureQuarterValidator`, `PastDayOfMonthValidator`, `PastQuarterValidator`.
 
-Next step is to provide a list of validators (Service Providers) in `META-INF/services/javax.validation.ConstraintValidator`
+Next step is to provide a list of implemented validators (Service Providers) in `META-INF/services/javax.validation.ConstraintValidator`
 folder.
 
 	#providing a list of new validators for @Past and @Future
@@ -254,18 +106,14 @@ folder.
     org.hibernate.validator.example.FutureDayOfMonthValidator
     org.hibernate.validator.example.PastDayOfMonthValidator
 
-Also if you'd like to change a message for a constraint you can do that by providing a `ContributorValidationMessages.properties`
-file on a classpath. Let's change a default message for `@Future` to
-
-	javax.validation.constraints.Future.message=must be in the far-far future
-
-by putting it into that property file. After this we are ready to use our validators, and share them with the world!
+After this we can package it all in a jar file and we are ready to use our validators, and share them with
+the world!
 
 In the end our project structure should look similar to this:
 
 image::external_validators_project_structure.png["project structure, align="center", width="400"]
 
-A simple test to check that we are right can look like this:
+A simple test to check that we are right:
 
 ```java
 public class DayOfMonthTest extends AbstractValidationTest {
@@ -308,70 +156,127 @@ public class DayOfMonthTest extends AbstractValidationTest {
 == Using custom annotations and validators
 
 So until now we were looking at possibility to provide additional validators for existing
-constraint annotations. But it is possible to do the same with your own custom annotation
+constraint annotations. But it is possible to do the same with your own custom annotations
 as well.
 
-=== Money, Money, Money, Java Money
+=== Time, it needs time ...
 
-Recently, thanks to great work of Guillaume Smet, and guys from Zalando - Lukas Niemeier and Willi Schönborn,
-Hibernate Validator now supports http://javamoney.github.io/[JavaMoney (JSR 354)]. It will check if there's
-an implementation of `JavaMoney` present on a classpath and then register corresponding validators and allow
-you to use them. For more details please look at previous posts by http://in.relation.to/guillaume-smet/[Guillaume Smet].
+If we were talking about date-time related validation let's stay on the same topic for this example as well.
+Not all https://jcp.org/en/jsr/detail?id=310[JSR 310] types are covered at this moment and one of the types,
+missing validation is https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html[`Duration`]. This
+type is not describing a point in time so regular date/time annotations (`@Future` \ `@Past`) do not make sense
+for it. So one of the possible solutions for `Duration` validation problem is to introduce a new annotation
+specific to this type. Let's call it '@MinDuration'. And it will mean that the value annotated with it cannot
+represent a smaller duration period than the one represented by the annotation parameters.
 
-These constraints were implemented as part of Hibernate Validator. But it's not the only way to do it.
-As you already saw today one can build a separate jar with such constraints. So let's look at how would it
-look like.
+Also let's make another assumption for this example. As you are trying to be a good developer, and provide end
+users of your lib only with the relevant classes and hide implementation details from them, you don't want to
+expose your validator implementation by mentioning it as a `validatedBy` parameter of `@Constraint(validatedBy = { })`
+annotation (as well as making an import of it from your `*.impl` or `*.internal` package where all the magic things
+are happening). It's a good practice to keep your public API clean and hide any implementation details. There's
+http://http://in.relation.to/2017/01/31/preventing-leaky-apis-with-jqassistant/[this] great post about a tool that
+can help you analyze your code and make sure that it is not leaking anything that is implementation only and
+not for the public.
 
-There's a support of `javax.money.MonetaryAmount` by `@DecimalMax`, `@DecimalMin`, `@Max`, `@Min` annotations
-as well as specific `@Currency` annotation. First four annotations are regular ones and support many more other types.
-As for the last one - it's a new one and is JavaMoney specific.
+Let's get back to validating our beans - as that's why we all gathered here, right ? :)
 
-So let's use a previous version of Hibernate Validator (5.3.4.Final) that do not have support of these things
-and prepare a standalone jar for them.
-
-You probably wouldn't believe it, but the process for `@DecimalMax`, `@DecimalMin`, `@Max`, `@Min` is still the same.
-To be able to use them on `javax.money.MonetaryAmount` one would need to do the same steps as were shown in
-previous sections for `@Email` or `@Past` \ `@Future`. A more interesting case is `@Currency` as you would need
-to provide an annotation itself, as well as a default message besides the validator.
-
-So here's an annotation (all irrelevant to this post lines were removed):
+Possible version of our new constraint annotation '@MinDuration' might look like this:
 
 ```java
-...
+@Documented
 @Constraint(validatedBy = { })
-public @interface Currency {
-	String message() default "{org.hibernate.validator.constraints.Currency.message}";
+@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+@Retention(RUNTIME)
+@Repeatable(List.class)
+@ReportAsSingleViolation
+public @interface DurationMin {
 
-	...
+	String message() default "{org.hibernate.validator.constraints.time.DurationMin.message}";
+
+	Class<?>[] groups() default { };
+
+	Class<? extends Payload>[] payload() default { };
+
+	long value() default 0;
+
+	ChronoUnit units() default ChronoUnit.NANOS;
+
+	/**
+	 * Defines several {@code @DurationMin} annotations on the same element.
+	 */
+	@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+	@Retention(RUNTIME)
+	@Documented
+	@interface List {
+
+		DurationMin[] value();
+	}
 }
 ```
 
-Then you would need to create an implementation of `ConstraintValidator<Currency, MonetaryAmount>` for this annotation.
-Now you need to register it all in `META-INF/services/javax.validation.ConstraintValidator` like this:
+And we would place it in a public package of our lib - `org.hibernate.validator.constraints.time`. Now that we
+have an annotation we would want to start writing a validator for `Duration` and this newly created annotation.
+To do that you need to implement `ConstraintValidator<DurationMin, Duration>` interface, which contains two methods
 
-	# validator for @Currency
-	org.hibernate.validator.internal.constraintvalidators.bv.money.CurrencyValidatorForMonetaryAmount
-	# additional validators for `@DecimalMax`, `@DecimalMin`, `@Max`, `@Min`
-	org.hibernate.validator.internal.constraintvalidators.bv.money.DecimalMaxValidatorForMonetaryAmount
-	org.hibernate.validator.internal.constraintvalidators.bv.money.DecimalMinValidatorForMonetaryAmount
-	org.hibernate.validator.internal.constraintvalidators.bv.money.MaxValidatorForMonetaryAmount
-	org.hibernate.validator.internal.constraintvalidators.bv.money.MinValidatorForMonetaryAmount
+* `initialize` - initializes validator based on annotation parameters.
+* `isValid` - performs actual validation
 
-And as we are adding a new constraint annotation - `@Currency` we would need to provide a default message for
-it. To do so you need to add a `ContributorValidationMessages.properties` file to your classpath with next content
+A possible implementation can be next:
 
-	# note that the message key is the same one that was used in annotation definition
-	org.hibernate.validator.constraints.Currency.message = invalid currency (must be one of {value})
+```java
+public class DurationMinValidator implements ConstraintValidator<DurationMin, Duration> {
 
-And that's it! We have a JavaMoney support for older versions of Hibernate Validator that do not contain it
-out of the box.
+	private Duration duration;
 
-A sample project containing all of this can be found on https://github.com/marko-bekhta/java-money-validator-exmaple[github].
+	@Override
+	public void initialize(DurationMin constraintAnnotation) {
+		this.duration = Duration.of( constraintAnnotation.value(), constraintAnnotation.units() );
+	}
+
+	@Override
+	public boolean isValid(Duration value, ConstraintValidatorContext context) {
+		// null values are valid
+		if ( value == null ) {
+			return true;
+		}
+		return duration.compareTo( value ) < 1;
+	}
+}
+```
+
+As was mentioned earlier - you want to hide this implementation from API users by putting it somewhere in internal
+packages, in our case it will be - `org.hibernate.validator.internal.constraintvalidators.hv.time`.
+
+As we are creating a new constraint annotation we should also provide a default message for it as well. This can be
+done by placing `ContributorValidationMessages.properties` property file on a classpath. This property file should
+contain a key/message pair, where key is the one used in annotation declaration (in our case it's
+`org.hibernate.validator.constraints.time.DurationMin.message`). And message is the one you would like to show
+when validation fails. A possible content of this property file in our case can be:
+
+	org.hibernate.validator.constraints.time.DurationMin.message = must be greater than or equal to {value} {units}
+
+If you leave everything else as is your constraint annotation will live its own life without knowing about a presence
+of validator. Hibernate Validator will not know about your `DurationMinValidator` as well. So to make sure that
+Hibernate Validator find your `DurationMinValidator` you need to create `META-INF/services/javax.validation.ConstraintValidator`
+file and put a fully qualified name of validator you want to be exposed to Hibernate Validator:
+
+	#providing a list of validators for new @DurationMin annotation
+    org.hibernate.validator.internal.constraintvalidators.hv.time.DurationMinValidator
+
+To make sure that it all worked out let's run a test:
+
+```java
+Some cool test case will appear here later ;)
+```
+
+All code can for this example can be found at http://some-valid-github-link-to-hibernate-demo-repo-will-be-here[GitHub]
 
 == Messages
 
-This mechanism can be also used in structuring your custom constraint messages. Instead of having them all
-together you can group them by modules and they will be picked up and used by Hibernate Validator.
+This mechanism can also be used in structuring your custom constraint messages. Instead of having them all
+together you can group them by modules and they will be picked up and used by Hibernate Validator. To achive this
+just make sure that each module that you'd like to have custom messages have `ContributorValidationMessages.properties`
+property file which contains key/message pairs for those constraints that are needed in that particular module.
 
 == Conclusions
 
