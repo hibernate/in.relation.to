@@ -1,0 +1,39 @@
+= Eclipse tools for Hibernate Search
+Dmitry  Bocharov
+:awestruct-tags: [ "Hibernate Search", "JBoss Tools" ]
+:awestruct-layout: blog-post
+---
+I'm glad to announce the second release of the https://marketplace.eclipse.org/content/hibernate-search-plugin[Eclipse plugin for Hibernate Search].
+In this post I'm describing the changes and new features of the release. http://in.relation.to/2016/01/22/EclipseToolsForHibernateSearch[Here] you can find the first release blog post.
+
+
+== Index Toolkit
+
+The major change of the release is that all functionality, except "Index Rebuild", are now grouped in the Index Toolkit view. To open it, right-click on a configuration in the Hibernate Configurations view and choose "Open Index Toolkit".
+
+image::jbt-hsearch200-ConfigurationMenu.jpg["Configuration menu items"]
+
+Here you can find three tabs: Analyzers, Explore Documents, Search.
+The first two tabs repeat functionality from http://in.relation.to/2016/01/22/EclipseToolsForHibernateSearch[the first release of the plugin].
+
+image::jbt-hsearch200-AnalyzersToolkit.jpg["Analyzers Toolkit tab"]
+
+image::jbt-hsearch200-LuceneDocuments.jpg["Explore Documents tab"]
+
+
+== Searching
+
+The new feature of the release is the capability to easily execute the search.
+
+image::jbt-hsearch200-LuceneSearch.jpg["Search tab"]
+
+The plugin passes the input string from the search text box to the QueryParser which parses it using the specified analyzer and creates a set of search terms, one term per token, over the specified default field. The result of the search pulls back all documents which contain the terms and lists them in a table below.
+
+
+== Demo
+video::aFPijD3zutM[youtube]
+
+
+== What's next
+
+The next step is to merge this plugin with https://github.com/jbosstools/jbosstools-hibernate[the JBoss Tools Hibernate plugin]. Currently, the Hibernate Search plugin is based on the Hibernate plugin which must be installed beforehand to prevent a "missing required feature" error.
