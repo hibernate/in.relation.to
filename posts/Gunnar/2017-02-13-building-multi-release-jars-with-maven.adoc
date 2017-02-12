@@ -1,0 +1,283 @@
+= "Building Multi-Release JARs with Maven"
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Java 9 comes with a new feature very useful to library authors: multi-release JARs (http://openjdk.java.net/jeps/238+[JEP 238]).
+
+A multi-release JAR (MR JAR) may contain multiple variants of one and the same class, each targeting a specific Java version.
+At runtime, the right variant of the class will be loaded automatically, depending on the Java version being used.
+
+This allows library authors to take advantage of new Java versions early on, while keeping compatibility with older versions at the same time.
+If for instance your library performs atomic compare-and-set operations on variables, you may currently be doing so using the `sun.misc.Unsafe` class.
+As `Unsafe` has never been meant for usage outside the JDK itself,
+Java 9 comes with a supported alternative for CAS logics in form of http://download.java.net/java/jdk9/docs/api/index.html?java/lang/invoke/VarHandle.html[var handles].
+By providing your library as an MR JAR, you can benefit from var handles when running on Java 9 while sticking to `Unsafe` when running on older platforms.
+
+In the following we'll discuss how to create an MR JAR using Apache Maven.
+
+== Structure of a Multi-Release JAR
+
+Multi-Release JARs contain several trees of class files.
+The main tree is at the root of the JAR, whereas version-specific trees are located under _META-INF/versions_, e.g. like this:
+
+[source]
+----
+JAR root
+- Foo.class
+- Bar.class
++ META-INF
+   - MANIFEST.MF
+   + versions
+      + 9
+         - Bar.class
+----
+
+Here the `Foo` and the `Bar` class from the JAR root will be used on Java runtimes which are not aware of MR JARs (i.e. Java 8 and earlier),
+whereas `Foo` from the JAR root and `Bar` from _META-INF/versions/9_ will be used under Java 9 and later.
+The JAR manifest must contain an entry `Multi-Release: true` to indicate that the JAR is an MR JAR.
+
+== Example: Getting the Id of the Current Process
+
+As an example let's assume we have a library which defines a class providing the id of process (PID) it is running in.
+PIDs shall be represented by a descriptor comprising the actual PID and a String describing the provider of the PID:
+
+[source,java]
+._src/main/java/com/example/ProcessIdDescriptor.java_
+----
+package com.example;
+
+public class ProcessIdDescriptor {
+
+    private final long pid;
+    private final String providerName;
+
+    // constructor, getters ...
+}
+----
+
+Up to Java 8, there is http://stackoverflow.com/questions/35842/how-can-a-java-program-get-its-own-process-id[no easy way] to obtain the id of the running process.
+One rather hacky approach is to parse the return value of `RuntimeMXBean#getName()` which is "pid@hostname" in the OpenJDK / Oracle JDK implementation.
+While that behavior is not guaranteed to be portable across implementations, let's use it as the basis for our default `ProcessIdProvider`:
+
+[source,java]
+._src/main/java/com/example/ProcessIdProvider.java_
+----
+package com.example;
+
+public class ProcessIdProvider {
+
+    public ProcessIdDescriptor getPid() {
+        String vmName = ManagementFactory.getRuntimeMXBean().getName();
+        long pid = Long.parseLong( vmName.split( "@" )[0] );
+        return new ProcessIdDescriptor( pid, "RuntimeMXBean" );
+    }
+}
+----
+
+Also let's create a simple main class for displaying the PID and the provider it was retrieved from:
+
+[source,java]
+._src/main/java/com/example/Main.java_
+----
+package com.example;
+
+public class Main {
+
+    public static void main(String[] args) {
+        ProcessIdDescriptor pid = new ProcessIdProvider().getPid();
+
+        System.out.println( "PID: " + pid.getPid() );
+        System.out.println( "Provider: " + pid.getProviderName() );
+    }
+}
+----
+
+Note how the source files created so far are located in the regular _src/main/java_ source directory.
+
+Now let's create another variant of `ProcessIdDescriptor` based on Java 9's new `ProcessHandle` API,
+which eventually provides http://download.java.net/java/jdk9/docs/api/java/lang/ProcessHandle.html#getPid--[a portable way] for obtaining the current PID.
+This source file is located in another source directory, _src/main/java9_:
+
+[source,java]
+._src/main/java9/com/example/ProcessIdProvider.java_
+----
+package com.example;
+
+public class ProcessIdProvider {
+
+    public ProcessIdDescriptor getPid() {
+        long pid = ProcessHandle.current().getPid();
+        return new ProcessIdDescriptor( pid, "ProcessHandle" );
+    }
+}
+----
+
+== Setting up the build
+
+With all the source files in place, it's time to configure Maven so an MR JAR gets built.
+
+Three steps are required for that.
+The first thing is to compile the additional Java 9 sources under _src/main/java9_.
+I hoped I could simply set up another execution of the Maven compiler plug-in for that,
+but I could not find a way which _only_ would compile _src/main/java9_ but not the ones from _src/main/java_ for second time.
+
+As a work-around, the Maven Antrun plug-in can be used for configuring a second javac run just for the Java 9 specific sources:
+
+[source,xml]
+._pom.xml_
+----
+...
+<properties>
+    <java9.sourceDirectory>${project.basedir}/src/main/java9</java9.sourceDirectory>
+    <java9.build.outputDirectory>${project.build.directory}/classes-java9</java9.build.outputDirectory>
+</properties>
+...
+<build>
+    ...
+    <plugins>
+        ...
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+                <execution>
+                    <id>compile-java9</id>
+                    <phase>compile</phase>
+                    <configuration>
+                        <tasks>
+                            <mkdir dir="${java9.build.outputDirectory}" />
+                            <javac srcdir="${java9.sourceDirectory}" destdir="${java9.build.outputDirectory}"
+                                classpath="${project.build.outputDirectory}" includeantruntime="false" />
+                        </tasks>
+                    </configuration>
+                    <goals>
+                        <goal>run</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+        ...
+    </plugins>
+    ...
+</build>
+...
+----
+
+This uses the _target/classes_ directory (containing the class files emitted by the default compilation) as the classpath,
+allowing to refer to classes common for all Java versions supported by our MR JAR, e.g. `ProcessIdDescriptor`.
+The compiled classes go into _target/classes-java9_.
+
+The next step is to copy the compiled Java 9 classes into _target/classes_ so they will later be put to the right place within the resulting JAR.
+The Maven resources plug-in can be used for that:
+
+[source,xml]
+._pom.xml_
+----
+...
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-resources-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>copy-resources</id>
+            <phase>prepare-package</phase>
+            <goals>
+                <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+                <outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
+                <resources>
+                    <resource>
+                        <directory>${java9.build.outputDirectory}</directory>
+                    </resource>
+                </resources>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+----
+
+This will copy the Java 9 class files from _target/classes-java9_ to _target/classes/META-INF/versions/9_.
+
+Finally, the Maven JAR plug-in needs to be configured so the `Multi-Release` entry is added to the manifest file:
+
+[source,xml]
+._pom.xml_
+----
+...
+<plugin>
+    <groupId>org.apache.maven.plugins</groupId>
+    <artifactId>maven-jar-plugin</artifactId>
+    <configuration>
+        <archive>
+            <manifestEntries>
+                <Multi-Release>true</Multi-Release>
+                <Main-Class>com.example.Main</Main-Class>
+            </manifestEntries>
+        </archive>
+        <finalName>mr-jar-demo.jar</finalName>
+    </configuration>
+</plugin>
+...
+----
+
+And that's it, we got everything together to build a multi-release JAR.
+Trigger the build via `mvn clean package` (using Java 9) to create the JAR in the _target_ directory.
+
+In order to take a look whether the JAR contents is alright, list its contents via `jar -tf target/mr-jar-demo.jar`.
+You should see the following:
+
+[source]
+----
+...
+com/example/Main.class
+com/example/ProcessIdDescriptor.class
+com/example/ProcessIdProvider.class
+META-INF/versions/9/com/example/ProcessIdProvider.class
+...
+----
+
+Eventually, let's execute the JAR via `java -jar target/mr-jar-demo.jar` and examine its output.
+When using Java 8 or earlier, you'll see the following:
+
+[source]
+----
+PID: <some pid>
+Provider: RuntimeMXBean
+----
+
+Whereas on Java 9, it'll be this:
+
+[source]
+----
+PID: <some pid>
+Provider: ProcessHandle
+----
+
+I.e. the `ProcessIdProvider` class from the JAR root will be used on Java 8 and earlier, and the one from `META-INF/versions/9` on Java 9.
+
+== Conclusion
+
+While `javac`, `jar`, `java` and other JDK tools already support multi-release JARs,
+build tools like Maven still need to catch up.
+Luckily, it can be done using some plug-ins for the time being, but it's my hope that Maven et al. will provide proper support for creating MR JARs out of the box some time soon.
+
+Others have been thinking about the creation of MR JARs, too.
+E.g. check out http://word-bits.flurg.com/multrelease-jars/[this post] by my colleague David M. Lloyd.
+David uses a separate Maven project for the Java 9 specific classes which are then copied back into the main project using the Maven dependency plug-in.
+Personally, I prefer to have all the sources within one single project, as I find that a tad simpler, though it's not without quirks either.
+Specifically, if you have both, _src/main/java_ and _src/main/java9_, configured as source directories within your IDE,
+you'll get an error about the duplicated class `ProcessIdProvider`.
+This can be ignored (you might also remove _src/main/java9_ as a source directory from the IDE if you don't need to touch it),
+but it may be annoying to some.
+
+One could think about having the Java 9 classes in another package, e.g. `java9.com.example`
+and then using the Maven shade plug-in to relocate them to `com.example` when building the project,
+though this seems quite a lot of effort for a small gain.
+Ultimately, it'd be desirable if IDEs also added support for MR JARs and multiple compilations with different source and target directories within a single project.
+
+Any feedback on this or other approaches for creating MR JARs is welcome in the comments section below.
+The complete source code of this blog post can be found https://github.com/hibernate/hibernate-demos/tree/master/java9/multi-release-jar-demo[on GitHub].
