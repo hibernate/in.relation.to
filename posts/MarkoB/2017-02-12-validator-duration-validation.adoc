@@ -1,0 +1,93 @@
+= "Extended support for java.time"
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+We are happy to announce that Bean Validation 2.0 (and Hibernate Validator 6 in particular) extended its support
+of JavaTime https://jcp.org/en/jsr/detail?id=310[JSR 310] types. Among types missing validations were
+`java.time.Duration` and `java.time.Period`. After some investigation and discussions it turned out that there's
+no convenient way of comparing `Period` instances. One cannot uniquely determine if 30 days are a longer, same or
+shorter period than 1 month or not. So only support for `Duration` was added.
+
+As none of current annotations were providing an ease of use for defining duration limits a decision was made in
+favor of adding new annotations - `@DurationMax` and `@DurationMin`. As one can guess from annotation names
+they define upper and lower limits for values represented by `java.time.Duration` type. Let's have a quick look at
+annotations themselves:
+
+```java
+@Documented
+@Constraint(validatedBy = { })
+@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+@Retention(RUNTIME)
+@Repeatable(List.class)
+@ReportAsSingleViolation
+@Incubating
+public @interface DurationMin {
+
+	String message() default "{org.hibernate.validator.constraints.time.DurationMin.message}";
+
+	Class<?>[] groups() default { };
+
+	Class<? extends Payload>[] payload() default { };
+
+	long days() default 0;
+
+	long hours() default 0;
+
+	long minutes() default 0;
+
+	long seconds() default 0;
+
+	long millis() default 0;
+
+	long nanos() default 0;
+
+	boolean inclusive() default true;
+
+	@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+	@Retention(RUNTIME)
+	@Documented
+	@interface List {
+
+		DurationMin[] value();
+	}
+}
+```
+
+`@DurationMax` has the same look, the difference is only in the name and the validation logic behind the annotation.
+As you can see there's a lot of annotation parameters present in these new annotations. For users to be able to easily
+construct `Duration` instance representing a lower/upper bound we added all possible time units from nanoseconds
+(`nanos`), milliseconds (`millis`) all the way up to days (`days`). Also there's `inclusive` flag that defines if the
+duration equal to the one represented by annotation parameters should be considered valid (`inclusive=true`) or
+not (`inclusive=false`).
+
+Also please note the `@Incubating` annotation, it means that we would like to hear your feedback on usage of these new
+constraints, and let us know if there are any changes required. Based on it these constraints might change.
+
+Here's a simple usage example of new constraints for you:
+
+```java
+public class Task {
+
+	@DurationMin(minutes = 5, message = "You definitely need at least 5 minutes to read this post")
+	private Duration minTimeNeeded;
+
+	@DurationMax(hours = 1, minutes = 5, nanos = 10, inclusive = false, message = "You shouldn't be reading this for that long")
+	private Duration maxTimeNeeded;
+
+	public Task( Duration minTimeNeeded, Duration maxTimeNeeded) {
+		this.minTimeNeeded = minTimeNeeded;
+		this.maxTimeNeeded = maxTimeNeeded;
+	}
+
+	@DurationMin(minutes = 15)
+	@DurationMax(hours = 4)
+	public Duration readSomethingElse(){
+		// TODO: do some reading here
+		return Duration.ofHours( 2 );
+	}
+}
+```
+
+As was already said - all feedback on these new annotations is welcomed! Happy validation!
