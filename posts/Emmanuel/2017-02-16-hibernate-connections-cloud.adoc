@@ -1,0 +1,134 @@
+= Hibernate ORM, connections and cloud friendliness
+Emmanuel Bernard
+:awestruct-tags: [ "Hibernate ORM", "Discussions" ]
+:awestruct-layout: blog-post
+---
+Recently, the team has been discussing improvements around Hibernate (ORM) usage within cloud based apps and microservices.
+In particular the fundamental assumption that things will break regularly on these platforms and that services should be resilient to failures.
+
+== The problem
+
+In microservices or cloud architectures, services are started in different orders (usually beyond your control).
+It is possible for the app using Hibernate ORM to be started before the database.
+At the moment, Hibernate ORM does not like that and will explicitly fail (exception) if it can't connect to the database.
+
+Another related concern is to consider what is happening if the database is stopped for a while _after_ the app running Hibernate ORM has started and resume working shortly after.
+
+== Solution 1: Hibernate waits and retries at boot time
+
+Some users have asked us to delay and retry the connection process in case the database is not present at boot time.
+That would work and solve the bootstrap problem.
+It would not solve the database gone while running the app but here at least you have your transaction and the error propagation mechanism covering you.
+Plus at development time, the boot time problem gone would be quite nice already.
+
+I understand that this is probably a quick win to implement this, but better be sure of the problem before adding that feature.
+It feels to me that Hibernate ORM bootstrap is not the ideal area to fix that problem.
+But at the end of the day if it helps enough, it would be worth it.
+
+We are exploring that option and considering alternatives and that's where we need your feedback.
+
+[NOTE]
+.Wait and retry vs platform notification
+====
+In this blog post, I mention the wait and retry approach.
+It can be replaced by a notification from the cloud platform when a service is up / down.
+
+This avoids the regular polling process at the cost of having to rely on various integrations from various cloud platforms.
+====
+
+== Solution 1.b: The connection pool waits and retries
+
+It probably would be better if the connection pool Hibernate ORM uses, implements that logic but there are more than one connection pool Hibernate supports.
+That's a minor variation on solution 1.
+
+== Solution 2: Hibernate boots in non-functioning mode
+
+If Hibernate ORM cannot connect to the datasbase, it continues its bootstrap process.
+If an `EntityManager` is asking for a connection while the database is still unavailable, a well defined exception is raised.
+To not flood the system, a wait and retry system for connection checking would be in place to only try a few times even when lots of `EntityManager` are requested.
+
+There are some subtle difficulties here on concurrency and on the fact that we use info from the bootstrap connection to configure Hibernate ORM.
+The most visible option guessed from the connection is the dialect to use.
+On the other hand, stopping the app boot process while waiting and retrying like solution 1 proposes is probably not without its challenges.
+
+The exception raised by Hibernate ORM upon DB inaccessibility needs to be treated properly by the application (framework) being used.
+Like a global try catch that moves the application in degraded mode or propagating the execution error to the client (e.g. HTTP error 500).
+It might even be helpful if Hibernate ORM was exposing the not ready status via an explicit API.
+
+This could be tied to a health check from the cloud platform.
+The application would report the _not ready but trying_ status via a `/health` endpoint that the https://www.ianlewis.org/en/using-kubernetes-health-checks[orchestrator would use].
+
+[NOTE]
+.On database connection breaking
+====
+There are many reasons for failing to connect to a database:
+
+1. Host unreachable
+2. DB server denying access temporarily (e.g. load)
+3. Incorrect port setting
+4. Incorrect credentials
+5. And many more
+
+Should the system go into the wait and retry mode for cases 3, 4, 5?
+Or should it refuse to deploy?
+====
+
+== Solution 3: the smart app (framework)
+
+Another solution is for the app to have a smart overall bootstrap logic.
+It tries to eagerly start but if a Hibernate ORM connection error occurs, only the inbound request framework is started.
+It will regularly try and boot and in the mean time return HTTP 500 errors or similar.
+
+This requires an app framework that could handle that.
+It embeds circuit breaker logic in the app and can better react to specific errors.
+I wonder how common such frameworks are though.
+
+This is in spirit the same solution as solution 2 except it is handled at the higher level of the app (framework) vs Hibernate ORM.
+
+== Solution 4: the cloud / MSA platform restart the apps
+
+An arguably better solution would be for the cloud platform to handle these cases and restart apps that fail to deploy in these situations.
+It likely requires some kind of service dependency management and a bit of smartness from the cloud infra.
+The infrastructure would upon specific error code thrown at boot time, trigger a wait and retry deployment logic.
+There is also a risk of a dependency circularity leading to a never starting system.
+
+I guess not all cloud infra offer this and we would need an alternative solution.
+Kubernetes let's you https://docs.openshift.com/container-platform/3.4/dev_guide/templates.html#other-recommendations[express dependencies] to make sure a given service is started before another.
+The user would have to declare that dependency of course.
+
+== Solution 5: proxy!
+
+Another solution is to put proxies either before the app inbound requests and/or between the app and the database.
+Proxy is the silver bullet that lots for cloud platforms uses to solve world hunger in the digital universe.
+
+[TIP]
+====
+How many proxies and routing logic does it take to serve a "Hello world!" in the cloud? +
+Who proxies the proxies?
+
+:)
+====
+
+This approach has the advantage of not needing customized apps or libraries.
+The inconvenience is more intermediary points between your client and the app or data.
+
+If the proxy is before the application, then it needs a health check or a feedback from the boot system to wait and retry the re-deployment of the application on a regular basis.
+I'm again not certain cloud infrastructures offer all of this infrastructure.
+
+If the proxy is between Hibernate ORM and the database (like https://severalnines.com/resources/tutorials/mysql-load-balancing-haproxy-tutorial[HAProxy for MySQL]),
+you're still facing some timeout exception on the JDBC side.
+Which means the application will fail to boot.
+But at least, the proxy could implement the wait and retry logic.
+
+== My questions to you
+
+Do you have any input on this subject:
+
+* what's your opinion?
+* what's your experience when deploying cloud apps?
+* any alternative solution you have in mind?
+* any resource you found interesting covering this subject?
+* would you benefit from solution 1?
+* would you benefit from solution 2?
+
+Any feedback to help us think this problem further is what we need :)
