@@ -1,0 +1,130 @@
+= "Initial Bean Validation 2.0 support: Hibernate Validator 6.0.0.Alpha1 is out"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+It is not every day that we announce the first release of a new major version of Hibernate Validator. And today is one of those days: the first alpha of Hibernate Validator 6 has just been released.
+
+Hibernate Validator 6 is going to be the Reference Implementation of Bean Validation 2.0. That's why we coordinated the releases of the first alphas of these two projects.
+
+It is also a playground used to validate future enhancements of the Bean Validation specification so feedback on the subjects presented here is very welcome!
+
+Note that Hibernate Validator 6 requires JDK 8 or above.
+
+== What's new
+
+=== New group id
+
+First, starting from 6, the new home of Hibernate Validator is `org.hibernate.validator` (it used to be `org.hibernate`).
+
+For instance, the Maven coordinates of this version are:
+
+```xml
+<dependency>
+    <groupId>org.hibernate.validator</groupId>
+    <artifactId>hibernate-validator</artifactId>
+    <version>6.0.0.Alpha1</version>
+</dependency>
+```
+
+We published relocation artifacts to make the transition more smooth. Examine the output of your build, if you see messages like "[WARNING] The artifact org.hibernate:hibernate-validator:jar:6.0.0.Alpha1 has been relocated to org.hibernate.validator:hibernate-validator:jar:6.0.0.Alpha1", you are still using the old GAV coordinates and should upgrade to the new ones.
+
+Also make sure to not depend on 5.x and 6.x at the same time (as the group ids are different, the dependency resolution algorithm of your build tool fails to detect that these are two versions of the same logical artifact).
+
+=== Java 8 goodness
+
+As we now target Java 8 and above, we benefit from the language improvements:
+
+ * all Bean Validation and Hibernate Validator constraints can be used in type use context (e.g. `List<@NotBlank String>`);
+ * all the annotations that could be repeated with a `List` container are now marked `@Repeatable`.
+
+=== Implementation of the new features of the spec
+
+Earlier this week, Gunnar presented on the Bean Validation website http://beanvalidation.org/news/2017/02/14/bean-validation-2-0-early-draft-released/[the new features introduced in Early Draft 1 of Bean Validation 2.0]. They are implemented in Hibernate Validator 6.0.0.Alpha1 so you can already play with them and give us your feedback.
+
+=== Nested type use constraints and nested cascaded validation
+
+There are some things where Hibernate Validator goes beyond the Early Draft 1 of the spec.
+
+Typically, with Hibernate Validator, type use constraints may be used even on nested types. And so may cascaded validation.
+
+[source,java]
+----
+public class Order {
+
+	private Map<@NotNull @Valid Product, @Size(min = 1) List<@NotNull @Valid OrderLine>> lines;
+
+}
+----
+
+In the above example, Hibernate Validator is going to:
+
+ * validate the `@NotNull` constraint on `Product`;
+ * cascade the validation to ``Product``s;
+ * validate that for a `Product`, the list of ``OrderLine``s contains at least one element;
+ * validate that the lists do not contain any null element;
+ * cascade the validation to ``OrderLine``s.
+
+As mentioned above, the nested part is new in Hibernate Validator and is not part of the spec yet. If you think it should go in, raise your hand and http://lists.jboss.org/pipermail/beanvalidation-dev/[participate to the discussions]. Expect some interesting discussions soon on what the nodes of the property path should look like in the case of nested types validation.
+
+=== Lambda based constraint definition
+
+We started to explore how lambdas could be integrated into Hibernate Validator and the first outcome of it is lambda based constraint definition. Using the programmatic API, you can define a constraint without writing a `ConstraintValidator`:
+
+[source,java]
+----
+HibernateValidatorConfiguration configuration = Validation
+    .byProvider( HibernateValidator.class )
+    .configure();
+
+ConstraintMapping constraintMapping = configuration.createConstraintMapping();
+
+constraintMapping
+    .constraintDefinition( ValidPassengerCount.class )
+        .validateType( Bus.class )
+            .with( b -> b.getSeatCount() >= b.getPassengers().size() );
+----
+
+Note that the programmatic API is not part of the specification so, for now, this part is specific to our implementation.
+
+=== Validation of `Duration`
+
+In Hibernate Validator 6, we are able to validate a lot more `java.time` classes and Marko recently introduced support for `Duration`.
+
+Here is an example of what you can do with it:
+
+[source,java]
+----
+public class TrainingSession {
+    [...]
+
+    @DurationMin(hours = 1, minutes = 30)
+    @DurationMax(days = 1, inclusive = false)
+    private Duration duration;
+
+    [...]
+}
+----
+
+Again, let us know if you think this feature should go into the spec.
+
+== Getting 6.0.0.Alpha1
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.0.0.Alpha1_. As mentioned earlier, the group id has been changed to `org.hibernate.validator`.
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.Alpha1/hibernate-validator-6.0.0.Alpha1-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.Alpha1/hibernate-validator-6.0.0.Alpha1-dist.zip/download[ZIP]).
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
+== What's next?
+
+Bean Validation 2.0 and Hibernate Validator 6 are still under active development. We will release new alphas on a regular basis.
