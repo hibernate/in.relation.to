@@ -5,14 +5,14 @@ Marko Bekhta
 ---
 
 Today we'll be talking about Hibernate Validator and how you can provide your own constraints
-and/or validators in a fully self-contained manner. Meaning packaging it all into its own jar file,
+and/or validators in a fully self-contained manner. Meaning packaging it all into its own JAR file,
 in a way that the others can use your library for their needs.
 
 This functionality is based on Hibernate Validator usage of Java's https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader]
 mechanism that allows to https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_constraint_definitions_via_code_serviceloader_code[register additional constraint definitions].
 
 How does it work? It's really simple, all you need is to provide your own constraint definitions
-and register them in a specific file in `META-INF/services` directory of your jar. But more on that later.
+and register them in a specific file in `META-INF/services` directory of your JAR. But more on that later.
 
 What can be a real life scenario for building your own library with constraints and sharing it? Well let's say that
 you are building some library with data classes that user might want to validate. As it would be almost
@@ -27,7 +27,7 @@ mentioning it as a `validatedBy` parameter of `@Constraint(validatedBy = { })` a
 import of it from your `\*.impl` or `*.internal` package where all the magic things are happening. By using approach
 described in this post you can achieve all these thing.
 
-For our examples we will be creating maven projects with two modules - one will contain validators and represent
+For our examples we will be creating Maven projects with two modules - one will contain validators and represent
 a "library" that can be shared, another module will be a consumer of this library and will contain some tests.
 
 Enough of the talking, let's validate some beans! That's why we all gathered here, right? :)
@@ -196,7 +196,7 @@ file.
     com.acme.validation.validators.PastYearQuarterValidator
     com.acme.validation.validators.PastYearWeekValidator
 
-After this we can package it all in a jar file and we are ready to use our validators, and share them with
+After this we can package it all in a JAR file and we are ready to use our validators, and share them with
 the world!
 
 In the end our project structure should look similar to this:
@@ -244,5 +244,5 @@ simple steps:
 - create a validator implementing the `ConstraintValidator` interface
 - reference this validator's fully qualified name in a `META-INF/services/javax.validation.ConstraintValidator` file
 - (optional) define custom/default messages by adding a `ContributorValidationMessages.properties` file
-- package it all as a jar
+- package it all as a JAR
 - you are ready to use and share your validators!
