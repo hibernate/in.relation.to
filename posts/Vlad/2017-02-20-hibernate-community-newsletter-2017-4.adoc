@@ -1,0 +1,82 @@
+= Hibernate Community Newsletter 4/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Looking for your feedback
+
+We are looking for your feedback in about Hibernate bootstrap in cloud environments.
+Check out http://in.relation.to/2017/02/16/hibernate-connections-cloud/[this article for more details].
+If you have any idea or proposal, don't hesitate to use the comments section below the aforementioned article.
+
+== Articles
+
+Sometimes, it's easy to miss the basic concepts, and relational databases are no different. Check out this article about https://vladmihalcea.com/2017/02/14/how-does-a-relational-database-work/[how does a relational database work].
+
+Check out http://in.relation.to/2017/02/13/building-multi-release-jars-with-maven/[how you can build Multi-Release JARs with Maven and Java 9]. This is an awesome tip!
+
+We released http://in.relation.to/2017/02/16/mariadb-dialects/[dedicated Dialects for MariaDB], so you don't have to use the MySQL-specific Dialects when working with MariaDB.
+
+Integration testing is of paramount importance when building an enterprise application. However, many projects rely on in-memory databases (e.g. H2, HSQLDB) for testing,
+while in production they use Oracle, SQL Server, PostgreSQL or MySQL.
+In https://vladmihalcea.com/2017/02/09/how-to-run-integration-tests-at-warp-speed-with-docker-and-tmpfs/[this article], you'll find how you can run integration tests faster using tmpfs and Docker.
+
+Check out this https://rjbtechnology.com/blog/2017-01/discriminator-multitenancy-with-spring-and-hibernate-no-filters/[very ingenious solution to discriminator-based Multitenancy suing Hibernate Filters].
+
+If you're using JCache through Spring, Hibernate, and Ehcache, http://blog.tremblay.pro/2017/02/jcache.html[this article explains how you can prevent spontaneous cache creation].
+
+Concurrency Control is a very tricky subject.
+Check out https://vladmihalcea.com/2017/02/07/how-does-database-pessimistic-locking-interact-with-insert-update-and-delete-sql-statements/[this article about how explicit pessimistic locking interacts with INSERT, UPDATE, and DELETE statements].
+
+Emmanouil Gkatziouras wrote two articles about Hibernate and Hazelcast as a 2nd-level caching provider:
+
+* https://egkatzioura.wordpress.com/2017/02/12/hibernate-caching-with-hazelcast-get-started/[How to get started with Hibernate and Hazelcast]
+* https://egkatzioura.wordpress.com/2017/02/12/hibernate-caching-with-hazelcast-basics/[A basic Hibernate Caching configuration when using Hazelcast]
+
+Russ Thomas wrote https://sqljudo.wordpress.com/2014/12/29/what-every-dba-and-swe-should-know-about-ef/[a comprehensive list of ORM Anti-Patterns.
+Although the article was written for Entity Framework, the tups apply to JPA or Hibernate.
+
+For our Portuguese readers, Rhuan Henrique Rocha da Silva wrote an article about https://developer.jboss.org/wiki/EntendendoMappedByDoHibernate[the meaning of `mappedBy` in JPA and Hibernate].
+
+Thorben Janssen wrote an article about http://www.thoughts-on-java.org/add-full-text-search-application-hibernate-search/[adding Full-Test Search capabilities to a Hibernate application].
+
+Paul Klingelhuber wrote an article about https://medium.com/@paul.klingelhuber/hibernate-dirty-checking-with-converted-attributes-1b6d1cd27f68#.wtp2qvu05[how the Dirty Checking mechanism interacts with JPA AttributeConverters].
+
+I also wrote an article https://vladmihalcea.com/2017/02/16/how-to-map-the-latest-child-of-a-parent-entity-using-hibernate-joinformula/[how to map the latest child of a parent entity using Hibernate `@JoinFormula`].
+
+== Time to upgrade
+
+* http://in.relation.to/2017/02/17/hibernate-orm-528-final-release/[Hibernate ORM 5.2.8] has been released.
+* http://in.relation.to/2017/02/16/hibernate-validator-600-alpha1-out/[Initial Bean Validation 2.0 via Hibernate Validator 6.0.0.Alpha1].
+* http://in.relation.to/2017/02/15/hibernate-ogm-5-1-cr1-released/[Hibernate OGM 5.1 CR 1] is out.
+
+== Questions and answers
+
+* https://www.quora.com/Why-choose-a-relational-over-a-non-relational-database-if-consistency-and-availability-arent-a-concern/answer/Vlad-Mihalcea-1[Why choose a relational over a non-relational database, if consistency and availability are not factors?]
+* https://www.quora.com/What-is-the-purpose-of-mapped-by-element-in-OneToMany-annotation-in-Hibernate/answer/Vlad-Mihalcea-1[What is the purpose of the `mappedBy` element in a `@OneToMany` annotation in Hibernate?]
+* http://stackoverflow.com/questions/1638723/equals-and-hashcode-in-hibernate/24460365#24460365[How should equals and hashcode be implemented when using JPA and Hibernate?]
+* http://stackoverflow.com/questions/42075461/hibernate-stored-procedure-call-hangs-when-called-multiple-times/42084590#42084590[Hibernate stored procedure call hangs when called multiple times]
+* http://stackoverflow.com/questions/1710476/print-query-string-in-hibernate-with-parameter-values/23699236#23699236[How to print  a query string with parameter values when using Hibernate?]
+* http://stackoverflow.com/questions/31292050/spring-jpa-mapping-views-without-a-primary-key/31294522#31294522[How to map a database view without a primary key when using JPA?]
+* http://stackoverflow.com/questions/42086829/jpa-orm-xml-no-support-for-index/42087051#42087051[JPA orm.xml support for database index]
+* http://stackoverflow.com/questions/23859460/hibernate-filters-does-not-work-in-jpa/23859725#23859725[Hibernate @Filter does not work in JPA?]
+* http://stackoverflow.com/questions/42173894/hibernate-enablefilter-for-joined-subclass-not-working/42197922#42197922[Hibernate enableFilter not working when loading entity by id?]
+* http://stackoverflow.com/questions/42191210/why-does-hibernate-5-sequence-generator-use-the-default-hibernate-seq-instead-of/42191473#42191473[Why does Hibernate 5 sequence generator use the default hibernate.seq instead of my sequence?]
+* http://stackoverflow.com/questions/28486850/what-is-the-difference-b-w-a-session-and-a-connection-in-hibernate/28495180#28495180[What is the difference between a Session and a Connection in Hibernate?]
+* http://stackoverflow.com/questions/26424184/hibernate-deadlocking-transactions-automatic-restarts/26496861#26496861[Does Hibernate automatically restart transactions upon deadlocking?]
+* http://stackoverflow.com/questions/42211312/limiting-columns-used-in-a-hibernate-entity-graph/42211559#42211559[How to limit columns used in a Hibernate Entity Graph?]
+* http://stackoverflow.com/questions/42246936/deadlock-only-with-galera-mysql-cluster/42247298#42247298[Deadlock only with Galera MYSQL cluster]
+* http://stackoverflow.com/questions/23835442/hql-error-with-clause-referenced-two-different-from-clause-elements/23838048#23838048[HQL error: with-clause referenced two different from-clause elements]
+* http://stackoverflow.com/questions/42253404/flushmode-auto-is-not-working/42254608#42254608[FlushMode `AUTO` is not working]
+* http://stackoverflow.com/questions/42256527/how-to-avoid-java-util-concurrentmodificationexception-in-entity-merging-in-jpa/42266413#42266413[How to avoid java.util.ConcurrentModificationException in entity merging in JPA and Hibernate?]
+* http://stackoverflow.com/questions/221611/creation-timestamp-and-last-update-timestamp-with-hibernate-and-mysql/39427923#39427923[Creation timestamp and last update timestamp with Hibernate and MySQL]
+* http://stackoverflow.com/questions/42316848/why-does-mysql-explicit-predicate-locking-disallows-inserts-outside-of-the-predi/42318818#42318818[Why does MySQL explicit predicate locking disallow inserts outside of the predicate lock?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044018[How to map Map<enum, Boolean> with JPA and Hibernate?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044019[Hibernate Query Plan Cache consumes a lot of memory]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044023[Calling setParameter for where clause leads to NullPointerException]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044032[Group by Entity should work as of JPA spec]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044001[NoSuchMethodError: javax.persistence.Table.indexes()]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043994[A potential connection leak detected for connection pool]
