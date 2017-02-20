@@ -1,0 +1,52 @@
+= The MySQL Dialect refactoring
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Starting with Hibernate ORM 5.2.8, MariaDB gets its own Hibernate dialects.
+
+== Why?
+
+While working on http://in.relation.to/2017/02/16/mariadb-dialects/[the new MariaDB Dialects], I realized that the MySQL Dialects would benefit
+from simplifying the version hierarchy.
+
+Previously, the MySQL Dialects used to looks like that:
+
+image::MySQLDialectDiagramBefore.png["MySQL Dialects before refactoring, align="center"]
+
+As you can see, because of the various MySQL storage engines (e.g. MyISAM and InnoDB), the class hierarchy has diverged in multiple branches.
+Once we integrated Hibernate Spatial, the MySQL Dialects have become even more convoluted.
+
+For this reason, we created the https://hibernate.atlassian.net/browse/HHH-11473[HHH-11473] Jira issue, which is fixed in Hibernate 5.2.9.
+
+== How do we stand now?
+
+After refactoring, the MySQL Dialects look as follows:
+
+image::MySQLDialectDiagramAfter.png["MySQL Dialects after refactoring, align="center"]
+
+The following Dialects have been deprecated, therefore, they were not added to the class diagram above:
+
+`MySQLMyISAMDialect`:: Use `MySQLDialect` instead, as well as the `hibernate.dialect.storage_engine=myisam` Environment Variable or System Property.
+`MySQLInnoDBDialect`:: Use `MySQLDialect` instead, as well as the `hibernate.dialect.storage_engine=innodb` Environment Variable or System Property.
+`MySQL5InnoDBDialect`:: Use `MySQL5Dialect` instead, as well as the `hibernate.dialect.storage_engine=innodb` Environment Variable or System Property.
+`MySQL57InnoDBDialect`:: Use `MySQL57Dialect` instead.
+`MySQL56InnoDBSpatialDialect`:: Use `MySQL56SpatialDialect` instead.
+`MySQL5InnoDBSpatialDialect`:: Use `MySQLSpatialDialect` instead.
+
+The `MySQLStorageEngine` abstraction encapsulates the difference between various storage engines,
+By delegating this responsibility to a new abstraction, the MySQL Dialect hierarchy got a lot simpler.
+
+Traditionally, MySQL used the non-transactional `MyISAM` storage engine, and this is the default storage engine for all Dialects that are older than `MySQL55Dialect`.
+From `MySQL55Dialect` onwards, the `InnoDB` storage engine is used by default.
+
+You can always override the default storage engine by providing the `hibernate.dialect.storage_engine` Environment Variable or System Property.
+Unlike other Hibernate configuration properties, this one must not be provided via `persistence.xml` because the Dialect is bootstrapped prior to the configuration management mechanism.
+
+== Conclusion
+
+The deprecated Dialects will be available for a while, but they will surely be removed in a future version of Hibernate, so you better use the new ones instead.
+This refactoring is useful for two reasons. First, supporting MySQL 8.0 requires a single Dialect, not two.
+Second, it's easier for our users as well since the choice is much more straightforward now since there is only one Dialect associated to a given MySQL version.
+
