@@ -1,0 +1,91 @@
+= Meet Marco Pivetta
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/Ocramius[Marco Pivetta], who is one of the maintainer of http://www.doctrine-project.org/[Doctrine],
+a suite of PHP projects that were inspired by Hibernate ORM.
+
+image::MarcoPivetta.jpg["Marco Pivetta, align="center", width="400"]
+
+=== Hi, Marco. Would you like to introduce yourself and tell us a little bit about your developer experience?
+
+I'm Marco "Ocramius" Pivetta, an Italian PHP consultant, currently living in Germany.
+Yes, the nickname is weird, but it comes from an era of Quake 3 Arena, Unreal Tournament & co.
+
+I've been tinkering with computers since I was a child, and have been working with PHP for more than half my life now, developing a love-hate relationship with the language.
+Interestingly, I didn't start with the usual Joomla/Wordpress/Drupal/etc, but built a quite complex website that interacted with a browser game called "OGame", and scraped game information through a Firefox addon that would then provide an additional information to the players.
+
+The reason why this project ("stogame") is important for me is that it included extremely challenging problems to be solved for a rookie with no help at all, and is still one of the most complex projects that I worked on:
+
+* XSS/SQL injections - had those, wasn't fun
+* queuing mechanisms to sync browser extensions and the website - invented my own system
+* optimizing queries and indexes on ~60Gb of MySQL MyISAM tables
+* disaster recoveries on such a system - had those too, wasn't fun either
+* real-time push mechanisms for clients via BOSHXMPP
+* simplistic prediction engine to aid players in decision making
+
+All of the above were built by 15-years-old-me by just spending countless sleepless nights on it, and also jeopardizing my school evaluations.
+Still, this was before libraries, design patterns, mentoring, Github: only me, some friends, and a good amount of design and prediction work.
+
+I then moved on, gave up on the project, failed university (I'm a terrible student), got a few jobs and started using frameworks.
+Eventually, I got to work with all of the typical DB abstraction approaches:
+
+* Active Record (with ZendFramework)
+* Table Data Gateway - in a custom solution
+* Data Mapper - in a Java EE project
+
+I liked the JPA approach in the Java EE project so much that I started looking for a PHP analogue solution for my daytime job, and ended up discovering Doctrine 2.
+
+Since then, I started getting more and more involved with the project, starting from answering questions on the mailing list and StackOverflow.
+Benjamin Eberlei, who was the lead on the project at that time, pushed me towards contributing with actual code changes back in 2011.
+
+Eventually, I became part of the maintainers of the project, and that also boosted my career, allowing me to become a consultant for Roave, which allows me to see dozens of different projects, teams and tools every month, as well as a public speaker.
+
+=== You are one of the developers of Doctrine ORM framework. Can you please tell us what's the goal of Doctrine?
+
+I am actually not one of the developers, but one of the current maintainers.
+The initial designers of the current Doctrine 2 ORM, as far as I know, are Jonathan Wage, Guilherme Blanco, Benjamin Eberlei and Roman Borschel.
+I can probably still answer the question: Doctrine ORM tries to abstract the "database thinking" away from PHP software projects, while still being a leaky abstraction on purpose.
+
+To clarify, most PHP developers are used to developing applications from the database up to the application layer, rather than from the domain logic down, and that's a quite widespread problem that leads to hardly maintainable and unreadable code.
+This tool gets rid of most of those problems, by still allowing developers to access the database directly when needed.
+
+=== Ruby on Rails employs the Active Record pattern. Why did Doctrine choose the ORM paradigm instead?
+
+Interestingly, Doctrine 1.x was an Active Record library, and also a quite good one, but it became evident quite quickly that the JPA specification and Data Mapper plus Unit of Work were better solutions altogether.
+
+Specifically, the Data Mapper approach allows consumers of the library to write abstractions that decouple the tool from the domain almost completely (there are always limitations to this).
+The Unit of Work pattern has an increased memory impact for PHP applications, but also massively reduces required query operations (via in-memory identity maps) while adding some transactional boundaries, and that is a big win for most PHP apps, which often don't even use transactions at all.
+
+There are more advantages, but I personally wouldn't ever consider using Active Record again due to its limitations and inherent framework coupling.
+This doesn't mean that Active Record doesn't work, but I've been burnt many more times with AR than with DM.
+
+=== Since Hibernate ORM has been influencing Doctrine, can you tell use the similarities and differences between these two frameworks?
+
+Doctrine is hugely inspired by Hibernate and the JPA, although we couldn't really copy things, both due to licensing issues and life-cycle differences in Java and PHP software.
+
+Doctrine resembles Hibernate in the Unit of Work, mappings, basic event system, second level cache and the DQL language (HQL in Hibernate).
+We even designed an annotation system for PHP, since the language doesn't support them, and it currently is the de-facto standard for custom annotations in PHP libraries, and we initially only needed this to simulate inline mappings like Hibernate allows them.
+
+Where things differ a lot are flexibility and lifecycle, since Java is an AOT-compiled language with a powerful JIT and generally deployed in long-running applications.
+
+PHP is an interpreted language, and its strength is also its pitfall: the typical share-nothing architecture allows for short-lived, memory-safe, retry-able application runs.
+That also means that we have no connection pooling, and the ORM internals are much more inflexible and less event-driven than Hibernate's due to memory and execution time constraints.
+That also means that we rarely encounter memory issues due to large Unit of Work instances, and connections and entity instances aren't shared across separate web application page loads, and slow ORM will unlikely slow down an entire application server.
+
+Another huge difference is managed state: DETACHED makes little sense in the PHP world, since a detached entity may only come from serialized state.
+In Doctrine 3.x, we are planning to remove support for detaching entities, since storing serialized objects in PHP is generally leading to security issues and more trouble.
+
+As you can see, the differences are indeed mostly in the lifecycle, but each language and framework has its strengths and pitfalls.
+
+=== We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?
+
+I'm probably being weird here, butt I don't lack any particular features from either ORM at this time.
+What would be interesting is reducing support for entity and transaction lifecycle events, since most consumers of these ORMs tend to code application and domain logic in those, while they were mostly intended for technical tasks, such as creating audit logs and executing pre- and post- DB cleanup tasks.
+
+A possible improvement is to explore saving/loading of single aggregate-root-acting entities attached to a Unit of Work, which is only responsible for tracking state in child aggregates.
+This is only to prevent sharing entity references across aggregates, and to prevent DB transactions from crossing aggregate root boundaries.
+
+*Thank you, Marco, for taking your time. It is a great honor to have you here. To reach Marco, you can follow him on https://twitter.com/Ocramius[Twitter].*
