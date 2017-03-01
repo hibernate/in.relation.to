@@ -1,0 +1,56 @@
+= Meet Kevin Peters
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/_Atze[Kevin Peters], a Software Developer from Germany and Hibernate aficionado.
+
+image::KevinPeters.jpg["Kevin Peters, align="center", width="400"]
+
+=== Hi, Kevin. Would you like to introduce yourself and tell us a little bit about your developer experience?
+
+My name is Kevin Peters, and I live in Germany where I work as a Software Developer.
+My first contact with the Java language was around 2005 during my vocational training, and I fell in love with it immediately.
+
+I worked for several companies leveraging Java and Spring to implement ERP extensions, customizing eCommerce systems and PIM solutions.
+Nearly one year ago, I joined the https://www.gbtec.de/[GBTEC Software + Consulting AG], one of the leading suppliers of business process management (BPM) software,
+and there we are now reimplementing a BPM system in a cloud-based manner using Dockerized Spring Boot microservices.
+
+=== You have recently mentioned on Twitter https://twitter.com/d0gb0t1/status/83547320766683136[a DataSource proxy solution for validating auto-generated statements]. Can you tell us what about this tool and how it works?
+
+We use Spring Data JPA with Hibernate as JPA provider to implement our persistence layer, and we really enjoy the convenience coming along with it.
+But we also know about the "common" obstacles like Cartesian Products or the N+1 query problem while working with an ORM framework.
+
+In our daily technical discussions and during knowledge transfer sessions we try to raise awareness for these topics among our colleagues,
+and in my opinion, the best way to achieve this is implementing tests and real world code examples showing that practically.
+
+I started to prepare a small mapping example for one of our technical meetings, called "techtime", to demonstrate the "unordered element collection recreation" issue,
+and I wanted to show the unexpected amount of queries fired in this simple use case.
+
+Fortunately, I came across the https://github.com/ttddyy/datasource-proxy[ttddyy/datasource-proxy] GitHub project which helped me a lot to make that problem tangible.
+The datasource-proxy project empowers you to wrap your existing datasource with a proxy and allows you to count all executed queries separated by query type (e.g. `INSERT`, `UPDATE`, etc.).
+With that opportunity you can not only write tests which assert that you are doing the right thing within your use cases, you can also check if you are doing it in an effective way and avoid the traps I did mention before.
+
+At the time when our Coding Architect Ingo Griebsch suggested to use this approach to enhance our test environment by automating the hunt for performance penalties, you caught us https://vladmihalcea.com/2014/02/01/how-to-detect-the-n-plus-one-query-problem-during-testing/[talking about your article] on Twitter.
+
+=== Proxies are a great way to add cross-cutting concerns without cluttering business logic. For instance, https://github.com/vladmihalcea/flexy-pool[FlexyPool] brings Monitoring and Fallback capabilities to connection pools. Are you using Proxies for other concerns as well, like logging statements?
+
+There are many ways to enrich application code with proxies, facades or aspects. Starting with small things like logging with a facade like SLF4J, using Spring Security for access control, Hystrix service-to-service communication or even "basic" stuff like transactions in Spring Data, all these features are working with proxies, and we won't miss them anymore.
+
+=== Why did you choose Hibernate for that particular project, and did it meet your expectations, especially when it comes to application performance?
+
+Hibernate provides a lot of convenience to us, especially if we combine it with Spring Data JPA.
+But the fact I enjoy most is that you can still switch to Hibernate specific features like Hibernate Named Queries or special Hibernate annotations.
+
+It's important to know when you can relax using "magic" ORM features and when the opposite is needed - forgo bidirectional relations and write HQL instead or even using database native queries to receive complex data.
+In our opinion, Hibernate offers the best balance between convenience and performance if one knows how to use it.
+
+Hence, we have a quite complex data model and customers which store a lot of data it's vital for our software to fetch and write data in a performant way in every of our use cases.
+And in case of any doubts, at least https://vladmihalcea.com/[your articles] help us getting things done right.
+
+=== We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?
+
+In general, we love the feature set of Hibernate. Only the support of UNION HQL queries/Criteria API would be an awesome feature that we missed recently.
+
+*Thank you, Kevin, for taking your time. It is a great honor to have you here. To reach Kevin, you can follow him on https://twitter.com/_Atze[Twitter].*
