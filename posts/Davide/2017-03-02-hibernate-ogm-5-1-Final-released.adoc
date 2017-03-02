@@ -1,0 +1,93 @@
+= "Hibernate OGM 5.1 Final is out"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Good news!
+
+We released http://hibernate.org/ogm/[Hibernate OGM] 5.1 Final!
+
+Compared to the latest candidate release, there are not many changes. You can have a look at the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=22351[5.1.0.Final changelog]
+to get all the details.
+
+== What's the difference with 5.0 Final?
+
+I'm glad you asked, this version:
+
+* uses http://hibernate.org/orm/[Hibernate ORM] 5.1
+* supports Infinispan Remote via the http://infinispan.org/docs/stable/user_guide/user_guide.html#hot_rod_protocol[Hot Rod protocol]
+* supports Neo4j remote via the http://boltprotocol.org[Bolt] protocol and the http://neo4j.com/docs/rest-docs/current[Http interface]
+* uses Hibernate Search 5.6 (http://in.relation.to/2017/01/30/hibernate-search-5-6-0-Final-and-5-7-0-CR1[it works with Elasticsearch])
+* reduces the number of database calls by grouping the operations
+* supports https://docs.mongodb.com/manual/aggregation/#aggregation-pipeline[aggregation]
+  in MongoDB native queries with https://docs.jboss.org/hibernate/stable/ogm/reference/en-US/html_single/#ogm-mongodb-cli-syntax[CLI syntax]
+
+If you need to upgrade from a version before 5.1, you can find help on the
+https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes].
+
+== Does it work with WildFly 10?
+
+Yes, it does.
+
+However, WildFly 10 ships with Hibernate ORM 5.0 and there are a couple of configuration steps
+to make it work. The easiest way is to download the WildFly modules for
+https://repo1.maven.org/maven2/org/hibernate/hibernate-orm-modules/5.1.4.Final/hibernate-orm-modules-5.1.4.Final-wildfly-10-dist.zip[Hibernate ORM]
+and
+https://repo1.maven.org/maven2/org/hibernate/ogm/hibernate-ogm-modules/5.1.0.Final/hibernate-ogm-modules-5.1.0.Final-wildfly-10-dist.zip[Hibernate OGM]
+; unpack them in the `modules` folder of your WildFly base directory and set the following property
+in your `persistence.xml`:
+
+====
+[source, XML]
+----
+<property name="jboss.as.jpa.providerModule" value="org.hibernate:5.1"/>
+----
+====
+
+If you are still confused about the process,
+we explain it with more details in the paragraph
+https://docs.jboss.org/hibernate/ogm/5.1/reference/en-US/html_single/#_packaging_hibernate_ogm_applications_for_wildfly_10[4.5.1. Packaging Hibernate OGM applications for WildFly 10]
+of the documentation.
+
+== Where can I get it?
+
+You can get the required core library using the following Maven coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-core:5.1.0.Final_ 
+
+and these are the backends currently available for 5.1.0.Final:
+
+* http://cassandra.apache.org[Cassandra]: _org.hibernate.ogm:hibernate-ogm-cassandra:5.1.0.Final_
+* http://couchdb.apache.org[CouchDB]: _org.hibernate.ogm:hibernate-ogm-couchdb:5.1.0.Final_
+* http://infinispan.org[Infinispan] 
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan:5.1.0.Final_
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.1.0.Final_
+* http://www.ehcache.org[Ehcache]: _org.hibernate.ogm:hibernate-ogm-ehcache:5.1.0.Final_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.1.0.Final_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.1.0.Final_
+* http://redis.io[Redis]: _org.hibernate.ogm:hibernate-ogm-redis:5.1.0.Final_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.1.0.Final[from Sourceforge].
+
+== What's next?
+
+The new features will include
+https://hibernate.atlassian.net/browse/OGM-75[custom types]
+and https://hibernate.atlassian.net/browse/OGM-470[the ability to expose unmapped
+attributes]. Also, Hibernate OGM 5.2 will work with Hibernate ORM 5.2.
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+We are looking forward to hear your feedback!
+
