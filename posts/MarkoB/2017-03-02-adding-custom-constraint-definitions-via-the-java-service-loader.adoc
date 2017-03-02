@@ -1,0 +1,261 @@
+= "Adding custom constraint definitions via the Java service loader"
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Today we'll be talking about Hibernate Validator and how you can provide your own constraints
+and/or validators in a fully self-contained manner. Meaning packaging it all into its own JAR file,
+in a way that others can use your library by simply adding it to the classpath.
+
+This functionality is based on Hibernate Validator usage of Java's https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader]
+mechanism that allows to https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_constraint_definitions_via_code_serviceloader_code[register additional constraint definitions].
+But more on the details later.
+
+What can be a real life scenario for building your own library with constraints and sharing it? Well, let's say that
+you are building some library with data classes that user might want to validate. As it may be tough
+to keep track of all such libraries and write/maintain all those constraints for them - Hibernate
+Validator provides authors of such libraries a possibility to write and share their own validation extensions.
+Which can be picked up by Hibernate Validator and used to validate your data classes.
+
+Also this https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader] mechanism allows to
+solve another problem. As you are trying to be a good developer and provide end users of your library only with the
+relevant classes and hide implementation details from them, you may not want to expose your validator implementation by
+mentioning it in the `validatedBy()` parameter of the `@Constraint` annotation.
+By using the approach described in this post you can achieve all these thing.
+
+For our examples we will be creating Maven projects with two modules - one will contain validators and represent
+a "library" that can be shared, another module will be a consumer of this library and will contain some tests.
+
+Enough of the talking, let's validate some beans! That's why we all gathered here, right? :)
+
+== Using custom annotations and validators
+
+First let's consider a case of adding your own constraint annotation and a corresponding validator.
+
+=== Time, it needs time ...
+
+While Hibernate Validator 5.4 supports a wide range of the Java 8 https://jcp.org/en/jsr/detail?id=310[date/time API]
+(and Bean Validation 2.0 will move this support to the specification level),
+there are some types not supported, one of them being https://docs.oracle.com/javase/8/docs/api/java/time/Duration.html[`Duration`]. This
+type is not describing a point in time so the regular date/time constraints (`@Future` / `@Past`) do not make sense
+for it. So if for instance we wanted to validate that a given duration has a specified minimum length, a new constraint is needed.
+Let's call it `@DurationMin`.
+
+Our new constraint annotation might look like this:
+
+[source,java]
+._DurationMin.java_
+----
+@Documented
+@Constraint(validatedBy = { })
+@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+@Retention(RUNTIME)
+@Repeatable(List.class)
+@ReportAsSingleViolation
+public @interface DurationMin {
+
+    String message() default "{com.acme.validation.constraints.DurationMin.message}";
+    Class<?>[] groups() default { };
+    Class<? extends Payload>[] payload() default { };
+
+    long value() default 0;
+    ChronoUnit units() default ChronoUnit.NANOS;
+
+    /**
+     * Defines several {@code @DurationMin} annotations on the same element.
+     */
+    @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+    @Retention(RUNTIME)
+    @Documented
+    @interface List {
+        DurationMin[] value();
+    }
+}
+----
+
+Now that we have an annotation, we need to create a corresponding constraint validator.
+To do that you need to implement the `ConstraintValidator<DurationMin, Duration>` interface, which
+contains two methods:
+
+* `initialize()` - initializes the validator based on annotation parameters
+* `isValid()` - performs actual validation
+
+An implementation might look like this:
+
+[source,java]
+._DurationMinValidator.java_
+----
+public class DurationMinValidator implements ConstraintValidator<DurationMin, Duration> {
+
+    private Duration duration;
+
+    @Override
+    public void initialize(DurationMin constraintAnnotation) {
+        this.duration = Duration.of( constraintAnnotation.value(), constraintAnnotation.units() );
+    }
+
+    @Override
+    public boolean isValid(Duration value, ConstraintValidatorContext context) {
+        // null values are valid
+        if ( value == null ) {
+            return true;
+        }
+        return duration.compareTo( value ) < 1;
+    }
+}
+----
+
+As we are creating a new constraint annotation, we should also provide a default message for it. This can be
+done by placing a `ContributorValidationMessages.properties` property file in the classpath. This property file should
+contain a key/message pair, where key is the one used in annotation declaration (in our case it's
+`com.acme.validation.constraints.DurationMin.message`) and message is the one you would like to show
+when validation fails. Our property file looks like so:
+
+[source]
+._ContributorValidationMessages.properties_
+----
+com.acme.validation.constraints.DurationMin.message = must be greater than or equal to {value} {units}
+----
+
+The bundle `ContributorValidationMessages` is queried by Hibernate Validator if
+the standard `ValidationMessages` bundle doesn't contain a given message key,
+allowing library authors to provide default messages for their constraints as part of their JAR.
+
+If you leave everything else as is, your constraint annotation will live its own life without knowing about the presence
+of validator. Hibernate Validator will not know of the validator as well. So to make sure that Hibernate Validator
+discovers your `DurationMinValidator`, you need to create the file `META-INF/services/javax.validation.ConstraintValidator`
+and put the fully qualified name of the validator implementation in it:
+
+[source]
+._META-INF/services/javax.validation.ConstraintValidator_
+----
+com.acme.validation.validators.DurationMinValidator
+----
+
+After all of this, your new constraint annotation on `Duration` elements can be used like this:
+
+[source,java]
+._Task.java_
+----
+public class Task {
+
+    private String taskName;
+    @DurationMin(value = 2, units = ChronoUnit.HOURS)
+    private Duration timeSpent;
+
+    public Task(String taskName, Duration timeSpent) {
+        this.taskName = taskName;
+        this.timeSpent = timeSpent;
+    }
+}
+----
+
+The project structure should look similar to next one:
+
+image::external_validators_project_structure_duration.png["project structure, align="center", width="400"]
+
+The whole source code presented here can be found in the https://github.com/hibernate/hibernate-demos/tree/master/hibernate-validator/time-duration-validator-example[hibernate-demos] repository on GitHub.
+
+== Use standard constraints for non standard classes
+
+Now let's consider the case where you would want a standard Bean Validation
+constraint to support some other type, besides the ones that are already supported.
+
+=== ThreeTen Extra types validation
+
+As we were talking about date/time related validation, let's stay on the same topic for this example as well.
+In this section we will look at http://www.threeten.org/threeten-extra/[ThreeTen Extra types] - a great library
+that provides additional date and time classes to complement those already present in Java.
+
+Bean Validation provides support for validating temporal types via the
+`@Past`/`@Future` annotations. So we would want to use these annotations on ThreeTen Extra types as well.
+To keep this example simple we will provide validators only for http://www.threeten.org/threeten-extra/apidocs/org/threeten/extra/YearWeek.html[`YearWeek`]
+and http://www.threeten.org/threeten-extra/apidocs/org/threeten/extra/YearQuarter.html[`YearQuarter`].
+
+Let's start with implementing `ConstraintValidator<Future, YearWeek>` interface:
+
+[source,java]
+._FutureYearWeekValidator.java_
+----
+public class FutureYearWeekValidator implements ConstraintValidator<Future, YearWeek> {
+
+    @Override
+    public void initialize(Future constraintAnnotation) {
+    }
+
+    public boolean isValid(YearWeek value, ConstraintValidatorContext context) {
+        if ( value == null ) {
+            return true;
+        }
+        return YearWeek.now().isBefore( value );
+    }
+}
+----
+
+The next step is to provide a list of implemented validators in `META-INF/services/javax.validation.ConstraintValidator`
+file:
+
+[source,java]
+._META-INF/services/javax.validation.ConstraintValidator_
+----
+com.acme.validation.validators.FutureYearQuarterValidator
+com.acme.validation.validators.FutureYearWeekValidator
+com.acme.validation.validators.PastYearQuarterValidator
+com.acme.validation.validators.PastYearWeekValidator
+----
+
+After this we can package it all in a JAR file and we are ready to use our validators and share them with
+the world!
+
+In the end our project structure should look similar to this:
+
+image::external_validators_project_structure_threeten_extra.png["project structure, align="center", width="400"]
+
+Now you can place `@Past`/`@Future` annotations on `YearQuarter` and `YearWeek` types like this:
+
+[source,java]
+._PastEvent.java_
+----
+public static class PastEvent {
+
+    @Past
+    private YearWeek yearWeek;
+    @Past
+    private YearQuarter yearQuarter;
+
+    public PastEvent(YearWeek yearWeek, YearQuarter yearQuarter) {
+        this.yearWeek = yearWeek;
+        this.yearQuarter = yearQuarter
+    }
+}
+----
+
+[source,java]
+._FutureEvent.java_
+----
+public static class FutureEvent {
+
+    @Future
+    private YearWeek yearWeek;
+    @Future
+    private YearQuarter yearQuarter;
+
+    public FutureEvent(YearWeek yearWeek, YearQuarter yearQuarter) {
+        this.yearWeek = yearWeek;
+        this.yearQuarter = yearQuarter
+    }
+}
+----
+You also can find this example at https://github.com/hibernate/hibernate-demos/tree/master/hibernate-validator/threeten-extra-validator-example[GitHub].
+
+== Conclusion
+
+So, as you can see, custom constraint validators can be built and shared in a fully self-contained way. And it can be done in a few
+simple steps:
+
+- create a validator implementing the `ConstraintValidator` interface
+- reference this validator's fully qualified name in a `META-INF/services/javax.validation.ConstraintValidator` file
+- (optional) define custom/default messages by adding a `ContributorValidationMessages.properties` file
+- package it all as a JAR
+- you are ready to share your constraints, people can add them by simply ading your JAR to the classpath
