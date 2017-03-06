@@ -1,0 +1,34 @@
+= Microservices, data and patterns
+Emmanuel Bernard
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+One thing you don't hear enough about in the microservices world is data.
+There is plenty of info on how your application should be _stateless_, cloud native, yadayadayada.
+But at the end of the day, you need to deal with state and store it somewhere.
+
+I can't blame this blind spot.
+Data is hard.
+Data is even harder in a unstable universe where your containers _will_ be killed randomly and eventually.
+These problems are being tacked though in many fronts and we do our http://infinispan.org[share].
+
+But once you have dealt with the elasticity problem, you need to address a second problem: data evolution.
+This is even more pernicious in a microservices universe where:
+
+* The data structure can and will evolve faster per microservice.
+  Remember this individual puppy is supposed to be small, manageable and as agile as a ballet dancer.
+* For your services to be useful, data must flow from one microservice to another without interlock.
+  So they share data structure directly or via copy, implicitly or via an explicit schema, etc.
+  Requiring to release microservices A, B and C together because they share a common data structure is a big no no.
+
+My colleague https://github.com/yanaga[Edson Yanaga] has written a short but insightful book on exactly those problems.
+How to deal with data in a zero downtime microservice universe.
+How to evolve your data structure in a safe and incremental way.
+How do do that with your good old legacy RDBMS.
+And a few more subjects.
+
+If you are interested in, or embarking in a microservices journey, I recommend you read this focused book.
+This will make you progress in your thinking.
+
+The cool thing is that this book is free (or rather Red Hat paid the bill).
+Go grab a copy of https://developers.redhat.com/download-manager/file/Migrating_to_Microservices_Databases_Red_Hat.pdf[Migrating to microservice databases - O'Reilly] (you'll need to register).
