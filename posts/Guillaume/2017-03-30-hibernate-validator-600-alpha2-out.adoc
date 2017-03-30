@@ -1,0 +1,131 @@
+= "Hibernate Validator 6.0.0.Alpha2 is out with improved Bean Validation 2.0 support"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate Validator 6 is going to be the Reference Implementation of Bean Validation 2.0. This Alpha2 release is coordinated with the 2.0.0.Alpha2 release of the Bean Validation specification.
+
+It is also a playground used to validate future enhancements of the Bean Validation specification so feedback on the subjects presented here is very welcome!
+
+Note that Hibernate Validator 6 requires JDK 8 or above.
+
+If you missed the Alpha1 release, consulting http://in.relation.to/2017/02/16/hibernate-validator-600-alpha1-out/[its announcement] might be beneficial to you before continuing your reading.
+
+== What's new since Alpha1
+
+=== Improved container element validation support
+
+Container element validation support is the big new feature of Bean Validation 2.0 and it got some more love during this cycle.
+
+==== Programmatic API and XML support
+
+To obtain the equivalent of:
+[source, java]
+----
+public class FishTank {
+
+    private Optional<@Valid FishTankModel> model;
+
+    private Map<@Size(min = 3, max = 10) String, @Min(1) Integer> fishCountByType;
+}
+----
+
+it is now possible to declare container element type constraints and cascaded validation either via an XML mapping configuration (which is part of the Bean Validation 2.0 specification):
+
+[source, xml]
+----
+[...]
+    <bean class="com.acme.FishTank" ignore-annotations="false">
+        <field name="model">
+            <containerElementType>
+                <valid />
+            </containerElementType>
+        </field>
+        <field name="fishCountByType">
+            <containerElementType typeArgumentIndex="0">
+                <constraint annotation="javax.validation.constraints.Size">
+                    <element name="min">
+                        <value>3</value>
+                    </element>
+                    <element name="max">
+                        <value>10</value>
+                    </element>
+                </constraint>
+            </containerElementType>
+            <containerElementType typeArgumentIndex="1">
+                <constraint annotation="javax.validation.constraints.Min">
+                    <element name="value">
+                        <value>1</value>
+                    </element>
+                </constraint>
+            </containerElementType>
+        </field>
+    </bean>
+[...]
+----
+
+or via the (implementation specific) programmatic API:
+
+[source, java]
+----
+ConstraintMapping newMapping = config.createConstraintMapping();
+newMapping
+    .type( FishTank.class )
+        .property( "model", FIELD )
+            .containerElementType()
+                .valid()
+        .property( "fishCountByType", FIELD )
+            .containerElementType( 0 )
+                .constraint( new SizeDef().min( 3 ).max( 10 ) )
+            .containerElementType( 1 )
+                .constraint( new MinDef().value( 1 ) );
+----
+
+==== Other improvements
+
+We also made a couple of more minor improvements:
+
+ * the `TYPE_ARGUMENT` node type has been renamed to `CONTAINER_ELEMENT` (type argument don't make sense for annotated array elements)
+ * we allow per context custom value extractors
+ * we allow value extractors to be contributed using the service loader mechanism
+ * we allow to specify value extractors using XML configuration
+ * we explore the parent classes and interfaces to search the `ValueExtractor` definition
+
+=== Support for the new constraints added to Bean Validation 2.0
+
+In the Alpha2 release of Bean Validation 2.0, we introduced the following new constraints:
+
+ * `@NotBlank`: check that a char sequence is not blank (i.e. not null, and length of trimmed char sequence > 0)
+ * `@NotEmpty`: check that an element (char sequence, collection, array) is not null and not empty
+ * `@Email`: check that a char sequence is a valid email
+ * `@Positive`: check that a number is positive
+ * `@Negative`: check that a number is negative
+
+We added support for these new constraints to Hibernate Validator.
+
+=== Performance improvements
+
+We started to run a few benchmarks on Hibernate Validator 6 and we fixed a few performance regressions.
+
+6.0.0.Alpha2 is now significantly faster than 5.4, mostly thanks to the new `ValueExtractor` design.
+
+== Getting 6.0.0.Alpha2
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.0.0.Alpha2_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.Alpha2/hibernate-validator-6.0.0.Alpha2-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.Alpha2/hibernate-validator-6.0.0.Alpha2-dist.zip/download[ZIP]).
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
+== What's next?
+
+Bean Validation 2.0 and Hibernate Validator 6 are still under active development. We will release new alphas on a regular basis.
