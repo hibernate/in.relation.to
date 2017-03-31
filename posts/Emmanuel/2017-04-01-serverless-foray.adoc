@@ -1,0 +1,65 @@
+= New foray into serverless - announcing library shift
+Emmanuel Bernard
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+Red Hat has been exploring serverless (aka FaaS) through the https://funktion.fabric8.io/docs/[Fabric8 Funktion] project.
+It has been long due for us to get serious on the subject.
+We are turning all of our libraries into services starting today.
+This is going to be a multi year effort but we are committed to it.
+
+We thought hard and long about which service to start with.
+In our performance lab, we realized that the slowest and most expensive part of serverless functions was CPU branch misprediction.
+In a serverless approach, you want to squeeze as much operations per CPU cycle as possible.
+Any misprediction has huge consequences and kill any of the mechanical sympathy effort we put in libraries like vert.x.
+
+In our experiments, we found that the optimal solution was to get rid of `if` branches in serverless functions.
+We are proud to introduce _IF as a Service_ or _IFaaS_ (pronounced aye face).
+Your code changes from:
+
+[source,java]
+----
+user = retrieveUserProfile();
+if ( user.isCustomer() ) {
+    displayAds();
+}
+user.extractRevenu();
+----
+
+to
+
+[source,java]
+----
+user = retrieveUserProfile();
+if ( user.isCustomer(), "displayAdFunction" );
+user.extractRevenu();
+----
+
+We have been using it for a year now and forked the javac compiler to convert each `if` branch into a proper if service call.
+But we also completely re shaped how we write code to pure linear code, changing all `if` primitives with their service call equivalent.
+This is great because it also fixed the tab vs space problem: we no longer have any indenting in our code.
+Two stones in one bird !
+I cannot emphasize enough how much development speed we gained in our team by fighting less on each pull request against these tab bastards.
+
+The good thing about this external `if` service is that you can add a sidecar proxy to cache and simulate branch predictions on https://www.openshift.org[OpenShift] and scale then horizontally ad nauseam.
+This is a huge benefit compared to the _hardcoded_ and embedded system that is a CPU.
+We typically change the branch implementation 3 to 5 times a day depending on user needs.
+
+== FAQ
+
+Is `else` a function too?::
+Else is not part of the MVP but we have it working in the labs.
+We are currently struggling to implement `for` loops, more specifically nested ones.
+We have _HTTP error 310: too many redirects_ errors.
+
+Where can I download it ?::
+You can't, it's a service dummy.
+Go to <ifaas.io>.
+
+Can I use it in https://golang.org[Go]?::
+Goggle did not accept our pull request.
+We have a fork called https://github.com/hibernate/nogo[NoGo].
+
+What is the pricing model?::
+The basic `if` service is and will remain free.
+We are working on added values with pro and enterprise plans.
