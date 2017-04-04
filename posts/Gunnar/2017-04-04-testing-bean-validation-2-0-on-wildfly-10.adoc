@@ -1,0 +1,178 @@
+= "Testing Bean Validation 2.0 on WildFly 10"
+Gunnar Morling
+:awestruct-tags: [ "Discussions", "Hibernate Validator" ]
+:awestruct-layout: blog-post
+---
+
+As the Bean Validation 2.0 spec is making good progress,
+you may want to try out the http://beanvalidation.org/news/2017/01/19/bean-validation-2-0-progress-report/[features of the new spec revision] with your existing Java EE applications.
+
+WildFly, as a compatible Java EE 7 implementation, comes with Bean Validation 1.1 and its reference implementation Hibernate Validator 5 out of the box.
+In the following we'll show you how easy it is to upgrade the server's modules to the latest Bean Validation release, using a patch file provided by Hibernate Validator.
+
+== Getting the patch files
+
+First download the patch file of the Hibernate Validator version you want to upgrade to.
+The latest release of Hibernate Validator at this point is link:/2017/03/30/hibernate-validator-600-alpha2-out/[6.0.0.Alpha2]
+which implements the http://beanvalidation.org/news/2017/03/31/bean-validation-2-0-alpha2-is-out/[2.0.0.Alpha2] release of Bean Validation.
+You can simply fetch the patch file for this release from http://repo1.maven.org/maven2/org/hibernate/validator/hibernate-validator-modules/6.0.0.Alpha2/hibernate-validator-modules-6.0.0.Alpha2-wildfly-10.1.0.Final-patch.zip[Maven Central].
+If you are interested in the latest 5.x release of Hibernate Validator
+- which is the current stable implementation of Bean Validation 1.1 -
+you'd grab http://repo1.maven.org/maven2/org/hibernate/hibernate-validator-modules/5.4.1.Final/hibernate-validator-modules-5.4.1.Final-wildfly-10.1.0.Final-patch.zip[this file] instead.
+
+Both patches can be applied to WildFly 10.1 instances.
+Generally, we provide patch files for the latest stable version of WildFly at the time of the Hibernate Validator release.
+
+== Applying and undoing the patch
+
+Once you've downloaded the patch file, change to the installation directory of your WildFly instance and run the following command to apply the patch:
+
+====
+[source]
+[subs="verbatim,attributes"]
+----
+./bin/jboss-cli.sh --command="patch apply hibernate-validator-modules-6.0.0.Alpha2-wildfly-10.1.0.Final-patch.zip"
+----
+====
+
+Now (re-)start WildFly and you can begin to experiment with the new features of Hibernate Validator 6 and Bean Validation 2.0,
+such as the validation of container elements (think `List<@Email String> emails`),
+support for the Java 8 date/time API or the new built-in constraints such as `@NotEmpty` or `@Email`.
+
+The nice thing of the patch mechanism is that patches aren't actually modifying the patched WildFly instance.
+Any modules contained in the patch are just added in a separate "overlays" directory.
+
+So in case you want go back to the version of Hibernate Validator originally coming with the server,
+just run this command to undo the patch:
+
+====
+[source]
+[subs="verbatim,attributes"]
+----
+./bin/jboss-cli.sh --command="patch rollback --reset-configuration=true"
+----
+====
+
+You can learn more about the WildFly patching infrastructure in general https://developer.jboss.org/wiki/SingleInstallationPatching/[here] and http://www.mastertheboss.com/jboss-server/jboss-configuration/managing-wildfly-and-eap-patches[here].
+
+== Bonus: Fully automated update for integration tests
+
+In case you are running integration tests for your applications using the fabulous http://arquillian.org[Arquillian framework],
+you can add the following configuration to your _pom.xml_.
+This will first download and extract WildFly, then download the patch file and apply it to the unzipped server:
+
+[source,xml]
+----
+...
+<properties>
+    <wildfly.version>10.1.0.Final</wildfly.version>
+    <wildfly.core.version>1.0.1.Final</wildfly.core.version>
+    <hibernate.validator.version>6.0.0.Alpha2</hibernate.validator.version>
+</properties>
+...
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <version>3.0.0</version>
+            <executions>
+                <execution>
+                    <id>unpack-wildfly</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                        <goal>unpack</goal>
+                    </goals>
+                    <configuration>
+                        <artifactItems>
+                            <artifactItem>
+                                <groupId>org.wildfly</groupId>
+                                <artifactId>wildfly-dist</artifactId>
+                                <version>${wildfly.version}</version>
+                                <type>tar.gz</type>
+                                <overWrite>false</overWrite>
+                                <outputDirectory>${project.build.directory}</outputDirectory>
+                            </artifactItem>
+                        </artifactItems>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>copy-patch</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                        <goal>copy</goal>
+                    </goals>
+                    <configuration>
+                        <artifactItems>
+                            <artifactItem>
+                                <groupId>org.hibernate.validator</groupId>
+                                <artifactId>hibernate-validator-modules</artifactId>
+                                <version>${hibernate.validator.version}</version>
+                                <classifier>wildfly-${wildfly.version}-patch</classifier>
+                                <type>zip</type>
+                                <outputDirectory>${project.build.directory}</outputDirectory>
+                            </artifactItem>
+                        </artifactItems>
+                    </configuration>
+                </execution>
+            </executions>
+        </plugin>
+        <plugin>
+            <groupId>org.wildfly.plugins</groupId>
+            <artifactId>wildfly-maven-plugin</artifactId>
+            <version>1.1.0.Final</version>
+            <dependencies>
+                <!-- Contains the patch command -->
+                <dependency>
+                    <groupId>org.wildfly.core</groupId>
+                    <artifactId>wildfly-patching</artifactId>
+                    <version>${wildfly.core.version}</version>
+                </dependency>
+            </dependencies>
+            <executions>
+                <!-- Currently the WF Maven plug-in cannot apply offline commands,
+                     although patch itself wouldn't require a running server;
+                     see https://issues.jboss.org/projects/WFMP/issues/WFMP-11 -->
+                <execution>
+                    <id>start-wildfly-for-patching</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                        <goal>start</goal>
+                    </goals>
+                </execution>
+                <execution>
+                    <id>apply-patch-file</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                        <goal>execute-commands</goal>
+                    </goals>
+                    <configuration>
+                        <fail-on-error>false</fail-on-error>
+                        <commands>
+                            <command>patch apply --path ${project.build.directory}/hibernate-validator-modules-${hibernate.validator.version}-wildfly-${wildfly.version}-patch.zip</command>
+                        </commands>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>shutdown-wildfly-for-patching</id>
+                    <phase>pre-integration-test</phase>
+                    <goals>
+                        <goal>shutdown</goal>
+                    </goals>
+                </execution>
+            </executions>
+            <configuration>
+                <jbossHome>${project.build.directory}/wildfly-${wildfly.version}/</jbossHome>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+...
+----
+
+Applying this configuration will give you a WildFly instance with the latest release of Bean Validation and Hibernate Validator
+which you then can use as a deployment target for your integration tests, employing the latest Bean Validation 2.0 features.
+You can find a complete Maven project with a simple Arquillian test on GitHub in the https://github.com/hibernate/hibernate-demos/tree/master/hibernate-validator/updating-hv-in-wildfly[hibernate-demos] repository.
+
+As you see it's not difficult to upgrade WildFly 10 to Bean Validation 2.0, so don't hesitate and give it a try.
+Your feedback on the new spec revision is always welcome on the http://lists.jboss.org/pipermail/beanvalidation-dev/[mailing list] or in https://forum.hibernate.org/viewforum.php?f=26[the forum].
