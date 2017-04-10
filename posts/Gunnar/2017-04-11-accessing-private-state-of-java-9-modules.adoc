@@ -1,0 +1,247 @@
+= "Accessing private state of Java 9 modules"
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Data-centric libraries often need to access private state of classes provided by the library user.
+
+An example is Hibernate ORM.
+When the `@Id` annotation is given on a field of an entity, Hibernate will by default directly access fields - as opposed to calling property getters and setters - to read and write the entity's state.
+
+Usually, such fields are private.
+Accessing them from outside code has never been a problem, though.
+The https://docs.oracle.com/javase/tutorial/reflect/[Java reflection API] allows to make private members accessible and access them subsequently from other classes.
+With the advent of the http://openjdk.java.net/projects/jigsaw/spec/sotms/[module system in Java 9], rules for this will change a bit, though.
+
+In the following we'll explore the options authors of a library provided as a Java 9 module have to access private state of classes defined in other modules.
+
+== An example
+
+As an example, let's consider a simple method which takes an object - e.g. an instance of an entity type defined by the user -
+and a field name and returns the value of the object's field of that name.
+Using reflection, this method could be implemented like this
+(for the sake of simplicity, we are ignoring the fact that a security manager could be present):
+
+[source,java]
+----
+package com.example.library;
+
+public class FieldValueAccessor {
+
+    public Object getFieldValue(Object object, String fieldName) {
+        try {
+            Class<?> clazz = object.getClass();
+            Field field = clazz.getDeclaredField( fieldName );
+            field.setAccessible( true );
+            return field.get( object );
+        }
+        catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            throw new RuntimeException( e );
+        }
+    }
+}
+----
+
+By calling `Field#setAccessible()` we can obtain the field's value in the following, even if it had been declared `private`.
+The module descriptor for the library module is trivial, it just exports the package of the accessor class:
+
+[source,java]
+----
+module com.example.library {
+    exports com.example.library;
+}
+----
+
+In a second module, representing our application, let's define a simple "entity":
+
+[source,java]
+----
+package com.example.entities;
+
+public class MyEntity {
+
+    private String name;
+
+    public MyEntity(String name) {
+        this.name = name;
+    }
+
+    // ...
+}
+----
+
+And also a simple main method which makes use of the accessor to read a field from the entity:
+
+[source,java]
+----
+package com.example.entities;
+
+public class Main {
+    public static void main(String... args) {
+        FieldValueAccessor accessor = new FieldValueAccessor();
+        Object fieldValue = accessor.getFieldValue( new MyEntity( "hey there" ), "name" );
+        assert "hey there".equals( fieldValue );
+    }
+}
+----
+
+As this module uses the library module, we need to declare that dependency in the entity module's descriptor:
+
+[source,java]
+----
+module com.example.myapp {
+    requires com.example.library;
+}
+----
+
+With the example classes in place, let's run the code and see what happens.
+It would have been fine on Java 8, but as of Java 9 we'll see this exception instead:
+
+[source]
+----
+java.lang.reflect.InaccessibleObjectException:
+Unable to make field private final java.lang.String com.example.entities.MyEntity.name accessible:
+module com.example.myapp does not "opens com.example.entities" to module com.example.library
+----
+
+The call to `setAccessible()` fails, as by default code in one module isn't allowed to perform so-called "deep reflection" on code in another (named) module.
+
+== Open this module!
+
+Now what can be done to overcome this issue?
+The error message is giving us the right hint already:
+the package with the type to reflect on must be _opened_ to the module containing the code invoking `setAccessible()`.
+
+If a package has been opened to another module, that module can access the package's types reflectively at runtime.
+Note that opening a package will not make it accessible to other modules at compile time;
+this would require the package to be _exported_ instead (as in the case of the library module above).
+
+There are several options for opening a package.
+The first is to make the module an _open module_:
+
+[source,java]
+----
+open module com.example.myapp {
+    requires com.example.library;
+}
+----
+
+This opens up all packages in this module for reflection by all other modules
+(i.e. this would be the behavior as known from other module systems such as OSGi).
+In case you'd like some more fine-grained control, you can opt to open specific packages only:
+
+[source,java]
+----
+module com.example.myapp {
+    opens com.example.entities;
+    requires com.example.library;
+}
+----
+
+This will allow for deep reflection on the `entities` package, but not on other packages within the application module.
+Finally, there is the possibility to limit an `opens` clause to one or more specific target modules:
+
+[source,java]
+----
+module com.example.myapp {
+    opens com.example.entities to com.example.library;
+    requires com.example.library;
+}
+----
+
+That way the library module is allowed to perform deep reflection, but not any other module.
+
+No matter which of these options we use,
+the library module can now make private fields of types in the `entities` package of the entities module accessible and subsequently read or write their value.
+
+Opening up packages in one way or another lets library code written prior to Java 9 continue to function as before.
+It requires some implicit knowledge, though.
+I.e. application developers need to know which libraries need reflective access to which types so they can open up the right packages.
+This can become tough to manage in more complex applications with multiple libraries performing reflection.
+
+Luckily, there's a more explicit approach in the form of _variable handles_.
+
+== Can you handle the var?
+
+Variable handles - defined by http://openjdk.java.net/jeps/193[JEP 193] - are a very powerful addition to the Java 9 API,
+providing "read and write access to [variables] under a variety of access modes".
+Describing them in detail would go far beyond the scope of this post (refer to the JEP and https://www.voxxed.com/blog/2016/11/java-9-series-variable-handles/[this article] if you would like to learn more).
+For our purposes let's focus on their capability for accessing fields,
+representing an alternative to the traditional reflection-based approach.
+
+So how could our `FieldValueAccessor` class be implemented using variable handles?
+
+Var handles are obtained via the `MethodHandles.Lookup` class.
+If such lookup has "private access" to the entities module, it will let us access private fields of that module's types.
+To get hold of such lookup, we let the client code pass in a lookup when bootstrapping the library code:
+
+[source,java]
+----
+Lookup lookup = MethodHandles.lookup();
+FieldValueAccessor accessor = new FieldValueAccessor( lookup );
+----
+
+In `FieldValueAccessor#getFieldValue()` we can now use the method http://download.java.net/java/jdk9/docs/api/java/lang/invoke/MethodHandles.html#privateLookupIn-java.lang.Class-java.lang.invoke.MethodHandles.Lookup-[MethodHandles#privateLookupIn()]
+which will return a new lookup granting private access to the given entity instance.
+From that lookup we can eventually obtain a http://download.java.net/java/jdk9/docs/api/java/lang/invoke/VarHandle.html[VarHandle] which allows us to get the object's field value:
+
+[source,java]
+----
+public class FieldValueAccessor {
+
+    private final Lookup lookup;
+
+    public FieldValueAccessor(Lookup lookup) {
+        this.lookup = lookup;
+    }
+
+    public Object getFieldValue(Object object, String fieldName) {
+        try {
+            Class<?> clazz = object.getClass();
+            Field field = clazz.getDeclaredField( fieldName );
+
+            MethodHandles.Lookup privateLookup = MethodHandles.privateLookupIn​( clazz, lookup );
+            VarHandle handle = privateLookup.unreflectVarHandle( field );
+
+            return handle.get( object );
+        }
+        catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException( e );
+        }
+    }
+}
+----
+
+Note that this only works if the original lookup has been created by code in the entities module.
+
+This is because http://download.java.net/java/jdk9/docs/api/java/lang/invoke/MethodHandles.html#lookup--[MethodHandles#lookup()] is a _caller sensitive_ method, i.e. the returned value will depend on the direct caller of that method.
+`privateLookupIn()` checks whether the given lookup is allowed to perform deep reflection on the given class.
+Thus a lookup obtained in the entities module will do the trick, whereas a lookup retrieved in the library module wouldn't be of any use.
+
+== Which route to take?
+
+Both discussed approaches let libraries access private state from Java 9 modules.
+
+The var handle approach makes the requirements of the library module more explicit, which I like.
+Expecting a lookup instance during bootstrap should be less error-prone than the rather implicit requirement for opening up packages or modules.
+
+Mails by the OpenJDK team also http://mail.openjdk.java.net/pipermail/jigsaw-dev/2016-September/009504.html[seem to suggest] that - together with their siblings, method handles - var handles are the way to go in the long term.
+Of course it requires the application module to be cooperative and pass the required lookup.
+It remains to be seen how this could look like in container / app server scenarios, where libraries typically aren't bootstrapped by the application code but by the server runtime.
+Injecting some helper code for obtaining the lookup object upon deployment may be one possible solution.
+
+As var handles only are introduced in Java 9 you might want to refrain from using them if your library is supposed to run with older Java versions, too
+(actually, you can do both by link:/2017/02/13/building-multi-release-jars-with-maven/[building multi-release JARs]).
+A very similar approach can be implemented in earlier Java versions using method handles (see http://download.java.net/java/jdk9/docs/api/java/lang/invoke/MethodHandles.Lookup.html#findGetter-java.lang.Class-java.lang.String-java.lang.Class-[MethodHandles.Lookup#findGetter()]).
+Unfortunately, though, there's no official way to obtain method handles with private access prior to Java 9 and the introduction of `privateLookupIn​()`.
+Ironically, the only way to get such handles is employing http://stackoverflow.com/questions/19135218/invoke-private-method-with-java-lang-invoke-methodhandle[some reflection].
+
+The final thing to note is that there may be a performance advantage to using var and method handles,
+as access checking is done only once when getting them (as opposed to every invocation).
+Some proper benchmarking would be in order, though, to see what's the difference in a given use case.
+
+As always, your feedback is very welcome.
+Which approach do you prefer?
+Or perhaps you've found yet other solution we've missed so far?
+Let us know in the comments below.
