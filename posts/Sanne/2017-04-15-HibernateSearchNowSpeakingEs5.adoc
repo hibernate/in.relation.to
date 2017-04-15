@@ -1,0 +1,98 @@
+= Hibernate Search now speaking Elasticsearch 5
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search version `5.8.0.Beta1`, which is now
+compatible with Elasticsearch versions `5.x`.
+
+== New improved Elasticsearch client
+
+This release now uses the new Elasticsearch REST client, which is expected to
+be a safe choice in terms of long term maintenance as it's sponsored and
+recommended by the Elasticsearch team.
+
+Compared to the driver we used previously, this one uses a state of the art
+reactive architecture, so we can take advantage of more efficient resource
+utilization.
+
+== Elasticsearch 2.x is still supported
+
+The new driver is backwards compatible, so we'll still be able to connect to
+clusters running Elasticsearch `2.x`.
+
+This doesn't need any configuration flag as Hibernate Search can automatically
+detect the version of Elasticsearch it's being pointed to.
+
+The features supported by Elasticsearch `5.x` and `2.x` are however slightly
+different and you'll find that some low level mapping features are documented
+as compatible with only one specific version.
+
+The migration guide will be updated when this minor release will be feature
+complete.
+
+== New `Simple Query String` supported by the Query builder DSL
+
+The useful capabilities from Lucene's `SimpleQueryParser` are now conveniently
+exposed by our higher level DSL.
+
+We'll publish a detailed blog about this new feature soon: stay tuned!
+
+If you can't wait, we won't prevent you from peeking into the https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#_simple_query_string_queries[Simple Query String documentation].
+
+== Simplified JNDI configuration
+
+If you integrated any external component into Hibernate Search using JNDI,
+for example a JMS queue or an Infinispan cache, this configuration was simplified.
+
+You will no longer need to set Hibernate Search specific configuration
+properties such as how to set the `InitialContext` for JNDI lookups:
+only configure Hibernate ORM, and Hibernate Search will inherit the same
+settings.
+
+See also the http://docs.jboss.org/hibernate/orm/5.2/userguide/html_single/Hibernate_User_Guide.html#jndi[JNDI configuration in the Hibernate ORM documentation].
+
+== How to get these releases
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.8.0.Beta1</version>
+</dependency>
+----
+====
+
+To use the experimental Elasticsearch integration you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch</artifactId>
+   <version>5.8.0.Beta1</version>
+</dependency>
+----
+====
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
+== Feedback
+
+Feedback always welcome!
+
+Please let us know of any problem or suggestion by creating an https://hibernate.atlassian.net/projects/HSEARCH/summary[issue on JIRA],
+or by sending an email to the developer's  http://hibernate.org/community/[developer's mailing lists], or posting on the https://forums.hibernate.org/viewforum.php?f=9[forums].
+
+We also monitor Stack Overflow; when posting on SO please use the tag http://stackoverflow.com/questions/tagged/hibernate-search[`hibernate-search`]. 
+
+
+
