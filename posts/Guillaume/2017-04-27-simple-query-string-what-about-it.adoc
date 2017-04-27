@@ -1,0 +1,128 @@
+= "Simple Query String, what about it?"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Search" ]
+:awestruct-layout: blog-post
+---
+
+In http://in.relation.to/2017/04/15/HibernateSearchNowSpeakingEs5/#new-code-simple-query-string-code-supported-by-the-query-builder-dsl[the last Hibernate Search release announcement], you might have noticed something about Simple Query Strings.
+
+The documentation is still a little sparse and we wanted to give this feature some more light and have some feedback before going Final with it.
+
+This feature is part of the already released 5.8.0.Beta1 so you can already play with it (either with the Lucene backend or with the new Elasticsearch backend).
+
+== What's a Simple Query String?
+
+Let's begin with some history.
+
+Lucene 4.7.0 introduced a new query parser, the https://github.com/apache/lucene-solr/blob/master/lucene/queryparser/src/java/org/apache/lucene/queryparser/simple/SimpleQueryParser.java[`SimpleQueryParser`], presented as a "parser for human-entered queries". The point of this parser is to be a very simple lenient state machine to parse queries entered by your end users.
+
+The parser is capable to transform `keyword "some phrase" -keywordidontwant fuzzy~ prefix*` into a Lucene query, giving your users a little more power (phrase queries, fuzzy queries, boolean operators...). The lenient part is important as it will try to build the best possible query without throwing a parse exception, even if the query is not what we would consider syntactically correct.
+
+Another nice feature is that it allows to search on multiple fields. You basically end up establishing the following contract with Lucene:
+
+* users will enter a search query (more or less syntactically correct)
+* it will search on the fields you have specified (and you can also specify a specific boost for each field)
+* you can enable each of the features that you want to expose to the users (i.e. you can enable the phrase queries but not the boolean operators)
+* building the query won't throw an exception
+
+So, what is a Simple Query String for us? Just a string following the `SimpleQueryParser` syntax or, in user terms, what the user entered in the search box.
+
+== Let's take an example
+
+In the following, we will base our discussion on the following `Book` entity:
+
+[source, java]
+----
+@Entity
+@Indexed
+public class Book {
+
+    // [...]
+
+    @Field
+    private String title;
+
+    @Field
+    private String summary;
+
+    @Field
+    private String author;
+
+    // [...]
+}
+----
+
+Our goal is to be able to search `war peace` on the `title` field with a boost of `5` and on the `summary` field with a boost of `2` and have only the results containing both words. A `Book` containing `war` in `title` and `peace` in `summary` should be considered a valid result.
+
+== What does it change for Hibernate Search?
+
+Until now, to fulfill these requirements with Hibernate Search, you had the following possibilities:
+
+Use the DSL::
+  * Manually split the search query into keywords
+  * Manually build a (rather complicated) query using the `keyword()` entry point of the DSL (`keyword()` only supports `OR` so you would have to build several different `keyword()` queries for each keyword and for each field)
+  * Downsides:
+  ** it is not possible to allow the users to optionally enter phrase queries, fuzzy queries... without implementing a parser (or having checkbox options to enable them)
+  ** it might lead to a lot of boilerplate code if you want to search in more than 2 fields
+Use the Lucene https://github.com/apache/lucene-solr/blob/master/lucene/queryparser/src/java/org/apache/lucene/queryparser/classic/MultiFieldQueryParser.java[`MultiFieldQueryParser`]::
+  * Quite efficient
+  * Downsides:
+  ** Not lenient: can throw a `ParseException`
+  ** You expose the full power of the Lucene default `QueryParser` which might not be what you want
+  ** You can define the default fields but the user can search on other fields with the `field:keyword` syntax: it might not be what you want
+
+How would we do it with the new `simpleQueryString()` DSL entry point?
+
+It is as simple as:
+[source, java]
+----
+String simpleQueryString = "war peace"; // what the end user is looking for
+
+QueryBuilder qb = fullTextSession.getSearchFactory()
+            .buildQueryBuilder()
+            .forEntity( Book.class)
+            .get(); // instantiate the QueryBuilder providing the DSL
+
+Query query = qb.simpleQueryString()
+            .onField( "title" ).boostedTo( 5.0f )
+            .andField( "summary" ).boostedTo( 2.0f )
+            .withAndAsDefaultOperator() // we want AND to be the default operator 
+            .matching( simpleQueryString )
+            .createQuery();
+List<Book> results = fullTextSession.createFullTextQuery( query, Book.class ).getResultList();
+----
+
+Important precision: the default operator used if you don't define the operator explicitly is `OR`. In the general case, it might not be what you're looking for, thus the call to `withAndAsDefaultOperator()` in the example above.
+
+If you also want to search on the `author` field, just add another `andField()` clause and you're done.
+
+The thing I particularly like about it is the fact that you're able to define a simple contract with your Lucene index and that the users have some flexibility to define more advanced queries inside the contract you defined:
+
+ * `-war peace`: documents contain `peace` but not `war`
+ * `war | peace`: documents contain `war` or `peace` (you can omit the `|` operator if it is defined as the default)
+ * `war + pea*`: documents contain `war` and at least a word starting with `pea` (you can omit the `+` operator if it is defined as the default)
+ * `"war and peace"`: documents contain the phrase `war and peace`
+ * `pease~`: documents contain `pease` with a fuzzy search so documents containing `peace` will be returned too
+ * `war + (peace | harmony)`: documents contain `war` and either `peace` or `harmony`
+ * and any combinations of the above...
+ * or none: simple searches are obviously also supported!
+
+== What do you think about it?
+
+Still there? We have a few questions for you.
+
+First, after a lot of discussions, we have chosen to name the DSL entry point `simpleQueryString()`. It has the advantage to be https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-simple-query-string-query.html[consistent with Elasticsearch]. If you can think of a better (and maybe more explicit) name, it's not too late to join the party! Once we go final, we will stick to this name **foreeeever**.
+
+Your feedback is very welcome in the comments below or on the https://lists.jboss.org/mailman/listinfo/hibernate-dev[hibernate-dev] mailing list.
+
+Secondly, for now, we haven't exposed the ability to disable particular features. By default, the following features are all enabled:
+
+* boolean operators (`+`, `-` and `|`)
+* precedence operators (parenthesis)
+* phrase search (`"some phrase"`)
+* prefix operator (`prefix*`)
+* fuzzy operator (`fuzzy~`)
+* slop for phrase search (`"some phrase"~2`)
+
+Think it might be useful to be able to disable features? Feel free to open an issue on https://hibernate.atlassian.net/secure/Dashboard.jspa[our JIRA] or even better https://github.com/hibernate/hibernate-search/pulls[propose a pull request]! You can find the original patch here: https://github.com/hibernate/hibernate-search/pull/1318, it might help you to start.
+
