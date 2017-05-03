@@ -1,0 +1,45 @@
+= Hibernate Community Newsletter 9/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+Hibernate uses `Proxy` objects for lazy associations. If you want to understand how Porxy objects work and how you can
+unproxy them to the actual entities they represent, then you should definitely read
+https://vladmihalcea.com/2017/04/18/how-does-a-jpa-proxy-work-and-how-to-unproxy-it-with-hibernate/[this article].
+
+Romain Manni-Bucau wrote https://blog-rmannibucau.rhcloud.com/#/post/hibernate-collection-update[a very interesting article] which
+points out how you should be merging incoming and existing association collections when using Hibernate.
+
+Getting access to the underlying database metadata is very easy with Hibernate 5.
+You just have to know how to make use of the `Integrator` SPI mechanism, as explained in
+https://vladmihalcea.com/2017/05/02/how-to-get-access-to-database-table-metadata-with-hibernate-5/[this article].
+
+Knowing how to implement equals and hashCode is of paramount importance when using JPA and Hibernate.
+Read https://stevenschwenke.de/howIHandleEqualsAndHashCodeInMyProject[this article] by Steven Schwenke to find out business keys are very suitable for this task.
+
+Javin Paul wrote http://javarevisited.blogspot.ro/2017/04/difference-between-transient-persistent-and-detached-state-hibernate-java.html[an article about transient/persistent and detached entity states].
+For more details about this topic, you should also read https://vladmihalcea.com/2014/07/30/a-beginners-guide-to-jpa-hibernate-entity-state-transitions/[this article about JPA and Hibernate entity state transitions].
+
+Bean Validation is a very convenient mechanism for validating entity state. Check out
+http://www.thoughts-on-java.org/hibernate-tips-validate-entity-attribute-value-within-defined-range/[this article]
+to find out how you can make sure that an integer value is within a bounded range.
+
+== Questions and answers
+
+* https://www.quora.com/Why-use-Hibernate-over-using-SQL-directly/answer/Vlad-Mihalcea-1[Why use Hibernate over using SQL directly?]
+* https://www.quora.com/How-can-we-enable-the-second-level-cache-in-the-hibernate/answer/Vlad-Mihalcea-1[How can we enable the second-level cache in Hibernate?]
+* http://stackoverflow.com/questions/4117249/what-time-zone-does-hibernate-use-when-it-reads-and-writes-a-java-calendar-objec/43492401#43492401[What time zone does Hibernate use when it reads and writes a Java Calendar object to an SQL TIMESTAMP?]
+* http://stackoverflow.com/questions/43485774/hibernate-session-save-synch-with-underlying-db-session/43489353#43489353[Does Hibernate Session save operation synchronize with the underlying DB transaction?]
+* http://stackoverflow.com/questions/43474370/could-not-select-with-createquery-for-a-parent-with-a-list-of-childs/43490066#43490066[Hibernate @OneToMany throws MySQLSyntaxErrorException: You have an error in your SQL syntax]
+* http://stackoverflow.com/questions/21010832/hibernate-4-0-using-jvm-time-zone-instead-of-what-time-zone-we-set/43492317#43492317[Hibernate using JVM time zone instead of what time zone we set]
+* http://stackoverflow.com/questions/43716832/filter-in-hbm-file-of-hibernate-dosent-flexibie/43716961#43716961[The filter mechanism in Hibernate hbm file is not very flexible for dynamic predicates]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044219[Add SQL query comments with JPA and Hibernate]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044254[DB2/390 Dialect throws offset not supported error pagination]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044227[Cursor closed on commit in bulk operation]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044231[Issues with Hibernate 5.2.9 Session contains method]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044248[Configuring the latest Hibernate with Log4j2]
