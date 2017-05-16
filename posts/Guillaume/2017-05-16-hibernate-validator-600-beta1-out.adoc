@@ -1,0 +1,92 @@
+= "Hibernate Validator 6.0.0.Beta1 is out with improved Bean Validation 2.0 support"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate Validator 6 is going to be the Reference Implementation of Bean Validation 2.0. This Beta1 release is coordinated with the 2.0.0.Beta1 release (Public Review Draft) of the Bean Validation specification.
+
+It is also a playground used to validate future enhancements of the Bean Validation specification so feedback on the subjects presented here is very welcome!
+
+Note that Hibernate Validator 6 requires JDK 8 or above.
+
+== What's new since Alpha2
+
+=== Bean Validation 2.0.0.Beta1 support
+
+The main goal of this version is to upgrade to Bean Validation 2.0.0.Beta1.
+
+This was mainly small adjustments to be on par with the latest changes in the specification but we also added a couple of features to the container elements support (e.g. `List<@NotBlank String>`).
+
+==== Metadata API support for container element constraints
+
+Until now, the container element constraints were not exposed via the metadata API. You can now obtain them via the API:
+
+[source, java]
+----
+PropertyDescriptor propertyDescriptor = validator
+        .getConstraintsForClass( User.class )
+        .getConstraintsForProperty( "addresses" );
+
+List<ContainerElementTypeDescriptor> containerElementTypeDescriptors =
+        propertyDescriptor.getContainerElementTypes();
+
+ContainerElementTypeDescriptor containerElementTypeDescriptor = containerElementTypeDescriptors.get( 0 );
+
+// get the type argument index corresponding to this container element
+containerElementTypeDescriptor.getTypeArgumentIndex();
+
+// get the constraint descriptors for this container element
+containerElementTypeDescriptor.getConstraintDescriptors();
+
+// indicates if the validation is cascaded
+containerElementTypeDescriptor.isCascaded();
+
+// get the potential nested container elements
+containerElementTypeDescriptor.getContainerElementTypes();
+----
+
+==== Support for group conversions in container elements
+
+We added support for cascaded validation in container elements a while ago but we did not support group conversions. They are now supported.
+
+[source, java]
+----
+public class User {
+
+    private Map<@Valid AddressType, @Valid @ConvertGroup(from = Default.class, to = BasicChecks.class) Address> addresses;
+}
+----
+
+=== Polished support for the new built-in annotations
+
+The error messages were missing for the new built-in annotations, we fixed it. Note that several translations need an update so if you speak a language other than English, German, French or Ukrainian, don't hesitate to https://github.com/hibernate/hibernate-validator/tree/master/engine/src/main/resources/org/hibernate/validator[step up to the plate].
+
+We also added support for `@Positive` and `@Negative` to the JavaMoney types.
+
+And, finally, we added support for these new constraints to the annotation processor.
+
+=== And a few other things
+
+ * `@SafeHtml` now supports relative URLs thanks to the new `baseURI` attribute.
+ * We fixed a few things to support the latest JDK 9 early access releases.
+
+== Getting 6.0.0.Beta1
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.0.0.Beta1_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.Beta1/hibernate-validator-6.0.0.Beta1-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.Beta1/hibernate-validator-6.0.0.Beta1-dist.zip/download[ZIP]).
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
+== What's next?
+
+Bean Validation 2.0 is entering the review phase. Hibernate Validator 6 is still under active development. We'll keep you posted with our progress.
