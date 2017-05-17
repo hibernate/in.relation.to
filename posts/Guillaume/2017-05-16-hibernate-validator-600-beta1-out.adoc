@@ -4,7 +4,8 @@ Guillaume Smet
 :awestruct-layout: blog-post
 ---
 
-Hibernate Validator 6 is going to be the Reference Implementation of Bean Validation 2.0. This Beta1 release is coordinated with the 2.0.0.Beta1 release (Public Review Draft) of the Bean Validation specification.
+Hibernate Validator 6 is going to be the Reference Implementation of Bean Validation 2.0.
+This Beta1 release is coordinated with the http://beanvalidation.org/news/2017/04/26/bean-validation-2-0-up-for-public-review/[2.0.0.Beta1 release] (Public Review Draft) of the Bean Validation specification.
 
 It is also a playground used to validate future enhancements of the Bean Validation specification so feedback on the subjects presented here is very welcome!
 
@@ -16,7 +17,7 @@ Note that Hibernate Validator 6 requires JDK 8 or above.
 
 The main goal of this version is to upgrade to Bean Validation 2.0.0.Beta1.
 
-This was mainly small adjustments to be on par with the latest changes in the specification but we also added a couple of features to the container elements support (e.g. `List<@NotBlank String>`).
+This was mainly small adjustments to be on par with the latest changes in the specification but we also added a couple of features related to the validation of container elements (think `List<@NotBlank String>`).
 
 ==== Metadata API support for container element constraints
 
@@ -24,6 +25,8 @@ Until now, the container element constraints were not exposed via the metadata A
 
 [source, java]
 ----
+// Given a class User with a property declared as Map<@Valid AddressType, @NotNull Address> addresses
+
 PropertyDescriptor propertyDescriptor = validator
         .getConstraintsForClass( User.class )
         .getConstraintsForProperty( "addresses" );
@@ -31,24 +34,29 @@ PropertyDescriptor propertyDescriptor = validator
 List<ContainerElementTypeDescriptor> containerElementTypeDescriptors =
         propertyDescriptor.getContainerElementTypes();
 
-ContainerElementTypeDescriptor containerElementTypeDescriptor = containerElementTypeDescriptors.get( 0 );
+ContainerElementTypeDescriptor mapKeyDescriptor = containerElementTypeDescriptors.get( 0 );
+ContainerElementTypeDescriptor mapValueDescriptor = containerElementTypeDescriptors.get( 1 );
 
 // get the type argument index corresponding to this container element
-containerElementTypeDescriptor.getTypeArgumentIndex();
+assert mapKeyDescriptor.getTypeArgumentIndex() == 0;
+assert mapValueDescriptor.getTypeArgumentIndex() == 1;
 
 // get the constraint descriptors for this container element
-containerElementTypeDescriptor.getConstraintDescriptors();
+assert mapKeyDescriptor.getConstraintDescriptors().size() == 0;
+assert mapValueDescriptor.getConstraintDescriptors().size() == 1;
 
 // indicates if the validation is cascaded
-containerElementTypeDescriptor.isCascaded();
+assert mapKeyDescriptor.isCascaded() == true;
+assert mapValueDescriptor.isCascaded() == false;
 
 // get the potential nested container elements
-containerElementTypeDescriptor.getContainerElementTypes();
+assert mapKeyDescriptor.getContainerElementTypes().size() == 0;
+assert mapValueDescriptor.getContainerElementTypes().size() == 0;
 ----
 
 ==== Support for group conversions in container elements
 
-We added support for cascaded validation in container elements a while ago but we did not support group conversions. They are now supported.
+We added support for cascaded validation of container elements a while ago but we did not support group conversions. They are now supported.
 
 [source, java]
 ----
@@ -60,16 +68,18 @@ public class User {
 
 === Polished support for the new built-in annotations
 
-The error messages were missing for the new built-in annotations, we fixed it. Note that several translations need an update so if you speak a language other than English, German, French or Ukrainian, don't hesitate to https://github.com/hibernate/hibernate-validator/tree/master/engine/src/main/resources/org/hibernate/validator[step up to the plate].
+The error messages were missing for the new built-in annotations, we fixed it. Note that several translations need an update so if you speak a language other than English, German, French or Ukrainian, don't hesitate to https://github.com/hibernate/hibernate-validator/tree/master/engine/src/main/resources/org/hibernate/validator[step up to the plate] and send a pull request.
 
 We also added support for `@Positive` and `@Negative` to the JavaMoney types.
 
-And, finally, we added support for these new constraints to the annotation processor.
+And, finally, we added support for these new constraints to the http://docs.jboss.org/hibernate/validator/6.0/reference/en-US/html_single/#validator-annotation-processor[annotation processor].
 
 === And a few other things
 
  * `@SafeHtml` now supports relative URLs thanks to the new `baseURI` attribute.
  * We fixed a few things to support the latest JDK 9 early access releases.
+
+The complete list of 23 fixed issues can be found in the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10060&version=28304[release notes].
 
 == Getting 6.0.0.Beta1
 
@@ -81,7 +91,7 @@ Alternatively, a distribution bundle containing all the bits is provided on Sour
 
 To get in touch, use the usual channels:
 
-* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stackoverflow] (usage questions)
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
 * https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
 * https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
 * http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
@@ -89,4 +99,7 @@ To get in touch, use the usual channels:
 
 == What's next?
 
-Bean Validation 2.0 is entering the review phase. Hibernate Validator 6 is still under active development. We'll keep you posted with our progress.
+Bean Validation 2.0 is currently in the Public Review phase, the Public Review Ballot will take pace at the beginning of June.
+The Proposed Final Draft is planned to be released shortly thereafter, so if you spot any remaining issues or shortcomings in the spec draft, please let us know as soon as possible.
+
+Hibernate Validator 6 is still under active development. We'll keep you posted with our progress.
