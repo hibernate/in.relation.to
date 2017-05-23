@@ -1,0 +1,106 @@
+= "Hibernate Validator 6.0.0.Beta2 is out with Bean Validation 2.0.0.Beta2 support"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+It has just been a couple of weeks since the 6.0.0.Beta1 release but we needed a new version matching TODOLINK[Bean Validation 2.0.0.Beta2].
+
+Hibernate Validator 6 is going to be the reference implementation of Bean Validation 2.0 and, as such, we coordinate releases so you can test the latest additions as soon as possible.
+
+Note that Hibernate Validator 6 requires JDK 8 or above.
+
+== What's new since Beta1
+
+=== Bean Validation 2.0.0.Beta2 support
+
+The main goal of this version is to upgrade to Bean Validation 2.0.0.Beta2.
+
+We fixed a couple of bugs and also introduced a few new features.
+
+==== Support for non generic types in value extraction
+
+Our value extraction framework (which is the basis of our new container element validation implementation) only supported generic types until now.
+
+We alleviated this restriction by introducing a new `type` attribute to the `ExtractedValue` annotation allowing to define the type of the extracted value even in the absence of a type argument providing the information.
+
+Thus, it is now possible to define value extractors as below:
+[source, java]
+----
+@UnwrapByDefault
+public class OptionalIntValueExtractor implements ValueExtractor<@ExtractedValue(type = Integer.class) OptionalInt> {
+
+    @Override
+    public void extractValues(OptionalInt originalValue, ValueReceiver receiver) {
+        receiver.value( null, originalValue.isPresent() ? originalValue.getAsInt() : null );
+    }
+}
+----
+
+And that's indeed what we do in Hibernate Validator to support `OptionalInt`, `OptionalLong` and `OptionalDouble`.
+
+==== Addition of container element information via the node builder API
+
+The node builder API allows you to define a property path for a constraint violation using the `ConstraintValidatorContext`.
+
+It is now possible to define container element information for existing node types supporting them or to define container element nodes:
+[source, java]
+----
+public static class Validator implements ConstraintValidator<MyConstraint, MyBean> {
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        context.disableDefaultConstraintViolation();
+
+        context.buildConstraintViolationWithTemplate( context.getDefaultConstraintMessageTemplate() )
+                .addContainerElementNode( "myNode1", Map.class, 1 )
+                        .inIterable()
+                        .atKey( "key" )
+                .addConstraintViolation();
+
+        context.buildConstraintViolationWithTemplate( context.getDefaultConstraintMessageTemplate() )
+                .property( "myNode2" )
+                        .inContainer( List.class, 0 )
+                        .inIterable()
+                        .atKey( "key" )
+                .addConstraintViolation();
+
+        return false;
+    }
+}
+----
+
+==== CDI improvements
+
+Value extractors defined in the XML configuration are now managed beans.
+
+We also fixed https://hibernate.atlassian.net/browse/HV-1342[an issue] that could occur if you were using a managed `ParameterNameProvider`.
+
+=== And a few other things
+
+ * `@SafeHtml` now supports defining accepted protocols (think allowing the `data` protocol for images) and has an improved programmatic API.
+ * The `@Min` / `@Max`, `@DecimalMin` / `@DecimalMax` validators were split to have one validator per type and avoid reflection at runtime.
+
+The complete list of fixed issues can be found in the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10060&version=29001[release notes].
+
+== Getting 6.0.0.Beta2
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.0.0.Beta2_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.Beta2/hibernate-validator-6.0.0.Beta2-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.Beta2/hibernate-validator-6.0.0.Beta2-dist.zip/download[ZIP]).
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
+== What's next?
+
+Bean Validation 2.0 is currently in the Public Review phase, the Public Review Ballot will take place at the beginning of June.
+The Proposed Final Draft is planned to be released shortly thereafter, so if you spot any remaining issues or shortcomings in the spec draft, please let us know as soon as possible.
+
+Hibernate Validator 6 is still under active development. We'll keep you posted with our progress.
