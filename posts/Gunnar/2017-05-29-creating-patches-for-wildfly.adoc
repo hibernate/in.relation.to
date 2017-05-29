@@ -1,0 +1,361 @@
+= "Creating Patch Files for WildFly"
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+The WildFly application server comes with a https://developer.jboss.org/wiki/SingleInstallationPatching/[patching mechanism] which makes it very easy to upgrade existing modules of the server or add new ones.
+E.g. Hibernate Validator link:/2017/04/04/testing-bean-validation-2-0-on-wildfly-10/[provides patch files] which let you upgrade WildFly 10.1 to the preview releases of Bean Validation 2.0.
+
+But you also can use the patching mechanism to add your own custom libraries to WildFly, making them available to deployed applications.
+Even if you only ever deploy a single application to one WildFly instance, this can be very useful,
+as it results in a smaller size of your deployment unit (WAR etc.) and thus faster build and deployment times.
+
+How are WildFly patches created, though?
+Patch files are generally just ZIP files which contain the module(s) to be added or updated as well as some additional metadata.
+So in theory you could create them by hand, but there's the https://github.com/jbossas/patch-gen[patch-gen] tool which greatly simplifies this task.
+
+In the following we'll describe step by step how to create a WildFly patch using the https://github.com/jbossas/patch-gen/tree/master/patch-gen-maven-plugin[patch-gen-maven-plugin].
+As an example, we'll produce a patch file that adds the https://www.eclipse.org/collections/[Eclipse Collections] library to a WildFly instance.
+
+== The Module Descriptors
+
+The first thing we need are the module descriptors for the https://jboss-modules.github.io/jboss-modules/manual/[JBoss Modules system] which is the underlying basis of WildFly.
+Eclipse Collections is split into two JARs, one for its API and one for the implementation.
+So we'll create the following two descriptors:
+
+[source,java]
+._src/main/modules/system/layers/base/org/eclipse/collections/api/main/module.xml_
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module xmlns="urn:jboss:module:1.3" name="org.eclipse.collections.api">
+    <resources>
+        <resource-root path="eclipse-collections-api-${eclipse.collections.version}.jar" />
+    </resources>
+</module>
+----
+
+[source,java]
+._src/main/modules/system/layers/base/org/eclipse/collections/main/module.xml_
+----
+<?xml version="1.0" encoding="UTF-8"?>
+
+<module xmlns="urn:jboss:module:1.3" name="org.eclipse.collections">
+    <resources>
+        <resource-root path="eclipse-collections-${eclipse.collections.version}.jar" />
+    </resources>
+
+    <dependencies>
+        <module name="org.eclipse.collections.api" />
+    </dependencies>
+</module>
+----
+
+Each descriptor specifies a resource for the corresponding JAR
+(the version property placeholders are replaced using https://maven.apache.org/plugins/maven-resources-plugin/examples/filter.html[Maven resource filtering]).
+The implementation module also declares a dependency to the API module.
+
+== The Patch Tool Configuration File
+
+The _patch-gen_ tool needs a small configuration file which describes some patch metadata
+(e.g. the server version to which the patch applies and the type of the patch - one-off vs. cumulative) as well as the patched module(s):
+
+[source,java]
+._src/main/patch/patch.xml_
+----
+<?xml version='1.0' encoding='UTF-8'?>
+
+<patch-config xmlns="urn:jboss:patch-config:1.0">
+    <name>wildfly-${wildfly.version}-eclipse-collections-${eclipse.collections.version}</name>
+    <description>This patch adds Eclipse Collections ${eclipse.collections.version} to a WildFly ${wildfly.version} installation</description>
+    <element patch-id="layer-base-wildfly-${wildfly.version}-eclipse-collections-${eclipse.collections.version}">
+        <one-off name="base" />
+        <description>This patch adds Eclipse Collections ${eclipse.collections.version} to a WildFly ${wildfly.version} installation</description>
+        <specified-content>
+            <modules>
+                <added name="org.eclipse.collections.api" />
+                <added name="org.eclipse.collections" />
+            </modules>
+        </specified-content>
+    </element>
+    <specified-content/>
+</patch-config>
+----
+
+== Preparing the Patch Creation
+
+The _patch-gen_ tool takes two directories of the distribution to be patched as input:
+one directory with the original, unpatched WildFly structure and another directory which contains the original WildFly structure _and_ the added (or updated) modules.
+We can use the https://maven.apache.org/plugins/maven-dependency-plugin/[Maven dependency plug-in] for creating the two directories by extracting the WildFly distribution twice:
+
+[source,xml]
+._pom.xml_
+----
+...
+<plugin>
+    <artifactId>maven-dependency-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>unpack-wildfly</id>
+            <phase>prepare-package</phase>
+            <goals>
+                <goal>unpack</goal>
+            </goals>
+            <configuration>
+                <artifactItems>
+                    <artifactItem>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-dist</artifactId>
+                        <version>${wildfly.version}</version>
+                        <type>tar.gz</type>
+                        <overWrite>false</overWrite>
+                        <outputDirectory>${project.build.directory}/wildfly-original</outputDirectory>
+                    </artifactItem>
+                    <artifactItem>
+                        <groupId>org.wildfly</groupId>
+                        <artifactId>wildfly-dist</artifactId>
+                        <version>${wildfly.version}</version>
+                        <type>tar.gz</type>
+                        <overWrite>false</overWrite>
+                        <outputDirectory>${project.build.directory}/wildfly-patched</outputDirectory>
+                    </artifactItem>
+                </artifactItems>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+----
+
+Now we need to add the Eclipse Collections JARs to the second directory.
+Let's configure another execution of the Maven dependency plug-in for that:
+
+[source,xml]
+._pom.xml_
+----
+...
+<execution>
+    <id>add-eclipse-collections</id>
+    <phase>prepare-package</phase>
+    <goals>
+        <goal>copy</goal>
+    </goals>
+    <configuration>
+        <artifactItems>
+            <artifactItem>
+                <groupId>org.eclipse.collections</groupId>
+                <artifactId>eclipse-collections-api</artifactId>
+                <version>${eclipse.collections.version}</version>
+                <overWrite>false</overWrite>
+                <outputDirectory>${wildflyPatched}/modules/system/layers/base/org/eclipse/collections/api/main</outputDirectory>
+            </artifactItem>
+            <artifactItem>
+                <groupId>org.eclipse.collections</groupId>
+                <artifactId>eclipse-collections</artifactId>
+                <version>${eclipse.collections.version}</version>
+                <overWrite>false</overWrite>
+                <outputDirectory>${wildflyPatched}/modules/system/layers/base/org/eclipse/collections/main</outputDirectory>
+            </artifactItem>
+        </artifactItems>
+    </configuration>
+</execution>
+...
+----
+
+We also need to add the _module.xml_ descriptors so they are located next to the corresponding JARs.
+The https://maven.apache.org/plugins/maven-resources-plugin/[Maven resources plug-in] helps with that.
+It also can be used to replace the placeholders in the _patch.xml_ descriptor.
+The following two plug-in executions are needed:
+
+[source,xml]
+._pom.xml_
+----
+...
+<plugin>
+    <artifactId>maven-resources-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>copy-module-descriptors</id>
+            <phase>prepare-package</phase>
+            <goals>
+                <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+                <outputDirectory>${wildflyPatched}/modules</outputDirectory>
+                <resources>
+                    <resource>
+                        <directory>src/main/modules</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+            </configuration>
+        </execution>
+        <execution>
+            <id>filter-patch-descriptor</id>
+            <phase>prepare-package</phase>
+            <goals>
+                <goal>copy-resources</goal>
+            </goals>
+            <configuration>
+                <outputDirectory>${project.build.directory}/</outputDirectory>
+                <resources>
+                    <resource>
+                        <directory>src/main/patch</directory>
+                        <filtering>true</filtering>
+                    </resource>
+                </resources>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+----
+
+== Configuring the Patch-Gen Maven Plug-in
+
+After all these preparations it's time to configure the patch-gen Maven plug-in which will eventually assemble the patch file:
+
+[source,xml]
+._pom.xml_
+----
+...
+<plugin>
+    <groupId>org.jboss.as</groupId>
+    <artifactId>patch-gen-maven-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>create-patch-file</id>
+            <phase>prepare-package</phase>
+            <goals>
+                <goal>generate-patch</goal>
+            </goals>
+            <configuration>
+                <appliesToDist>${wildflyOriginal}</appliesToDist>
+                <updatedDist>${wildflyPatched}</updatedDist>
+                <patchConfig>${project.build.directory}/patch.xml</patchConfig>
+                <outputFile>${patchFile}</outputFile>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+----
+
+The plug-in requires the following configuration:
+
+* The path to the unpatched WildFly directory
+* The path to the patched WildFly directory
+* The path to the _patch.xml_ descriptor
+* The output path for the patch file
+
+As a last step we need to make sure that the created patch file is added as an artifact to the Maven build.
+That way, the created ZIP file can be installed to the local Maven repository and be deployed to repository servers such as Nexus.
+The http://www.mojohaus.org/build-helper-maven-plugin/[build helper Maven plug-in] helps with this last task:
+
+[source,xml]
+._pom.xml_
+----
+...
+<plugin>
+    <groupId>org.codehaus.mojo</groupId>
+    <artifactId>build-helper-maven-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>attach-patch-artifact</id>
+            <phase>package</phase>
+            <goals>
+                <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+                <artifacts>
+                    <artifact>
+                        <file>${patchFile}</file>
+                        <type>zip</type>
+                        <classifier>wildfly-${wildfly.version}-patch</classifier>
+                    </artifact>
+                </artifacts>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+...
+----
+
+== Running the Build
+
+With all the configuration in place, the patch file can be built by running `mvn clean install`.
+The created patch file should have a structure like this:
+
+[source]
+._target/eclipse-collections-8.1.0-wildfly-10.1.0.Final-patch.zip_
+----
+├── META-INF
+├── README.txt
+├── layer-base-wildfly-10.1.0.Final-eclipse-collections-8.1.0
+│   └── modules
+│       └── org
+│           └── eclipse
+│               └── collections
+│                   ├── api
+│                   │   └── main
+│                   │       ├── eclipse-collections-api-8.1.0.jar
+│                   │       └── module.xml
+│                   └── main
+│                       ├── eclipse-collections-8.1.0.jar
+│                       └── module.xml
+├── misc
+└── patch.xml
+----
+
+As we'd expect it, the patch contains the Eclipse Collections JARs as well as the corresponding _module.xml_ descriptors.
+The _patch.xml_ descriptor contains metadata for the patching infrastructure,
+e.g. the WildFly version to which this patch can be applied as well as hash checksums for the added modules.
+
+== Applying and Using the Patch
+
+Once the patch is created, we can apply it using the _jboss-cli_ tool that comes with WildFly:
+
+[source]
+----
+<JBOSS_HOME>/bin/jboss-cli.sh "patch apply --path path/to/eclipse-collections-8.1.0-wildfly-10.1.0.Final-patch.zip"
+----
+
+You should see the following output if the patch has been applied:
+
+[source]
+----
+{
+    "outcome" : "success",
+    "result" : {}
+}
+----
+
+And with that you can use the Eclipse Collections API from within your deployed applications.
+Just make sure to expose the two new modules to your application.
+To do so, add a https://docs.jboss.org/author/display/WFLY10/Class+Loading+in+WildFly#ClassLoadinginWildFly-JBossDeploymentStructureFile[descriptor] named _META-INF/jboss-deployment-structure.xml_ to your deployment unit:
+
+[source,xml]
+._src/main/resources/META-INF/jboss-deployment-structure.xml_
+----
+<?xml version="1.0" encoding="UTF-8"?>
+<jboss-deployment-structure
+    xmlns="urn:jboss:deployment-structure:1.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <deployment>
+        <dependencies>
+            <module name="org.eclipse.collections.api" />
+            <module name="org.eclipse.collections" />
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>
+----
+
+If you'd like to try it out and create your own WildFly patch, check out https://github.com/hibernate/hibernate-demos/tree/master/other/wildfly-patch-creation[this example project] on GitHub.
+It contains the complete _pom.xml_ for creating the Eclipse Collections patch.
+There is also an https://github.com/hibernate/hibernate-demos/tree/master/other/wildfly-patch-creation/integrationtest[integration test module], which takes the patch file,
+applies it to a WildFly instance and runs a small test (using http://arquillian.org/[Arquillian]) that calls the Eclipse Collections API on the server.
+
+If you got any feedback on this blog post or would like to share your experiences with the WildFly patching infrastructure,
+let us know in the comments below.
