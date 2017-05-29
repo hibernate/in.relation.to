@@ -1,0 +1,74 @@
+= Hibernate Community Newsletter 11/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+The pick of this edition is http://heap.engineering/basic-performance-analysis-saved-us-millions/[this article by Heap's Engineering blog]
+which demonstrates the benefits of using batch updates even for reducing database index overhead.
+
+As https://vladmihalcea.com/2017/02/09/how-to-run-integration-tests-at-warp-speed-with-docker-and-tmpfs/[previously explained],
+you can speed up integration tests considerably using a RAM disk or tmpfs.
+Mark Rotteveel‏ tried this approach and looks like https://www.lawinegevaar.nl/firebird/jaybird_tests_docker.html[it works for Firebird as well].
+
+Hibernate 5.2.10 comes with a very handy connection management optimization for RESOURCE_LOCAL transactions.
+If you don't use JTA and you disabled auto-commit at the connection pool level, then it's worth setting the
+https://vladmihalcea.com/2017/05/17/why-you-should-always-use-hibernate-connection-provider_disables_autocommit-for-resource-local-jpa-transactions/[`hibernate.connection.provider_disables_autocommit`] configuration property as well.
+
+When using Oracle, the fastest way to access a database record is to use the `ROWID` pseudocoolumn.
+If using `ROWID` is suitable for your application, then you can
+https://vladmihalcea.com/2017/05/22/the-fastest-way-to-update-a-table-row-when-using-hibernate-and-oracle/[annotate your entities with the `@RowId` annotation]
+and Hibernate will use the `ROWID` pseudocoolumn for UPDATE statements.
+
+The best way to manage a database schema is to use incremental update scripts, and a tool like https://www.sitepoint.com/schema-migration-hibernate-flywaydb/[Flyway].
+Even in this case, you can still benefit from the hbm2ddl tool to validate the entity mappings.
+Check out https://vladmihalcea.com/2017/05/23/how-to-fix-wrong-column-type-encountered-schema-validation-errors-with-jpa-and-hibernate/[how you can deal with schema mismatch exceptions, especially for non-trivial mappings].
+
+You can use http://www.thoughts-on-java.org/hibernate-tips-log-execution-time-query/[Hibernate statistics] to log query execution time.
+However, in reality, many enterprise application are better off using a https://vladmihalcea.com/2016/05/03/the-best-way-to-log-jdbc-statements/[JDBC `DataSource` or `Driver` Proxy]
+which, not only it allows you to log JDBC statements along with their parameters,
+but you can even https://vladmihalcea.com/2014/02/01/how-to-detect-the-n-plus-one-query-problem-during-testing/[detect N+1 query issues automatically during testing].
+
+== Presentations
+
+Jakub Kubryński has a very good presentation about
+https://speakerdeck.com/jkubrynski/jpa-beyond-copy-paste[JPA common pitfalls] and how you should handle them effectively.
+
+== Book discount
+
+Until the 1st of June,
+https://leanpub.com/high-performance-java-persistence/c/Summer17?utm_source=hibernateblog&utm_medium=link&utm_campaign=newsletter[High-Performance Java Persistence is 33% OFF].
+Considering the https://vladmihalcea.com/books/high-performance-java-persistence/#testimonials[reader testimonials] as well as
+https://www.goodreads.com/book/show/29482066-high-performance-java-persistence[Good Reads] and
+https://www.amazon.com/High-Performance-Java-Persistence-Vlad-Mihalcea/dp/973022823X/[Amazon] reviews,
+it's quite a deal!
+
+== Time to upgrade
+
+* Hibernate Validator 6.0.0 http://in.relation.to/2017/05/16/hibernate-validator-600-beta1-out/[Beta1] and http://in.relation.to/2017/05/24/hibernate-validator-600-beta2-out/[Beta2] were released.
+* Hibernate ORM http://in.relation.to/2017/05/21/hibernate-orm-517-final-release/[5.1.7] is out, so you should consider updating if you are running the 5.1 version.
+
+== Questions and answers
+
+
+* https://www.quora.com/How-do-I-prepare-for-a-Java-Hibernate-interview/answer/Vlad-Mihalcea-1[How do I prepare for a Hibernate ORM interview?]
+* https://www.quora.com/unanswered/How-can-we-configure-a-Java-hibernate-with-annotations[How can we configure a Java Hibernate application using annotations?]
+* https://stackoverflow.com/questions/44165784/using-hibernate-and-treeset-does-not-work-the-remove-and-contains-methods/44167474#44167474[Using Hibernate and TreeSet does not work the remove() and contains() methods]
+* https://stackoverflow.com/questions/44112886/why-are-bulk-inserts-with-jpa-eclipselink-texo-much-slower-than-with-pure-jdb/44185579#44185579[Why are bulk inserts with JPA much(!) slower than with pure JDBC insert?]
+* http://stackoverflow.com/questions/44004634/jpa-proper-way-to-update-a-set-element-in-onetomany-relationship/44005133#44005133[Proper way to update a Set element in a JPA @OneToMany relationship?]
+* http://stackoverflow.com/questions/23100888/why-is-hibernate-connection-autocommit-true-not-recommended-in-hibernate/28245096?stw=2#28245096[Why is "hibernate.connection.autocommit = true" not recommended in Hibernate?]
+* http://stackoverflow.com/questions/25893476/can-you-have-multiple-transactions-within-one-hibernate-session/26026394#26026394[Can you have multiple transactions within one Hibernate Session?]
+* http://stackoverflow.com/questions/26562787/hibernateexception-couldnt-obtain-transaction-synchronized-session-for-current/26640603#26640603[HibernateException: Couldn't obtain transaction-synchronized Session for current thread]
+* http://stackoverflow.com/questions/44096216/unexpected-queries-are-being-executed-after-connecting-to-database-while-using/44098068#44098068[Unexpected queries are being executed after connecting to MySQL while using Hibernate]
+* https://stackoverflow.com/questions/43652902/avoid-select-statement-during-save-in-spring-data/43758803#43758803[How to avoid select statement during save in Spring Data JPA]
+* https://stackoverflow.com/questions/25050792/session-contains-return-false-for-object-that-load-by-onetomany-relation/25052196?stw=2#25052196[Session.contains return false for object that load by OneToMany relation]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044318[Schema-validation: wrong column type encountered in column]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044335[Generic Native Queries in 5.2 with DTOs]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044342[`@UpdateTimestamp` generates value on persist too]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044299[`@OneToOne` bidirectional not setting Foreign Key]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044303[Hibernate query timeout issue]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044304[Nested subquery using Hibernate Criteria]
