@@ -1,0 +1,231 @@
+= Hibernate Search 5.8.0.Beta3 is out with easier analyzer configuration, AWS compatibility and DI integration
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search version 5.8.0.Beta3,
+with bugfixes and improvements over http://in.relation.to/2017/05/11/hibernate-search-5-8-0-Beta2/[5.8.0.Beta2],
+but also new features such as <<analyzer-providers,analyzer providers>>,
+<<normalizers,normalizers>>, <<es-http-client-configurer,AWS compatibility>>
+and <<bean-resolver,SPIs for integration of dependency injection frameworks>>!
+
+[WARNING]
+====
+Hibernate Search 5.8.x, just as 5.7.x, is only compatible with Hibernate ORM 5.2.3 and later.
+
+If you need to use Hibernate ORM 5.0.x or 5.1.x use the older Hibernate Search 5.6.x.
+====
+
+== About 5.8
+
+Hibernate Search 5.8 is mainly about:
+
+ * making the Elasticsearch integration compatible with Elasticsearch 5.x (done);
+ * improving performance of the Elasticsearch integration (in progress);
+ * introducing a new DSL for defining analyzers (done);
+ * ensuring that Hibernate Search will work with Java 9 (done, though Java 9 may still change);
+ * improving and documenting WildFly Swarm integration (in discussion);
+ * removing the need for class definition on master nodes in JMS/JGroups integration (in discussion);
+ * and of course, fixing reported bugs. 
+
+You can have a look at http://hibernate.org/search/roadmap/[the roadmap] for more details.
+
+== What's new since Beta2?
+
+[[analyzer-providers]]
+=== Programmatic analyzer definitions
+
+You can now define your analyzers programmatically (without annotations),
+globally (without putting the definition on a particular entity),
+and in a native way (without using Lucene classes to configure an Elasticsearch analyzer)
+using analyzer definition providers.
+
+For example, for Lucene your `LuceneAnalysisDefinitionProvider` might look like this:
+
+[source, JAVA]
+----
+public static class CustomAnalyzerProvider implements LuceneAnalysisDefinitionProvider {
+    @Override
+    public void register(LuceneAnalyzerDefinitionRegistryBuilder builder) {
+        builder
+                .analyzer( "myAnalyzer" )
+                        .tokenizer( StandardTokenizerFactory.class )
+                        .charFilter( MappingCharFilterFactory.class )
+                                .param( "mapping", "org/hibernate/search/test/analyzer/mapping-chars.properties" )
+                        .tokenFilter( ASCIIFoldingFilterFactory.class )
+                        .tokenFilter( LowerCaseFilterFactory.class )
+                        .tokenFilter( StopFilterFactory.class )
+                                .param( "mapping", "org/hibernate/search/test/analyzer/stoplist.properties" )
+                                .param( "ignoreCase", "true" );
+    }
+}
+----
+
+While for Elasticsearch you would have:
+
+[source, JAVA]
+----
+public static class CustomAnalyzerProvider implements ElasticsearchAnalysisDefinitionProvider {
+    @Override
+    public void register(ElasticsearchAnalysisDefinitionRegistryBuilder builder) {
+        builder.analyzer( "tweet_analyzer" )
+                .withTokenizer( "whitespace" )
+                .withCharFilters( "custom_html_strip" )
+                .withCharFilters( "p_br_as_space" );
+        
+        builder.charFilter( "custom_html_strip" )
+                .type( "html_strip" )
+                .param( "escaped_tags", "br", "p" );
+
+        builder.charFilter( "p_br_as_space" )
+                .type( "pattern_replace" )
+                .param( "pattern", "<p/?>|<br/?>" )
+                .param( "replacement", " " )
+                .param( "tags", "CASE_INSENSITIVE" );
+    }
+}
+----
+
+As you can see, this allows you to avoid needing to refer to Lucene classes to configure Elasticsearch analyzers. 
+ 
+More details can be found 
+https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#section-programmatic-analyzer-definition[here for Lucene]
+and https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#_custom_analyzers_using_a_definition_provider[here for Elasticsearch].
+
+[[normalizers]]
+=== Normalizers for safer sorts
+
+In https://hibernate.atlassian.net/browse/HSEARCH-2726[HSEARCH-2726]
+and https://hibernate.atlassian.net/browse/HSEARCH-2659[HSEARCH-2659] we introduced normalizers:
+analyzers that do not perform any kind of tokenization.
+
+We shamelessly borrowed this concept from Elasticsearch, but implemented it in both embedded Lucene mode and Elasticsearch mode.
+Normalizers are useful for sortable fields: when a field is sortable it should never be tokenized, as this would make the sort order unpredictable;
+the sort could apply to the first token if you're lucky, but it could be applied on any other token.
+
+From version 5.8.0.Beta3 onwards, Hibernate Search will log warnings whenever you're using an analyzer on a sortable field.
+To resolve this warning change your Analyzer definition to be a Normalizer.
+
+In Lucene, normalizers are just here to help, they work exactly as analyzers.
+The two differences are that you can't affect a tokenizer to a normalizer when defining it,
+and that normalizers have a runtime safety net: should you manage to create multiple tokens,
+Hibernate Search will concatenate them back to a single token and log a warning.
+
+In Elasticsearch version 5.2 and above, a normalizer will be translated to a native Elasticsearch normalizer,
+and a text field with a normalizer will take the `keyword` datatype.
+
+In Elasticsearch version 5.1 and below, native normalizers are not available,
+thus normalizers are simply translated to analyzers
+and a text field with a normalizer will take the `text` (5.x) or `string` (2.x) datatype.
+
+You can find out more about normalizers in the reference documentation:
+
+ * https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#section-normalizers[main documentation]
+ * https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#_normalizers[Elasticsearch specifics]
+
+[[es-http-client-configurer]]
+=== AWS compatibility
+
+AWS requires http://docs.aws.amazon.com/general/latest/gr/signing_aws_api_requests.html[specific, dynamically computed headers in HTTP requests]
+to handle authentication, which until now has made it difficult to use Hibernate Search with an AWS-hosted Elasticsearch.
+
+We introduced a new SPI allowing low-level configuration of the HTTP client,
+which allows you to plug in the code required to perform the required AWS authentication;
+this same SPI may be used to integrate with other cloud providers.
+
+We currently have all of our test suite running successfully against an Elasticsearch cluster managed by AWS, with security turned on.
+
+At this stage the SPI is available but we didn't release the signing component yet; this will be availble in the next milestone:
+see https://hibernate.atlassian.net/browse/HSEARCH-2772[introduce an AWS module] if you want to help!
+
+[[bean-resolver]]
+=== Dependency injection in FieldBridges
+
+As part of https://hibernate.atlassian.net/browse/HSEARCH-1316[HSEARCH-1316],
+we're experimenting with integration with various dependency injection frameworks.
+
+The integration is about allowing you to use annotations such as `@Inject`,
+`@PostConstruct` and so on in your FieldBridges,
+which may for example allow you to fetch additional data
+from your application when indexing a given bean.
+
+Integration is currently known to work with Spring DI and CDI.
+We don't provide packages for user consumption,
+but if you are an integrator, or simply if you feel like it,
+you can have a look at our integration tests:
+
+ * WildFly:
+   https://github.com/hibernate/hibernate-search/tree/bf4342c8991e0384243ff22317c87102738daf59/integrationtest/wildfly/src/test/java/org/hibernate/search/test/integration/wildfly/cdi/integration[the integration per se],
+   and https://github.com/hibernate/hibernate-search/blob/bf4342c8991e0384243ff22317c87102738daf59/integrationtest/wildfly/src/test/resources/cdi/META-INF/services/org.hibernate.service.spi.ServiceContributor[a Java service to plug the integration into Hibernate Search].
+ * Spring Boot:
+   https://github.com/hibernate/hibernate-search/tree/bf4342c8991e0384243ff22317c87102738daf59/integrationtest/spring/src/test/java/org/hibernate/search/test/integration/spring/injection/integration[the integration per se],
+   https://github.com/hibernate/hibernate-search/blob/bf4342c8991e0384243ff22317c87102738daf59/integrationtest/spring/src/test/resources/META-INF/services/org.hibernate.service.spi.ServiceContributor[a Java service to plug the integration into Hibernate Search],
+   and https://github.com/hibernate/hibernate-search/blob/bf4342c8991e0384243ff22317c87102738daf59/integrationtest/spring/src/test/java/org/hibernate/search/test/integration/spring/injection/SpringInjectionITApplicationConfiguration.java[the configuration of the bean factory].
+
+=== And more!
+
+A summary of other notable changes:
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-2736[HSEARCH-2606]: the `discovery_scheme` configuration
+   property is now correctly taken into account.
+   Thanks to *Matthieu Vincent* for reporting and fixing this issue!
+ * https://hibernate.atlassian.net/browse/HSEARCH-2477[HSEARCH-2477]: shard filtering now works on Elasticsearch.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2603[HSEARCH-2603]: we now use the Painless scripting language
+   when doing spatial searches on Elasticsearch 5+.
+   Incidentally, this means that it is no longer necessary to perform any server-side configuration on Elasticsearch 5+ to perform any spatial query.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2734[HSEARCH-2734]: due to a lot of confusion and incorrect (harmful) use,
+   we have deprecated the "ram" name for the `RAMDirectory` directory provider.
+   If you need it, please **ensure you are not using it in a production environment**,
+   read about https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#directory-provider-table[its limitations in the reference documentation],
+   and use its new name: "local-heap".
+ * https://hibernate.atlassian.net/browse/HSEARCH-2735[HSEARCH-2735]: index-time boosting features (`@Boost`, `@DynamicBoost`)
+   have been deprecated with no replacement,
+   and will need to be removed in a future version because Lucene 7 won't allow index-time boosting anymore.
+   See https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#section-boost-annotation[the reference documentation for alternatives]:
+   the suggestion is to switch to using query-time boosting instead.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2665[HSEARCH-2665]: `IndexingInterceptor` is no longer considered experimental.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2666[HSEARCH-2666]: `IndexControlMBean` is no longer considered experimental.
+
+For a full list of changes since 5.8.0.Beta2, please see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=28701[the release notes].
+
+== How to get this release
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.8.0.Beta3</version>
+</dependency>
+----
+====
+
+To use the experimental Elasticsearch integration you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch</artifactId>
+   <version>5.8.0.Beta3</version>
+</dependency>
+----
+====
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=9[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
