@@ -1,0 +1,45 @@
+= "Hibernate Validator 6.0.0.CR1 is out with Bean Validation 2.0.0.CR1 support"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+The http://beanvalidation.org/news/2017/06/26/bean-validation-2-0-proposed-final-draft-released/[Proposed Final Draft (CR1) of Bean Validation 2.0] has been released earlier this week and it is time to release a version of the Reference Implementation compatible with it: here comes Hibernate Validator 6.0.0.CR1.
+
+Note that Hibernate Validator 6 requires JDK 8 or above.
+
+== What's new since Beta2
+
+As the final release of Bean Validation is getting closer, we mainly focused on keeping up with the latest spec clarifications, fixing bugs and improving overall consistency.
+
+We also added/improved a few things:
+
+ * After http://beanvalidation.org/news/2017/05/12/feedback-on-positive-and-negative-constraints/[a community survey], we decided to create specific annotations for `@PositiveOrZero`, `@NegativeOrZero`, `@PastOrPresent` and `@FutureOrPresent` instead of using annotation attributes.
+ * CDI is now enabled for ``ValueExtractor``s loaded via the ServiceLoader. We also fixed a class loading issue in that area.
+ * The programmatic API for `@NotBlank`, `@NotEmpty` and `@Email` is now using the new Bean Validation constraints instead of the Hibernate Validator specific ones.
+ * We added automatic module names for the new Java 9 module system. You can find them in http://docs.jboss.org/hibernate/validator/6.0/reference/en-US/html_single/#validator-gettingstarted-java9[our reference documentation].
+
+Finally, we made quite a lot of improvements to our testing infrastructure but you shouldn't notice it (except if you come join us!).
+
+The complete list of fixed issues can be found in the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version=29202&styleName=Html&projectId=10060[release notes].
+
+== Getting 6.0.0.CR1
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.0.0.CR1_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.CR1/hibernate-validator-6.0.0.CR1-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.0.CR1/hibernate-validator-6.0.0.CR1-dist.zip/download[ZIP]).
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
+== What's next?
+
+As we published the Proposed Final Draft, we are in the final stretch for Bean Validation 2.0, so if you spot any remaining issues or shortcomings in the spec draft, please let us know as soon as possible.
+
+Testing the Reference Implementation is also a good way to help us finalize both the specification and the next major version of Hibernate Validator, now is the time!
