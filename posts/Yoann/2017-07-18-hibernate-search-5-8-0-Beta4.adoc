@@ -1,0 +1,111 @@
+= Hibernate Search 5.8.0.Beta3 is out with AWS integration
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search version 5.8.0.Beta4,
+with <<aws-integration,AWS integration>>
+as well as bugfixes and improvements over http://in.relation.to/2017/06/13/hibernate-search-5-8-0-Beta3/[5.8.0.Beta3].
+
+[WARNING]
+====
+Hibernate Search 5.8.x, just as 5.7.x, is only compatible with Hibernate ORM 5.2.3 and later.
+
+If you need to use Hibernate ORM 5.0.x or 5.1.x, use the older Hibernate Search 5.6.x.
+====
+
+== 5.8 status
+
+We completed most of the work on new features and improvements for 5.8,
+and are now mainly working on performance improvements for the Elasticsearch integration.
+
+As a consequence, you can expect the next version we'll publish to be a candidate release.
+
+Once the CR is out, we will only fix bugs,
+and functional improvements will have to wait until the next minor release.
+
+So if you plan on using <<aws-integration,AWS integration>>,
+http://in.relation.to/2017/06/13/hibernate-search-5-8-0-Beta3/#normalizers[normalizers],
+http://in.relation.to/2017/06/13/hibernate-search-5-8-0-Beta3/#analyzer-providers[analyzer providers],
+or http://in.relation.to/2017/06/13/hibernate-search-5-8-0-Beta3/#bean-resolver[SPIs for integration of dependency injection frameworks],
+now's the last time to ask for improvements before the actual release!
+
+== What's new in Beta4?
+
+[[aws-integration]]
+=== AWS integration
+
+Building on the new SPIs introduced in Beta3,
+we added a new module allowing you to very simply wire your Hibernate Search instance
+to an AWS-hosted Elasticsearch cluster using Amazon's proprietary IAM authentication mechanism. 
+
+You can find more information about how to use this integration in the
+https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#elasticsearch-integration-configuration-aws[reference documentation].
+
+=== And more!
+
+A summary of other notable changes:
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-2783[HSEARCH-2783]: the `buffer_size_on_copy` configuration
+   property has been deprecated, because we now use Java NIO for file copy and thus don't need explicit buffering anymore.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2785[HSEARCH-2785]: using `.phrase()` and `.keyword()`
+   on the `QueryBuilder` for normalized fields no longer fails with Elasticsearch.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2776[HSEARCH-2776] and https://hibernate.atlassian.net/browse/HSEARCH-2777[HSEARCH-2777]:
+   `javax.transaction` dependencies are no longer incorrectly marked as optional in the OSGi manifest.
+
+For a full list of changes since 5.8.0.Beta3, please see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=29600[the release notes].
+
+== How to get this release
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven Central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.8.0.Beta4</version>
+</dependency>
+----
+====
+
+To use the experimental Elasticsearch integration you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch</artifactId>
+   <version>5.8.0.Beta4</version>
+</dependency>
+----
+====
+
+And to also use Amazon's proprietary IAM authentication mechanism to access your Elasticsearch cluster you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch-aws</artifactId>
+   <version>5.8.0.Beta4</version>
+</dependency>
+----
+====
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=9[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
