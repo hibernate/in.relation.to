@@ -1,0 +1,101 @@
+= "And here comes Hibernate Validator 6.0 Final with Bean Validation 2.0 support"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+It has been a long ride, more than six months, but here it is: we just released Hibernate Validator 6.0 Final together with the http://beanvalidation.org/news/2017/08/07/bean-validation-2-0-is-a-spec/[final version of the Bean Validation 2.0 specification].
+
+== What's new since CR3?
+
+For those who have followed closely the development of 6.0, here are the important changes since CR3:
+
+ * Updated documentation
+ * Updated translations
+ * Performance improvements
+ * Reduced memory footprint
+ * Support for the latest JDK 9 (build 180)
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/browse/HV-1457?filter=-4&jql=project%20%3D%20HV%20AND%20fixVersion%20in%20(6.0.0.Final%2C%206.0.1.Final)%20order%20by%20created%20DESC[on our JIRA].
+
+== Why should I use this nifty new version?
+
+=== We have some new features for you
+
+First and foremost, Hibernate Validator 6.0 is the Reference Implementation of the Bean Validation 2.0 specification so it comes with all its new features:
+
+ * First class support of container element constraints and cascaded validation (think `private Map<@Valid @NotNull OrderCategory, List<@Valid @NotNull Order>> orderByCategories;`);
+ * Support for the new JSR 310 date/time data types for `@Past` and `@Future`;
+ * New built-in constraints: `@Positive`, `@PositiveOrZero`, `@Negative`, `@NegativeOrZero`, `@PastOrPresent` and `@FutureOrPresent`;
+
+We also have leveraged the new features of JDK 8 (built-in constraints are marked repeatable, parameter names are retrieved via reflection) as it is now the minimal version required.
+
+You can read the whole story in the announcements of our Alpha, Beta and Candidate releases:
+
+ * http://in.relation.to/2017/02/16/hibernate-validator-600-alpha1-out/[6.0.0.Alpha1] in which we introduced nested container elements support and lambda based constraint definitions;
+ * http://in.relation.to/2017/03/30/hibernate-validator-600-alpha2-out/[6.0.0.Alpha2] with programmatic API and XML definition for container elements;
+ * http://in.relation.to/2017/05/16/hibernate-validator-600-beta1-out/[6.0.0.Beta1] with metadata retrieving support for container elements;
+ * http://in.relation.to/2017/05/24/hibernate-validator-600-beta2-out/[6.0.0.Beta2] with support for non generic container types in value extraction;
+ * http://in.relation.to/2017/06/29/hibernate-validator-600-cr1-out/[6.0.0.CR1], http://in.relation.to/2017/07/05/hibernate-validator-600-cr2-out/[6.0.0.CR2] and http://in.relation.to/2017/07/11/hibernate-validator-600-cr3-out/[6.0.0.CR3] where we polished the features and the API.
+
+=== It's faster...
+
+We have done quite a lot of benchmarking and have significantly improved the performances of Hibernate Validator. It can be up to two times faster in various scenarios.
+
+We're going to publish the results of our benchmarks on this blog soon.
+
+=== ...and it consumes less memory!
+
+To do its magic, Hibernate Validator collects a lot of metadata on your constrained beans. After a report from the http://www.keycloak.org/[Keycloak] developers, we worked on reducing the memory footprint used by the collected metadata.
+
+Hibernate Validator should now consume significantly less memory than before to store your constrained beans' metadata.
+
+=== Easy upgrade
+
+The first thing you'll notice is that the groupId of the artifact has changed: it is now `org.hibernate.validator` (we added `validator` at the end to better compartimentalize the various Hibernate technologies).
+
+Other than that, it will probably just be a drop-in replacement if you didn't use experimental features.
+
+If you used the old value handling infrastructure to deal with custom containers, you need to migrate them to the http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#chapter-valueextraction[new value extractor infrastructure].
+
+The detailed list of potential migration concerns can be found in our https://developer.jboss.org/wiki/HibernateValidatorMigrationGuide[migration guide].
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/6.0.1.Final/hibernate-validator-modules-6.0.1.Final-wildfly-10.1.0.Final-patch.zip[WildFly 10.1] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/6.0.1.Final/hibernate-validator-modules-6.0.1.Final-wildfly-11.0.0.Alpha1-patch.zip[WildFly 11.0 Alpha1]. You can read about how to apply such patches http://in.relation.to/2017/04/04/testing-bean-validation-2-0-on-wildfly-10/[here].
+
+== It sounds exciting, how can I help?
+
+First, test it with your applications and report any issues you might encounter.
+
+Then, if you'd like, you can test the new features (the new constraints, the new container element support...). If you have any issues with the features or http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/[the documentation], please report it to us.
+
+Finally, we added a few more built-in constraints in Bean Validation 2.0 and Hibernate Validator 6.0 so we need to update the translations.
+
+English, French, German, Persian, Ukrainian and Brazilian Portuguese are covered but any help on the others are welcome. Just take a look at https://github.com/hibernate/hibernate-validator/tree/master/engine/src/main/resources/org/hibernate/validator[the translations in our GitHub repository] and create a PR (if you're not aware on how to encode a property file, just push it to us in plain text and we'll do it).
+
+== Getting 6.0.1.Final
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.0.1.Final_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.1.Final/hibernate-validator-6.0.1.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.1.Final/hibernate-validator-6.0.1.Final-dist.zip/download[ZIP]).
+
+== What about 6.0.0.Final?
+
+6.0.0.Final essentially is the version submitted to the JCP as the Reference Implementation of Bean Validation 2.0. We made quite a lot of improvements on top of it during the Final Approval Ballot period so we decided to release 6.0.1.Final with all these improvements right away.
+
+== What's next?
+
+Well, first, we will get some rest and wait for your feedback on this version.
+
+With your help, we hope to release a new version soon with updated translations.
+
+And finally, we also intent to explore potential features for a future spec revision. Always good to have feedback from the field before setting the API in stone.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
