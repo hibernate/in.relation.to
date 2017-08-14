@@ -1,0 +1,86 @@
+= Hibernate Community Newsletter 15/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+On Baeldung, you can find a very good article about http://www.baeldung.com/hibernate-pagination[JPA and Hibernate pagination].
+While JPA 2.2 defines support for Java 1.8 Stream operations.
+https://vladmihalcea.com/2017/07/04/whats-new-in-jpa-2-2-stream-the-result-of-a-query-execut[pagination is still the proffered way to controlling the amount of data being fetched].
+
+Have you ever wondered how you can map a JPA many-to-many association with extra column?
+If you are interested in the best way to much a a relationship,
+then you should definitely read
+https://vladmihalcea.com/2017/07/26/the-best-way-to-map-a-many-to-many-association-with-extra-columns-when-using-jpa-and-hibernate/[this article].
+
+If you're using a relational database, then you should be using a connection pool as well.
+Check out
+https://beansroasted.wordpress.com/2017/07/29/connection-pool-analysis/[this article]
+for an performance analysis of the most common Java connection pools.
+You will also need connection pool monitoring, and the
+https://github.com/vladmihalcea/flexy-pool[FlexyPool] open source framework allows you to do so.
+
+Hibernate offers a dirty checking mechanism which https://vladmihalcea.com/2014/08/21/the-anatomy-of-hibernate-dirty-checking/[automatically detects changes to managed entities].
+While the default mechanism is suitable for most use cases, you can even customize it as explained in
+http://in.relation.to/2013/04/10/options-for-entity-dirtness-checking/[this article].
+
+If you ever wondered why you got the _HHH000179: Narrowing proxy to class this operation breaks ==_ warning message or
+wondered how to fix it, then you should read
+https://marcin-chwedczuk.github.io/HHH000179-narrowing-proxy-to-class-this-operation-breaks-equality[this article]
+wrote by Marcin Chwedczuk.
+
+Traditionally, storing EAV (Entity-Attribute-Value) data in a RDBMS has required various tricks to handle multiple value types.
+Now that most relational databases support JSON column types,
+you can use a custom Hibernate type to store your EAV data as a `JsonNode` object.
+Check out
+https://vladmihalcea.com/2017/08/08/how-to-store-schema-less-eav-entity-attribute-value-data-using-json-and-hibernate/[this article]
+for a step-by-step tutorial that will show you how you can accomplish this task.
+
+Joe Nelson wrote
+https://begriffs.com/posts/2017-08-01-practical-guide-sql-isolation.html[a great article]
+about the difference between various SQL isolation levels with examples for various phenomena like read skew, write skew or lost updates.
+
+Thorben Janssen gives you some tips about
+https://www.thoughts-on-java.org/best-practices-many-one-one-many-associations-mappings/[mapping the Many-To-One and One-To-Many associations].
+For more details, check out
+https://vladmihalcea.com/2017/03/29/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/[the best way to map a @OneToMany relationship with JPA and Hibernate]
+article as well.
+
+== Time to upgrade
+
+* http://in.relation.to/2017/08/07/and-here-comes-hibernate-validator-60/[Hibernate Validator 6.0 has been released] with Bean Validation 2.0 support.
+* http://in.relation.to/2017/07/25/hibernate-orm-519-final-release/[Hibernate ORM 5.2.9 is out] with
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=29701[many improvements and bug fixes].
+
+== Questions and answers
+
+* https://www.quora.com/What-are-some-best-practices-for-handling-large-data-with-Hibernate/answer/Vlad-Mihalcea-1[What are some best practices for handling large data with Hibernate?]
+* https://www.quora.com/What-is-the-difference-between-projections-and-restrictions-in-hibernate-frmamework/answer/Vlad-Mihalcea-1[What is the difference between projections and restrictions in Hibernate framework?]
+* https://www.quora.com/What-are-some-tips-tricks-and-gotchas-when-using-Spring-Data-JPA-for-database-access/answer/Vlad-Mihalcea-1[What are some tips, tricks and gotchas when using Spring Data JPA for database access?]
+* https://stackoverflow.com/questions/28539915/multiple-sequencegenerator-in-hibernate-entity/28550689#28550689[Multiple SequenceGenerator in Hibernate Entity]
+* https://stackoverflow.com/questions/30635715/how-to-insert-using-a-select-in-hibernate/30635991#30635991[How to INSERT using a SELECT in Hibernate]
+* https://stackoverflow.com/questions/5268466/how-does-hibernate-detect-dirty-state-of-an-entity-object/25425009#25425009[How does Hibernate detect the dirty state of an entity object?]
+* https://stackoverflow.com/questions/26133663/namingexception-jta-usertransaction/26134063#26134063[NamingException: jta.UserTransaction]
+* https://stackoverflow.com/questions/26328187/is-it-possible-to-limit-the-size-of-a-onetomany-collection-with-hibernate-or-jp/26329733#26329733[Is it possible to limit the size of a @OneToMany collection with Hibernate or JPA Annotations?]
+* https://stackoverflow.com/questions/45430983/how-to-define-database-generated-column-values-as-readonly-fields-in-hibernate-j/45431128#45431128[How to define database generated column values as readonly fields in JPA and Hibernate?]
+* https://stackoverflow.com/questions/1657124/whats-the-difference-between-pessimistic-read-and-pessimistic-write-in-jpa/40232158#40232158[What's the difference between PESSIMISTIC_READ and PESSIMISTIC_WRITE in JPA?]
+* https://stackoverflow.com/questions/13539213/why-do-i-need-transaction-in-hibernate-for-read-only-operation/40269166#40269166[Why do I need Transaction in Hibernate for read-only operation?]
+* https://stackoverflow.com/questions/45491551/refresh-and-fetch-an-entity-after-save-jpa-spring-data-hibernate/45504591#45504591[Refresh and fetch an entity after save (JPA/Spring Data/Hibernate)]
+* https://stackoverflow.com/questions/45592708/hibernate-emptyinterceptor-onflushdirty-is-not-executing/45615694#45615694[Hibernate EmptyInterceptor onFlushDirty() is not executing]
+* https://stackoverflow.com/questions/13027214/jpa-manytoone-with-cascadetype-all/45613450#45613450[JPA @ManyToOne with CascadeType.ALL]
+* https://stackoverflow.com/questions/45455053/query-by-example-in-hibernate-5-2/45525808#45525808[Query by example in Hibernate 5.2]
+* https://stackoverflow.com/questions/45513522/database-inserts-fail-with-no-transaction-error-when-upgraded-to-spring-4-3-7-an/45514301#45514301[Database inserts fail with no transaction error when UPGRADED to Spring 4.3.7 and Hibernate 5.2.9]
+* https://stackoverflow.com/questions/45202759/jta-transactions-involving-spring-and-non-spring/45230074#45230074[JTA transactions involving spring and non-spring]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044621[Hibernate case sensitive comparison]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044703[Non-primary key @JoinColumn no longer working?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044645[`@ManyToMany` Join Table uses not-nullable columns]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044704[`@ManyToAny` without discriminator column]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044687[Is Hibernate Reverse Engineering compulsory?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044651[The `hibernate.default_schema` configuration property doesn't work properly]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044672[Solve `TransientObjectException` without cascade]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044628[Specify subclass on joined inheritance]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1043171[Hibernate support for Java 8 features]
