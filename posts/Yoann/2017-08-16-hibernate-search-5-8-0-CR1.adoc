@@ -1,0 +1,107 @@
+= First candidate release of Hibernate Search 5.8.0!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search version 5.8.0.CR1,
+with bugfixes and improvements over http://in.relation.to/2017/07/18/hibernate-search-5-8-0-Beta4/[5.8.0.Beta4].
+
+Version 5.8.0.CR1 is the last opportunity for the community to test it and report bugs before the release.
+
+[WARNING]
+====
+Hibernate Search 5.8.x, just as 5.7.x, is only compatible with Hibernate ORM 5.2.3 and later.
+
+If you need to use Hibernate ORM 5.0.x or 5.1.x, use the older Hibernate Search 5.6.x.
+====
+
+== What's new in CR1?
+
+Here are the most notable changes:
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-2831[HSEARCH-2831]:
+  request signing for Amazon's proprietary IAM authentication mechanism
+  https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#elasticsearch-integration-configuration-aws[now requires you to set the `hibernate.search.default.elasticsearch.aws.signing.enabled` property to `true`],
+  allowing you to easily disable signing even if the `hibernate-search-elasticsearch-aws` JAR is in your classpath.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2818[HSEARCH-2818] / https://hibernate.atlassian.net/browse/HSEARCH-2821[HSEARCH-2821]:
+  sending requests to Elasticsearch is now much less memory-consuming.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2764[HSEARCH-2764]:
+  we improved the orchestration of index updates before they are sent to the Elasticsearch client:
+ ** Index updates originating from a single Hibernate Search node will now be sent
+   to Elasticsearch in the order they were generated, even when they come from different threads.
+ ** Mass indexing will now add documents in parallel, allowing you to take advantage
+   of having multiple connections to the Elasticsearch cluster.
+   Note you can
+   https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#elasticsearch-integration-configuration[customize the maximum number of connections]
+   using the `hibernate.search.default.elasticsearch.max_total_connection`
+   and `hibernate.search.default.elasticsearch.max_total_connection_per_route`
+   configuration properties.
+ ** The internal index update queues are now bounded,
+   thus performing mass indexing on very large data sets will not
+   trigger an `OutOfMemoryError` anymore.
+ ** We also made several other internal changes to improve performance
+   (less Refresh API calls, more request bulking, ...).
+ * https://hibernate.atlassian.net/browse/HSEARCH-2839[HSEARCH-2839]: when using a metadata-providing
+  bridge, the bridge can now implement projection on the default field even if its type was set to `OBJECT`.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2840[HSEARCH-2840]: when using a metadata-providing
+  bridge, the bridge can now implement projection on
+  https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#elasticsearch-custom-field-bridge-dynamic-mapping[dynamic fields].
+ * https://hibernate.atlassian.net/browse/HSEARCH-2843[HSEARCH-2843]: changing the limit/offset
+  of a query now properly clears the query's result cache with Elasticsearch.
+
+For a full list of changes since 5.8.0.Beta4, please see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=30102[the release notes].
+   
+== How to get this release
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven Central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.8.0.CR1</version>
+</dependency>
+----
+====
+
+To use the experimental Elasticsearch integration you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch</artifactId>
+   <version>5.8.0.CR1</version>
+</dependency>
+----
+====
+
+To use Amazon's proprietary IAM authentication mechanism to access your Elasticsearch cluster you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch-aws</artifactId>
+   <version>5.8.0.CR1</version>
+</dependency>
+----
+====
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=9[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
