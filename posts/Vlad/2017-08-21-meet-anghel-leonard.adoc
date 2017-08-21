@@ -1,0 +1,116 @@
+= Meet Anghel Leonard
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/anghelleonard[Anghel Leonard],
+a software developer, blogger, book author, and Java EE aficionado.
+
+image::AnghelLeonard.png["Anghel Leonard, align="center", width="400"]
+
+== Hi, Leonard. Would you like to introduce yourself and tell us a little bit about your developer experience?
+
+Hi Vlad, thanks for having me. My name is Anghel Leonard (https://twitter.com/anghelleonard[@anghelleonard] on Twitter),
+I'm living in a small village in Romania,
+and I’ve been a software developer for the last 17 years,
+mainly focusing on Java and Web development.
+I'm also a blogger and author of several books.
+
+My career started as a Java developer in the oil field (Petrom S.A.).
+Mainly there I've been part of the team whose goal was to develop applications in the oil simulation field (Java desktop applications meant apply some specific mathematical models).
+After some time, we switched to web applications (based on HTML, Servlets /JSP and Struts)
+and we brought databases into the equation as well (especially MySQL and Visual FoxPro).
+About then I've started with Hibernate ORM, "native" API.
+
+Shortly, I've started to learn Java EE (mainly, JSF, EJB, and JPA) and Spring. Further,
+I've worked for many years in GIS field developing RIA and SPA web applications.
+Since then I'm constantly using Hibernate implementation of the Java Persistence API (JPA) specification.
+By their nature, GIS RIA/SPA applications process a lot of data (spatial and non-spatial data) and must run fast,
+so I've always been interested to optimize the performance of the persistent layer.
+I can say that I've seen Hibernate "growing" and I've constantly tried to learn about every new feature and improvement it brought :)
+
+Currently, I'm working as a Java CA.
+My main task here is to perform code reviews on a significant number of projects of different sizes,
+technologies, and areas of interest.
+Many of these projects use Hibernate "native" API and Hibernate JPA.
+
+== You are a very prolific writer, having published several books about JSF, Omnifaces, Hibernate, MongoDB and even JBoss Tools. Now that you are self-publishing your latest book, can you tell us the difference between working with a publisher and going on your own?
+
+Well, I think that it is obvious that choosing between a publisher and self-publishing is a trade-off matter.
+From my experience, there are pros and cons on both sides and I can highlight the following aspects:
+
+Publisher vs self-publishing pros:
+
+- publishers provide grammar and check spelling (this can be a major advantage for non-native English speakers, as me) and technical reviewers (usually, authors can recommend reviewers as well) while in self-publishing the author must take care of this aspects
+- publishers take care of book's cover and index while in self-publishing the author must do it
+- publishers can consider the author very good and contact him for further contracts on the same topic while this is not true in self-publishing (at least, I did not hear of it)
+- publishers provide constant and consistent assistance during the writing process (e-mail or Skype) via editors, project coordinator, technical stuff, etc while in self-publishing this is not available
+- for authors is 100% costs free while in self-publishing the costs can seriously vary
+- publishers can be powerful brands on the market
+
+Publisher vs self-publishing cons:
+
+- publishers can reject a book proposal for different reasons (e.g. they already have too many books on the suggested topic) while in self-publishing the chances to be accepted are significantly bigger
+- publishers work only with deadlines (each chapter has a fixed date and the book has a fixed calendar) while is self-publishing the author decides when to release an updated version and how significant the update will be
+- publishers provide "Errata" for book issues (typos, mistakes, technical leaks, content accuracy issues, etc) and those issues can be fixed only in subsequent versions of the book while in self-publishing the author can fix issues immediately and repeatable
+- publishers usually pay significantly smaller royalties in comparison with self-publishing
+- typically, publishers pay royalties at every 6 months, while in self-publishing is more often
+- publishers are not quite flexible about the book size, aspect, format, writing style, etc while in self-publishing these coordinates are very flexible
+- publishers require to be the only owner of the book content and it is forbidden to publish it in any other place or form while in self-publishing this restriction is not always applied
+- publishers set the price of the book without consulting the author while in self-publishing the author sets the price (moreover, the author can choose the price in a range of values)
+- publishers decide the discounts and donations policy while in self-publishing the author can provide coupons, discounts and make donations.
+
+== Your latest book is called https://leanpub.com/java-persistence-performance-illustrated-guide["Java Persistence Performance Illustrated Guide"]. Could you tell us more about this new project of yours?
+
+Sure thing.
+
+Well, in the beginning, the content of https://leanpub.com/java-persistence-performance-illustrated-guide[this new book] was not meant to be part of any book.
+The story is like this: Over time, I have collected the best online articles about Java persistence layer (JPA, Hibernate, SQL, etc) and, on my desk,
+I have some of the most amazing books about these topics.
+
+I think there is no surprise for you if I say that https://vladmihalcea.com[your blog] and book,
+https://vladmihalcea.com/books/high-performance-java-persistence/[High-Performance Java Persistence], are major parts of this collection.
+
+In order to mitigate the performance issues related to persistence layer,
+I strongly and constantly recommend these resources to developers involved in persistence layer,
+but the remaining question is: in a regular day of work,
+how the members of a team can quickly understand/recognize a performance issue in order to fix it?
+
+Well, there is no time to study in that moment,
+so I decided to have a new approach: have drawn of a specific performance issue and for 5-15 minutes talk on that draw (after all, "a picture is worth a thousand words"). This way, the audience can quickly understand/recognize the issue and have the hints to fix it.
+
+Further, I've published these draws on Twitter, where I was surprised to see that even without the words (the talk), they were appreciated.
+Well, over time I've collected a significant number of draws and people started asking me if I will publish them somewhere (I remember that we had a little talk about this on Twitter as well). And, this is how the idea of the book was born. :)
+
+The main reason of choosing the self-publishing approach was the fact that I'm not constrained by fix deadlines. The only extra-effort I've done was to find somebody to make the cover - it was designed and drawn by an excellent painter, Mr. Barsan Florian.
+
+Now, the goal of this book is to act as a quick illustrated guide for developers that need to deal with persistence layer performance issues (SQL, JDBC, JPA, Hibernate (most covered) and Hazelcast).
+
+Each drawing is accompanied by a short description of the issue and the solution.
+It's like "first-aid", a quick and condensed recipe that can be followed by an extended and comprehensive article with examples and benchmarks, as you have on your blog.
+
+== What are the main causes of permanence related issues for a typical Java EE application and what should developers do to overcomes these problems?
+
+Most of the applications that I reviewed are Java EE and Spring based applications.
+Since most of the performance penalties have their roots in the persistence layer,
+I tried to make a top 10 of the most frequent programming mistakes that cause them (this trend was computed from ~300 PRs in different projects and it is in progress):
+
+1. Having long or useless transactions (e.g. using @Transactional at class level on Spring controllers that delegate tasks to "heavy" services or never interact with the database)
+2. Avoiding PreparedStatement bind parameters and using "+" concatenations for setting parameters in SQL queries.
+3. Fetching too much data from the database instead of using a combinations of DTO, LIMIT/ROWNUM/TOP and JOINs (e.g. in the worst scenario: a read-only query (marked as read-only or
+not) fetches all entities, a stream is created over the returned collection, and afterwards, the findFirst stream terminal operation is executed in order to fetch and use further a single entity).
+4. Wrong configuration of batching (the team lives with the sensation that batching is working behind the scene, but they don't check/inspect the actually SQLs and batch size)
+5. Bad usage or missing transaction boundaries (e.g. omitting @Transactional for read-only queries or executing separate transactions for a bunch of SQL statements that must run in a single transaction)
+6. Ignoring the fact that data is loaded eagerly.
+7. Don't rely on a pool connection or avoid tuning the pool connection (Flexy Pool should be promoted intensively). Even worse, increase the connections number to 300, 400.
+8. Use unidirectional one-to-many associations with insert and delete entities operations
+9. Using CriteriaBuilder for all SQL statements and rely on whatever is generated behind the scene
+10. Lack of knowledge about Hibernate features (e.g. attributes lazy loading, bytecode enhancement, delay DB connection acquisition, suppress sending DISTINCT to the database, etc)
+
+== We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?
+
+First I want to congratulate the whole Hibernate team because is doing a great job! I really love the latest features and the comprehensive improvements in documentation.
+Taking into account the type of applications that I'm involved in, I will like to see the Hibernate - CDI integration ready.
+
+*Thank you, Leonard, for taking your time. It is a great honor to have you here. To reach Leonard, you can follow him on https://twitter.com/anghelleonard[Twitter].*
