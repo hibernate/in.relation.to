@@ -1,0 +1,48 @@
+= "Hibernate Validator 6.0.2.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+Thanks to our users providing us feedback on our 6.0 release, we were able to fix a few annoying issues and we are happy to announce the release of Hibernate Validator 6.0.2.Final.
+
+This is a recommended upgrade for everyone using Hibernate Validator 6.0.x and it is a drop-in replacement of 6.0.1.Final.
+
+== What's new since 6.0.1.Final?
+
+We fixed 2 annoying bugs:
+
+ * https://hibernate.atlassian.net/browse/HV-1471[HV-1471], reported by William Eddy - An important issue in the new value extraction infrastructure: it could lead to the engine trying to extract a value from an already unwrapped value;
+ * https://hibernate.atlassian.net/browse/HV-1470[HV-1470], reported by Jean-Sébastien Roy - The annotation processor might report an error in a perfectly valid use case: a constraint validator declared through the programmatic API or the XML configuration. This issue is only relevant to people using the annotation processor.
+
+The Brazilian Portuguese translation was updated by Hilmer Chona and Thiago Mouta.
+
+Marko also made a few improvements to the annotation processor regarding the value extraction support in https://hibernate.atlassian.net/browse/HV-1395[HV-1395].
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%206.0.2.Final%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting 6.0.2.Final
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.0.2.Final_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.2.Final/hibernate-validator-6.0.2.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.2.Final/hibernate-validator-6.0.2.Final-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/6.0.2.Final/hibernate-validator-modules-6.0.2.Final-wildfly-10.1.0.Final-patch.zip[WildFly 10.1] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/6.0.2.Final/hibernate-validator-modules-6.0.2.Final-wildfly-11.0.0.Beta1-patch.zip[WildFly 11.0 Beta1] (wait for the synchronization to Maven Central). You can read about how to apply such patches http://in.relation.to/2017/04/04/testing-bean-validation-2-0-on-wildfly-10/[here].
+
+== What's next?
+
+We will continue to release maintenance releases to fix quickly the issues reported by our users.
+
+With your help, we hope to update the translations of the constraint messages in the future releases.
+
+And finally, we also intend to explore potential features for a future spec revision. Always good to have feedback from the field before setting the API in stone.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
