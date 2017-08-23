@@ -1,0 +1,66 @@
+= Bugfix releases for Hibernate Search 5.5, 5.6 and 5.7
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published three bugfix releases of Hibernate Search: 5.5.8.Final, 5.6.3.Final and 5.7.2.Final.
+
+
+== What's new?
+
+Here are the most notable changes:
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-2851[HSEARCH-2851]: Hibernate Search 5.5
+  now works correctly with Hibernate ORM 5.1.9 when using OSGi.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2843[HSEARCH-2843]: changing the limit/offset
+  of a query now properly clears the query's result cache with Elasticsearch.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2858[HSEARCH-2858]: `@Spatial`-annotated types
+  with a `@ContainedIn`-annoted property no longer trigger an exception on startup.
+
+For a full list of changes, please see the release notes:
+
+ * https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=30800[5.5.8.Final]
+ * https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=30802[5.6.3.Final]
+ * https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=30801[5.7.2.Final]
+   
+== How to get these releases
+
+All versions are available on Hibernate Search's http://hibernate.org/search/[web site].
+
+Ideally use a tool to fetch it from Maven Central; these are the coordinates:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-orm</artifactId>
+   <version>5.7.2.Final</version>
+</dependency>
+----
+====
+
+To use the experimental Elasticsearch integration you'll also need:
+
+====
+[source, XML]
+----
+<dependency>
+   <groupId>org.hibernate</groupId>
+   <artifactId>hibernate-search-elasticsearch</artifactId>
+   <version>5.7.2.Final</version>
+</dependency>
+----
+====
+
+Downloads from https://sourceforge.net/projects/hibernate/files/hibernate-search/[Sourceforge] are available as well.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=9[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
