@@ -1,0 +1,73 @@
+= Hibernate Community Newsletter 16/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Interviews
+
+Don't miss our Hibernate developer interviews with http://in.relation.to/2017/08/21/meet-anghel-leonard/[Anghel Leonard].
+
+If you want to share your story about Hibernate,
+let us know, and we can share it with our huge community of passionate developers.
+
+== Articles
+
+Brandur has written https://brandur.org/postgres-atomicity[a very detailed explanation]
+about the implementation of MVCC (Multi-Version Concurrency Control) in PostgreSQL.
+For a beginner's overview of what MVCC is and how it works,
+check out https://vladmihalcea.com/2017/03/01/how-does-mvcc-multi-version-concurrency-control-work/[this article] as well.
+
+Hibernate Envers is probably the easiest way to set up an audit log if you are already using JPA and Hibernate.
+Check out https://vladmihalcea.com/2017/08/22/the-best-way-to-implement-an-audit-log-using-hibernate-envers/[this article]
+to see the best audit strategy to use when choosing Envers as your audit log implementation.
+
+Running out of database sequence values is a very serious issue.
+https://hackernoon.com/the-night-the-postgresql-ids-ran-out-9430a2dbb895[This article] explains how this had happened on a production system, and
+offers both a quick fix and a solution for this problem.
+
+Not only that it provides a solid implementation of the JPA specification,
+but Hibernate can be used for all sorts of tasks like for getting access to the binding between JPA entities
+and the underlying DB objects (e.g. table, column).
+Check out https://vladmihalcea.com/2017/08/24/how-to-get-the-entity-mapping-to-database-table-binding-metadata-from-hibernate/[this article]
+for more details on this topic.
+
+https://www.thoughts-on-java.org/hibernate-tips-elementcollection/[This article] explains how to persist a `List` of `String` objects as an `@ElementCollection`.
+Although simple, `@ElementCollection`, like any unidirectional association, is
+https://vladmihalcea.com/2015/05/04/how-to-optimize-unidirectional-collections-with-jpa-and-hibernate/[not very efficient].
+A https://vladmihalcea.com/2017/03/29/the-best-way-to-map-a-onetomany-association-with-jpa-and-hibernate/[bidirectional `@OneToMany`] association
+where the `String` element becomes part of the Child entity
+is a much more efficient alternative.
+
+== Time to upgrade
+
+* http://in.relation.to/2017/08/18/hibernate-orm-5110-final-release/[Hibernate ORM 5.1.10] is out with many improvements and bug fixes.
+* There have been two releases for Hibernate Search: one for http://in.relation.to/2017/08/16/hibernate-search-5-8-0-CR1/[5.8.0 CR1] and another one for
+http://in.relation.to/2017/08/24/hibernate-search-5-5-8-and-5-6-3-and-5-7-2/[5.5.8, 5.6.3, and 5.7.2].
+* Hibernate Validator has released the http://in.relation.to/2017/08/22/hibernate-validator-602-final-out/[6.0.1] version.
+
+== Questions and answers
+
+* https://www.quora.com/For-Hibernate-2nd-level-cache-a-distributed-cache-solution-is-better-suitable-than-a-local-in-memory-cache/answer/Vlad-Mihalcea-1[For the Hibernate 2nd-level cache, a distributed cache solution is better suited than a local in-memory cache?]W
+* https://stackoverflow.com/questions/45831771/hibernate-extra-query-after-join-fetch-on-same-entity/45839141#45839141[Hibernate extra query after JOIN FETCH on the same entity]
+* https://stackoverflow.com/questions/45839948/hibernate-l2c-with-infinispan-and-jboss-as-7-is-not-working/45840256?noredirect=1#comment78638554_45840256[Hibernate L2C with Infinispan and JBoss EAP 7.0.6 is not working]
+* https://stackoverflow.com/questions/45643203/spring-bean-understanding/45672734#45672734[How should SessionFactory instances be handled within (Spring MVC) web requests?]
+* https://stackoverflow.com/questions/24724152/jpa-clear-collection-and-add-new-items/25251602#25251602[JPA clear collection and add new items]
+* https://stackoverflow.com/questions/16989733/hibernate-many-to-one-relationship-without-primary-key-or-join-table/45694007#45694007[Hibernate @ManyToOne Relationship without Primary Key or Join Table]
+* https://stackoverflow.com/questions/13811844/jpa-onetomany-and-manytoone-relationships/45613346#45613346[JPA @OneToMany and @ManyToOne Relationships]
+* https://stackoverflow.com/questions/40802656/persisting-a-json-object-using-hibernate-jpa/45736311#45736311[Persisting a JSON Object using Hibernate and JPA]
+* https://stackoverflow.com/questions/30837666/hibernate-query-cache-invalidation/30841724#30841724[Hibernate Query cache invalidation]
+* https://stackoverflow.com/questions/21574236/org-hibernate-lazyinitializationexception-could-not-initialize-proxy-no-sess/39465150#39465150[org.hibernate.LazyInitializationException - could not initialize proxy - no Session]
+* https://stackoverflow.com/questions/24321280/jpa-version-field-doesnt-get-incremented/24324733#24324733[JPA @Version field doesn't get incremented]
+* https://stackoverflow.com/questions/29943132/overriding-id-defined-in-a-mappedsuperclass/29944491#29944491[Overriding @Id defined in a @MappedSuperclass]
+* https://stackoverflow.com/questions/45905924/what-is-the-annotation-in-java-hibernate-used-to-auto-increment-a-primary-keyi/45919831#45919831[What is the Java annotation in Hibernate used to auto increment a MySQL Primary Key - @Id]
+* https://stackoverflow.com/questions/45904859/hibernate-not-updating-database/45920146#45920146[Hibernate is not updating a database record]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044736[JPA Entity with a many-to-many association with extra column]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044742[Read-only Views composite key not working in Hibernate 4]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044750[Hibernate native SQL returns a String instead of an Object[]]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044123[How to escape keywords with JPA]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044756[Table 'hibernate_sequence' doesn't exist on MySQL]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044763[How to map the JPA or Hibernate createQuery result to a DTO]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044766[Hibernate updates the PK of the child in a one-to-many list]

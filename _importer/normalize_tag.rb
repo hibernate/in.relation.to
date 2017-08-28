@@ -100,6 +100,9 @@ def convert_tag(tag)
   when /Interview/i
      "Interview"
 
+  when /Newsletter/i
+     "Newsletter"
+
   # Look for Jboss AS but skip JBoss Asylum
   when /(Jboss as[^(ylum)])|(jboss modules)|(as7)|(jboss5)/i
     "JBoss AS"
