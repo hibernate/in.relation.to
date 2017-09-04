@@ -1,0 +1,81 @@
+= Meet Arnold Gálovics
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/ArnoldGalovics[Arnold Gálovics],
+a software developer, blogger, and Java Persistence aficionado.
+
+image::ArnoldGalovics.jpg["Arnold Gálovics, align="center", width="400"]
+
+== Hi, Arnold. Would you like to introduce yourself and tell us a little bit about your developer experience?
+
+Hi, Vlad. First of all, I'd like to thank you for having me.
+My name is Arnold Galovics (https://twitter.com/ArnoldGalovics[@ArnoldGalovics] on Twitter).
+I'm 25 years old and currently living in the capital of Hungary, Budapest.
+
+Since I got my first computer, I've always been curious how software works, so I got into the software development industry to see
+what's happening under the hood.
+
+In the last 5 years, I worked in the telecommunication industry where I was responsible for developing
+an application for strictly internal usage which was purely just getting and manipulating the data we needed
+and at the end wiring it together.
+
+After that, I got into the financial industry and now I'm working on a very interesting project where we are creating a huge platform with all the new fancy tools/technologies.
+
+In the last few years, I was mostly focusing on the standard Java stack, Oracle, JPA/Hibernate, Spring, Eclipse RCP, Angular.
+First, when I got into the JPA world, it was like real magic for me what was happening and how clever the people are who wrote such a tool.
+A couple of months ago I wanted to try myself out in the open-source community,
+and I chose Hibernate ORM to contribute into as it was familiar to me and, of course, I wanted to give something back.
+
+In the meantime, I also started a technical blog where I love to publish articles.
+Despite the fact, I don't have the time I'd like to invest into blogging because I'm currently working as a Senior Software Engineer in a full-time job,
+but I'm trying to work on it as much as I can.
+
+== You wrote http://blog.arnoldgalovics.com/tag/hibernate/[several articles] about JPA and Hibernate on your blog. In your experience, is it JPA and Hibernate a valid option for a typical Java EE application?
+
+Absolutely. Especially for smaller projects but of course it's reliable for bigger ones as well you just have to understand the consequences of the choices you make.
+In good hands, for a relational database, Hibernate is a really great choice.
+
+There are tons of great features which are helping you throughout the evolution of the application,
+and I strongly feel that especially lately the Hibernate team did an amazing job for making the ORM framework better and better.
+
+== What are the main causes of permanence related issues when using JPA and Hibernate and what should developers do to overcomes these problems?
+
+As I mentioned, there are lots of great features offered by Hibernate, but people often think that Hibernate is a silver bullet and they usually don't understand the concept or how a certain feature should be used.
+
+The main problem is that people tend to forget that under JPA/Hibernate, there are SQL statements executed against the underlying database and they don't care about this,
+thus struggling with the performance of the application.
+
+There are simple things which you should look out for, like the merge pitfall of declarative transaction management, entity state transitions, fetching only the data you need, etc.
+
+I've seen many projects which are using anti-patterns in the data-access layer like putting every association to EAGER fetching, having a general data-access layer,
+wrong transaction boundaries.
+
+Usually, after a couple of performance issues, projects want to drop JPA/Hibernate just to go with pure SQL to have better performance, however,
+understanding the problem and verifying the executed SQL statements is the way to go in my opinion instead of dropping the ORM completely.
+
+My main message here is: you can use JPA/Hibernate for your project, just understand how it works and how to use it efficiently.
+There are books, blogs, the user guide improved a lot.
+
+I personally recommend reading Vlad's https://leanpub.com/high-performance-java-persistence[High-Performance Java Persistence] book and
+https://vladmihalcea.com/[his blog] because you can learn a lot from it.
+
+I also suggest visiting http://blog.arnoldgalovics.com/[my blog] as I usually write about Hibernate and performance related problems.
+
+== When you are developing an enterprise application, do you consider designing for performance from the very beginning, or do you postpone it in the name of http://ubiquity.acm.org/article.cfm?id=1513451["premature optimization"]?
+
+I've seen many issues popping up during the last few years,
+and most of them occurred due to not thinking about the performance in advance.
+I think JDBC batching is the perfect example for this as there are lots of things you have to be careful about, like JDBC driver,
+underlying DB, not flushing in the middle of a transaction, reordering, etc.
+
+In my opinion, it's essential to consider performance from the beginning because there are so many things which might go wrong in the data-access layer.
+
+== We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?
+
+I'm really thankful for the Hibernate team because you guys are making a great tool for the community.
+I think Hibernate is currently in a state where most of the features are in place, and only minor adjustments are necessary so I wouldn't add anything special here.
+
+*Thank you, Arnold, for taking your time. It is a great honor to have you here. To reach Arnold, you can follow him on https://twitter.com/ArnoldGalovics[Twitter].*
