@@ -1,0 +1,73 @@
+= Meet Jakub Kubryński
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/jkubrynski[Jakub Kubryński],
+a software developer, blogger, conference speaker, and Java Persistence aficionado.
+
+image::JakubKubrynski.jpg["Jakub Kubryński, align="center", width="400"]
+
+== Hi, Jakub. Would you like to introduce yourself and tell us a little bit about your developer experience?
+
+Thank you very much for inviting me here. My name is Jakub Kubryński (https://twitter.com/jkubrynski[@jkubrynski] on Twitter).
+
+I live in Poland. I've been playing with programming since I was 7 years old.
+
+My first language was Fortran 77, which was introduced to me by my dad, who is a researcher in aerodynamics.
+In 2004, I started my first regular job as a software developer, and since then I've stayed involved in this industry.
+
+My career path has gone through Junior Developer to Architect, Team Leader, Development Manager and Trainer.
+
+For the last 5 years, I've been working for my own company, https://devskiller.com/[Devskiller],
+where we've created a tool for testing technical skills of professional software developers and DevOps engineers, including practical knowledge of tools, libraries, and frameworks.
+
+== I liked your https://www.youtube.com/watch?v=LEgpsROSfWM[JPA Beyond copy-paste] presentation. What did you decide to cover this topic in a conference presentation?
+
+Apart from my main job at Devskiller, I try to give back some of my experience by training other developers.
+
+During my professional career, I've already trained around 700 developers.
+Among other subjects, I give many trainings related to Java performance and JPA.
+
+During those trainings, I've realized that many developers have problems with similar things.
+Those things are extremely important when working with JPA, so why not cover them in a conference talk to help more people than I can do during my trainings.
+
+== How many conferences did you give this presentation and what was the audience reaction upon unraveling so many tips about JPA and Hibernate performance?
+
+As we all know, the Golden Hammer does not exist.
+While Hibernate is still the most popular persistence technology in Java ecosystem, we shouldn't limit ourselves to just one technology.
+
+There are libraries such as https://www.jooq.org/[jOOQ], which is a great addition to JPA for implementing
+https://martinfowler.com/bliki/CQRS.html[CQRS (Command Query Responsibility Segregation)] based systems (JPA for commands and jOOQ for queries).
+
+We also, pretty often, decide to migrate the read model to non-relational databases like MongoDB.
+
+I'm also curious how NewSQL databases (based on Google Spanner white paper) will change the situation.
+The goal is to get relational databases with performance and scalability similar to those of NoSQL engines.
+
+Since NewSQL is still SQL-driven, we could probably get Hibernate to be their default interface to the Java world.
+
+== What are the main causes of permanence related issues when using JPA and Hibernate and what should developers do to overcome these problems?
+
+The biggest problem is that developers are trusting Hibernate so much that they don't even check what queries are executed under the hood.
+In fact, both mappings and JPQL queries can be improved a lot by changing just a few lines of code like, for example,
+replacing `java.util.List` with `java.util.Set`,
+removing joining tables or
+adding fetch joins into queries.
+
+There is also some serious incomprehension of the level-one cache behavior, which is especially important when doing batch processing.
+
+Last but definitely not least, the problem is related to the
+https://vladmihalcea.com/2016/05/30/the-open-session-in-view-anti-pattern/[Open Session in View] anti-pattern.
+Allowing developers to ignore transactional boundaries can lead to serious performance issues after releasing the product into production.
+
+== We always value feedback from our users, so can you tell us what you'd like us to improve or are there features that we should add support for?
+
+At first, I want to congratulate you.
+Hibernate is one of the oldest (or the oldest?) and still alive open-source project related to Enterprise Java.
+
+I think the moment you've joined the core team refreshed the spirit.
+I hope you'll continue working on making Hibernate simpler for newbies - even just by discovering and logging common bad practices related to modeling entities.
+
+*Thank you, Jakub, for taking your time. It is a great honor to have you here. To reach Jakub, you can follow him on https://twitter.com/jkubrynski[Twitter].*
