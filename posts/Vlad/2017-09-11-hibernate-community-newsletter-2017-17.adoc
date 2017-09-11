@@ -1,0 +1,90 @@
+= Hibernate Community Newsletter 17/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Interviews
+
+Don't miss our Hibernate developer interviews with
+http://in.relation.to/2017/09/04/meet-arnold-galovics/[Arnold Gálovics] and
+http://in.relation.to/2017/09/06/meet-jakub-kubrynski/[Jakub Kubryński].
+
+If you want to share your story about Hibernate,
+let us know, and we can share it with our huge community of passionate developers.
+
+== Videos
+
+I released a training video about
+the https://www.youtube.com/watch?v=FjmuClV40A4[best way to log SQL statements with JDBC and Hibernate].
+
+If you liked it, then don' forget to
+https://www.youtube.com/channel/UCgm4Z7xTH7iQlpZu69rHvkg[subscribe to my YouTube channel].
+I'll release a new video every week, so stay tuned for more.
+
+== Articles
+
+The pick of this Newsletter is this article by Randall Hyde from 2009 about the
+http://ubiquity.acm.org/article.cfm?id=1513451[Fallacy of Premature Optimization].
+Way too often, performance is not considered from the very beginning when designing an enterprise application,
+and neglecting performance can have a serious impact when the application is launched into production.
+
+Reading database Execution Plans is not a trivial thing to do.
+http://ithare.com/db-execution-plans-for-cjava-developers-and-for-anybody-who-has-read-knuth/[This article]
+takes a different approach and tries to explain various algorithms employed by an Execution Plan
+using Java and C++ code examples.
+
+While fetching entities is
+https://vladmihalcea.com/2016/09/13/the-best-way-to-handle-the-lazyinitializationexception/[suitable when you plan to modify them],
+DTO projections are more convenient when for read-only transactions.
+Check out
+https://vladmihalcea.com/2017/08/29/the-best-way-to-map-a-projection-query-to-a-dto-with-jpa-and-hibernate/[this article]
+about
+https://vladmihalcea.com/2017/08/29/the-best-way-to-map-a-projection-query-to-a-dto-with-jpa-and-hibernate/[the best way you can map a DTO projection using JPA and Hibernate].
+
+If you're using Spring Data JPA and want to use an automatic schema migration tool like Liquibase,
+then you should definitely read this
+https://auth0.com/blog/integrating-spring-data-jpa-postgresql-liquibase[step-by-step tutorial].
+
+Whenever you find yourself self-joining two tables to correlate aggregate functions with
+the original table rows, you are better off using a Window Function.
+https://vladmihalcea.com/2017/09/05/why-you-should-definitely-learn-sql-window-functions/[This article]
+gives you two solutions to a given SQL problem: one with Window Functions and one without them.
+Not only that the Window Function query is more expressive, but it's more efficient as well.
+
+If you want to learn the difference between save, persist, merge, and saveOrUpdate,
+http://www.baeldung.com/hibernate-save-persist-update-merge-saveorupdate[this article] offers a very good introduction on this topic.
+While at it, there's also a
+https://vladmihalcea.com/2017/08/02/how-to-optimize-the-merge-operation-using-update-while-batching-with-jpa-and-hibernate/[performance impact related to merge] when doing batch processing.
+Luckily, the Hibernate-specific update method is there to help you tackle this issue.
+
+Hibernate is extremely flexible.
+For instance, you can even use
+https://vladmihalcea.com/2017/09/04/how-to-map-a-composite-identifier-using-an-automatically-generatedvalue-with-jpa-and-hibernate/[a Composite Identifier where one of the columns uses a `@GeneratedValue` directive].
+This is probably one of the few use cases where the JPA `@IdClass` construct actually makes sense.
+
+== Questions and answers
+
+* https://stackoverflow.com/questions/221379/hibernate-hbm2ddl-auto-update-in-production/44362261#44362261[Hibernate: hbm2ddl.auto=update in production?]
+* https://stackoverflow.com/questions/44176965/how-does-hibernate-envers-work/44177312#44177312[How does Hibernate Envers work?]
+* https://stackoverflow.com/questions/40802656/persisting-a-json-object-using-hibernate-and-jpa/45736311#45736311[Persisting a JSON Object using Hibernate and JPA]
+* https://stackoverflow.com/questions/23719237/mapping-hibernate-projection-query-to-data-transfer-object/45934668#45934668[Mapping JPA or Hibernate projection query to DTO (Data Transfer Object)]
+* https://stackoverflow.com/questions/45490536/hibernate-many-to-many-cascade-save-with-join-table/45946251#45946251[Hibernate Many to Many cascade save with join table]
+* https://stackoverflow.com/questions/38928741/does-hibernate-5-supports-xml-based-entity-mapping/38939467#38939467[Does Hibernate 5 support XML based entity mappings?]
+* https://stackoverflow.com/questions/24724152/jpa-clear-collection-and-add-new-items/25251602#25251602[JPA clear collection and add new items]
+* https://stackoverflow.com/questions/40833498/case-when-exists-query-with-hibernate/40833662#40833662[JPA @Query with 'case when exists' does not work with Hibernate]
+* https://stackoverflow.com/questions/39615788/how-to-change-the-hibernate-charactertypedescriptor-to-handle-empty-column-value/39636861#39636861[How to change the Hibernate CharacterTypeDescriptor to handle empty column values]
+* https://stackoverflow.com/questions/45991793/hibernate-ehcache-illegalargumentexception-occurred-calling-getter-of-id/45993694#45993694[Hibernate + Ehcache - IllegalArgumentException occurred calling getter of composite id]
+* https://stackoverflow.com/questions/13811844/jpa-onetomany-and-manytoone-relationships/45613346#45613346[JPA OneToMany and ManyToOne Relationships]
+* https://stackoverflow.com/questions/19610085/using-lazy-for-properties-in-hibernate/38184479#38184479[Using lazy for properties in Hibernate]
+* https://stackoverflow.com/questions/46035660/hibernate-insert-failing-when-embedded-key-contains-identity-column-when-db-is-m/46037186#46037186[Hibernate insert failing when embedded key contains identity column on SQL Server]
+* https://stackoverflow.com/questions/1703351/how-to-call-a-oracle-function-from-hibernate-with-return-parameter/36196376#36196376[How to call an Oracle function from Hibernate with a return parameter?]
+* https://stackoverflow.com/questions/46058087/hibernate-5-creates-table-with-id-not-marked-as-identity/46058289#46058289[Hibernate 5 creates table with ID not marked as IDENTITY]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044772[SQL to UPDATE conditionally based on the MAX of a column]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044784[Hibernate JOIN or Secondary Query Fetch policy explanation]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044818[c3p0, PostgreSQL - FATAL: sorry, too many clients already]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044777[Hibernate + log4j2 + JPA + Maven: missing dependency]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044785[How to map a `@OneToOne` association which joins by the `@Id`]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044815[Can Hibernate delete orphan record instead of nulling the FK?]
