@@ -1,0 +1,102 @@
+= "Hibernate OGM 5.2 Alpha1 is out"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+I'm happy to announce the latest release of Hibernate OGM:
+http://hibernate.org/ogm/[Hibernate OGM] 5.2 Alpha1
+
+The first thing you will notice in this release is that several dialects are not part
+of the core project anymore. We decided to focus our work on the http://infinispan.org[Infinispan],
+https://neo4j.com/[Neo4j] and https://www.mongodb.com[MongoDB] dialects.
+
+Highlights of the release:
+
+* ihttps://hibernate.atlassian.net/browse/OGM-1294[Fixed bugs related to polymorphic hierarchies]
+* https://hibernate.atlassian.net/browse/OGM-1290[Improved query performance in Neo4j]
+* Infinispan Remote dialect via Hot Rod now
+  https://hibernate.atlassian.net/browse/OGM-1285[supports operation grouping]
+* Support https://hibernate.atlassian.net/browse/OGM-1246]map-reduce and
+  https://hibernate.atlassian.net/browse/OGM-1247[distinct] operations in MongoDB
+  using the MongoDB CLI query language
+* https://hibernate.atlassian.net/browse/OGM-1282[Removed the Fongo dialect]
+
+If you need to upgrade from a version before 5.2, you can find help on the
+https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes].
+
+All the changes are described in the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=28001[release notes].
+
+== What happened to the CouchDB, Redis, Cassandra and Ehcache dialects?
+
+They have now their own repository:
+
+* https://github.com/hibernate/hibernate-ogm-cassandra[Cassandra dialect]
+* https://github.com/hibernate/hibernate-ogm-couchdb[CouchDB dialect]
+* https://github.com/hibernate/hibernate-ogm-ehcache[Ehcache dialect]
+* https://github.com/hibernate/hibernate-ogm-redis[Redis dialect]
+
+Keeping too many dialects aligned in term of features and releases is starting to impact the speed
+of our development. We decided to focus our attention on the most popular dialects and, at the same
+time, give contributors the freedom to manage the dialect without having to wait for us.
+
+From now on, a new dialect will spend some time in its own repository and it will be included
+in the core project only if we consider it mature enough and, ideally, if somebody volunteers
+to maintain it regularly.
+
+This also means that in the future we might not release all these dialects for each
+`hibernate-ogm-core` release.
+
+Feel free to contact us if you have more questions about this.
+
+== Where can I get it?
+
+You can get the required core library using the following Maven coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-core:5.2.0.Alpha1_ 
+
+and these are the backends currently available for 5.2.0.Alpha1:
+
+* http://cassandra.apache.org[Cassandra]: _org.hibernate.ogm:hibernate-ogm-cassandra:5.2.0.Alpha1_
+* http://couchdb.apache.org[CouchDB]: _org.hibernate.ogm:hibernate-ogm-couchdb:5.2.0.Alpha1_
+* http://infinispan.org[Infinispan] 
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan:5.2.0.Alpha1_
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.2.0.Alpha1_
+* http://www.ehcache.org[Ehcache]: _org.hibernate.ogm:hibernate-ogm-ehcache:5.2.0.Alpha1_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.2.0.Alpha1_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.2.0.Alpha1_
+* http://redis.io[Redis]: _org.hibernate.ogm:hibernate-ogm-redis:5.2.0.Alpha1_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.2.0.Alpha1[from Sourceforge].
+
+== What's next?
+
+Our work will focus mainly on the Infinispan Remote dialect and the upgrade to Hibernate ORM 5.2.
+
+== Special thanks
+
+I would like to thanks some contributors that helped us adding new features and fix some unexpected
+behaviours:
+
+* https://github.com/hholierhoek[Hubert Holierhoek] for finding ways to make the queries on Neo4j faster
+* https://github.com/raghav-jha[Raghav Jha] thanks to him MongoDB native queries now support
+  Map-Reduce and distinct operations
+* https://github.com/schernolyas[Sergey Chernolyas] for helping with the MongoDB dialect and the work
+  on the OrientDB and Apache Ignite dialects (coming soon)
+* Dimitrij Drus for helping us finding some problems with polymorphic hierarchies (now fixed)
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+We are looking forward to hearing your feedback!
+
+
