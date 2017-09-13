@@ -10,6 +10,8 @@ Gail Badner
 * release bundles are at http://sourceforge.net/projects/hibernate/files/hibernate-orm/5.2.11.Final/[SourceForge] and
 http://bintray.com/hibernate/bundles/hibernate-orm/5.2.11.Final[BinTray].
 
+For information on consuming the release via your favorite dependency-management-capable build tool, see http://hibernate.org/orm/downloads/
+
 == Changes to how Clob values are processed using PostgreSQL81Dialect and its subclasses
 
 A breaking change was made in how Clob values are processed using PostgreSQL81Dialect and its subclasses. The following is copied from the https://github.com/hibernate/hibernate-orm/blob/5.2.11/migration-guide.adoc#changes-to-how-clob-values-are-processed-using-postgresql81dialect-and-its-subclasses[migration guide].
@@ -87,6 +89,4 @@ set clobfield = lo_from_bytea( 0, cast( clobfield as bytea ) ),
     firstlobfield = lo_from_bytea( 0, cast( firstlobfield as bytea ) ),
     secondlobfield = lo_from_bytea( 0, cast( secondlobfield as bytea ) )
 ----
-
-For information on consuming the release via your favorite dependency-management-capable build tool, see http://hibernate.org/orm/downloads/
 
