@@ -17,14 +17,15 @@ module InRelationTo
         end
       end
 
-      class BlogEntry
-        attr_accessor :title, :date, :snippet, :url
+      class JsonBlogEntry
+        attr_accessor :title, :date, :snippet, :url, :tags
 
-        def initialize(title, date, snippet, url)
+        def initialize(title, date, snippet, url, tags)
           @title = title
           @date = date
           @snippet = snippet
           @url = url
+          @tags = tags
         end
 
         def as_json(options={})
@@ -32,7 +33,8 @@ module InRelationTo
             title: @title,
             date: @date,
             snippet: @snippet,
-            url: @url
+            url: @url,
+            tags: @tags
           }
         end
 
@@ -49,7 +51,7 @@ module InRelationTo
       end
 
       def to_blog_entry(site, feed_entry)
-        BlogEntry.new( HTMLEntities.new.decode( feed_entry.title ), feed_entry.date, HTMLEntities.new.decode( summarize( html_to_text( feed_entry.content ) , 50 ) ), "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}" )
+        JsonBlogEntry.new( HTMLEntities.new.decode( feed_entry.title ), feed_entry.date, HTMLEntities.new.decode( summarize( html_to_text( feed_entry.content ) , 50 ) ), "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}", feed_entry.tags.nil? ? [] : feed_entry.tags )
       end
 
       def execute(site)
