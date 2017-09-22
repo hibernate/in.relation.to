@@ -51,7 +51,7 @@ module InRelationTo
       end
 
       def to_blog_entry(site, feed_entry)
-        JsonBlogEntry.new( HTMLEntities.new.decode( feed_entry.title ), feed_entry.date, HTMLEntities.new.decode( summarize( html_to_text( feed_entry.content ) , 50 ) ), "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}", feed_entry.tags.nil? ? [] : feed_entry.tags )
+        JsonBlogEntry.new( HTMLEntities.new.decode( feed_entry.title ), feed_entry.date, HTMLEntities.new.decode( summarize( html_to_text( feed_entry.content ) , 25 ) ), "#{site.base_url}#{feed_entry.output_path.chomp( 'index.html' )}", feed_entry.tags.nil? ? [] : feed_entry.tags )
       end
 
       def execute(site)
