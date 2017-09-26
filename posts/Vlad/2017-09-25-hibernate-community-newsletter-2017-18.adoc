@@ -1,0 +1,91 @@
+= Hibernate Community Newsletter 18/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Videos
+
+Have you ever been curious how a Hibernate Pull Request gets integrated?
+
+Check out https://www.youtube.com/watch?v=bndbMb_tGks[this video] and find out how we rebase, squash, and amend commits
+so that we get a nice git log history.
+
+One of the greatest benefits of using a relational database system is the high level of data integrity
+provided by the concurrency control mechanisms.
+However, database isolation levels are not enough when you span the application-level logical transaction on
+multiple physical database transactions.
+https://www.youtube.com/watch?v=Qcpsx2INYdU[This video]
+shows you how to handle the lost update anomaly even on long-running web conversations.
+
+If you liked it, then don' forget to
+https://www.youtube.com/channel/UCgm4Z7xTH7iQlpZu69rHvkg[subscribe to my YouTube channel].
+I'll release a new video every week, so stay tuned for more.
+
+== Articles
+
+If you want to use Hibernate with the IBM Liberty Profile,
+then you should definitely read https://www.ibm.com/blogs/bluemix/2017/09/jpa-2-1-using-hibernate-liberty-buildpack/[this article]
+featured on the Bluemix blog.
+
+For our Portuguese readers, Rafael Ponte, who is a well-known JPA and Hibernate aficionado from Brazil,
+has put up a http://www.rponte.com.br/2017/09/11/adf-jbo-25014-another-user-has-changed-the-row-with-primary-key/[blog post]
+about the Lost Update anomaly and how to fix it when using Oracle ADF, JPA, and Hibernate.
+
+If you are using Enums, check out
+https://vladmihalcea.com/2017/09/19/the-best-way-to-map-an-enum-type-with-jpa-and-hibernate/[this article]
+which shows you
+https://vladmihalcea.com/2017/09/19/the-best-way-to-map-an-enum-type-with-jpa-and-hibernate/[the best way to map Java Enums with JPA and Hibernate].
+
+https://www.thoughts-on-java.org/jpa-2-2s-new-stream-method-and-how-you-should-not-use-it/[This article]
+explains why some Java 1.8 Stream methods are not very suitable when using JPA.
+On the same topic,
+you should also read
+https://vladmihalcea.com/2017/07/04/whats-new-in-jpa-2-2-stream-the-result-of-a-query-execution/[this article]
+because it demonstrates that
+https://vladmihalcea.com/2017/07/04/whats-new-in-jpa-2-2-stream-the-result-of-a-query-execution/[SQL-level pagination is more efficient than JDBC ResultSet scrolling].
+
+If you’ve been using Hibernate long enough, then you surely must have seen this WARN log message when doing pagination while join fetching multiple entities:
+
+[quote]
+____
+HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!
+In this article, I’m going to show a very elegant solution to fix this issue.
+____
+
+In this article, I’m going to show
+https://vladmihalcea.com/2017/09/13/the-best-way-to-fix-the-hibernate-hhh000104-firstresultmaxresults-specified-with-collection-fetch-applying-in-memory-warning-message/[a very elegant solution to fix this issue].
+
+== Time to upgrade
+
+http://in.relation.to/2017/09/13/hibernate-orm-5211-final-release/[Hibernate ORM 5.2.11] has been released with many new features and fixes as well.
+
+http://in.relation.to/2017/09/14/hibernate-search-5-8-0-Final/[Hibernate Search 5.8.0] is out, so grab it while it's hot.
+
+== Questions and answers
+
+* https://www.quora.com/What-is-GeneratedValue-in-Hibernate/answer/Vlad-Mihalcea-1[What is `@GeneratedValue` in Hibernate?]
+* https://stackoverflow.com/questions/13539213/why-do-i-need-transaction-in-hibernate-for-read-only-operation/40269166#40269166[Why do I need Transaction in Hibernate for read-only operation?]
+* https://stackoverflow.com/questions/8753442/thinking-behind-decision-of-database-connection-pool-size/23537240#23537240[Thinking behind decision of database connection pool size]
+* https://stackoverflow.com/questions/40592625/unable-to-access-transactionmanager-or-usertransaction-after-updating-to-hiberna/40635221#40635221[Unable to access TransactionManager or UserTransaction after updating to Hibernate 5]
+* https://stackoverflow.com/questions/45905924/what-is-the-java-annotation-in-hibernate-used-to-auto-increment-a-mysql-primary/45919831#45919831[What is the Java annotation in Hibernate used to auto increment a MySQL Primary Key - `@Id`]
+* https://stackoverflow.com/questions/46177710/use-id-and-version-columns-to-map-one-to-many-relationship/46180930#46180930[Use id and version columns to map one-to-many relationship]
+* https://stackoverflow.com/questions/27849968/transactional-norollbackfor-runtimeexception-class-does-not-prevent-rollback/27855484#27855484[`@Transactional (noRollbackFor=RuntimeException.class)` does not prevent rollback on `RuntimeException`]
+* https://stackoverflow.com/questions/13811844/jpa-onetomany-and-manytoone-relationships/45613346#45613346[JPA `@OneToMany` and `@ManyToOne` relationships]
+* https://stackoverflow.com/questions/46214322/how-to-force-hibernate-to-remove-orphans-before-update/46224118#46224118[How to force Hibernate to remove orphans before update]
+* https://stackoverflow.com/questions/46314359/ehcache-does-not-work-in-application-that-is-clustered/46318856#46318856[Ehcache does not work in application that is clustered]
+* https://stackoverflow.com/questions/25280815/how-to-create-relationships-between-objects-in-spring-jdbc/25281889#25281889[How to create relationships between objects in Spring JDBC?]
+* https://stackoverflow.com/questions/42437840/how-to-encrypt-a-column-in-postgres-using-hibernate-columntransformer/42437963#42437963[How to encrypt a column in Postgres using Hibernate @ColumnTransformer]
+* https://stackoverflow.com/questions/25097957/hibernate-throws-org-hibernate-exception-lockacquisitionexception/25099277#25099277[Hibernate throws org.hibernate.exception.LockAcquisitionException]
+* https://stackoverflow.com/questions/27804069/hibernate-mapping-between-postgresql-enum-and-java-enum/46303099#46303099[Hibernate mapping between Postgresql enum and Java enum]
+* https://stackoverflow.com/questions/46255559/org-hibernate-unknownentitytypeexception-unable-to-locate-persister-entity-set/46314017#46314017[org.hibernate.UnknownEntityTypeException: Unable to locate persister: entity.Settings]
+* https://stackoverflow.com/questions/11431670/how-can-i-avoid-the-warning-firstresult-maxresults-specified-with-collection-fe/46195656#46195656[How can I avoid the Warning “firstResult/maxResults specified with collection fetch; applying in memory!”?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044847[Hibernate HQL query does not support PostgreSQL "::" casting]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044852[What annotation to add for default value in Spring JPA]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044825[Bytecode enhancement not working in Hibernate]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044827[Unnecessary SQL updates are triggered for all elements in map]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044860[JPA Pojo generator - RevEng - Legacy DB - FK versus no FK]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044856[Retrieve partial objects from @ManyToMany relation]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044830[Schema-based multitenancy with Hibernate and SQLServer]
