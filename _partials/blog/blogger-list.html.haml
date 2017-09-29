@@ -9,7 +9,7 @@
 - else
   - post_authors = Array.new
 
-%hr.divider
+%hr
 .cloud-authors
   %h2 Authors
   - for author in post_authors
@@ -18,5 +18,6 @@
       %a{:href=>author.primary_page.output_path}
         = author.to_s
   .more-link
-    %a{:href=>"/authors"}
+    %a.ui.right.labeled.icon.button.small{:href=>"/authors"}
+      %i.right.arrow.icon
       More...

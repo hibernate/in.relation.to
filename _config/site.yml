@@ -16,61 +16,16 @@ legacy_post_syntax_highlighting: enabled
 
 date_format: '%b %-d, %Y'
 
-####################################################################################################
-# File merger
-####################################################################################################
-# Merge multiple JavaScript files to improve performance
-fileMerger:
-  enabled: true
-  outputFilePath: /javascripts/bootstrap-community.js
-  paths:
-    - /javascripts/_bootstrap-transition.js
-    - /javascripts/_bootstrap-alert.js
-    - /javascripts/_bootstrap-button.js
-    - /javascripts/_bootstrap-carousel.js
-    - /javascripts/_bootstrap-collapse.js
-    - /javascripts/_bootstrap-dropdown.js
-    - /javascripts/_bootstrap-modal.js
-    - /javascripts/_bootstrap-tooltip.js
-    - /javascripts/_bootstrap-popover.js
-    - /javascripts/_bootstrap-scrollspy.js
-    - /javascripts/_bootstrap-tab.js
-    - /javascripts/_bootstrap-typeahead.js
-    - /javascripts/_bootstrap-affix.js
-    - /javascripts/_jbossorg-navbarfix.js
-    - /javascripts/_jbossorg-misc.js
-    - /javascripts/_jbossorg-tabzilla.js
-    - /javascripts/_jquery-easytabs.js
-    - /javascripts/_crisp-scripts.js
-
-####################################################################################################
-# WGET
-####################################################################################################
-# Cache hosted fonts, images and javascript
-wget:
-  enabled: true
-  rerunEach: 86400 # seconds (24h)
-  timestampFilename: _wget-timestamp
-  options:
-    - --no-remove-listing
-    - -q
-    - -r
-    - --no-parent
-    - -N
-    - --reject 'index.html*'
-    - -e robots=off
-    - --directory-prefix=.wget-cache
-  urls:
-    - http://static.jboss.org/theme/js/libs/jquery/jquery-1.9.1.js
-    - http://static.jboss.org/theme/js/libs/jquery/jquery-1.9.1.min.js
-    - http://static.jboss.org/theme/js/libs/html5/pre3.6/html5.min.js
-    - http://static.jboss.org/theme/js/libs/prettify/188.0.0/prettify.min.js
-    - http://static.jboss.org/theme/js/libs/holder/1.9/holder.js
-    - http://static.jboss.org/theme/fonts/titilliumtext/
-    - http://static.jboss.org/theme/fonts/font-awesome/
-    - http://static.jboss.org/theme/images/common/
-    - http://static.jboss.org/images/example/
-    - http://static.jboss.org/images/hibernate/
+hibernate_org:
+  base_url: http://hibernate.org/
+jira:
+  base_url: https://hibernate.atlassian.net/
+github:
+  organization_url: https://github.com/hibernate/
+twitter:
+  base_url: https://twitter.com/hibernate/
+google_plus:
+  base_url: https://plus.google.com/112681342290762837955/posts
 
 ####################################################################################################
 # Asciidoctor config
@@ -93,19 +48,20 @@ asciidoctor:
 # Update resource URLs based on the profile
 profiles:
   editor: &base
-    minified: .min
     css_minifier: disabled
     js_minifier: disabled
     html_minifier: disabled
     legacy_post_syntax_highlighting: disabled
-    ignore_older_than_days: 30
+    ignore_older_than_days: 10
 
-    jborg_fonts_url: http://static.jboss.org/theme/fonts
-    jborg_images_url: http://static.jboss.org/theme/images
-    jborg_js_url: http://static.jboss.org/theme/js
-    project_images_url: /cache/static.jboss.org/images/hibernate
-    bootstrap_css_url: http://static.jboss.org/theme/css/bootstrap-community/2.3.1.3/bootstrap-community
-    bootstrap_js_url: /javascripts/bootstrap-community
+    jborg_fonts_url: https://static.jboss.org/theme/fonts
+    jborg_images_url: https://static.jboss.org/theme/images
+    project_images_url: https://static.jboss.org/hibernate/images
+    jquery_js_url: https://code.jquery.com/jquery-3.1.1
+    semantic_ui_js_url: https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic
+    match_height_js_url: https://cdnjs.cloudflare.com/ajax/libs/jquery.matchHeight/0.7.2/jquery.matchHeight
+    jboss_tabzilla_js_url: https://static.jboss.org/js/_jbossorg-tabzilla
+    semantic_ui_css_url: https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.13/semantic
     asciidoctor:
       :attributes:
         base_url: "http://localhost/"
@@ -116,10 +72,10 @@ profiles:
 
   staging:
     << : *base
+    minify: true
+    minified: .min
     css_minifier: enabled
-    js_minifier: enabled
     legacy_post_syntax_highlighting: enabled
-    project_images_url: http://static.jboss.org/images/hibernate
     wget:
       #we don't need to download cached resources when on staging
       enabled: false
@@ -131,10 +87,10 @@ profiles:
 
   production:
     << : *base
+    minify: true
+    minified: .min
     css_minifier: enabled
-    js_minifier: enabled
     legacy_post_syntax_highlighting: enabled
-    project_images_url: http://static.jboss.org/images/hibernate
     wget:
       #we don't need to download cached resources when on staging
       enabled: false

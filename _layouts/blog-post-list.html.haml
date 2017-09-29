@@ -1,15 +1,13 @@
 ---
 layout: base
-title: Home
+title: In Relation To
 ---
 
 .ui.container.fluid
   .jumbotron.small
     .ui.container
       %h1
-        %span In Relation To
-      %h2
-        %span The Hibernate team blog on everything data.
+        %span= page.title
 
 .ui.container.page-content
   .ui.stackable.grid
@@ -18,6 +16,7 @@ title: Home
 
     .ui.thirteen.wide.column
       .content#content
+        ~ content
         - for post in page.posts
           .blogpost{:itemprop=>"blogPost", :itemscope => "", :itemtype => "https://schema.org/BlogPosting", :itemref=>"logobar"}
             = partial( 'blog/post.html.haml', {"post" => post} )

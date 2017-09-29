@@ -1,44 +1,89 @@
 ---
-layout: in-relation-to
-title: In relation to - Bloggers
+layout: base
+title: Bloggers
 ---
 
-.row-fluid
-  -# Menu
-  .span2
-    .project-menu
-      = partial( 'blog/home-menu.html.haml' )
+.ui.container.fluid
+  .jumbotron.small
+    .ui.container
+      %h1
+        %span In Relation To
+      %h2
+        %span Bloggers
 
-      %hr.divider
-      .cloud-tags
-        %h2 Tags
-        = site.posts_tags_cloud
+.ui.container.page-content
+  .ui.stackable.grid
+    .ui.three.wide.column
+      = partial( 'blog/left-column.html.haml', {'real_page' => page} )
 
-  .span10
-    %h1
-      Bloggers
+    .ui.thirteen.wide.column
+      .content#content
+        %h2 Active bloggers
 
-    - # Sort by level first (putting 0 at the end), then by name
-    - for blogger in site.people.values.sort{|blogger1, blogger2| level1 = blogger1.level == 0 ? 10000 : blogger1.level; level2 = blogger2.level == 0 ? 10000 : blogger2.level; res = level1 <=> level2; res != 0 ? res : blogger1.name <=> blogger2.name}
-      - if !site.posts_author.nil?
-        - post_author = site.posts_author.detect{|author| author.to_s == blogger.name}
+        - # Sort by level first (putting 0 at the end), then by name
+        .ui.three.column.grid
+          - for blogger in site.people.values.select{|s| !s.active.nil? && s.active}.sort{|blogger1, blogger2| level1 = blogger1.level == 0 ? 10000 : blogger1.level; level2 = blogger2.level == 0 ? 10000 : blogger2.level; res = level1 <=> level2; res != 0 ? res : blogger1.name <=> blogger2.name}
+            - if !site.posts_author.nil?
+              - post_author = site.posts_author.detect{|author| author.to_s == blogger.name}
+              .column
+                .ui.card
+                  .image
+                    - if not post_author.nil?
+                      %a{:href=>post_author.primary_page.url}
+                        %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=300"}
+                    - else
+                      %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=300"}
+                  .content
+                    .header
+                      - if not post_author.nil?
+                        %a{:href=>post_author.primary_page.url}
+                          = blogger.name
+                      - else
+                        = blogger.name
+                    .description
+                      = blogger.content
+                  - if !blogger.twitter.nil? || !blogger.website.nil?
+                    .extra.content
+                      - if !blogger.twitter.nil?
+                        %a.right.floated(href="#{blogger.twitter}")
+                          %i.icon.twitter
+                          Twitter
+                      - if !blogger.website.nil?
+                        %a(href="#{blogger.website}")
+                          %i.icon.world
+                          Website
 
-      .author-list-element-wrapper
-        .author-list-element-image
-          .author-image-container
-            .author-image
-              - if not post_author.nil?
-                %a{:href=>post_author.primary_page.url}
-                  %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=120"}
-              - else
-                %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=120"}
-        .author-list-element-description
-          %strong
-            - if not post_author.nil?
-              %a{:href=>post_author.primary_page.url}
-                = blogger.name
-            - else
-              = blogger.name
-          %br
-          %br
-          = blogger.content
+        %h2 Retired bloggers
+
+        - # Sort by level first (putting 0 at the end), then by name
+        .ui.three.column.grid
+          - for blogger in site.people.values.select{|s| s.active.nil? || !s.active}.sort{|blogger1, blogger2| level1 = blogger1.level == 0 ? 10000 : blogger1.level; level2 = blogger2.level == 0 ? 10000 : blogger2.level; res = level1 <=> level2; res != 0 ? res : blogger1.name <=> blogger2.name}
+            - if !site.posts_author.nil?
+              - post_author = site.posts_author.detect{|author| author.to_s == blogger.name}
+              .column
+                .ui.card
+                  .image
+                    - if not post_author.nil?
+                      %a{:href=>post_author.primary_page.url}
+                        %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=300"}
+                    - else
+                      %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=300"}
+                  .content
+                    .header
+                      - if not post_author.nil?
+                        %a{:href=>post_author.primary_page.url}
+                          = blogger.name
+                      - else
+                        = blogger.name
+                    .description
+                      = blogger.content
+                  - if !blogger.twitter.nil? || !blogger.website.nil?
+                    .extra.content
+                      - if !blogger.twitter.nil?
+                        %a.right.floated(href="#{blogger.twitter}")
+                          %i.icon.twitter
+                          Twitter
+                      - if !blogger.website.nil?
+                        %a(href="#{blogger.website}")
+                          %i.icon.world
+                          Website

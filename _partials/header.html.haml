@@ -1,0 +1,24 @@
+- real_page = page["real_page"]
+.ui.container.banner
+  .logo
+    %a(href='/')
+      %img{:src=>"#{site.project_images_url}/hibernate_logo_whitebkg_200px.png", :alt => 'Hibernate', :width => 200, :height => 50}
+  / Red Hat link at the top
+  .dropup#redhat-button.mobile.hidden
+    .tabnav-closed#tab(href="#") Red Hat
+  .clearfix
+
+  .ui.stackable.menu.mobile.hidden#nav
+    %a.item{:href => "#{site.hibernate_org.base_url}orm/"} ORM
+    %a.item{:href => "#{site.hibernate_org.base_url}search/"} Search
+    %a.item{:href => "#{site.hibernate_org.base_url}validator/"} Validator
+    %a.item{:href => "#{site.hibernate_org.base_url}ogm/"} OGM
+    %a.item{:href => "#{site.hibernate_org.base_url}tools/"} Tools
+    %a.item{:href => "#{site.hibernate_org.base_url}others/"} Others
+    .right.menu
+      %a.item.active(href="#{site.base_url}") Blog
+      %a.item{:href => "/community/"} Community
+      %a.item(href="#{site.twitter.base_url}")
+        %i.twitter.icon
+        Follow us      
+

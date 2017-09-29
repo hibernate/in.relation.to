@@ -1,40 +1,9 @@
 ---
-layout: in-relation-to
+layout: blog-post-list
+left_column_extra_partial: blog/left-column-extra-author-bio.html.haml
 ---
 -# template for author pages
 
 - if not page.posts.nil?
   - member = site.people.values.detect{|member| member.name == page.posts[0].author[0].to_s}
 
-.row-fluid
-  .span2
-    .project-menu
-      = partial( 'blog/home-menu.html.haml' )
-
-      - if member && member.content && !member.content.empty?
-        %hr.divider
-        .bio
-        .expandable
-          %h2 Bio
-          - if member.gravatar_hash
-            .author-image-container
-              .author-image
-                %img.author-image{:src=>"https://www.gravatar.com/avatar/#{member.gravatar_hash}?s=150", :height=>150, :width=>150}
-
-          #{member.content}
-
-      %hr.divider
-      .cloud-tags
-        %h2 Tags
-        = site.posts_tags_cloud
-
-      = partial( 'blog/blogger_list.html.haml' )
-
-  .span10
-    -# Title
-    = partial( page.title_partial.nil? ? 'blog/title.html.haml' : page.title_partial, {"real_page" => page} )
-    - if not page.posts.nil?
-      - for post in page.posts
-        .blogpost
-          = partial( 'blog/post.html.haml', {"post" => post, "show_author_image" => false } )
-      = page.posts.bootstrap_links

@@ -3,6 +3,9 @@ name: Emmanuel Bernard
 photo: /images/team/EmmanuelBernard.jpg
 level: 1
 gravatar_hash: 34a47bd77922181070aef96782110714
+active: true
+website: https://emmanuelbernard.com/
+twitter: http://twitter.com/emmanuelbernard
 ---
 Member of the Hibernate team.
 
@@ -13,7 +16,3 @@ Data platform architect for the JBoss portfolio at Red Hat.
 Particularly involved in the Hibernate portfolio as well as Infinispan.
 
 Spec lead of [Bean Validation](http://beanvalidation.org) and JPA expert group member.
-
-Follow him on [twitter](http://twitter.com/emmanuelbernard).  
-
-[more...](https://emmanuelbernard.com)

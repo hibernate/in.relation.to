@@ -1,24 +1,29 @@
 ---
-layout: in-relation-to
-title_partial: blog/title-post.html.haml
+layout: base
 ---
--# layout for indidvidual blog posts
+-# layout for individual blog posts
 
-.row-fluid
-  .span2
-    .project-menu
-      = partial( 'blog/home-menu.html.haml' )
+.ui.container.fluid
+  .jumbotron.small
+    .ui.container.grid
+      .thirteen.wide.column
+        %h1
+          %a(href='/')
+            %span In Relation To
+      .three.wide.column.text-right.middle.aligned
+        %a.ui.icon.labeled.button.small.icon(href='/')
+          %i.icon.reply
+          Back to home
+          
 
-    %hr.divider
-    .cloud-tags
-      %h2 Tags
-      = site.posts_tags_cloud
+.page-title.blog-title
+  .ui.container
+    = partial( 'blog/post-title.html.haml', {"post" => page} )
 
-    = partial( 'blog/blogger_list.html.haml' )
+.ui.container.blog-article
+  .content#content
+    = partial( 'blog/post-content.html.haml', {"post" => page} )
 
-  .span10
-    .blogpost{:itemprop=>"blogPost", :itemscope => "", :itemtype => "https://schema.org/BlogPosting", :itemref=>"logobar"}
-      = partial( 'blog/post.html.haml', {"post" => page} )
     #disqus_thread
     %script{:src=>javascript, :type=>'text/javascript'}
       var disqus_shortname = '#{site.disqus_shortname}';

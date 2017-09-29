@@ -6,6 +6,7 @@ website: http://codingobsession.blogspot.com
 location: London, UK
 occupation: Doing stuff at JBoss, a Division of Red Hat Inc
 gravatar_hash: 57637a2eb871b34eba14e700c78c6a5d
+active: true
 ---
 I'm working in the Hibernate and Infinispan teams at Red Hat, caring about Lucene
 integration in products we support, striving to make it easier to use and to

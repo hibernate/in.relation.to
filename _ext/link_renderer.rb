@@ -1,6 +1,6 @@
 ##
 #
-# An extension which renders the post links using the Twitter Bootstrap pagination styles. Requires the default
+# An extension which renders the pager using the Semantic UI pagination styles. Requires the default
 # pagination extension to be enabled.
 #
 ##
@@ -8,41 +8,39 @@ module InRelationTo
   module Extensions
     class PaginationLinkRenderer
 
-      module BootstrapPaginationLinkRenderer
+      module SemanticUiPaginationLinkRenderer
 
-        def bootstrap_links
-          html = %Q(<div class="pagination">)
-          html += %Q(<ul>)
+        def semantic_ui_pager_links
+          html = %Q(<div class="ui menu pagination">)
           if !previous_page.nil?
-            html += %Q(<li><a href="#{previous_page.url}">&laquo;</a></li>)
+            html += %Q(<a class="item" href="#{previous_page.url}">&laquo;</a>)
           else
-            html += %Q(<li class="disabled"><a href="#">&laquo;</a></li>)
+            html += %Q(<a class="disabled item" href="#">&laquo;</a>)
           end
           first_skip = false
           second_skip = false
           pages.each_with_index do |page, i|
             if ( i == current_page_index )
-              html += %Q(<li class="active"><a href="#">#{i+1}</a></li> )
+              html += %Q(<a class="item" href="#">#{i+1}</a> )
             elsif ( i <= window )
-              html += %Q(<li><a href="#{page.url}" class="page-link">#{i+1}</a></li> )
+              html += %Q(<a class="item" href="#{page.url}">#{i+1}</a> )
             elsif ( ( i > window ) && ( i < ( current_page_index - window ) ) && ! first_skip  )
-              html += %Q(<li class="disabled"><a href="#">...</a></li>)
+              html += %Q(<a class="disabled item"><a href="#">...</a>)
               first_skip = true
             elsif ( ( i > ( current_page_index + window ) ) && ( i < ( ( pages.size - window ) - 1 ) ) && ! second_skip )
-              html += %Q(<li class="disabled"><a href="#">...</a></li>)
+              html += %Q(<a class="item" href="#">...</a>)
               second_skip = true
             elsif ( ( i >= ( current_page_index - window ) ) && ( i <= ( current_page_index + window ) ) )
-              html += %Q(<li><a href="#{page.url}">#{i+1}</a></li> )
+              html += %Q(<a class="item" href="#{page.url}">#{i+1}</a> )
             elsif ( i >= ( ( pages.size - window ) - 1 ) )
-              html += %Q(<li><a href="#{page.url}">#{i+1}</a></li> )
+              html += %Q(<a class="item" href="#{page.url}">#{i+1}</a> )
             end
           end
           if !next_page.nil?
-            html += %Q(<li><a href="#{next_page.url}">&raquo;</a></li> )
+            html += %Q(<a class="item" href="#{next_page.url}">&raquo;</a> )
           else
-            html += %Q(<li class="disabled"><a href="#">&raquo;</a></li> )
+            html += %Q(<a class="disabled item" href="#">&raquo;</a> )
           end
-          html += %Q(</ul>)
           html += %Q(</div>)
           html
         end
@@ -50,7 +48,7 @@ module InRelationTo
 
       def execute(site)
         site.pages.each do |page|
-          page.posts.extend( BootstrapPaginationLinkRenderer )
+          page.posts.extend( SemanticUiPaginationLinkRenderer )
         end
       end
 

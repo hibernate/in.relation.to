@@ -1,389 +1,811 @@
-// hibernate.org style
-// Do not edit for blog related changes: use blog-styles.scss
+/**
+ * Banner
+ */
 
-// We will import compiled JBoss Community's styles and apply ours on top
-// We can't compile them ourselves because they use Less which depends on TheRubyRacer
-//   which depends on V8 which is hard to install on Windows and would slow contribution
-//
-// If that fails we will have to start from a vanilla bootstrap
+.banner {
+	.logo {
+		margin-top: 15px;
+		float: left;
+	}
 
-// Common utilities
-@import "settings";
+	.ui.menu {
+		margin-top: 0px;
+		margin-bottom: 20px;
+	}
 
-// Bug fix for community bootstrap
-
-.equalHero .btn {
-  // not all corners were properly rounded
-  border-radius: 4px 4px 4px 4px!important;
+	.dropup {
+		float: right;
+		position: relative;
+	}
 }
 
-// End of bug fix
+/**
+ * Jumbotron
+ */
 
-// the default bootstrap community font is a bit too small
-body {
-  font-size: 100%;
+.jumbotron {
+	background-color: #59666c;
+	padding: 45px;
+	box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 3px 10px 0 rgba(0, 0, 0, 0.19);
+
+	h1 {
+		color: white;
+		font-size: 4rem;
+		letter-spacing: 2px;
+
+		span {
+			background-color: #7d8a90;
+			padding: 3px;
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+	}
+
+	h2 {
+		font-size: 2rem;
+		color: white;
+
+		span {
+			background-color: #7d8a90;
+			padding: 3px;
+			padding-left: 10px;
+			padding-right: 10px;
+		}
+	}
+
+	&.small {
+		padding: 20px;
+
+		h1 {
+			font-size: 2.3rem;
+		}
+
+		h2 {
+			font-size: 1.7rem;
+		}
+	}
+
+	.jumbotron-button:not(:first-child) {
+		margin-top: 10px;
+	}
 }
 
-h1 {
-//  margin-top: 1em;
-  margin-bottom: 1em;
+/**
+ * Hero
+ */
+
+.page-title {
+	background-color: #EEE;
+	border-bottom: 2px solid #DDD;
+	padding-bottom: 20px;
+	padding-top: 20px;
+	margin-bottom: 5px;
+
+	&.small {
+		padding-bottom: 15px;
+		padding-top: 15px;
+	}
+
+	h1 {
+		color: #59666c;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		display: inline-block;
+		padding-bottom: 3px;
+	}
+
+	h4 {
+		color: #777;
+		line-height: 1.5em;
+		font-size: 1.2em;
+	}
 }
 
-h2, h3 {
-  margin-top: 1em;
+/**
+ * Homepage
+ */
+
+.page-title.home .ui.container {
+	text-align: center;
 }
 
-.center-icon {
-  text-align: center;
+#carousel {
+	margin-top: -8px;
+
+	.segment {
+		background-color: #EEE;
+
+		h4 {
+			margin-top: 6px;
+		}
+	}
+
+	.carousel-element {
+		padding: 4px 7px;
+		margin: 2px 7px;
+	}
+
+	.slick-dots li button::before {
+		color: #FAFAFA;
+	}
 }
 
-code, pre {
-  font-size: 85%;
-  color: rgb(101, 101, 101);
+.projects {
+	margin-top: 30px;
+
+	.ui.segment {
+		background-color: #fafafa;
+	}
 }
 
-pre > code {
-  font-size:100%
+/**
+ * Project menu
+ */
+
+.ui.menu .license {
+	text-align: center;
 }
 
-// Headers and top nav
-.navbar {
-  z-index: 998;
-  margin-bottom: 25px;
-  margin-top: 40px;
+// when using "active" in the menu, the dropdown does not work anymore
+// using "selected" instead
+.ui.vertical.menu .selected.item {
+	background: rgba(0, 0, 0, 0.05) none repeat scroll 0 0;
+	box-shadow: none;
 }
 
-#subproject .dropup {
-  width: 112px;
-  float: right;
+/**
+ * Content
+ */
+
+.page-content {
+	margin-top: 30px;
 }
 
-// Hibernate Logo
-#logobar > a {
-  padding-left: 24px;
-  display: block;
-  float: left;
+#content {
+	min-height: 250px;
+
+	p, table td, table th, ul {
+		font-size: 1.1em;
+	}
+
+	table td p, ul ul, ul p {
+		font-size: 1em;
+	}
+
+	dl {
+		margin: 0 3% 2%;
+	}
+
+	dt {
+		font-size: 1.1em;
+		font-weight: bold;
+		margin-bottom: 0.3em;
+	}
+
+	h2 {
+		font-size: 1.7rem;
+	}
+
+	p {
+		margin: 0 0 10px;
+	}
+
+	h2 {
+		margin-top: 10px !important;
+		color: #59666c;
+		border-bottom: 2px solid #bcae79;
+		display: inline-block;
+		letter-spacing: 1px;
+		padding-bottom: 3px;
+	}
+
+	> h2:first-of-type {
+		margin-top: 0 !important;
+	}
+
+	.feature-block:first-child > .sect1:first-child h2:first-of-type {
+		margin-top: 0 !important;
+	}
+
+	h3 {
+		margin-top: 10px !important;
+		color: #666;
+		font-size: 1.5em;
+		margin-bottom: 15px;
+	}
+
+	h4 {
+		margin-top: 15px !important;
+		color: #888;
+		font-size: 1.3em;
+	}
+
+	.sect1:not(:last-child) {
+		margin-bottom: 20px;
+	}
+
+	.sect2:not(:last-child) {
+		margin-bottom: 30px;
+	}
+
+	.sect3:not(:last-child) {
+		margin-bottom: 20px;
+	}
+
+	code {
+		font-size: 0.9em;
+	}
+
+	dl.sparse {
+		dt {
+			margin-top: 7px;
+		}
+	}
+
+	.ui.message {
+		.header {
+			margin-bottom: 4px;
+		}
+
+		p:last-child {
+			margin: 0;
+		}
+	}
 }
 
-#logobar > a > img {
-  width: 160px;
+.news h3, #toc #toctitle {
+	color: #59666c;
+	border-bottom: 2px solid #bcae79;
+	display: inline-block;
+	letter-spacing: 1px;
+	padding-bottom: 3px;
 }
 
-.navbar .nav > li {
-  font-weight: bold;
-}
-// Avoid the second line in the header when
-// the monitor size is smaller
-.navbar .nav > li > a {
-      padding: 13px 10px;
+.news h3 {
+	margin-top: 10px !important;
 }
 
-//home page
-
-//mantra
-.mantra {
-  font-weight: bold;
-  font-size: 150%;
+hr {
+	border: 0;
+	border-top: 1px dotted #bcae79;
+	background-color: #fff;
 }
 
-//headlines
-
-#myCarouselRow {
-  padding-top: 9px;
+pre {
+	background: #f8f8f8 none repeat scroll 0 0;
+	border: 1px solid #d5d5d5;
+	margin: 1.5em 0;
+	overflow: auto;
+	padding: 1%;
+	white-space: pre;
+	border-radius: 0.3rem;
 }
-
-#myCarousel {
-  display: inline-block;
-  width: 100%;
-  margin-bottom: 0;
-  min-height: 23px;
-  overflow: hidden;
-  ol {
-    display: none;
-  }
-}
-
-// Project menu
-.project-menu {
-  overflow: hidden;
-}
-.project-menu-title {
-  font-size: 200%;
-  margin-bottom:.5em;
-}
-
-.hero-button {
-  margin-top: 1em;
-  margin-left: 1em;
-  margin-right: 1em;
-}
-
-.hero-unit {
-  padding-left: 60px;
-  padding-right: 60px;
-  padding-top: 50px;
-  padding-bottom: 50px;
-}
-
-@media (min-width: 768px) and (max-width: 1199px) {
-  .menu-icon {
-    display: none !important;
-  }
-}
-
-// align project menu color with regular text color
-.nav-list > li > a, .nav-list .nav-header {
-  color: $text-color;
-}
-
-.nav-list > .active > a, .nav-list > .active > a:hover, .nav-list > .active > a:focus {
-  background-color: $text-color;
-}
-
-// Project home page
-.feature-block {
-  h2, h3 {
-    margin-top: .5em;
-  }
-}
-
-//News sidebar
-.news-sidebar {
-  h2 {
-    margin-top: 0em;
-  }
-}
-
-// Project download page
-@media (min-width: 768px) {
-  .release-buttons {
-    margin-bottom:2em;
-  }
-}
-
-@media (max-width: 767px) {
-  .release-buttons {
-    margin-bottom:1em;
-    margin-top:1em;
-  }
-}
-
-@media (max-width: 470px) {
-  .hero-unit {
-    h1 {
-      font-size: 2em;
-    }
-  }
-}
-
-@media (max-width: 447px) {
-  #logobar > a {
-    padding-left: 0px;
-    float: none;
-  }
-  .dropup {
-    float: none; 
-  }
-  .navbar {
-    margin-top: 0px
-  }
-}
-
-@media (max-width: 365px) {
-  .hero-unit {
-    padding: 25px 30px;
-    h1 {
-      font-size: 1.5em;
-    }
-  }
-}
-
-@media (max-width: 270px) {
-  .hero-unit {
-    padding: 25px 30px;
-    h1 {
-      font-size: 1em;
-    }
-  }
-}
-
-//footer
-
-footer.container {
-  $ratio: 90%;
-  padding-top: .3em;
-  padding-bottom: .3em;
-  font-size: $ratio;
-  line-height: 80%;
-  h4 {
-    font-size: 110%;
-    margin-top: 5px;
-    margin-bottom: 5px;
-  }
-  ul {
-    margin-left: 0;
-  }
-  li {
-    line-height: 120%;
-  }
-}
-
-// // Asciidoc
-
-// Table of content
-
-#toc {
-  background-color: #efefef;
-  padding: 1em;
-  & > ol {
-    margin: .5em 0 .5em .5em;
-  }
-  ol {
-    list-style-type: none;
-  }
-  a {
-    text-decoration: none;
-  }
-}
-
-@media (min-width: 980px) {
-  #toc {
-    width: 30%;
-    position: static;
-    top: 0px; 
-    float: right;
-    margin-left: 1em;
-    margin-bottom: 1em;
-    margin-top: 1em;
-  }
-}
-
-@media (max-width: 979px) {
-  #toc {
-    margin: 1em;
-  }
-}
-
-
-#toctitle {
-  padding-left: 3%;
-  margin-bottom: 1em;
-  font-size:120%;
-}
-
-.sectlevel1 {
-  $sectlevel1-percent: 85%;
-  font-size: $sectlevel1-percent;
-  li {
-    margin-left: 0;
-    margin-right: 10%;
-    margin-top: .5em;
-    margin-bottom: .5em;
-  }
-  code {
-    font-size: 100%;
-  }
-}
-
-.sectlevel2 {
-  $sectlevel2-percent: 90%;
-  font-size: $sectlevel2-percent;
-}
-
-.sectlevel3 {
-  $sectlevel3-percent: 90%;
-  font-size: $sectlevel3-percent;
-}
-
-
-// Preamble
 
 #preamble {
-  font-size: 130%;
+	.sectionbody {
+		font-size: 1.1em;
+		font-weight: bold;
+		color: #666;
+		margin-bottom: 10px;
+
+		.ui.message {
+			font-size: 0.9em;
+			font-weight: normal;
+		}
+	}
 }
 
-// admonitions (TIP, NOTES etc)
-// copied from asciidoctor.github.com
+// Using an id here as the code is generated by Asciidoctor
 
-.admonitionblock > table {
-  border: 0;
-  margin-bottom: 1.25em;
-  //width: 100%;
-  background: none;
-  td.icon {
-    font-weight: bold;
-    text-align: center;
-    text-transform: uppercase;
-    width: 80px;
-    img {
-      max-width: none;
-    }
-  }
+#toc {
+	float: right;
+	margin-bottom: 1em;
+	margin-left: 1em;
+	position: static;
+	top: 0;
+	width: 30%;
+	background-color: #fafafa;
+	padding: 1em;
+	border: 1px solid rgba(34, 36, 38, 0.15);
+	border-radius: 0.3rem;
+	box-shadow: 0 2px 4px 0 rgba(34, 36, 38, 0.12), 0 2px 10px 0 rgba(34, 36, 38, 0.15);
 
-  td.content {
-    padding-left: 2em;
-    //padding-right: emCalc(20px);
-    border-left: 1px solid $hr-border-color; 
-    color: $blockquote-font-color;
+	#toctitle {
+		margin-top: 0px;
+	}
 
-    & > div:last-child {
-      p, ol, ul, dl, dl dd:last-child {
-        margin-bottom: 0;
-      }
-    }
-  }
+	ul {
+		padding-left: 1em;
+	}
+	
+	> ul {
+		margin-bottom: 5px;
+	}
+
+	li {
+		margin-bottom: 0.3em;
+	}
+
+	> ul > li > ul > li {
+		margin-left: 0.5em;
+	}
 }
 
-// listing blocks
-
-.listingblock > .title {
-  //margin-left: 5em;
-  margin-left: 10%;
-  margin-right: 10%;
-  margin-top: 1em;
-  padding-top: .5em;
-  margin-bottom: -.5em;
-  border-width: 1px 0 0 0;
-  border-color: $hr-border-color;
-  text-align: center;
-  border-style: solid;
+// don't display the TOC on mobile
+@media only screen and (max-width: 767px) {
+	#toc {
+		display: none;
+	}
 }
 
-@import "awesome-icons";
+/**
+ * Home page
+ */
+#content .projects {
+	h3.ui.header {
+		font-size: 1.6em;
 
-// The 404 page
-.feedback-button {
-  margin-top: 1em;
-  margin-bottom: 1em;
+		a {
+			color: #59666c;
+		}
+	}
+
+	.project {
+		.big.icon {
+			padding-right: 7px;
+			padding-top: 7px;
+			float: left;
+			margin-right: 10px;
+		}
+
+		p {
+			font-size: 1.2em;
+			color: #59666c;
+		}
+	}
 }
 
+/**
+ * Documentation
+ */
+#content .documentation-versions {
+	// we use a padding for the top margin to avoid issues with slideDown()
+	padding-top: 10px !important;
+	margin-bottom: 10px !important;
 
-// Asciidoctor blockquote
-$blockquote-text-color: rgb(101, 101, 101);
+	.series {
+		font-size: 2em;
+		font-weight: bold;
+		line-height: 1em;
+	}
+	.button {
+		margin-top: 4px;
+	}
+}
+
+/**
+ * Series
+ */
+
+#content {
+	.ui.grid.series {
+		margin-bottom: 25px;
+	}
+
+	.ui.grid.series-versions {
+		margin-top: 10px !important;
+		margin-bottom: 10px !important;
+
+		> .row {
+			padding: 0.5rem 0;
+		}
+
+		.version {
+			font-size: 1.2em;
+			font-weight: bold;
+			line-height: 1em;
+		}
+		.button {
+			margin-top: 4px;
+		}
+	}
+
+	#older-series {
+		display: none;
+	}
+
+	.ui.grid.download-options {
+		margin-bottom: 25px;
+	}
+}
+
+/**
+ * Asciidoctor styles
+ */
+.admonitionblock {
+	table {
+		background: #f8f8f9 none repeat scroll 0 0;
+		border-radius: 0.285714rem;
+		box-shadow: 0 0 0 1px rgba(34, 36, 38, 0.22) inset, 0 0 0 0 rgba(0, 0, 0, 0);
+		color: rgba(0, 0, 0, 0.87);
+		line-height: 1.4285em;
+		margin: 1em 0;
+		min-height: 1em;
+		padding: 1em 1.5em;
+	}
+
+	&.note table, &.tip table {
+		box-shadow: 0 0 0 1px #a9d5de inset, 0 0 0 0 transparent;
+			background-color: #f8ffff;
+			color: #276f86;
+	}
+
+	&.warning table {
+		box-shadow: 0 0 0 1px #c9ba9b inset, 0 0 0 0 transparent;
+		background-color: #fffaf3;
+		color: #573a08;
+	}
+
+	&.important table, &.caution table {
+		box-shadow: 0 0 0 1px #e0b4b4 inset, 0 0 0 0 transparent;
+		background-color: #fff6f6;
+		color: #9f3a38;
+	}
+
+	.title {
+		font-weight: bold;
+		margin-bottom: .5em;
+	}
+
+	p {
+		margin-bottom: 0px;
+	}
+
+	.fa {
+		display: block;
+		font-size: 2em;
+		line-height: 1;
+		opacity: 0.8;
+		vertical-align: middle;
+		width: auto;
+		font-family: "Icons";
+		font-style: normal;
+		font-weight: normal;
+		margin-right: 0.6em;
+		text-align: center;
+		text-decoration: inherit;
+		height: 1em;
+	}
+
+	.fa::before {
+		background: rgba(0, 0, 0, 0) none repeat scroll 0 0;
+	}
+
+	.fa.icon-note::before {
+		content: "";
+	}
+
+	.fa.icon-tip::before {
+		content: "";
+	}
+
+	.fa.icon-warning::before {
+		content: "";
+	}
+
+	.fa.icon-caution::before {
+		content: "";
+	}
+
+	.fa.icon-important::before {
+		content: "";
+	}
+}
+
 .quoteblock {
-    .paragraph {
-        p {
-            margin-bottom: 20px;
-        }
-    }
-    margin-top: 20px;
-    margin-bottom: 20px;
-    color: $blockquote-text-color;
-    blockquote {
-        position: relative;
-        margin-left: 20px;
-        margin: 1.5em 10px;
-        padding: 0.5em 10px;
-    }
-    blockquote:before {
-        color: #ccc;
-        font-size: 6em;
-        margin-top: 30px;
-        display: block;
-        content: "\201C";
-    }
-    .attribution {
-        text-align: right;
-        color: $blockquote-text-color;
-    }
+	margin-top: 20px;
+	margin-bottom: 20px;
+	color: rgb(101, 101, 101);
+
+	blockquote {
+		border-left: 5px solid #e6e7e8;
+		position: relative;
+		margin-left: 20px;
+		margin: 1.5em 10px;
+		padding: 0.5em 10px;
+	}
+
+	blockquote:before {
+		color: #ccc;
+		font-size: 3em;
+		margin-top: 20px;
+		display: block;
+		font-family: "Icons";
+		content: "\f10e";
+		margin-bottom: 15px;
+	}
+
+	.paragraph {
+		p:not(:last-child) {
+			margin-bottom: 20px;
+		}
+	}
+
+	.attribution {
+		text-align: right;
+	}
 }
+
+// alternatively could use &#10122; through &#10131 to get the numbered circles,
+// then style them as appropriate; would need to output them in the text, though
+.conum {
+	display: inline-block;
+	color: white !important;
+	background-color: #666;
+	text-align: center;
+	width: 20px;
+	height: 20px;
+	font-size: 12px;
+	font-weight: bold;
+	line-height: 20px;
+	font-family: Arial, sans-serif;
+	font-style: normal;
+	position: relative;
+	top: -2px;
+	letter-spacing: -1px;
+
+	& * {
+	color: white !important;
+	}
+
+	// hack for when highlight.js adds a bogus element into DOM
+	&:empty {
+		display: none;
+	}
+}
+
+pre .comment .conum {
+	// coverup the comment
+	left: -20px;
+}
+
+/**
+ * News
+ */
+
+.ui.segment.news {
+	background-color: #FAFAFA;
+	
+	h4 {
+		margin-bottom: 5px;
+		
+		&:not(:first-child) {
+			margin-top: 10px;
+		}
+	}
+	
+	small {
+		color: #999;
+	}
+}
+
+/**
+ * Series overview
+ */
+
+#content .version {
+	h3.ui.header {
+		margin-top: 0;
+		font-size: 3em;
+		
+		small {
+			font-size: 0.3em;
+			color: #AAA;
+		}
+	}
+}
+
+/**
+ * Footer
+ */
+
+.footer {
+	margin-top: 70px !important;
+	
+	&.segment {
+		padding: 3em 0em;
+	}
+
+	.ui.inverted.divided.grid:not([class*="vertically divided"]) > .sponsor.column:not(.row),
+	.ui.inverted.divided.grid:not([class*="vertically divided"]) > .row > .sponsor.column {
+		box-shadow: none;
+		text-align: right;
+	}
+	
+	.sponsor .logo:not(:last-child) {
+		margin-bottom: 20px;
+	}
+}
+
+/**
+ * Semantic UI adjustments
+ */
+.ui.table thead th {
+	background-color: #f4f4f4;
+}
+
+.ui.buttons .disabled.button, .ui.disabled.button, .ui.button:disabled, .ui.disabled.button:hover, .ui.disabled.active.button {
+	opacity: 0.7 !important;
+}
+
+.ui.grid .column.divided {
+	border-left: 1px solid #CCC;
+}
+
+// Semantic UI has these classes, however they're only applicable to
+// grids, containers, rows and columns.
+// plus, there isn't any `mobile hidden`, `X hidden` class.
+// this snippet is using the same class names and same approach
+// plus a bit more but to all elements.
+//
+// see https://github.com/Semantic-Org/Semantic-UI/issues/1114
+
+/* Mobile */
+@media only screen and (max-width: 767px) {
+		[class*="mobile hidden"],
+		[class*="tablet only"]:not(.mobile),
+		[class*="computer only"]:not(.mobile),
+		[class*="or lower hidden"] {
+		display: none !important;
+	}
+}
+
+/* Tablet / iPad Portrait */
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+	[class*="mobile only"]:not(.tablet),
+	[class*="tablet hidden"],
+	[class*="computer only"]:not(.tablet),
+	[class*="or lower hidden"]:not(.mobile) {
+		display: none !important;
+	}
+}
+
+/* Computer / Desktop / iPad Landscape */
+@media only screen and (min-width: 992px) {
+	[class*="mobile only"]:not(.computer),
+	[class*="tablet only"]:not(.computer),
+	[class*="computer hidden"],
+	[class*="or lower hidden"]:not(.tablet):not(.mobile) {
+		display: none !important;
+	}
+}
+
+/**
+ * Bootstrap utilities
+ */
+.sr-only {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0,0,0,0);
+	border: 0;
+}
+
+.text-center {
+	text-align: center;
+}
+
+.text-right {
+	text-align: right;
+}
+
+.text-left {
+	text-align: left;
+}
+
+.text-justify {
+	text-align: justify;
+}
+
+.clearfix {
+	&::after {
+		display: block;
+		clear: both;
+		content: "";
+	}
+}
+
+/**
+ * Books
+ */
+
+.books {
+	.ui.items > .item > .image img {
+		border: 1px solid #CCC;
+		border-radius: 0.125rem;
+		display: block;
+		height: auto;
+		width: 100%;
+	}
+
+	.ui.divided.items > .item {
+		padding: 2em 0;
+	}
+
+	.ui.items > .item > .content > a.header {
+		color: #1e70bf;
+	}
+}
+
+/**
+ * Back to top
+ */
+
+.back-to-top {
+	bottom: 10px;
+	position: fixed;
+	right: 10px;
+	z-index: 1000;
+	display: none;
+
+	a {
+		background: #243446 url("https://static.jboss.org/common/images/top.png") no-repeat scroll center center;
+		display: block;
+		height: 50px;
+		margin: 0;
+		text-indent: -9999px;
+		width: 50px;
+	}
+}
+
+/**
+ * Mobile menu
+ */
+
+.mobile-menu-button-bar {
+	background-color: #444;
+	border-bottom: 1px solid black;
+	padding: 10px;
+
+	a.item {
+		cursor: pointer;
+		color: white;
+
+		&:hover {
+			color: #DDD;
+		}
+	}
+}
+
+#mobile-menu {
+	background-color: black;
+
+	.ui.vertical.menu {
+		> .item {
+			border-radius: 0 !important;
+			border-bottom: 1px solid #444;
+			padding: 15px;
+			margin: 0 !important;
+		}
+
+		&.inverted .menu .item {
+			font-size: 1em;
+			color: #CCC;
+			margin-left: 10px;
+			padding: 2px 0px 2px 0px;
+		}
+
+		.internal-links {
+			border-bottom: 1px solid #444;
+		}
+	}
+}
+
+/**
+ * Red Hat top banner
+ */
+
+@import 'tabzilla'

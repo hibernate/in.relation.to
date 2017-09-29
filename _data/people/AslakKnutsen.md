@@ -2,7 +2,7 @@
 name: Aslak Knutsen
 photo:
 level: 0
-website: http://twitter.com/aslakknutsen
+twitter: http://twitter.com/aslakknutsen
 location: Oslo, Norway
 occupation: Senior Software Engineer
 gravatar_hash: 3f27861ec08730fd02c91fe4129d2668

@@ -2,7 +2,7 @@
 name: Pete Muir
 photo:
 level: 0
-website: https://twitter.com/#!/plmuir
+twitter: https://twitter.com/#!/plmuir
 location: Edinburgh, Scotland
 occupation: Principal Software Engineer, Red Hat, Inc.
 gravatar_hash: 4ebf34d2cbe74a29138a6d1e477ab4c8

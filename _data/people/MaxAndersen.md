@@ -3,6 +3,8 @@ name: Max Andersen
 photo: /images/team/MaxRydahlAndersen.jpg
 level: 1
 gravatar_hash: 2e6595bcd18e59bc17e18912e330ac10
+website: http://about.me/maxandersen
+twitter: http://twitter.com/maxandersen
 ---
 
 Max Rydahl Andersen is the tooling architect at JBoss by Red
@@ -24,5 +26,3 @@ Max have been involved in Ceylon from the early days and tried to keep
 up with the evolving specifications. Gives feedback and provide input
 in directions of the tooling and as such is now trying to make Ceylon
 available from Eclipse.
-
-You can follow him on [twitter](http://twitter.com/maxandersen) or on [Google +](http://gplus.to/maxandersen) and if you want to stalk him see his [About page](http://about.me/maxandersen).-

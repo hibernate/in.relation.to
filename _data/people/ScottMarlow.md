@@ -3,6 +3,7 @@ name: Scott Marlow
 photo:
 level: 1
 gravatar_hash: ce9572f319e848be149196b772776981
+active: true
 ---
 Core developer on the WildFly team. Spent a number of years building various
 enterprise development software, from database server to developer tools (such

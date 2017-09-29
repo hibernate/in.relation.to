@@ -1,19 +1,11 @@
 .text-center.project-menu-title
   %a{:href => '/', :class => 'icon-stack'}
-    %i.icon-circle.icon-stack-base.icon-fixed-width
-    %i{:class => "icon icon-light icon-fixed-width icon-quote-right"}
-    /icon-rss icon-signal
-%ul.nav.nav-list
-  - href = "/"
-  - active = false
-  %li{:class => "#{(active ? "active" : "")}"}
-    %a{:href => "#{href}"}
-      %i{:class => "icon-home menu-icon"}
-      Home
+    %i.icon.circular.grid.quote.right.big
 
-  - href = "/blog.atom"
-  - active = false
-  %li{:class => "#{(active ? "active" : "")}"}
-    %a{:href => "#{href}"}
-      %i{:class => "icon-rss menu-icon"}
-      Feed
+.ui.vertical.menu.fluid
+  %a.item(href="/")
+    %i.icon.grid.home
+    Home
+  %a.item(href="/blog.atom")
+    %i.icon.grid.feed
+    Feed

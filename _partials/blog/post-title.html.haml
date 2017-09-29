@@ -1,0 +1,45 @@
+-# Displays a single blog post
+- post = page["post"]
+- show_author_image = page["show_author_image"]
+- # Author is a String in editor mode only
+- member = site.people.values.detect{|member| member.name == (post.author.is_a?(String) ? post.author : post.author[0].to_s)}
+
+.blog-title-bar
+  .blog-title-image.hidden-phone
+    - if member.gravatar_hash && show_author_image != false
+      .author-image-container
+        .author-image{:itemprop=>"image", :itemscope=>"", :itemtype=>"http://schema.org/ImageObject"}
+          %meta{:itemprop=>"height width", :content=>"65"}
+          %link{:itemprop=>"url", :href=>"https://www.gravatar.com/avatar/#{member.gravatar_hash}?s=65"}
+          %img.author-image{:src=>"https://www.gravatar.com/avatar/#{member.gravatar_hash}?s=65", :height=>65, :width=>65}
+
+  .blog-title-caption
+    %h2{:itemprop=>"headline"}
+      %a{:href=>post.url}= post.title
+      %link{:itemprop=>"mainEntityOfPage", :href=>post.url}
+
+    .blog-author-bar
+      Posted by
+      - # It's a String in editor mode only
+      - if post.author.is_a? String
+        %span{:itemprop=>"author", :itemscope=>"", :itemtype=>"http://schema.org/Person"}
+          %span{:itemprop=>"name"}
+            = post.author
+      - else
+        - post.author.each do |author|
+          %a{:href=>author.primary_page.url}
+            %span{:itemprop=>"author", :itemscope=>"", :itemtype=>"http://schema.org/Person"}
+              %span{:itemprop=>"name"}
+                = author
+      &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+      %time{:datetime=>post.date.strftime( "%F" ), :itemprop=>"dateModified datePublished", :content=>post.date.strftime( "%Y-%m-%d" ) }
+        = post.date.strftime( site.date_format )
+      &nbsp;&nbsp;
+      - post.tags.each do |tag|
+        - # It's a String in editor mode only
+        - if tag.is_a? String
+          .ui.label.tag
+            = tag
+        - else
+          %a.ui.label.tag{:href=>tag.primary_page.url}
+            = tag

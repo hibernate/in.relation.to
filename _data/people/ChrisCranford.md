@@ -6,6 +6,7 @@ website:
 location: Charlotte, NC
 occupation: Hibernate team member
 gravatar_hash: fc5da400b2dab2cc818a1733e7792cbb
+active: true
 ---
 Hibernate Team member.
 

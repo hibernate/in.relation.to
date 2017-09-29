@@ -1,0 +1,18 @@
+- real_page = page['real_page']
+
+- if not real_page.posts.nil?
+  - member = site.people.values.detect{|member| member.name == real_page.posts[0].author[0].to_s}
+
+- if member && member.content && !member.content.empty?
+  %hr
+  .bio
+    %h2 Bio
+    .ui.card.fluid
+      .content
+        %strong= member.name
+      - if member.gravatar_hash
+        .image.author-image-container
+          .author-image
+            %img.author-image{:src=>"https://www.gravatar.com/avatar/#{member.gravatar_hash}?s=300", :height=>300, :width=>300}
+      .content
+        #{member.content}
