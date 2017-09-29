@@ -16,3 +16,13 @@
             %img.author-image{:src=>"https://www.gravatar.com/avatar/#{member.gravatar_hash}?s=300", :height=>300, :width=>300}
       .content
         #{member.content}
+      - if member.website
+        .extra.content
+          %a(href="#{member.website}")
+            %i.icon.world
+            Website
+      - if member.twitter
+        .extra.content
+          %a(href="#{member.twitter}")
+            %i.icon.twitter
+            Twitter
