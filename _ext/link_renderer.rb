@@ -21,7 +21,7 @@ module InRelationTo
           second_skip = false
           pages.each_with_index do |page, i|
             if ( i == current_page_index )
-              html += %Q(<a class="item" href="#">#{i+1}</a> )
+              html += %Q(<a class="active item" href="#">#{i+1}</a> )
             elsif ( i <= window )
               html += %Q(<a class="item" href="#{page.url}">#{i+1}</a> )
             elsif ( ( i > window ) && ( i < ( current_page_index - window ) ) && ! first_skip  )
