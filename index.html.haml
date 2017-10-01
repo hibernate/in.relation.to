@@ -1,24 +1,5 @@
 ---
-layout: base
-title: Home
+layout: blog-post-list
+title: In Relation To
+subtitle: The Hibernate team blog on everything data.
 ---
-
-.ui.container.fluid
-  .jumbotron.small
-    .ui.container
-      %h1
-        %span In Relation To
-      %h2
-        %span The Hibernate team blog on everything data.
-
-.ui.container.page-content
-  .ui.stackable.grid
-    .ui.three.wide.column
-      = partial( 'blog/left-column.html.haml', {'real_page' => page} )
-
-    .ui.thirteen.wide.column
-      .content#content
-        - for post in page.posts
-          .blogpost{:itemprop=>"blogPost", :itemscope => "", :itemtype => "https://schema.org/BlogPosting", :itemref=>"logobar"}
-            = partial( 'blog/post.html.haml', {"post" => post} )
-        = page.posts.semantic_ui_pager_links

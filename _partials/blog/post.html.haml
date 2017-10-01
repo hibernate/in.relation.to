@@ -5,4 +5,5 @@
 - member = site.people.values.detect{|member| member.name == (post.author.is_a?(String) ? post.author : post.author[0].to_s)}
 
 = partial( 'blog/post-title.html.haml', {"post" => post} )
-= partial( 'blog/post-content.html.haml', {"post" => post} )
+.mobile.hidden
+  = partial( 'blog/post-content.html.haml', {"post" => post} )

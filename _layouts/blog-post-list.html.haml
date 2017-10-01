@@ -7,14 +7,18 @@ title: In Relation To
   .jumbotron.small
     .ui.container
       %h1
-        %span= page.title
+        %a(href='/')
+          %span= page.title
+      - if page.subtitle
+        %h2
+          %span= page.subtitle
 
 .ui.container.page-content
   .ui.stackable.grid
-    .ui.three.wide.column
+    .ui.three.wide.column.mobile.hidden
       = partial( 'blog/left-column.html.haml', {'real_page' => page} )
 
-    .ui.thirteen.wide.column
+    .ui.column.sixteen.wide.mobile.thirteen.wide.tablet.thirteen.wide.computer
       .content#content
         ~ content
         - for post in page.posts
