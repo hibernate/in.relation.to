@@ -35,11 +35,12 @@
       %time{:datetime=>post.date.strftime( "%F" ), :itemprop=>"dateModified datePublished", :content=>post.date.strftime( "%Y-%m-%d" ) }
         = post.date.strftime( site.date_format )
       &nbsp;&nbsp;
-      - post.tags.each do |tag|
-        - # It's a String in editor mode only
-        - if tag.is_a? String
-          .ui.label.tag
-            = tag
-        - else
-          %a.ui.label.tag{:href=>tag.primary_page.url}
-            = tag
+      %span.blog-tags
+        - post.tags.each do |tag|
+          - # It's a String in editor mode only
+          - if tag.is_a? String
+            .ui.label.tag
+              = tag
+          - else
+            %a.ui.label.tag{:href=>tag.primary_page.url}
+              = tag
