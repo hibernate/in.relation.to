@@ -55,6 +55,7 @@ module Awestruct
         @page_name        = opts[:page_name] || 'page/'
         @collection       = opts[:collection]
         @title            = opts[:title]
+        @subtitle         = opts[:subtitle]
       end
 
       def execute(site)
@@ -78,6 +79,9 @@ module Awestruct
           page.paginate_generated = true
           if !@title.nil?
             page.title = @title
+          end
+          if !@subtitle.nil?
+            page.subtitle = @subtitle
           end
           site.pages << page
           paginated_pages << page

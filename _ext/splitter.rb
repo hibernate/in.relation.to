@@ -89,7 +89,8 @@ module InRelationTo
            :remove_input=>false,
            :output_prefix=>output_prefix,
            :collection=>split.pages,
-           :title=>"#{site.title} #{split_key}"
+           :title=>"#{site.title}",
+           :subtitle=>"#{split_key}"
           }.merge( @pagination_opts )
 
           paginator = Awestruct::Extensions::Paginator.new( @split_items_property, @input_path, options )
