@@ -5,7 +5,7 @@
 - member = site.people.values.detect{|member| member.name == (post.author.is_a?(String) ? post.author : post.author[0].to_s)}
 
 .blog-title-bar
-  .blog-title-image.hidden-phone
+  .blog-title-image.mobile.hidden
     - if member.gravatar_hash && show_author_image != false
       .author-image-container
         .author-image{:itemprop=>"image", :itemscope=>"", :itemtype=>"http://schema.org/ImageObject"}
