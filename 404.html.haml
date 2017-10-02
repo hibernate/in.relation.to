@@ -1,5 +1,5 @@
 ---
-layout: in-relation-to
+layout: base
 title: In relation to 404
 inhibit_indexifier: true
 ---
@@ -23,18 +23,40 @@ inhibit_indexifier: true
     }
   };
 
-.row-fluid
-  .span12
-    :markdown
-      # Oh snap!
+.jumbotron.small
+  .ui.container
+    %h1
+      %span In Relation To
+    %h2
+      %span 404
 
-      > (Hand waving): This is not the page you are looking for!
+.ui.container.page-content
+  .content#content
+    .ui.two.column.centered.grid
+      .column
+        %h2 Oh snap!
 
-      Looks like you have found a broken link! Please report it mentioning which page you came from and which link you clicked on:
+        .ui.floating.info.icon.message
+          %i.icon.hand.paper
+          .content
+            .header
+              (Hand waving): This is not the page you are looking for!
+            %p
+              Looks like you have found a broken link!
 
-      <a href="#" id="feedback-button" class='btn btn-primary feedback-button' style="float:center;">Report website error
-      <i class="icon-circle-arrow-right"></i></a>
+        %p
+          Please report it mentioning which page you came from and which link you clicked on:
+        %p.text-center
+          %button.ui.right.label.button.primary#feedback-button
+            %i.icon.arrow.circle.up
+            Report website error
+        %p
+          Otherwise, best is to hit the good old back button or start back at the
+          %a(href="#top") top of the site
+          \.
 
-      Otherwise, best is to hit the good old back button or start back at the [top of the site](/).
+        %p
+          You can also fix the problem yourself by sending a pull request to this GitHub project:
+          %a(href="https://github.com/hibernate/in.relation.to") github.com/hibernate/in.relation.to
+          \.
 
-      You can also fix the problem yourself by sending a pull request to the [GitHub project](https://github.com/hibernate/in.relation.to) of this site.
