@@ -1,0 +1,57 @@
+= Hibernate Community Newsletter 19/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Hibernate-Types project
+
+My previous articles about
+https://vladmihalcea.com/2016/06/20/how-to-map-json-objects-using-generic-hibernate-types/[mapping JSON as type-safe structures],
+as https://vladmihalcea.com/2017/08/08/how-to-store-schema-less-eav-entity-attribute-value-data-using-json-and-hibernate/[JsonNode] or
+mapping https://vladmihalcea.com/2017/06/21/how-to-map-java-and-sql-arrays-with-jpa-and-hibernate/[PostgreSQL ARRAY as a Hibernate Type]
+have generated a lot of interest, so I decided to encapsulate all these types in a new open-source project:
+https://vladmihalcea.com/2017/09/25/the-hibernate-types-open-source-project-is-born/[hibernate-types].
+
+What's nice about this project is that
+not only it works with the latest 5.2,
+but it works with older versions of Hibernate ORM like 5.1, 5.0, 4.3, 4.2, and even 4.1.
+
+For 3.x, I think you should definitely upgrade to a newer version and benefit from lots of improvements.
+
+== Articles
+
+If you are using PostgreSQL and want to use the **::** cast operator,
+then you should know that this will interfere with the way JPA handles named parameters.
+Check out
+https://vladmihalcea.com/2017/10/03/how-do-solve-the-postgresql-cast-operator-issue-with-jpa-and-hibernate/[this article]
+for more details about this topic and how you can work around it.
+
+Sometimes, you might be using a reserved SQL keyword for a table or column name.
+https://www.thoughts-on-java.org/hibernate-tips-escape-table-column-names/[This article] explains how you can escape
+reserved SQL keywords.
+
+== Time to upgrade
+
+http://in.relation.to/2017/10/04/hibernate-search-5-8-1-Final//[Hibernate Search 5.8.1] has been released,
+so you should take a look at it and consider upgrading as well.
+
+== Questions and answers
+
+* https://www.quora.com/How-does-one-use-the-saveOrUpdate-method-of-hibernate-to-update-only-if-a-specified-column-value-is-true/answer/Vlad-Mihalcea-1[How does one use the `saveOrUpdate` method of Hibernate to update only if a specified column value is true?]
+* https://www.quora.com/What-is-the-best-way-to-get-column-names-of-DB-tables-from-hibernate-for-a-mapped-class[What is the best way to get column names of DB tables from Hibernate for a mapped class?]
+* https://stackoverflow.com/questions/10041938/how-to-choose-the-id-generation-strategy-when-using-jpa-and-hibernate/38391106#38391106[How to choose the id generation strategy when using JPA and Hibernate]
+* https://stackoverflow.com/questions/14351589/how-to-call-a-mysql-stored-procedure-from-hibernate/40419033#40419033[How to call a MySQL stored procedure from Hibernate]
+* https://stackoverflow.com/questions/29007676/how-to-map-two-jpa-or-hibernate-entities-on-the-same-database-table/29008489#29008489[How to map two JPA or Hibernate entities on the same database table]
+* https://stackoverflow.com/questions/23973872/native-query-and-caching-mechanism-of-hibernate/23974103#23974103[Native query and caching mechanism of Hibernate]
+* https://stackoverflow.com/questions/1647583/mapping-a-postgresql-array-with-hibernate/44691326#44691326[Mapping a PostgreSQL array with Hibernate]
+* https://stackoverflow.com/questions/25718229/manytoone-relation-can-be-null/25718313#25718313[`@ManyToOne` relation can be null?]
+* https://stackoverflow.com/questions/27804069/hibernate-mapping-between-postgresql-enum-and-java-enum/46303099#46303099[Hibernate mapping between PostgreSQL enum and Java enum]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044888[Why can't Hibernate print SQL statements with parameters?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044889[Hibernate `@Where` annotation not working with inheritance]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044890[Set a custom DataSource for the JPA EntityManagerFactory]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044895[Left Joins with unrelated entities in Hibernate]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044899[How to convert HQL to SQL?]
+* https://forum.hibernate.org/viewtopic.php?f=1&t=1044900[JPA MetaModel with RMI and DetachedCriteria]
