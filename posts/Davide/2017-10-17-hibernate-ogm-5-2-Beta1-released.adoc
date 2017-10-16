@@ -1,0 +1,77 @@
+= "Hibernate OGM 5.2 Beta1 is out"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Another month, another release: http://hibernate.org/ogm/[Hibernate OGM] 5.2 Beta1 is ready!
+
+The main goal for this release is to support Infinispan 9.1 and allow the creations of caches
+when they are missing.
+
+If you need to upgrade from a version before 5.2, you can find help on the
+https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes].
+
+All the changes are described in the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31400[release notes].
+
+== Infinispan remote automatic cache creation
+
+By default, Hibernate OGM expects the caches you defined via the mapping and the configuration
+to already exit on the Infinispan server. At start up, an exception is thrown if one of the caches
+is not found.
+ 
+With this version is now possible to have Hibernate OGM create the caches on startup if they are
+missing. You can enable this feature by setting the property:
+
+```
+hibernate.ogm.create_database=true
+```
+
+The official documentation has more details about the
+https://docs.jboss.org/hibernate/ogm/5.2/reference/en-US/html_single/#_cache_names_used_by_hibernate_ogm[different cache mapping approaches]
+in Infinispan.
+
+[NOTE]
+====
+We understand that the name of this property is strange in the Infinispan context.
+This property is a generic one used by many different dialects and it will likely change before
+the final release.
+====
+
+== Where can I get it?
+
+You can include in your project the dialect of your choice using this maven coordinates:
+
+* http://infinispan.org[Infinispan] 
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan:5.2.0.Beta1_
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.2.0.Beta1_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.2.0.Beta1_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.2.0.Beta1_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.2.0.Beta1[from Sourceforge].
+
+If you are intersted about availabe versions, you can check the official
+http://hibernate.org/ogm/releases[Hibernate OGM download page].
+
+== What's next?
+
+We will work on improving the integration with Infinispan remote and support the JPA and Hibernate
+ORM properties for the databases validation and creation at start up.
+We will also add a new annotation to make it easier to select a template configuration for
+Infinispan caches.
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+We are looking forward to hearing your feedback!
+
+
