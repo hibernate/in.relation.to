@@ -1,0 +1,118 @@
+= "Hibernate Validator 6.0.3.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.3.Final
+---
+And here comes another maintenance release of Hibernate Validator 6.0.
+
+A lot of thanks to our users and contributors for reporting issues and submitting pull requests, it was definitely a great team effort.
+
+This is a recommended upgrade for everyone using Hibernate Validator 6.0.x and it is a drop-in replacement of 6.0.2.Final.
+
+== What's new
+
+=== Towards a `ScriptEvaluatorFactory` SPI
+
+https://github.com/marko-bekhta[Marko Bekhta] worked tirelessly on making the `@ScriptAssert` and `@ParameterScriptAssert` constraints more flexible.
+
+We had several goals in mind:
+
+ * Allow to use these features in OSGi environments (we had class loader issues before)
+ * Make it possible to use scripting engines not based on JSR 223 (e.g. Spring EL)
+ * Instantiate a separate `ScriptEvaluatorFactory` per `ValidatorFactory`, whereas it was a static singleton before
+
+Using this new SPI, you can define a specific `ScriptEvaluatorFactory` either in the XML configuration:
+[source,xml]
+----
+<validation-config
+        xmlns="http://xmlns.jcp.org/xml/ns/validation/configuration"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/validation/configuration
+            http://xmlns.jcp.org/xml/ns/validation/configuration/validation-configuration-2.0.xsd"
+        version="2.0">
+
+    <property name="hibernate.validator.script_evaluator_factory">
+        org.hibernate.validator.referenceguide.chapter09.CustomScriptEvaluatorFactory
+    </property>
+
+</validation-config>
+----
+
+or via the programmatic API:
+[source,java]
+----
+Validator validator = Validation.byProvider( HibernateValidator.class )
+        .configure()
+        .scriptEvaluatorFactory(
+                new CustomScriptEvaluatorFactory()
+        )
+        .buildValidatorFactory()
+        .getValidator();
+----
+
+You can find other examples in https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-script-evaluator-factory[our documentation], most notably examples allowing to use `@ScriptAssert` and `@ParameterScriptAssert` with SpEL (Spring Expression Language) or in OSGi environments.
+
+This new SPI is marked as incubating for now. Feedback welcome!
+
+=== New `@CodePointLength` constraint
+
+This new constraint was contributed by https://github.com/kazuki43zoo[Kazuki Shimizu]. It allows to add limits to the code point length of a char sequence:
+
+[source,java]
+----
+@CodePointLength(min = 1, max = 10, normalizationStrategy = NormalizationStrategy.NFD)
+private String text = "が";
+----
+
+=== Performance and memory allocation improvements
+
+We made another round of performance and memory allocation improvements. Hibernate Validator should be faster than ever!
+
+One thing worth mentioning is that, if you use a custom `TraversableResolver`, it is now possible to disable the `TraversableResolver` result cache. The caching adds some overhead and, if your `TraversableResolver` is fast, you don't need it. More information can be found in https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-validator-factory-traversable-resolver[our documentation]
+
+=== OSGi support improvements
+
+Apart from the `ScriptEvaluatorFactory` SPI, we also made other OSGi improvements.
+
+The OSGi manifest for our CDI module was incorrect and, with the help of https://github.com/arjantijms[Arjan Timjs], we were able to fix it and add an integration test.
+
+=== Documentation improvements
+
+We made a few improvements to the documentation regarding:
+
+ * the container element constraint feature,
+ * the JDK 9 support.
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting 6.0.3.Final
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:{released-version}_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-10.1.0.Final-patch.zip[WildFly 10.1] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-11.0.0.CR1-patch.zip[WildFly 11.0 CR1] (wait for the synchronization to Maven Central). You can read about how to apply such patches http://in.relation.to/2017/04/04/testing-bean-validation-2-0-on-wildfly-10/[here].
+
+== Maintenance releases for the 5.3 and 5.4 branches
+
+We also released 5.3.6.Final and 5.4.2.Final with updated JDK 9 support and a fix for https://access.redhat.com/security/cve/CVE-2017-7536[CVE-2017-7536] - which only affects users relying on the security manager.
+
+== What's next?
+
+We will continue to release maintenance releases to fix quickly the issues reported by our users.
+
+We updated http://hibernate.org/validator/roadmap/[our roadmap] with the ideas we have for the future. If you want to join us, don't hesitate to pick a task and come discuss it with us.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
