@@ -1,0 +1,261 @@
+= Meet Lukas Eder
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/lukaseder[Lukas Eder],
+Java Champion, SQL aficionado, and data access framework developer.
+
+image::LukasEder.jpg["Lukas Eder, align="center", width="400"]
+
+== Hi, Lukas. Would you like to introduce yourself?
+
+Hi Vlad, I'm https://twitter.com/lukaseder[@lukaseder], founder and CEO of Data Geekery, the company behind https://www.jooq.org/[jOOQ].
+I am a Java Champion and Oracle ACE, and I will surely get all the other cool
+badges from the other vendors as well, soon. I have millions of Stack
+Overflow reputation, reddit karma, and other important Internet points,
+and I was recently endorsed on LinkedIn not only for XML, but also for
+Microsoft Excel reactive programming - the only tool even more powerful
+than SQL.
+
+Apart from those remarkable accomplishments ;), I'm mostly coding and
+tuning Java, SQL, and PL/SQL around jOOQ and for customers of Data
+Geekery's consultancy services. I'm also delivering public and
+in-house https://www.jooq.org/training[SQL trainings], and I'm generally
+trying to make the lives of Java developers who work with SQL easier.
+
+You can meet me at conferences where I talk about
+the https://www.youtube.com/watch?v=wTPGW1PNy_Y[awesomeness of SQL] to
+those poor souls whose enterprise software architects coerce them to
+write business logic in a
+non-SQL, https://en.wikipedia.org/wiki/Third-generation_programming_language[3GL] -
+or those weird developers who choose to do so on their own. Come see my
+talks, you will see the light!
+
+== I always wanted to know how jOOQ was born. Can you tell us how it all started? 
+
+The _spirit_ of jOOQ was born in the early 1800s when Ada Lovelace
+essentially invented programming. She surely would have predicted it.
+Once algorithms were a thing, the world was now ready for SQL, and thus
+for jOOQ. After her impressive work, however, many detours were taken,
+and it took another 150 years until the invention of SQL, and roughly,
+until 2009, when it became clear that SQL has to be part of Java as
+well. Thus: jOOQ. 
+
+When focusing only on the 2009 bit of history, jOOQ happened "by
+accident". At the time, in essence, everyone was creating home-grown
+query builders to abstract away the pain of concatenating the strings "A
+= 1" and "B = 2", connecting them with " AND ", and occasionally, with "
+OR ". Overall global efforts invested in that area can only be measured
+in terms of geologic time scales ("person-eons"). Those efforts all went
+to waste because even within the same company, several teams made the
+same efforts again and again.
+
+Most of these in-house tools could roughly handle SELECT .. FROM ..
+WHERE. JOINs were hardly supported (or even understood), and if you
+added GROUP BY to the mix, there was a Cambrian explosion of bugs,
+patches, and further person-eons of maintenance work.
+
+All this meant that there had to be an industry need, a market, for a
+tool that everyone can use. A tool to make sure this problem of building
+SQL strings will be solved for good. And there were such tools! At the
+time, there were at least 10 proof-of-concept style open source
+libraries, and perhaps one that took it a step further called QueryDSL.
+But none of them went "all in" on the SQL language. Again, most of them
+handled SELECT .. FROM .. WHERE, and then pretty much stopped at that.
+
+jOOQ _had_ to be made and stay here for good.
+
+== When it comes to persisting and fetching data, what's the approach taken by jOOQ? How does it compare to the transactional write-behind one employed by Hibernate?
+
+jOOQ is "just" typesafe JDBC/SQL, i.e. it is an API that allows its
+users to write SQL, not as strings (as with JDBC), but as compile-time
+type checked SQL expression trees that just happen to look an awful lot
+like actual SQL. So, the question isn't really what the approach for
+persisting and fetching data, but for writing the queries to do so.
+
+You could compare jOOQ with JPA's Criteria Query API, which is "just"
+typesafe JPA/JPQL - although I must say that Criteria Query could have
+been better executed. Writing an internal DSL (Domain-Specific Language)
+is really hard. The implications in terms of API maintenance and keeping
+Backward Compatibility are very tricky. I think Criteria Query was
+added to the JPA specification prematurely. Now that we have it, it can
+never really be changed, only, perhaps, superseded.
+
+Now, if you want to compare the approaches of writing queries (SQL,
+JDBC, jOOQ, JPA native queries) vs the "transactional write-behind"
+approach (JPA, Hibernate, other ORMs), the discussion gets a bit more
+complex, and not strictly tool related, but architecture related.
+
+In short, the SQL approach is more bulk data processing oriented (for
+both reads and writes), whereas the JPA approach is more CRUD oriented.
+SQL is more stateless/sessionless/side-effect free whereas JPA is
+stateful/"sessionful"/imperative. SQL runs set based computational
+logic in the database, giving access to the sophistication of modern SQL
+optimisers, whereas JPA offers running record based computational logic
+in the client, giving access to the vast possibilities of Java libraries
+and client-side processing.
+
+So, clearly, the two things represent not just different technologies,
+but different paradigms and mindsets.
+
+However, this still doesn't explain _why_ each approach could be the
+preferred one in a given situation. And it's a really tricky question. I
+have personally only ever worked with systems where the SQL approach was
+clearly more advantageous (large data sets, thousands of tables, dozens
+of joins needed per query, thousands of concurrent queries, thousands of
+stored procedures, few concurrent writes, mixed OLTP and OLAP workloads)
+- but I know many people and their systems, where pure SQL would be
+detrimental for the complex transactional patterns they employ and JPA
+really shines.
+
+Ideally, there's a mix of both worlds: SQL and JPA - or jOOQ and
+Hibernate, which are concrete implementations. Because ultimately, one
+size never fits all, and you _will_ have reporting and analytics (SQL)
+in an OLTP/CRUD (JPA) application, to give a simple example.
+
+Of course, https://blog.jooq.org/2015/03/24/jooq-vs-hibernate-when-to-choose-which/[I have blogged about this in the past].
+
+== How easy it would be to integrate jOOQ and Hibernate and what would be the main benefit of combining both frameworks?
+
+There are different ways to integrate.
+
+*Integrating query API*
+
+From a mere API perspective, it is very easy. As of jOOQ 3.10, you can
+simply extract any SQL string and bind variable sets directly from your
+jOOQ query, send that query to the Hibernate/JPA native query API, and
+let Hibernate sort out the mapping according to JPA standards. This
+works with:
+
+- mapping ordinary native queries to `Object[]` record representations
+- mapping "enriched" native queries to `@SqlResultSetMapping` specifications
+- mapping ordinary native queries to entities
+
+Specifically, the latter can be quite powerful. Sometimes, you _do_ want
+to get managed entities as a result, but you cannot express the
+complexity of your query in a JPQL query/Criteria Query/named entity
+graph. Simple examples involve using unions, common table expressions,
+derived tables, lateral joins, and many other features that are not well
+supported in JPQL. 
+
+In that case, SQL shines, and from a performance and maintainability
+perspective, it is almost always the better option compared to fetching
+all data into memory and implementing the logic in Java. All you have to
+do is make sure you select all the columns needed for the entity graph
+that you want to materialize, possibly using
+some https://vladmihalcea.com/2017/04/03/why-you-should-use-the-hibernate-resulttransformer-to-customize-result-set-mappings/[Hibernate-specific
+`ResultTransformer`] (look who wrote about that topic ;) ), and you're
+done.
+
+https://www.jooq.org/doc/latest/manual/sql-execution/alternative-execution-models/using-jooq-with-jpa/[Examples
+for the above can be seen in the jOOQ manual].
+
+A future jOOQ version, hopefully, version 3.11 (for workgroups ;), will
+further simplify the integration by binding the jOOQ SPIs directly to an
+`EntityManager`. This will remove the need for extracting SQL strings and
+bind variables from jOOQ queries and allow for executing the query
+directly using jOOQ API but on the `EntityManager`. I'm really looking
+forward to this feature, which makes using the best of both worlds
+really simple.
+
+*Integrating code generation*
+
+Another cool integration point is the jOOQ code generation based off JPA
+annotated entities, with Hibernate being used behind the scenes. Many
+projects already use Hibernate and want to run a couple of reports or
+entity queries with SQL, and thus with jOOQ. They can now
+reverse-engineer the JPA annotated entities using Hibernate, generate an
+in-memory H2 database from them, and jOOQ can read that H2 database to
+generate jOOQ code.
+
+Even if I personally prefer working with DDL, many projects see their
+JPA annotated entities as their primary source of schema information, so
+that approach suits them really well.
+
+https://www.jooq.org/doc/latest/manual/code-generation/codegen-jpa/[This
+feature is documented here].
+
+*Integrating on a JDBC level*
+
+A lesser-known integration point is the fact that jOOQ exposes itself
+through at least two low-level, JDBC-based SPIs:
+
+- the parser API
+- the mocking API
+
+In both cases, jOOQ can proxy a JDBC Connection and do things like:
+
+- Parsing the SQL string that gets sent to jOOQ and transforming the SQL
+expression tree to something else, e.g. by applying a VisitListener.
+This could be used to
+implement https://blog.jooq.org/2015/06/17/implementing-client-side-row-level-security-with-jooq/[client-side row-level security], or sophisticated multi-tenancy, or other
+things. Also, the parsed SQL string can be translated to other SQL
+dialects (although that is not really useful in Hibernate, which is
+already dialect agnostic). A future jOOQ version will be able to apply
+custom formatting to arbitrary SQL strings, so this could work nicely as
+a formatting utility for Hibernate-generated SQL, for logging purposes.
+
+- The https://blog.jooq.org/2013/02/20/easy-mocking-of-your-database/[SQL
+statement can be mocked through a single SPI], returning "fake" results
+in some cases. In simple setups, this can be quite powerful to intercept
+queries both for testing and for other purposes.
+
+Again, these features do not expose jOOQ to the client, but hide jOOQ
+behind JDBC, so that they can work with JDBC directly, or with Hibernate.
+
+== For many Java developers, the level of knowledge of SQL is rather basic. What awesome SQL features would you recommend Java developers to start learning more about? 
+
+That's true, very unfortunately. I would recommend this:
+
+. First off, don't be afraid of SQL. SQL is a very simple functional
+programming language that just happens to have a rather quirky, arcane
+syntax. THE MORE YOU YELL, THE FASTER IT RUNS, RIGHT?
+(https://twitter.com/shipilev/status/703176579191410689[Credit for this
+joke to Aleksey Shipilëv]). But in order to truly understand SQL (both
+basic _and_ sophisticated SQL), I think it is important to remember
+where it came
+from https://en.wikipedia.org/wiki/Relational_algebra[Relational
+Algebra]. If this is properly understood, in particular, the fact that
+most operations are just syntax sugar over basic set operations like set
+unions and cartesian products, then the language will make a lot more
+sense, and it becomes clear how powerful it really is.
+. Then, I suggest reading this https://blog.jooq.org/sql[really cool
+blog about SQL] ;) and looking out for a couple of more advanced
+features. The most important ones are common table expressions (CTE) and
+window functions. CTE is super easy to understand and will add value
+immediately when writing complex queries. Window functions are a bit
+more tricky, but I'd say also much more rewarding on an everyday basis.
+Once these are understood, a vast number of other features are worth
+visiting. Sophisticated examples are shown on my post
+https://blog.jooq.org/2016/04/25/10-sql-tricks-that-you-didnt-think-were-possible/["10SQL Tricks That You Didn't Think Were Possible"], but there are many
+other, simpler features that can be used on a daily basis. I will cover
+more of them on the blog in the future, I'm also writing a book (this
+does take longer than expected, with 2 kids...), and of course, these
+topics are covered in my https://www.jooq.org/training[SQL training].
+
+== We always value feedback from our community,  so can you tell us what features you'd like us to add to make easier for other data access frameworks to integrate with JPA or Hibernate?
+
+I know we've discussed the fact that the existing `ResultTransformer` SPI
+will be improved in Hibernate 6.0. This is probably one of the most
+interesting SPIs for other data access frameworks, like jOOQ. I hope the
+new version will be standardized in JPA and allow for really easy custom
+transformation between flat result sets and entity graphs.`
+ 
+From my perspective, I've always wondered why popular ORMs like
+Hibernate do everything in a single tool, mostly:
+
+- the modeling part
+- the mapping part
+- the querying part
+- the session/cache management part
+
+If these parts could be split into different and independent JPA/Hibernate modules, the whole toolchain could be even more powerful. For
+instance, if there was a Hibernate mapping library that cares only about
+how to map between flat data and annotated entity graphs (but wouldn't
+worry about managing such entities, or about fetching them, as that
+would belong to the session/cache management part, or the querying
+part), that would be really useful.
+
+*Thank you, Lukas, for taking your time. It is a great honor to have you here. To reach Lukas, you can follow him on https://twitter.com/lukaseder[Twitter].*
