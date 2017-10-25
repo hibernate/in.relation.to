@@ -1,0 +1,53 @@
+= Bugfix releases (including CVE) for Hibernate Search 5.6, 5.7 and 5.8
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published three bugfix releases of Hibernate Search: 5.6.4.Final, 5.7.3.Final and 5.8.2.Final.
+
+Those releases include in particular an upgrade of the Lucene dependency to 5.5.5,
+which fixes https://access.redhat.com/security/vulnerabilities/CVE-2017-12629[CVE-2017-12629].
+This vulnerability should only affect you if you use `org.apache.lucene.queryparser.xml.CoreParser`
+and feed it with input from untrusted sources: this class is not used by Hibernate Search itself.
+However, the upgrade is recommended even if you don't use this class.
+
+
+== What's new?
+
+Here are the most notable changes:
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-2927[HSEARCH-2927]:
+   the Lucene dependency was upgraded to 5.5.5,
+   which fixes a remote code execution vulnerability: https://access.redhat.com/security/vulnerabilities/CVE-2017-12629[CVE-2017-12629].
+ * https://hibernate.atlassian.net/browse/HSEARCH-2868[HSEARCH-2868]:
+   adding elements to a persistent collection representing the reverse side of an association
+   will now correctly trigger the reindexing of the entity if there is a field on this collection.
+ * https://hibernate.atlassian.net/browse/HSEARCH-2863[HSEARCH-2863]:
+   `@CalendarBridge(encoding = EncodingType.STRING)` will no longer fail
+   at indexing time with a `ClassCastException`.
+   Thanks to **Tomáš Tomek** for reporting this!
+
+For a full list of changes, please refer to the release notes:
+
+ * https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31201[5.6.4.Final]
+ * https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31200[5.7.3.Final]
+ * https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31603[5.8.2.Final]
+   
+== How to get these releases
+
+All the necessary information is available (and updated regularly)
+on http://hibernate.org/search/releases/[hibernate.org]:
+
+ * http://hibernate.org/search/releases/5.6/#get-it[5.6]
+ * http://hibernate.org/search/releases/5.7/#get-it[5.7]
+ * http://hibernate.org/search/releases/5.8/#get-it[5.8]
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=9[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
