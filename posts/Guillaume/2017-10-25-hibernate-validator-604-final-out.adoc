@@ -1,0 +1,57 @@
+= "Hibernate Validator 6.0.4.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.4.Final
+---
+
+Another week, another Hibernate Validator release. You might ask why we release a new maintenance version of the 6.0 branch so soon: it is mostly to provide a patch for http://wildfly.org/news/2017/10/23/WildFly11-Final-Released/[WildFly 11 Final] but it is also packed with nice enhancements!
+
+This is a recommended upgrade for everyone using Hibernate Validator 6.0.x and it is a drop-in replacement of {released-version}.
+
+== What's new
+
+=== A patch for WildFly 11 Final
+
+It has been a while since we provide patches for WildFly so that you can easily use the latest versions of Hibernate Validator on WildFly.
+
+With http://wildfly.org/news/2017/10/23/WildFly11-Final-Released/[the release of WildFly 11 Final], we thought it would be nice to provide WildFly users with a patch as soon as possible.
+
+You can get the patch from Maven Central http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-11.0.0.Final-patch.zip[here] (wait for the synchronization) and you can learn about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[there].
+
+Note that for the time being, we still provide a patch for WildFly 10.1.
+
+=== Performance improvements
+
+We studied a couple of issues reported by our users and we made a few more performance improvements. Validation will be faster now in many cases.
+
+I'm working on a specific blog post with some nice benchmark results. Stay tuned.
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:{released-version}_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-10.1.0.Final-patch.zip[WildFly 10.1] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-11.0.0.Final-patch.zip[WildFly 11.0] (wait for the synchronization to Maven Central). You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== What's next?
+
+We will continue to release maintenance releases to fix quickly the issues reported by our users.
+
+We updated http://hibernate.org/validator/roadmap/[our roadmap] with the ideas we have for the future. If you want to join us, don't hesitate to pick a task and come discuss it with us.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
