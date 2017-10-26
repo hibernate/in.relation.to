@@ -1,0 +1,216 @@
+= "Bean Validation benchmark revisited"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Bean Validation", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+As you may know, http://beanvalidation.org/2.0/[Bean Validation 2.0] has been released a couple of months ago and http://hibernate.org/validator/releases/6.0/[Hibernate Validator 6.0] is its reference implementation.
+
+Hibernate Validator is not the only Bean Validation implementation out there, we have one (friendly) competitor called http://bval.apache.org/[Apache BVal].
+
+Apache BVal has not caught up with Bean Validation 2.0 yet but, as the http://carinae.net/2010/06/benchmarking-hibernate-validator-and-apache-beanvalidation-the-two-jsr-303-implementations/[last benchmark in the Bean Validation field] is dated from 2010 (remember "Machete don't text"?), I thought it was high time to revisit this benchmark and get some fresh numbers.
+
+Especially with all the optimization work we made for 6.0.
+
+== Contestants
+
+The idea is to compare the various Bean Validation implementations and show the progress made by Hibernate Validator 6.0.
+
+We decided to benchmark 3 implementations:
+
+ * Hibernate Validator 6.0.4.Final (released October 25th 2017)
+ * Hibernate Validator 5.4.2.Final (released October 19th 2017)
+ * Apache BVal 1.1.2 (released November 3rd 2016)
+
+Hibernate Validator 5.4 and Apache BVal 1.1 are implementations of Bean Validation 1.1 so, in this benchmark, we won't test the new features of Bean Validation 2.0 but only features common to both versions of the spec.
+
+Note that Bean Validation 2.0 only adds new features, it doesn't remove any of the existing ones.
+
+== Benchmarks
+
+=== Unit benchmarks
+
+In Hibernate Validator, we maintain https://github.com/hibernate/hibernate-validator/tree/master/performance[a set of JMH benchmarks] that we can run against various versions of Bean Validation implementations.
+
+These benchmarks are very simple: they do not perform complex validation as the whole point is to measure the overhead of the validation engine.
+
+For this benchmark series, we will run two different benchmarks:
+
+ * https://github.com/hibernate/hibernate-validator/blob/master/performance/src/main/java/org/hibernate/validator/performance/simple/SimpleValidation.java[SimpleValidation]: we just test the validation of a simple bean with a couple of constraints. Nothing fancy, just plain bean validation.
+ * https://github.com/hibernate/hibernate-validator/blob/master/performance/src/main/java/org/hibernate/validator/performance/cascaded/CascadedValidation.java[CascadedValidation]: the idea here is to test the overhead of cascaded validation - the bean only has one very simple constraint but cascades to several other beans of the same type.
+
+=== Bean Validation benchmark
+
+This benchmark is coming from the http://carinae.net/2010/06/benchmarking-hibernate-validator-and-apache-beanvalidation-the-two-jsr-303-implementations/[aforementioned existing benchmark] and has been put together by the Apache BVal team.
+
+I have imported it https://github.com/gsmet/beanvalidation-benchmark[into GitHub] and made it a bit more stable (you can generate the random beans once and use the same set of beans for several benchmarks) and flexible (easier to use different Hibernate Validator implementations). We might move the project under the Hibernate umbrella at one point but for now it's more of a pet project.
+
+It's a rather advanced benchmark as it generates a set of classes with a scenario you can tweak and then run validation on the generated beans.
+
+It supports features as groups, inheritance and so on.
+
+The default scenario we use generates 200 different beans.
+
+It's a decent approximation of what could be a real use case of Bean Validation.
+
+== Some numbers (and nice charts!)
+
+OK, you came here for numbers and charts and, until now, you just got a presentation of the benchmarks. Don't leave, here they are!
+
+=== SimpleValidation JMH benchmark
+
+Numbers are in *ops/ms*, the *higher* the *better*.
+
+++++
+<div id="simple-validation-jmh-chart"></div>
+++++
+
+=== CascadedValidation JMH benchmark
+
+Numbers are in *ops/ms*, the *higher* the *better*.
+
+++++
+<div id="cascaded-validation-jmh-chart"></div>
+++++
+
+=== Bean Validation benchmark
+
+The numbers are in *seconds*, the *lower* the *better*.
+
+++++
+<div id="bean-validation-benchmark-chart"></div>
+++++
+
+== Conclusion
+
+Hibernate Validator is faster than ever: 6.0.4.Final is *2 to 3 times faster* than 5.4.2.Final and Apache BVal, be it in unit benchmarks or the more realistic one.
+
+Two even greater things:
+
+ * The results are even better in the most realistic benchmark.
+ * During this journey, we also reduced the memory footprint of Hibernate Validator.
+
+In the end, Hibernate Validator 6.0 is a very recommended upgrade, especially if you make heavy usage of Bean Validation (e.g. in a batch).
+
+== A few examples of the changes we made
+
+As for the performance improvements we made, here are two examples:
+
+ * The initialized validators were cached in a global map and obtained from there. We kept this cache as it is useful when you share a validator between 2 locations (e.g. when you have `@NotNull` constraints on different properties) but we now also keep a reference to the validator in the `ConstraintTree`, thus avoiding the map lookup.
+ * Obtaining the attributes of an annotation was quite slow so we now build an `AnnotationDescriptor` that stores these attributes once and for all and keeps them handy. The key of the aforementioned map is using the annotation and its attributes, and even with `hashCode()` caching, we had a pretty heavy overhead.
+
+Note that these two changes alone brought a 30% speed improvement.
+
+The reduction of the memory footprint is not the subject of this blog post but here are some of the things we did to reduce the size of the metadata stored by Hibernate Validator: 
+
+ * Reduce the collections to empty/singleton collections as much as possible - this is not negligible in our case as we have quite a lot of them;
+ * Create static default instance to manage the default cases - when in most cases, you end up with the same object that does not include information specific to the situation, it's really worth it to identify this default case and reuse the same instance;
+ * Optimize the metadata of unconstrained beans/methods/properties.
+
+Note that having our metadata immutable helps a lot with optimization.
+
+If you're interested in learning more about what we did, you can have a look to these pull requests: https://github.com/hibernate/hibernate-validator/pull/814[814], https://github.com/hibernate/hibernate-validator/pull/845/commits[845] and https://github.com/hibernate/hibernate-validator/pull/868/commits[868].
+
+== Lessons learned
+
+So as with any performance improvements work, we learned a couple of lessons:
+
+* This is an interesting journey!
+* Create benchmarks, measure, measure and measure: the fastest way to do something might not be what you think.
+* Measure with different scenarios: sometimes you improve the situation somewhere but it gets worse somewhere else.
+* Reflection is slow - this is not new - but be careful that even the most benign looking operation can be slower than expected (typically `Method.getParameters()` is not a simple getter, it has a cost).
+* In a hot path, even the slightest instance creation might introduce some undesired overhead.
+* Map lookups have a cost that is far from being negligible. Even when caching the `hashCode()`. Even if your `equals()` is fast.
+* A lot of micro optimizations can lead to great improvements.
+* When introducing a new feature, some raw measurements of the consequences at the early stages might be a good idea. Sometimes, a feature added for a very narrow use case introduces a lot of overhead or makes later optimization very complicated.
+
+We made a lot of progress but we still have one big issue with no solution yet: during the validation phase, we create lots of `PathImpl` and `NodeImpl` instances and this situation clearly should be improved. Unfortunately, it is not as easy as it sounds.
+
+== Bootstrap cost vs runtime cost
+
+Bean Validation implementations have to collect a lot of metadata on the validated beans. It is usually done at bootstrap to avoid having this overhead at runtime.
+
+In this benchmark, we only focus our measurements on the runtime cost as, in the lifecycle of an application, the bootstrap cost is usually negligible.
+
+To be fair, from our observations, Hibernate Validator is in general a bit slower than Apache BVal at bootstrap as it collects more information. You shouldn't even notice it in a real life scenario though.
+
+== Reproducing these results
+
+These benchmarks were run on a typical engineer laptop (Core i7 with 16 GB of memory).
+
+As mentioned earlier, all the benchmarks presented in this article are publicly available and Open Source so feel free to run them by yourselves:
+
+ * https://github.com/hibernate/hibernate-validator/tree/master/performance[JMH benchmarks]
+ * https://github.com/gsmet/beanvalidation-benchmark[Bean Validation benchmark]
+
+Considering the random nature of the Bean Validation benchmark, you might get slightly different results but I'm confident they will highlight similar improvements.
+
+++++
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+$(function() {
+	var data = [ {
+		x: [365, 602, 1323],
+		y: ['BVal 1.1.2', 'HV 5.4.2.Final', 'HV 6.0.4.Final'],
+		error_x: {
+			type: 'data',
+			array: [16, 7, 13],
+			visible: true
+  		},
+		type: 'bar',
+		orientation: 'h',
+		marker: {
+			color: ['#C7754C', '#17BDB8', '#00749F']
+		}
+	} ];
+
+	var layout = {
+  		bargap: 0.5
+	};
+
+	Plotly.newPlot('simple-validation-jmh-chart', data, layout);
+
+	var data = [ {
+		x: [397, 320, 633],
+		y: ['BVal 1.1.2', 'HV 5.4.2.Final', 'HV 6.0.4.Final'],
+		error_x: {
+			type: 'data',
+			array: [15, 5, 33],
+			visible: true
+  		},
+		type: 'bar',
+		orientation: 'h',
+		marker: {
+			color: ['#C7754C', '#17BDB8', '#00749F']
+		}
+	} ];
+
+	var layout = {
+  		bargap: 0.5
+	};
+
+	Plotly.newPlot('cascaded-validation-jmh-chart', data, layout);
+
+	var data = [ {
+		x: [24.9, 22.6, 7.17],
+		y: ['BVal 1.1.2', 'HV 5.4.2.Final', 'HV 6.0.4.Final'],
+		error_x: {
+			type: 'data',
+			array: [0.2, 0.3, 0.02],
+			visible: true
+  		},
+		type: 'bar',
+		orientation: 'h',
+		marker: {
+			color: ['#C7754C', '#17BDB8', '#00749F']
+		}
+	} ];
+
+	var layout = {
+  		bargap: 0.5
+	};
+
+	Plotly.newPlot('bean-validation-benchmark-chart', data, layout);
+});
+</script>
+++++
