@@ -1,0 +1,88 @@
+= Hibernate Community Newsletter 21/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+Marko Bekhta, the https://twitter.com/that_java_guy[@that_java_guy on Twitter] has written a very good series of articles
+about JPA and Hibernate:
+
+- http://that-java-guy.blogspot.ro/2017/10/jpa-ways-to-map-many-to-many.html[Ways to map JPA many-to-many relationships with additional information]
+- http://that-java-guy.blogspot.ro/2017/05/jpa-mapping-enums-right-way.html[Mapping JPA Enums the right way]
+- http://that-java-guy.blogspot.ro/2017/11/jpa-handy-utility-for-enums-to-combine.html[A handy utility to combine Enums with the JPA AttributeConverter]
+
+Although JPA is a very mature standard, Hibernate still offers many additions
+that you could definitely benefit from.
+
+One such example is the `@NaturalId` annotation which,
+not only it allows you to map business keys on the entity level, but you can even
+https://vladmihalcea.com/2017/10/31/the-best-way-to-map-a-naturalid-business-key-with-jpa-and-hibernate/[fetch the entity by its natural identifier without even hitting the database].
+
+Eugen Paraschiv, who runs the well-known http://www.baeldung.com[Baeldung] website,
+has written two articles about Hibernate:
+
+- http://www.baeldung.com/hibernate-dynamic-mapping[Dynamic Mapping with Hibernate]
+- http://www.baeldung.com/hibernate-date-time[Hibernate – Mapping Date and Time]
+
+The Hibernate Validator team has put up a new benchmark to compare the following Bean Validation implementation:
+
+- Hibernate Validator 6.0.4.Final (released on the 25th of October 2017)
+
+- Hibernate Validator 5.4.2.Final (released on the 19th of October 2017)
+
+- Apache BVal 1.1.2 (released on the 3rd of November 2016)
+
+In the true spirit of open-source software development,
+the https://github.com/hibernate/hibernate-validator/tree/master/performance[JMH benchmarks are available on GitHub],
+so you can also run them yourself if you want.
+
+For more details about the benchmark and the results we've got, check out
+http://in.relation.to/2017/10/31/bean-validation-benchmark-revisited/[this article].
+
+If you want to play with Hibernate Validator, there is even
+https://github.com/hibernate/hibernate-demos/tree/master/hibernate-validator/javafx-validation-example[a JavaFX example]
+application that you can use to test this framework.
+
+https://www.thoughts-on-java.org/hibernate-tips-call-postgresql-function/[This article]
+shows you a how you can call a PostgreSQL function from JPA.
+
+For more details about how to call stored procedures and functions that can return both scalar (simple basic types)
+and even `REFCURSOR`, which allows you to return table data as a `ResultSet`, then you should definitely read the following articles:
+
+- https://vladmihalcea.com/2016/03/22/how-to-call-oracle-stored-procedures-and-functions-from-hibernate/[How to call Oracle stored procedures and functions with JPA and Hibernate].
+- https://vladmihalcea.com/2016/04/27/how-to-call-sql-server-stored-procedures-and-functions-from-hibernate/[How to call SQL Server stored procedures and functions with JPA and Hibernate].
+- https://vladmihalcea.com/2016/05/24/how-to-call-postgresql-functions-from-hibernate/[How to call PostgreSQL functions (stored procedures) with JPA and Hibernate].
+- https://vladmihalcea.com/2016/11/03/how-to-call-mysql-stored-procedures-and-functions-with-jpa-and-hibernate/[How to call MySQL stored procedures and functions with JPA and Hibernate].
+
+== Time to upgrade
+
+Hibernate Search has been released new versions across http://in.relation.to/2017/10/26/hibernate-search-5-6-4-and-5-7-3-and-5-8-2/[three product development branches]:
+
+- 5.6.4
+- 5.7.3
+- 5.8.2
+
+If you're using Hibernate 5.6, 5.7 or 5.8, then you should check out the new updates.
+
+== Questions and answers
+
+- https://stackoverflow.com/questions/1647583/mapping-a-postgresql-array-with-hibernate/44691326#44691326[Mapping a PostgreSQL array with Hibernate]
+- https://stackoverflow.com/questions/28459084/compile-time-checks-for-jpa-entities-and-queries/28462426#28462426[Compile-time checks for JPA entities and queries]
+- https://stackoverflow.com/questions/1582161/how-does-a-preparedstatement-avoid-or-prevent-sql-injection/40490350#40490350[How does a PreparedStatement avoid or prevent SQL injection?]
+- https://stackoverflow.com/questions/1910220/what-is-a-natural-identifier/47031917#47031917[What is a natural identifier in Hibernate?]
+- https://stackoverflow.com/questions/23671227/how-to-use-hibernate-for-cache-master-table-data/23672185#23672185[How to use Hibernate to cache table data and speed-up queries?]
+- https://stackoverflow.com/questions/29762653/implicit-join-for-manytoone-generating-cross-join-why/29764340#29764340[Why does Hibernate generate a CROSS JOIN for an implicit join of a `@ManyToOne` association?]
+- https://stackoverflow.com/questions/11948895/how-to-automatically-serialize-and-deserialize-json-string-in-database-using-ann/47053807#47053807[How to automatically serialize and deserialize JSON string using JPA and Hibernate?]
+- https://stackoverflow.com/questions/5022812/find-or-insert-based-on-unique-key-with-hibernate/47095145#47095145[Find or insert based on unique key with Hibernate]
+- https://stackoverflow.com/questions/46962501/what-is-difference-between-session-get-and-session-byid-load/47098928#47098928[What is difference between session.get() and session.byId().load() in Hibernate?]
+- https://stackoverflow.com/questions/12747527/moving-hibernate-instrumentation-to-build-time/25704149#25704149[Moving Hibernate instrumentation to build time]
+- https://stackoverflow.com/questions/30143594/spring-jpa-and-hibernate-how-to-increment-a-counter-without-concurrency-issu/30156346#30156346[Spring, JPA, and Hibernate - how to increment a counter without concurrency issues]
+- https://stackoverflow.com/questions/28486850/what-is-the-difference-between-a-session-and-a-connection-in-hibernate/28495180#28495180[What is the difference between a `Session` and a `Connection` in Hibernate?]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1044951[`@AttributeOverride` doesn't work with the `TABLE_PER_CLASS` inheritance strategy]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1044934[Hibernate throws `PSQLException: column is of type numeric, not bytea`]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1044969[SQL Bulk Update with dynamic where conditions]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1044970[Hibernate second level cache consistency]
