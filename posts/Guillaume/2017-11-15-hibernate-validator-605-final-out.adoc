@@ -1,0 +1,104 @@
+= "Hibernate Validator 6.0.5.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.5.Final
+---
+
+We just released the 6.0.5.Final version of Hibernate Validator containing a couple of important bugfixes and some enhancements.
+
+This is a recommended upgrade for everyone using Hibernate Validator 6.0.x and it is a drop-in replacement of 6.0.4.Final.
+
+== What's new
+
+=== Bugfixes
+
+https://github.com/marko-bekhta[Marko] noticed an https://hibernate.atlassian.net/browse/HV-1520[annoying regression] potentially leading to random `ClassCastException`.
+It was introduced in one of the performance patches of 6.0.3.Final.
+It may not affect you if you only validate a few objects with a few properties at once (that's why we didn't notice it in our test suite) but it definitely makes this upgrade important for everyone.
+
+We also fixed https://hibernate.atlassian.net/browse/HV-1516[another issue] concerning the `@Email` validator:
+it was reporting emails with an IDN ASCII domain (the ones starting with `xn--`) as invalid, whereas they are perfectly valid. Thanks to Andreas Marienborg for reporting this one.
+
+=== Enhancements
+
+==== `@UniqueElements` constraint
+
+https://github.com/tadhgpearson[Tadhg Pearson] contributed a new constraint: `@UniqueElements`.
+
+The purpose of this constraint is to raise a violation if there are duplicate elements in a collection.
+
+[source, JAVA]
+----
+@UniqueElements
+private List<MyBean> beans;
+----
+
+Consider the case where you use JAX-RS to deserialize XML and JSON beans and Hibernate Validator to validate their content.
+XML and JSON collections are transformed into ``List``s.
+If you then transform them to a `Set`, the duplicate elements will be silently discarded, whereas it might not be what you want.
+
+The purpose of this constraint is for Hibernate Validator to be able to raise a violation if the input list contains duplicate elements.
+
+==== Temporal validation tolerance
+
+https://github.com/danielwegener[Daniel Wegener] came to us with a very interesting requirement:
+in distributed systems, you might have a slight delay between getting the current instant and validating it (think of generating the object on the client and then sending it to a backend server for validation).
+In this case, it is very probable your temporal constraints (e.g. `@Future` or `@Past`) will fail.
+
+He came with the idea of introducing a tolerance for temporal validation at the constraint level and we finally decided it was better to make it a global configuration knob.
+
+Thus, you can now define a temporal validation tolerance when you initialize your `ValidationFactory`:
+
+[source, JAVA]
+----
+ValidatorFactory validatorFactory = Validation.byProvider( HibernateValidator.class )
+    .configure()
+    .temporalValidationTolerance( Duration.ofMillis( 10 ) )
+    .buildValidatorFactory();
+Validator validator = validatorFactory.getValidator();
+----
+
+See https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-clock-provider[our reference documentation] for more information about this new feature.
+
+==== New `HibernateConstraintValidator` contract
+
+Until now, the only parameter available via `ConstraintValidator#initialize()` was the constraint annotation.
+It was a bit limiting as, for some of our validators, we needed additional helpers and access to some of the configuration properties.
+
+We created the `HibernateConstraintValidator` contract to alleviate this limitation: it introduces an `initialize()` method taking a `ConstraintDescriptor` and a `HibernateConstraintValidatorInitializationContext`, giving access to, for instance, the clock provider.
+
+This contract is marked as incubating. Our ultimate goal is to include it in a future revision of Bean Validation.
+
+==== Translation updates
+
+The Simplified Chinese translation was updated by https://github.com/quaff[Yanming Zhou].
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:{released-version}_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-10.1.0.Final-patch.zip[WildFly 10.1] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-11.0.0.Final-patch.zip[WildFly 11.0] (wait for the synchronization to Maven Central). You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== What's next?
+
+We will continue to release maintenance releases to fix quickly the issues reported by our users.
+
+We updated http://hibernate.org/validator/roadmap/[our roadmap] with the ideas we have for the future. If you want to join us, don't hesitate to pick a task and come discuss it with us.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
