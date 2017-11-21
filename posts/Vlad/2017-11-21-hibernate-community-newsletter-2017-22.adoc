@@ -1,0 +1,81 @@
+= Hibernate Community Newsletter 22/2017
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Books
+
+On the Hibernate site, we have provided
+http://hibernate.org/orm/books/[a list of books]
+that are a very good companion to the official
+http://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html[User Guide].
+
+Until next Monday,
+https://leanpub.com/high-performance-java-persistence/c/BlackFriday17HibernateNewsletter?utm_source=blog&utm_medium=newsletter&utm_campaign=bf17[**High-Performance Java Persistence**]
+is going to be **40% Off**. Considering
+https://www.amazon.com/product-reviews/973022823X/ref=cm_cr_arp_d_hist_5?filterByStar=five_star&pageNumber=1[the very good reviews],
+like
+https://www.giovannitomasicchio.it/high-performance-java-persistence-recensione/[this one from Giovanni Tomasicchio (Italian)],
+this is definitely a very good offer.
+
+== Videos
+
+Sanne Grinovero, the Hibernate Search project team leader, gave
+https://www.youtube.com/watch?v=mJDqxfXyNdM&feature=youtu.be&a=[a very good presentation at Devoxx Belgium]
+about the latest additions to Hibernate ORM 5, Hibernate Search, and Hibernate Spatial projects.
+
+== Articles
+
+SAP Hana has put some effort into
+https://news.sap.com/taking-applications-to-the-next-level-with-sap-hana-and-hibernate/[improving the associated Hibernate dialect].
+For more details about how you can integrate SAP HANA with Hibernate, check out
+https://www.sap.com/developer/groups/hana-hibernate-getting-started.html[this tutorial] as well.
+
+Eugen Paraschiv, from Baeldung, wrote two articles about Hibernate:
+
+- http://www.baeldung.com/no-hibernate-session-bound-to-thread-exception[Hot to handle HibernateException: No Hibernate Session Bound to Thread in Hibernate 3]
+- http://www.baeldung.com/hibernate-identifiers[An Overview of Identifiers in Hibernate]
+
+I wrote three article about JPA and Hibernate:
+
+- https://vladmihalcea.com/2017/11/08/how-to-inherit-properties-from-a-base-class-entity-using-mappedsuperclass-with-jpa-and-hibernate/[How to inherit properties from a base class entity using `@MappedSuperclass` with JPA and Hibernate]
+- https://vladmihalcea.com/2017/11/20/how-to-audit-entity-modifications-using-the-jpa-entitylisteners-embedded-and-embeddable-annotations/[How to audit entity modifications using the JPA `@EntityListeners`, `@Embedded`, and `@Embeddable` annotations]
+- https://vladmihalcea.com/2017/11/14/how-to-emulate-createdby-and-lastmodifiedby-from-spring-data-using-the-generatortype-hibernate-annotation/[How to emulate `@CreatedBy` and `@LastModifiedBy` from Spring Data using the `@GeneratorType` Hibernate annotation]
+
+A very nice feature supported by Oracle, SQL Server, PostgreSQL, and MySQL in different forms is called UPSERT or MERGE,
+and it allows you to either issue an UPDATE or simply return without issuing an error
+when the record that would be otherwise added by an INSERT statement is already found in the database table in question.
+For more details about this very useful SQL feature, check out
+https://vladmihalcea.com/2017/11/06/how-do-upsert-and-merge-work-in-oracle-sql-server-postgresql-and-mysql/[this article].
+
+https://www.thoughts-on-java.org/hibernate-tips-increase-version-parent-entity-updating-child-entity/[This article]
+offers you a short introduction to the `OPTIMISTIC_FORCE_INCREMENT` JPA `LockModeType`.
+Thanks to this JPA explicit optimistic locking feature,
+you can easily
+https://vladmihalcea.com/2016/08/30/how-to-increment-the-parent-entity-version-whenever-a-child-entity-gets-modified-with-jpa-and-hibernate/[increment the version of a root entity across an entire graph of entities],
+even when child and grandchild entities get inserted, updated or deleted.
+
+== Time to upgrade
+
+http://in.relation.to/2017/11/15/hibernate-validator-605-final-out/[Hibernate Validator 6.0.5] has been released.
+Grab it while it's hot!
+
+== Questions and answers
+
+- https://stackoverflow.com/questions/97197/what-is-n1-select-query-issue/39696775?stw=2#39696775[What is N+1 SELECT query issue?]
+- https://stackoverflow.com/questions/27897540/how-to-handle-max-connections-of-database-with-hibernate/27897771#27897771[How to handle max database connections with Hibernate?]
+- https://stackoverflow.com/questions/24724152/jpa-clear-collection-and-add-new-items/25251602#25251602[JPA clear collection and add new items]
+- https://stackoverflow.com/questions/47330810/jpa-hibernate-dynamic-entity-mapping-persistence-at-runtime/47331023#47331023[JPA Hibernate Dynamic entity mapping & persistence at runtime]
+- https://stackoverflow.com/questions/9667703/jpa-implementing-model-hiearchy-mappedsuperclass-vs-inheritence/47197591#47197591[JPA: Implementing Model Hierarchy - `@MappedSuperclass` vs. `@Inheritence`]
+- https://stackoverflow.com/questions/47154071/hibernate-mysql-issue-with-character-set/47198543#47198543[Issue with Character Set encoding for Emojis when using Mysql and Hibernate]
+- https://stackoverflow.com/questions/47172085/how-to-select-innodb-or-xtradb-as-storage-engine-in-mariadb-in-spring-boot-2-jpa/47176310#47176310[How to select InnoDB or XtraDB as storage engine in MariaDB in Spring Boot 2 JPA application]
+- https://stackoverflow.com/questions/47196058/deleted-object-would-be-re-saved-by-cascade-remove-deleted-object-from-associat/47210359#47210359[Hibernate throws "deleted object would be re-saved by cascade (remove deleted object from associations)"]
+- https://stackoverflow.com/questions/28501231/is-it-possible-to-define-left-join-when-annotating-a-relationship-with-onetoman/28502345#28502345[Is it possible to define LEFT Join when annotating a relationship with `@OneToMany`?]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1045004[How to dirty check an entity that might get modified?]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1045040[Get a real `HashSet` for a lazy `Set` instead of `PersistentSet`]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1045037[Suggestions on how to keep a SQL non-select user audit trail]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1045034[Join unrelated entities using Criteria queries]
+- https://forum.hibernate.org/viewtopic.php?f=1&t=1045003[HHH015007: Illegal argument on static metamodel field inject]
