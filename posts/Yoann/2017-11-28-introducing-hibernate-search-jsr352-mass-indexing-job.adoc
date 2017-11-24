@@ -1,0 +1,173 @@
+= Introducing the Hibernate Search JSR 352 mass indexing job
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "JSR 352" ]
+:awestruct-layout: blog-post
+---
+
+Originally started as a Google Summer of Code project by https://github.com/mincong-h[Mincong Huang],
+Hibernate Search 5.9 will feature integration with JSR 352, "Batch Applications for the Java Platform".
+This integration provides a new implementation of mass indexing (indexing a high volume of entities)
+as a JSR 352 job.
+
+Yesterday http://in.relation.to/2017/11/27/hibernate-search-5-9-0-Beta1[we released 5.9.0.Beta1]
+so you can try it out already!
+
+Why is it nice? How to use it? Let's find out!
+
+== What's JSR 352?
+
+"JSR 352: Batch Applications for the Java Platform" is a specification
+defining interfaces and mechanisms to execute batch processes ("jobs"),
+i.e. processes that involve applying the same operation over and over again to a large number of items.
+
+In JSR 352:
+
+* The job definition is provided as an XML file and a few Java classes, called batch artifacts.
+  In our case, the definition is provided by Hibernate Search.
+* The JSR 352 runtime avoids boilerplate code by managing
+  threading, transactions, the execution flow (calling methods on batch artifacts), ...
+* And all that's left is configuring the infrastructure.
+  In our case that's your responsibility, as the Hibernate Search user.
+
+== How is it better than the existing Mass Indexer?
+
+Ever tried to reindex 100,000 entities with the existing mass indexer,
+only to experience some network or disk error at the 99,001th entity?
+Then you have to restart from the very beginning,
+even though the first 99,000 entities were indexed just fine...
+
+With the JSR 352 mass indexing job, the job will simply resume from the last checkpoint,
+probably somewhere around the 95,000th entity.
+
+There are other advantages (such as being able to pool resources between multiple, unrelated background jobs),
+but this one really is the reason we think JSR 352 makes sense.
+
+== How to use the JSR 352 mass indexing job?
+
+=== Setup
+
+Within Wildfly 11, https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/#search-configuration-deploy-on-wildfly[use our JBoss modules],
+configure Hibernate ORM and Hibernate Search.
+In order for your application to access the Hibernate Search mass indexing job,
+https://docs.jboss.org/author/display/WFLY/Class+Loading+in+WildFly#ClassLoadinginWildFly-JBossDeploymentStructureFile[add a dependency]
+to the `org.hibernate.search.jsr352` module in your deployment and import the meta-information,
+e.g. by specifying the following in your application's `META-INF/MANIFEST.MF` file:
+`Dependencies: org.hibernate.search.jsr352 meta-inf`.
+That's all: you can then retrieve a `javax.batch.operations.JobOperator` instance
+in your application through CDI injection.
+
+In a Java SE application, you can use the reference implementation for JSR 352,
+https://github.com/WASdev/standards.jsr352.jbatch#readme[JBatch], in Java SE mode.
+You will need to:
+
+* add a dependency to the following artifacts in your project:
+** `org.hibernate:hibernate-search-jsr352-core:5.9.0.Beta1`
+** `com.ibm.jbatch:com.ibm.jbatch-runtime:1.0`
+** `javax.batch:javax.batch-api:1.0`
+** `javax.inject:javax.inject:1`
+** `org.apache.derby:derby:10.13.1.1`
+* add https://github.com/hibernate/hibernate-search/tree/master/integrationtest/jsr352/src/test/resources/META-INF/services[configuration files]
+  to you classpath under `META-INF/services`,
+* retrieve the `JobOperator` in your application by calling `javax.batch.runtime.BatchRuntime.getJobOperator()`
+  (be sure to store the result, as each call may create a new operator).
+* make sure to initialize Hibernate ORM before you try to launch the mass indexing job,
+  and to only shut it down after the last mass indexing job stopped.
+
+You may also use JBeret in Java SE mode:
+
+* add a dependency to `org.hibernate:hibernate-search-jsr352-jberet:5.9.0.Beta1` in your project
+* set up your project https://jberet.gitbooks.io/jberet-user-guide/content/set_up_jberet/index.html[as explained in the JBeret documentation]
+* retrieve the `JobOperator` in your application by calling `javax.batch.runtime.BatchRuntime.getJobOperator()`
+  (be sure to store the result, as each call may create a new operator).
+* make sure to initialize Hibernate ORM before you try to launch the mass indexing job,
+  and to only shut it down after the last mass indexing job stopped.
+
+As for other JSR 352 runtimes, the mass indexer may or may not work.
+We are in the process of testing at least one other Java EE application server and Spring Batch:
+see <<limitations-and-next>> below.
+
+=== Usage
+
+All the examples below assume the variable `jobOperator` contains
+the job operator retrieved as instructed above.
+
+To launch a mass indexing job:
+
+```
+java.util.Properties parameters = org.hibernate.search.jsr352.massindexing.MassIndexingJob.parameters()
+		.forEntities( MyFirstEntity.class, MySecondEntity.class )
+		.build();
+long executionId = jobOperator.start(
+		org.hibernate.search.jsr352.massindexing.MassIndexingJob.NAME,
+		parameters
+		);
+```
+
+You can then query the execution status through this call:
+
+```
+javax.batch.runtime.JobExecution jobExecution = jobOperator.getJobExecution( executionId );
+```
+
+You can suspend the job this way:
+
+```
+long executionId2 = jobOperator.stop( executionId );
+```
+
+To resume the job after suspension or upon failure, you can request a restart this way:
+
+```
+long executionId2 = jobOperator.restart( executionId, parameters );
+```
+
+[TIP]
+====
+According to the JSR 352 specification, you must provide the parameters again when restarting a job.
+
+However, https://github.com/jberet/jsr352#readme[JBeret], the JSR 352 implementation included in Wildfly,
+allows you to pass `null` instead, and will interpret it as
+"the parameters I used when initially starting the job".
+====
+
+The builder you get from calling `MassIndexingJob.parameters()` offers a few settings.
+Here are some of the most useful:
+
+* `.purgeAllOnStart(boolean)`: specify whether the existing index should be purged at the beginning of the job.
+* `.restrictedBy(Criterion)`: use a `Criterion` to only index a subset of entities.
+* `.restrictedBy(String)`: use HQL to only index a subset of entities.
+  Note that when using HQL, the job switches to a degraded mode that suffers from several limitations,
+  making it fit only for small, quick executions.
+  See https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#jsr-352-indexing-mode[the documentation] for details.
+
+You can find more information about the job parameters, how to tune performance,
+or how to deal with applications relying on multiple JPA persistence units
+in https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#jsr352-integration[the documentation].
+
+== Performance
+
+We did a bit of benchmarking, and as far as we could see,
+the performance of the JSR 352 mass indexing job is on par
+with that of the existing mass indexer.
+
+However, please keep in mind that performance depends a lot on your setup,
+and you may have to tinker a bit with the job parameters in order to achieve optimal performance,
+as explained in https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#jsr352-integration[the documentation].
+
+[[limitations-and-next]]
+== Current limitations and further work
+
+Currently, the Hibernate Search JSR 352 integration was only proven to work
+with two JSR 352 runtimes: JBatch in standalone mode and JBeret in a WildFly server.
+
+We would like to make sure our mass indexing job will work
+https://hibernate.atlassian.net/browse/HSEARCH-2956[with other Java EE application servers],
+and hopefully https://hibernate.atlassian.net/browse/HSEARCH-2692[with Spring's own Spring Batch project],
+which has limited support for JSR 352.
+
+In the meantime... keep in mind that http://in.relation.to/2017/11/27/hibernate-search-5-9-0-Beta1[we've already released 5.9.0.Beta1],
+so you can try it out already!
+See http://hibernate.org/search/releases/5.9/#get-it[hibernate.org] for how to get the new version.
+
+In any case, feel free to https://github.com/hibernate/hibernate-search#contact[contact us]
+for any question, problem or simply to give us your feedback!
