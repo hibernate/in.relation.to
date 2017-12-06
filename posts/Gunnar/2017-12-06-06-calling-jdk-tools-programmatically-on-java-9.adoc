@@ -1,0 +1,52 @@
+= "Calling JDK Tools Programmatically on Java 9"
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Without doubt, the module system (JPMS) is the most prominent feature of Java 9. But there are many other useful additions to the JDK, which have not been discussed as widely yet.
+
+One of them is the new `ToolProvider` SPI, which defines a uniform way to invoke all the tools coming with the JDK (e.g. `jar`, `jlink` etc.) in a programmatic way.
+E.g. imagine you'd like to create a JAR archive from within your Java application.
+Before Java 9, you had two options to do so:
+
+* Start a separate process to run the `jar` binary
+* Find out which classes are used by the `jar` command internally and invoke them directly
+
+Neither option is ideal.
+The former incurs some overhead for forking an OS level process and it requires a bit of coding to locate the binary to execute in the Java home directory and to correctly capture any output of the forked process.
+The second option doesn't come with the disadvantages of forking a new process, but it requires knowledge about the implementation of the tool to execute.
+So for instance in the case of the `jar` command, you'd have to know that `java.util.jar.JarOutputStream` is used to produce JAR files.
+
+== The Java 9 `ToolProvider` SPI
+
+So how can the task be solved with Java 9?
+Let's enter `java.util.spi.ToolProvider`, a new SPI which lets you run any JDK tool programmatically in a uniform fashion, within the current process.
+I.e. there's no overhead for process forking, also no knowledge about the inner workings of the tools is needed, as they are executed via one generic interface.
+
+As an example let's see how it can be used to run the `jar` utility and use its new `--describe-module` option to display the module metadata for a given modular JAR:
+
+[source,java]
+----
+Optional<ToolProvider> jar = ToolProvider.findFirst( "jar" );
+jar.get().run(
+        System.out,
+        System.err,
+        "--describe-module",
+        "--file",
+        "path/to/some/module.jar"
+);
+----
+
+So what's happening here?
+The `findFirst()` method of `ToolProvider` is used to obtain an instance of the tool called "jar".
+Similarly, you could obtain an instance of "jlink", "jmod" or any other JDK tool.
+Just be sure to use `java.util.spi.ToolProvider` and not `javax.tools.ToolProvider`, which already existed since Java 6 and is only used to obtain instances of the Java compiler.
+
+Once you've got a reference to the tool, it can be executed by passing the following:
+
+* `PrintStream` (or `PrintWriter`) instances to receive the standard and error outputs of the launched tool; in the example we just use `System.out` and `System.err` to propagate any output to the current standard output and error streams, but of course you also could redirect the streams to a file, or just capture them in memory etc.
+* the tool's arguments as you'd pass them on the CLI; in the example we pass the `--describe-module` and `--file` options and the path to the file for which we'd like to display the module metadata
+
+And that's all you need for running any JDK tool programmatically with Java 9, using one simple unified API and without the overhead of forking a separate process.
+Especially implementors of JDK-based tools such as Maven or Gradle should benefit from that new API very much.
