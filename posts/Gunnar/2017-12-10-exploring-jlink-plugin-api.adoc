@@ -1,0 +1,355 @@
+= "Exploring the jlink plug-in API in Java 9"
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+One of the most exciting features in Java 9 are http://openjdk.java.net/jeps/220[modular runtime images].
+Using the new https://docs.oracle.com/javase/9/tools/jlink.htm[_jlink_] utility, you can create customized distributions which contain your app, its dependencies and just the JDK modules which it needs.
+For instance, a simple service based on the http://undertow.io/[Undertow] web server can be packaged into an https://www.youtube.com/watch?v=BhuOSGrNBek[image of just 25 MB], batteries included.
+
+While that's pretty cool already, it gets even nicer, as jlink provides a plug-in mechanism
+which allows to fine-tune the contents modular runtime images as they are created.
+There's a set of jlink plug-ins coming with the JDK, e.g. for compressing image contents or removing debug symbols.
+But many more use cases may benefit from this API,
+for instance one could imagine plug-ins for removing un-used code or for performing byte code instrumentation of JPA entities.
+In the following, we'll create a plug-in for adding an annotation index to the created image.
+At runtime, this index can then be used to discover annotations very efficiently, i.e. without loading classes and using reflection.
+
+Sound great?
+For sure it does, there's just one catch: the jlink plug-in API is not a supported part of the JDK as of Java 9.
+In fact, its packages are not even exported from the `jdk.jlink` module.
+This means some tricks are required to create custom plug-ins and run the _jlink_ tool with these plug-ins enabled.
+The API may change in future Java versions, so any custom plug-in may break.
+
+Nevertheless it's definitely worth to explore the API and see what it can do.
+It's my hope that it'll be promoted to a public API eventually.
+
+== Creating the `Plugin` Implementation
+
+Let's begin by creating an implementation of the `Plugin` interface:
+
+[source,java]
+----
+public class AddIndexPlugin implements jdk.tools.jlink.plugin.Plugin {
+    // ...
+}
+----
+
+As the `plugin` package currently isn't exported by the `jdk.jlink` module,
+this export must be added dynamically when compiling our custom `Plugin` implementation.
+To do so, the following compiler argument needs to be specified:
+
+[source]
+----
+--add-exports="jdk.jlink/jdk.tools.jlink.plugin=org.hibernate.demos.jlink"
+----
+
+Each plug-in for jlink is enabled by a dedicated option which may have an optional value: _--plugin-option=value_.
+If there are additional arguments for that option, they are to be given like this: _--plugin-option=value:arg-2=value-2:arg-3=value-3\..._.
+In the case of our plug-in for adding an annotation index, we'd like to enable the plug-in like so:
+
+[source]
+----
+jlink --module-path path/to/modules \
+    --add-modules some.module \
+    --output path/to/image-dir \
+    --add-index=com.example.b:for-modules=com.example.a
+----
+
+The following options are given:
+
+* _--add-modules_: specifies the root modules to resolve
+* _--module-path_: specifies where to find the modules
+* _--output_: specifies where to create the runtime image
+* _--add-index_: the name of the option enabling our plug-in,
+its value _com.example.b_ being the name of the module to which the index should be added;
+_for-modules_ is an argument to that option,
+which receives a comma-separated list of modules which should be considered when creating the index
+
+The following shows the implementation for exposing the plug-in name
+(which by default will also be used as the name of the option for enabling the plug-in)
+and receiving the plug-in configuration:
+
+[source,java]
+----
+public class AddIndexPlugin implements Plugin {
+
+    private static final String NAME = "add-index";
+    private String targetModule;
+    private List<String> modules;
+
+    @Override
+    public String getName() {
+        return NAME;
+    }
+
+    @Override
+    public boolean hasArguments() {
+        return true;
+    }
+
+    @Override
+    public void configure(Map<String, String> config) {
+        targetModule = config.get( NAME );
+        String modulesToIndex = config.get( "for-modules" );
+        this.modules = Arrays.asList( modulesToIndex.split( "," ) );
+    }
+
+    // ...
+}
+----
+
+`hasArguments()` must return true as our option has one more argument (_for-modules_) besides the option value itself.
+In `configure()` we receive the value for the plug-in option itself (indicating the target module for the index)
+and the value for the _for-modules_ argument, indicating the name(s) of the modules to be indexed.
+
+By implementing `getDescription()` and `getArgumentsDescription()`,
+a description of the plug-in and its arguments will be displayed when invoking _jlink --list-plugins_:
+
+[source,java]
+----
+@Override
+public String getDescription() {
+    return "Adds an annotation index for one or more modules." + System.lineSeparator() +
+            "<target-module>: name of the module which will host the index" + System.lineSeparator() +
+            "<source-module-list>: comma-separated list of modules to include within the index";
+}
+
+@Override
+public String getArgumentsDescription() {
+    return "<target-module>:for-modules=<source-module-list>";
+}
+----
+
+Finally, it's time for implementing the actual logic of the plug-in itself.
+This is done within the `transform()` method, which receives a pool of resources to be added to the runtime image.
+This resource pool can be visited, building up a new pool via the passed `ResourcePoolBuilder`, while doing so.
+We may either pass on resources unmodified, alter or drop them or even add completely new resources.
+The contents of a resource pool entry can be access via `content()` which returns an `InputStream`,
+e.g. representing class file data.
+
+In our case we traverse the input pool and pass on all resources as is.
+Classes in any of the configured source modules are added to an annotation index.
+This index is created with help of the https://github.com/wildfly/jandex[Jandex] library,
+which also is used by the http://wildfly.org/[WildFly] application server to speed up annotation retrieval.
+
+Ultimately, the annotation index is added as an additional resource within the configured target module
+(note that any exception handling has been omitted from this snippet for the sake of brevity):
+
+[source,java]
+----
+@Override
+public ResourcePool transform(ResourcePool in, ResourcePoolBuilder out) {
+    Indexer indexer = new Indexer();
+
+    in.transformAndCopy(
+        e -> {
+            // is it a class file in any of the source modules?
+            if ( addToIndex( e ) ) {
+                indexer.index( e.content() );
+            }
+
+            return e;
+        },
+        out
+    );
+
+    // write the index to a byte array and add it to /META-INF/jandex.idx in the target module
+    byte[] index = writeToOutputStream( indexer ).toByteArray();
+    out.add( ResourcePoolEntry.create( "/" + targetModule + "/META-INF/jandex.idx", index ) );
+
+    return out.build();
+}
+
+private boolean addToIndex(ResourcePoolEntry entry) {
+    if ( !entry.path().endsWith( "class" ) ) {
+        return false;
+    }
+
+    for ( String moduleToIndex : modules ) {
+        if ( entry.path().startsWith( "/" + moduleToIndex ) ) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+private ByteArrayOutputStream writeToOutputStream(Indexer indexer) {
+    ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+    Index index = indexer.complete();
+    IndexWriter writer = new IndexWriter( outStream );
+
+    writer.write(index);
+    outStream.close();
+
+    return outStream;
+}
+----
+
+== Running jlink With the Annotation Index Plug-in
+
+Having created the jlink plug-in, it's time to see it in action.
+This is where things become a bit tricky, though.
+Remember the _--add-exports_ option used for compilation above?
+The same will be needed when running _jlink_, but unfortunately this option isn't supported by the tool.
+
+=== Trick 1: The jlink Wrapper
+
+So how can we make sure that the module containing our plug-in can "see" the `Plugin` interface at runtime?
+The new `ToolProvider` SPI of Java 9 (which link:/2017/12/06/06-calling-jdk-tools-programmatically-on-java-9/[we've discussed] on this blog recently) comes in handy for that.
+This SPI allows to call all the JDK tools programmatically, running within the same process.
+We can leverage that SPI by creating a simple wrapper around jlink,
+whose only purpose is to receive additional arguments which aren't supported by the _jlink_ binary itself:
+
+[source,java]
+----
+public class JLinkWrapper {
+
+    public static void main(String[] args) {
+        Optional<ToolProvider> jlink = ToolProvider.findFirst( "jlink" );
+
+        jlink.get().run(
+                System.out,
+                System.err,
+                args
+        );
+    }
+}
+----
+
+By calling this wrapper instead of of _jlink_ directly, also other options such as _-Xdebug_ could be passed, if needed.
+
+=== Trick 2: The Java Agent
+
+With the wrapper around jlink in place, one might think that passing the _--add-exports_
+will eventually get us to our goal of calling jlink with our custom plug-in.
+There's one more issue to resolve though, and this is related to how plug-ins are discovered by jlink.
+This is done using the https://docs.oracle.com/javase/tutorial/ext/basics/spi.html[service loader] mechanism,
+so the natural way for exposing our plug-in would be to add the following line to the descriptor of our module:
+
+[source,java]
+----
+...
+provides jdk.tools.jlink.plugin.Plugin with org.hibernate.demos.jlink.plugins.AddIndexPlugin;
+...
+----
+
+Unfortunately, this doesn't work, though.
+The reason being that the service binding (i.e. processing of the `provides` clause above)
+is done by the platform http://mail.openjdk.java.net/pipermail/jigsaw-dev/2017-November/013333.html[before it handles] the _--add-exports_ option.
+This results in an error during service binding, as `Plugin` isn't exported to our module and we therefore cannot provide an implementation for it.
+
+So it seems that we're back to square 1.
+There's one loophole, though, which is the https://docs.oracle.com/javase/9/docs/api/index.html?java/lang/instrument/package-summary.html[Java Agent API].
+By implementing and registering a small agent, we get a bit more flexibility for amending module exports and provided services.
+This allows us to perform the required steps in the correct order:
+
+[source,java]
+----
+public class JLinkPluginRegistrationAgent {
+
+    public static void premain(String agentArgs, Instrumentation inst) throws Exception {
+        Module jlinkModule = ModuleLayer.boot().findModule( "jdk.jlink" ).get();
+        Module addIndexModule = ModuleLayer.boot().findModule( "org.hibernate.demos.jlink" ).get();
+
+        Map<String, Set<Module>> extraExports = new HashMap<>();
+        extraExports.put( "jdk.tools.jlink.plugin", Collections.singleton( addIndexModule ) );
+
+        // alter jdk.jlink to export its API to the module with our indexing plug-in
+        inst.redefineModule(
+                jlinkModule, Collections.emptySet(), extraExports, Collections.emptyMap(),
+                Collections.emptySet(), Collections.emptyMap()
+        );
+
+        Class<?> pluginClass = jlinkModule.getClassLoader()
+                .loadClass( "jdk.tools.jlink.plugin.Plugin" );
+        Class<?> addIndexPluginClass = addIndexModule.getClassLoader()
+                .loadClass( "org.hibernate.demos.jlink.plugins.AddIndexPlugin" );
+
+        Map<Class<?>, List<Class<?>>> extraProvides = new HashMap<>();
+        extraProvides.put( pluginClass, Collections.singletonList( addIndexPluginClass ) );
+
+        // alter the module with the indexing plug-in so it provides the plug-in as a service
+        inst.redefineModule(
+                addIndexModule, Collections.emptySet(), Collections.emptyMap(),
+                Collections.emptyMap(), Collections.emptySet(), extraProvides
+        );
+    }
+}
+----
+
+In the agent's `premain()` method we first amend the exports of the `jdk.jlink` module
+so that it exports the `jdk.tools.jlink.plugin` package to the module with our custom plug-in.
+Then we amend the descriptor of this module to provide an implementation of the `Plugin`
+service contract.
+
+And with that we finally can run jlink (via our wrapper) with our custom plug-in:
+
+[source]
+----
+java -javaagent:path/to/jlink-agent.jar \
+    --module-path path/to/modules \
+    --module org.hibernate.demos.jlink/org.hibernate.demos.jlink.JLinkWrapper \
+    --module-path $JAVA_HOME/jmods/:path/to/modules \
+    --add-modules com.example.b \
+    --output path/to/jlink-image \
+    --add-index=com.example.b:for-modules=com.example.a
+----
+
+Note that `JLinkWrapper` is the executed main class here.
+All arguments after _--module_ are passed to its `main()` method,
+which in turn passes them on to the programmatically launched jlink tool.
+
+== Using the Index
+
+As a last step let's take a look at some code within the `com.example.b` module,
+which makes use of the generated annotation index:
+
+[source,java]
+----
+public class Main {
+
+    public static void main(String[] args) throws Exception {
+        try (InputStream input = Main.class.getResourceAsStream( "/META-INF/jandex.idx" ) ) {
+            IndexReader reader = new IndexReader( input );
+            Index index = reader.read();
+
+            List<AnnotationInstance> entityInstances = index.getAnnotations(
+                DotName.createSimple( "com.example.a.Entity" )
+            );
+
+            for (AnnotationInstance annotationInstance : entityInstances) {
+                System.out.println( annotationInstance.target().asClass().name() );
+            }
+        }
+    }
+}
+----
+
+Here we open the index which has been generated and injected via our custom plug-in and simply print out all classes annotated with `@Entity`.
+Of course this requires that the Jandex library is part of the runtime image, too.
+As Jandex isn't a Java 9 module yet at this point, we can use https://github.com/moditect/moditect[ModiTect] for adding a descriptor on the fly
+(ModiTect is a side-project I've started to facilitate the work with Java 9 modules and modular runtime images).
+
+== Summary
+
+In this post we've demonstrated how to create custom plug-ins for the jlink tool introduced in Java 9.
+
+jlink allows you to create fully self-contained runtime images containing your application, its dependencies and the JDK modules it requires.
+The plug-in API of jlink allows to adjust runtime images as they are created,
+e.g. by adding an annotation index as show in the example above.
+But there are many more potential use cases for that API,
+so it'd be great if that API were promoted to an offically supported public API in one of the next JDK releases.
+
+For sure it'd be very helpful to let the JDK team know about your use cases for this API and your findings from explorations as the one conducted here.
+
+You can find a https://github.com/hibernate/hibernate-demos/tree/master/java9/custom-jlink-plugin[complete example] with the annotation index plug-in in the https://github.com/hibernate/hibernate-demos[Hibernate demos repository].
+The project contains a module for the plug-in, a module for the agent,
+one example module which will be added to the index, one example module which will contain the generated index
+and one integration test module.
+The integration test first runs jlink with the annotation index plug-in and then runs the generated runtime image,
+asserting the standard output of the second example module, which should contain the names of an expected set of "entities" contained in the first example module.
+
+Many thanks to Alan Bateman and Remi Forax for their help while exploring the jlink API!
