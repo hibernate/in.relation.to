@@ -1,0 +1,459 @@
+= "How to add a new constraint to Hibernate Validator engine in a few simple steps"
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+This post will be useful to those who have some interesting custom http://beanvalidation.org[Bean Validation]
+constraints which can be shared and used by others. There are a couple of nice benefits when
+constraints are part of Hibernate Validator engine rather than standalone ones:
+
+- Such constraints do not need to be supported inside an application or to be included in additional dependency.
+The only needed dependency is Hibernate Validator which would provide both a constraint
+as well as Bean Validation provider implementation.
+- They get Hibernate Validator Annotation Processor support. This annotation processor can scan
+classes during compilation and provide warnings/errors when constraint annotations are
+used inappropriately. This helps to spot possible problems during the compile time and not wait
+for runtime errors.
+-  https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-programmatic-api[A programmatic constraint definition]
+is available for constraints which are not part of the engine. BUT! Since this is a feature specific to
+Hibernate Validator, other Bean Validation providers cannot be used with it.
+- Last but definitely not least, it becomes possible for such constraints to get additional required
+functionality on the engine level, such as Hibernate Validator's `ScriptEvaluator` to evaluate a script
+which is required by `@ScriptAssert` and `@ParameterScriptAssert`, or some additional configuration
+property like the newly introduced `temporalValidationTolerance` which is used in temporal constraints
+when comparing temporal instances.
+
+For the purposes of this post a new constraint annotation to check if a given `String`
+is a https://en.wikipedia.org/wiki/International_Standard_Book_Number[valid ISBN]
+will be created.
+
+== Add constraint annotation and validator
+
+The first main step is to create the constraint itself with corresponding validators and
+register them in the engine.
+
+=== Add constraint annotation
+
+In order to do this, first a new constraint annotation should be created. In our case it will be called
+`@ISBN` and have one attribute of its own, `type`, which would define if the ISBN under inspection is
+ISBN 10 or ISBN 13.
+
+```java
+/**
+ * Checks that the annotated character sequence is a valid
+ * <a href="https://en.wikipedia.org/wiki/International_Standard_Book_Number">ISBN</a>.
+ * The length of the number and the check digit are both verified.
+ * <p>
+ * The supported type is {@code CharSequence}. {@code null} is considered valid.
+ * <p>
+ * During validation all non ISBN characters are ignored. All digits and 'X' are considered
+ * to be valid ISBN characters. This is useful when validating ISBN with dashes separating
+ * parts of the number (ex. {@code 978-161-729-045-9}).
+ */
+@Documented
+@Constraint(validatedBy = { })
+@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+@Retention(RUNTIME)
+@Repeatable(List.class)
+@ReportAsSingleViolation
+public @interface ISBN {
+    String message() default "{org.hibernate.validator.constraints.ISBN.message}";
+
+    Class<?>[] groups() default { };
+
+    Class<? extends Payload>[] payload() default { };
+
+    Type type() default Type.ISBN13;
+
+    /**
+     * Defines several {@code @ISBN} annotations on the same element.
+     */
+    @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
+    @Retention(RUNTIME)
+    @Documented
+    public @interface List {
+        ISBN[] value();
+    }
+
+    /**
+     * Defines the ISBN length. Valid lengths of ISBNs are {@code 10} and {@code 13}
+     * which are represented as {@link Type#ISBN10} and {@link Type#ISBN13} correspondingly.
+     */
+    enum Type {
+        ISBN10,
+        ISBN13
+    }
+}
+```
+
+Looking at this code snippet, it is worth to emphasize the following:
+
+- An empty array as `validatedBy` parameter in `@Constraint`. There is no need to declare
+any validators here as they will be registered in the engine directly.
+- Key for default message is in a format `{org.hibernate.validator.constraints.${nameOfConstraint}.message}`,
+where `${nameOfConstraint}` should be replaced with the same string as the name of constraint.
+- If applicable, a `@Repeatable` should be defined.
+- New constraints are added to `org.hibernate.validator.constraints` package or its subpackages.
+- It is important to add a javadoc describing what kind of checks are performed by the constraint
+as well as to which types it is applicable.
+
+=== Add constraint validator
+
+Having the annotation in place, corresponding validators can now be implemented. `ConstraintValidator`
+interface should be implemented for each pair of constraint and applicable type. In case of `@ISBN`,
+it is only `CharacterSequence`. As this will be a constraint specific to Hibernate Validator, its
+validators should be placed in `org.hibernate.validator.internal.constraintvalidators.hv` package.
+A possible implementation for `ISBNValidator` can be the following:
+
+```java
+public class ISBNValidator implements ConstraintValidator<ISBN, CharSequence> {
+
+    /**
+     * Pattern to replace all non ISBN characters. ISBN can have digits or 'X'.
+     */
+    private static Pattern NON_ISBN_CHARACTERS = Pattern.compile( "[^\\dX]" );
+
+    private int length;
+
+    private Function<String, Boolean> checkChecksumFunction;
+
+    @Override
+    public void initialize(ISBN constraintAnnotation) {
+        switch ( constraintAnnotation.type() ) {
+            case ISBN10:
+                length = 10;
+                checkChecksumFunction = this::checkChecksumISBN10;
+                break;
+            case ISBN13:
+                length = 13;
+                checkChecksumFunction = this::checkChecksumISBN13;
+                break;
+        }
+    }
+
+    @Override
+    public boolean isValid(CharSequence isbn, ConstraintValidatorContext context) {
+        if ( isbn == null ) {
+            return true;
+        }
+
+        // Replace all non-digit (or !=X) chars
+        String digits = NON_ISBN_CHARACTERS.matcher( isbn ).replaceAll( "" );
+
+        // Check if the length of resulting string matches the expecting one
+        if ( digits.length() != length ) {
+            return false;
+        }
+
+        return checkChecksumFunction.apply( digits );
+    }
+    // check algorithm details are omitted here.
+}
+```
+
+There is really no difference between constraint validators implemented as part of the
+engine, or the ones implemented outside of it. For more details on constraint validator
+implementation see the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-constraint-validator[documentation].
+
+=== Register validator
+
+Now that the validator implementation is in place, it should be registered somehow. When a constraint is
+a part of the engine, there is no need to declare it in `validatedBy` attribute or to use the ServiceLoader
+mechanism as described in this http://in.relation.to/2017/03/02/adding-custom-constraint-definitions-via-the-java-service-loader/[post].
+Instead it should be registered directly in `ConstraintHelper` constructor by adding the following line:
+
+```java
+putConstraint( tmpConstraints, ISBN.class, ISBNValidator.class );
+```
+
+It is preferred to keep these declarations of available validators in alphabetical order
+of constraints.
+
+In case of `ISBN` example, there is only one validator, but it is also possible to register
+multiple ones for the same constraint, using the `ConstraintHelper#putConstraints()` method as follows:
+
+```java
+putConstraints( tmpConstraints, ISBN.class, Arrays.asList(
+        ISBNValidatorForCharacterSequence.class,
+        ISBNValidatorForSomeOtherClass.class,
+        ....
+        ISBNValidatorForSomeAnotherClass.class
+) );
+```
+
+=== Add default message to resource bundle
+
+Message keys in `ValidationMessages.properties` are kept in alphabetical order within groups.
+A default message (in English) must always be added:
+
+```
+org.hibernate.validator.constraints.Email.message   ...
+org.hibernate.validator.constraints.ISBN.message    = invalid ISBN number
+org.hibernate.validator.constraints.Length.message  ...
+```
+
+It is also much appreciated when a translation is added to other language files, if a reliable
+one can be provided.
+
+=== Test it all
+
+There should be two kinds of tests added for a new constraint. First, all constraint validator
+implementations should be tested to make sure that the checks in them are giving the expected
+results. These tests are added to `org.hibernate.validator.test.internal.constraintvalidators.hv`
+package. Both positive and negative scenarios should be present:
+
+```java
+private ISBNValidator validator;
+
+@BeforeMethod
+public void setUp() throws Exception {
+    validator = new ISBNValidator();
+}
+
+@Test
+public void validISBN10() throws Exception {
+    validator.initialize( initializeAnnotation( ISBN.Type.ISBN10 ) );
+
+    assertValidISBN( null );
+    assertValidISBN( "99921-58-10-7" );
+    assertValidISBN( "9971-5-0210-0" );
+    assertValidISBN( "960-425-059-0" );
+    assertValidISBN( "0-9752298-0-X" );
+    //... more positive cases
+}
+
+@Test
+public void invalidISBN10() throws Exception {
+    validator.initialize( initializeAnnotation( ISBN.Type.ISBN10 ) );
+
+    // invalid check-digit
+    assertInvalidISBN( "99921-58-10-8" );
+    assertInvalidISBN( "9971-5-0210-1" );
+    assertInvalidISBN( "960-425-059-2" );
+    assertInvalidISBN( "80-902734-1-8" );
+    // ... more negative cases
+
+    // invalid length
+    assertInvalidISBN( "" );
+    assertInvalidISBN( "978-0-5" );
+    assertInvalidISBN( "978-0-55555555555555" );
+    // ... more negative cases
+}
+
+private ISBN initializeAnnotation(ISBN.Type type) {
+    ConstraintAnnotationDescriptor.Builder<ISBN> descriptorBuilder = new ConstraintAnnotationDescriptor.Builder<>( ISBN.class );
+    descriptorBuilder.setAttribute( "type", type );
+    return descriptorBuilder.build().getAnnotation();
+}
+```
+
+Because `@ISBN` constraint has a `type` attribute, behavior of which should be tested, and because
+`ConstraintValidator` requires an annotation to be passed to init method, the `ConstraintAnnotationDescriptor.Builder`
+can be used to create an annotation proxy, as shown in `initializeAnnotation` method of
+the above example.
+
+These tests ensure that validators work correctly. But it is also required to make sure
+that new constraint and its validators are registered and picked up by the engine. This
+second kind of tests is added to `org.hibernate.validator.test.constraints.annotations.hv`
+package and is extended from `AbstractConstrainedTest`. A simple bean with new constraint
+applied to allowed types and at allowed places (field/method return value/etc.) should be
+added as a `private` `static` class of that test. And `Validator#validate()` method should
+be called with the instance of such bean as parameter, to make sure that new constraint works.
+
+An example of such test for the `@ISBN` constraint can be as follows:
+
+```java
+public class ISBNConstrainedTest extends AbstractConstrainedTest {
+
+    @Test
+    public void testISBN() {
+        Foo foo = new Foo( "978-1-56619-909-4" );
+        Set<ConstraintViolation<Foo>> violations = validator.validate( foo );
+        assertNoViolations( violations );
+    }
+
+    @Test
+    public void testISBNInvalid() {
+        Foo foo = new Foo( "5412-3456-7890" );
+        Set<ConstraintViolation<Foo>> violations = validator.validate( foo );
+        assertThat( violations ).containsOnlyViolations(
+                violationOf( ISBN.class ).withMessage( "invalid ISBN number" )
+        );
+    }
+
+    private static class Foo {
+        @ISBN
+        private final String number;
+
+        public Foo(String number) {
+            this.number = number;
+        }
+    }
+}
+```
+
+To make assertions on constraint violations, `ConstraintViolationAssert` assertion class
+is used. It includes `ConstraintViolationAssert#assertNoViolations()` which will check that
+passed set of constraint violations is empty. It also has `ConstraintViolationAssert#assertThat()`
+method which receives a set of violations and returns `ConstraintViolationSetAssert`
+which provides a rich API to perform assertions on violations. For purposes of the `ConstrainedTest`
+it is enough to check that the expected violations are present with the expected message
+(see `ISBNConstrainedTest#testISBNInvalid()` above).
+
+NOTE: Preferably, `@TestForIssue` annotation should be added to all tests written for a
+constraint. This annotation can either be applied to a test method or to a test class.
+It has just one parameter - `jiraKey` which helps to link back a test to a corresponding
+JIRA ticket (for example `@TestForIssue(jiraKey = "HV-{number}")` where `{number}` is a
+number of the corresponding JIRA ticket).
+
+== Add programmatic definition
+
+The second main step is to add a programmatic definition for a new constraint. The definition
+itself is added to `org.hibernate.validator.cfg.defs` package. It should extended
+`ConstraintDef` and provide methods which allow to specify all constraint-specific
+attributes:
+
+```java
+public class ISBNDef extends ConstraintDef<ISBNDef, ISBN> {
+
+    public ISBNDef() {
+        super( ISBN.class );
+    }
+
+    public ISBNDef type(ISBN.Type type) {
+        addParameter( "type", type );
+        return this;
+    }
+}
+```
+
+Names of methods in `YourConstraintDef` should match the names of the corresponding annotation
+attributes. Methods also should allow chaining so that constraint definition can be initialized
+in one go, hence they should return `this`.
+
+Importantly, these programmatic definitions should provide a fluent API and, in more complicated
+cases where constraint annotation attributes are other annotations, such annotations should also
+be represented as `Def` classes. In case of attribute annotation, its `Def` class should extend
+`AnnotationDef`. See, for example, https://docs.jboss.org/hibernate/stable/validator/api/org/hibernate/validator/cfg/defs/SafeHtmlDef.html[SafeHtmlDef]
+and its attributes.
+
+Programmatic definition should also be tested. Based on its complexity and the amount of
+tests needed, they can either be included into the validator test class (in case of the
+`ISBN` example - into `ISBNValidatorTest`) or have their own test class within the same package.
+
+A simple programmatic constraint test requires a bean to which new constraint can be applied
+and a test applying it:
+
+```java
+@Test
+public void testProgrammaticDefinition() throws Exception {
+    HibernateValidatorConfiguration config = getConfiguration( HibernateValidator.class );
+    ConstraintMapping mapping = config.createConstraintMapping();
+    mapping.type( Book.class )
+            .property( "isbn", FIELD )
+            .constraint( new ISBNDef().type( ISBN.Type.ISBN13 ) );
+    config.addMapping( mapping );
+    Validator validator = config.buildValidatorFactory().getValidator();
+
+    Set<ConstraintViolation<Book>> constraintViolations = validator.validate( new Book( "978-0-54560-495-6" ) );
+    assertNoViolations( constraintViolations );
+
+    constraintViolations = validator.validate( new Book( "978-0-54560-495-7" ) );
+    assertThat( constraintViolations ).containsOnlyViolations(
+            violationOf( ISBN.class )
+    );
+}
+
+private static class Book {
+
+    private final String isbn;
+
+    private Book(String isbn) {
+        this.isbn = isbn;
+    }
+}
+```
+
+== Add annotation processor support
+
+In the third step, a new constraint should also be registered within https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-annotation-processor[annotation processor]
+types:
+
+- First, the new constraint should be added to `TypeNames.HibernateValidatorTypes` in alphabetical
+order:
+
+```java
+public static final String EMAIL = ....
+public static final String ISBN = ORG_HIBERNATE_VALIDATOR_CONSTRAINTS + ".ISBN";
+public static final String LENGTH = ....
+```
+
+- Then this constraint, together with all types to which it can be applied, should be registered in `ConstraintHelper`
+constructor of the annotation processor:
+
+```java
+registerAllowedTypesForBuiltInConstraint( HibernateValidatorTypes.EMAIL, ....
+registerAllowedTypesForBuiltInConstraint( HibernateValidatorTypes.ISBN, CharSequence.class );
+registerAllowedTypesForBuiltInConstraint( HibernateValidatorTypes.LENGTH, ....
+```
+
+- To make sure that constraint is registered correctly, a simple test should be added to
+`ConstraintValidationProcessorTest`:
+
+```java
+/**
+ * Simple bean that has both correct and incorrect usages of ISBN constraint.
+ */
+public class ModelWithISBNConstraints {
+    @ISBN private String string;
+    @ISBN private CharSequence charSequence;
+    @ISBN private Integer integer;
+}
+
+public class ConstraintValidationProcessorTest extends ConstraintValidationProcessorTestBase {
+    // ...
+
+    @Test
+    public void isbnConstraints() {
+        File[] sourceFiles = new File[] {
+                compilerHelper.getSourceFile( ModelWithISBNConstraints.class )
+        };
+
+        boolean compilationResult =
+                compilerHelper.compile( new ConstraintValidationProcessor(), diagnostics, false, true, sourceFiles );
+
+        assertFalse( compilationResult );
+        assertThatDiagnosticsMatch(
+                diagnostics,
+                new DiagnosticExpectation( Kind.ERROR, 22 )
+        );
+    }
+}
+```
+
+== Add documentation
+
+Finally, to finish adding a new constraint to Hibernate Validator engine, documentation for this constraint
+should be added to the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single[reference guide].
+
+A new list item should be added in the second chapter under https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-defineconstraints-hv-constraints[Additional constraints],
+similar to the following one:
+```
+`@ISBN`:: Checks that the annotated character sequence is a valid https://en.wikipedia.org/wiki/International_Standard_Book_Number[ISBN]. `type` determines the type of ISBN. The default is ISBN-13.
+    Supported data types::: `CharSequence`
+    Hibernate metadata impact::: None
+```
+It should describe the purpose of the constraint, what can be specified by constraint attributes,
+and to which types it can be applied. List of additional constraints is ordered alphabetically.
+
+== Conclusion
+
+The complete code used throughout this post as an example is available on https://github.com/hibernate/hibernate-validator/pull/893[Github].
+
+This post provided step by step instructions for adding a new constraint to Hibernate Validator.
+
+NOTE: One more thing, not mentioned in the post. Although this isn't necessarily needed, it is recommend
+discussing new constraints before jumping right to their implementation. The discussion could be carried
+out either at our https://hibernate.atlassian.net/projects/HV/summary[JIRA] (in a new ticket created for
+the specific constraint in mind) or via the https://lists.jboss.org/mailman/listinfo/hibernate-dev[mailing list].
