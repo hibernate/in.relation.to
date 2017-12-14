@@ -1,0 +1,79 @@
+= "Hibernate Validator 6.0.7.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.7.Final
+---
+
+We just released the {released-version} version of Hibernate Validator containing a couple of enhancements.
+
+This is a recommended upgrade for everyone using Hibernate Validator 6.0.x and it is a drop-in replacement of 6.0.5.Final.
+
+== Bean Validation 2.0.1.Final
+
+We spotted a small issue in `ConstraintViolationException` while working on upgrading RESTEasy to Bean Validation 2.0 and we fixed it right away.
+
+We released a new version of the API, the TCK and the reference implementation to address this issue.
+
+== Upgrading Hibernate Validator in WildFly
+
+One of the goals of this release is to upgrade Hibernate Validator in the upcoming WildFly 12 release.
+
+As WildFly was still using 5.3.x, some of the APIs we deprecated in 5.4 and removed in 6.0 were never marked as deprecated in WildFly. We decided to bring back these APIs in 6.0.6 to ease up the migration for our WildFly users. These APIs are marked for removal so you should consider using their replacement (see our https://developer.jboss.org/wiki/HibernateValidatorMigrationGuide[migration guide]).
+
+== What's new
+
+=== `ISBN` constraint
+
+https://github.com/marko-bekhta[Marko] is working on a blog post (stay tuned!) to explain how to contribute a new constraint to Hibernate Validator.
+
+To illustrate this article, he worked on a `ISBN` (https://en.wikipedia.org/wiki/International_Standard_Book_Number[International Standard Book Number]) constraint that we decided to include in Hibernate Validator.
+
+[source, JAVA]
+----
+@ISBN
+private String isbn;
+----
+
+=== Call for constraints
+
+The whole purpose of this upcoming blog post is to start integrating more constraints into Hibernate Validator itself.
+
+So if you have developed constraints that you think might be useful to others, feel free to reach out on mailto:hibernate-dev@lists.jboss.org[our mailing list] so that we can discuss their inclusion.
+
+=== Further performance improvements
+
+While working on an upcoming change, we also made a couple of further performance improvements: Hibernate Validator is faster than ever.
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:{released-version}_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-10.1.0.Final-patch.zip[WildFly 10.1] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-11.0.0.Final-patch.zip[WildFly 11.0] (wait for the synchronization to Maven Central). You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== Where is 6.0.6.Final?
+
+6.0.6.Final was released to Central but not announced as we spotted the Bean Validation issue just after deploying it.
+
+== What's next?
+
+We will continue to release maintenance releases to fix quickly the issues reported by our users.
+
+We updated http://hibernate.org/validator/roadmap/[our roadmap] with the ideas we have for the future. If you want to join us, don't hesitate to pick a task and come discuss it with us.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://forum.hibernate.org/viewforum.php?f=31[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
