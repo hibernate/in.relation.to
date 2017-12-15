@@ -197,6 +197,10 @@ The same will be needed when running _jlink_, but unfortunately this option isn'
 
 === Trick 1: The jlink Wrapper
 
+_**Update:** As I learned from Alan Bateman, all the VM options actually *can* be passed to jlink (and other JDK tools) in the form of `-J-javaoption`, e.g. `-J\--module-path=\...`._
+_Therefore the wrapper described in the following actually isn't needed._
+_I'm leaving the section here for future reference, but you can safely skip it and continue reading link:#trick-2-the-java-agent[here]._
+
 So how can we make sure that the module containing our plug-in can "see" the `Plugin` interface at runtime?
 The new `ToolProvider` SPI of Java 9 (which link:/2017/12/06/06-calling-jdk-tools-programmatically-on-java-9/[we've discussed] on this blog recently) comes in handy for that.
 This SPI allows to call all the JDK tools programmatically, running within the same process.
@@ -223,7 +227,7 @@ By calling this wrapper instead of of _jlink_ directly, also other options such 
 
 === Trick 2: The Java Agent
 
-With the wrapper around jlink in place, one might think that passing the _--add-exports_
+With the wrapper around jlink in place, one might think that passing the _--add-exports_ option (well, _-J\--add-exports_)
 will eventually get us to our goal of calling jlink with our custom plug-in.
 There's one more issue to resolve though, and this is related to how plug-ins are discovered by jlink.
 This is done using the https://docs.oracle.com/javase/tutorial/ext/basics/spi.html[service loader] mechanism,
@@ -284,6 +288,24 @@ In the agent's `premain()` method we first amend the exports of the `jdk.jlink` 
 so that it exports the `jdk.tools.jlink.plugin` package to the module with our custom plug-in.
 Then we amend the descriptor of this module to provide an implementation of the `Plugin`
 service contract.
+
+And with that we finally can run jlink with our custom plug-in:
+
+[source]
+----
+$JAVA_HOME/bin/jlink -J-javaagent:path/to/jlink-agent.jar \
+    -J--module-path=path/to/modules \
+    -J--add-modules=org.hibernate.demos.jlink \
+    --module-path=$JAVA_HOME/jmods/:path/to/modules \
+    --add-modules com.example.b \
+    --output integrationtest/target/jlink-image \
+    --add-index=com.example.b:for-modules=com.example.a
+----
+
+All the `-J` arguments are passed to the VM launched by _jlink_, whereas all the other arguments apply to the jlink tool itself.
+
+_Update: The following invocation applied to the `JLinkWrapper` class, which actually isn't needed as pointed out before._
+_Just invoke jlink directly as shown above._
 
 And with that we finally can run jlink (via our wrapper) with our custom plug-in:
 
