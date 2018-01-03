@@ -4,31 +4,41 @@ Marko Bekhta
 :awestruct-layout: blog-post
 ---
 
-This post will be useful to those who have some interesting custom http://beanvalidation.org[Bean Validation]
-constraints which can be shared and used by others. There are a couple of nice benefits when
-constraints are part of Hibernate Validator engine rather than standalone ones:
+We used to be very conservative on the constraints included in Hibernate Validator but we changed
+this policy recently and we would like to have more constraints built-in.
 
-- Such constraints do not need to be supported inside an application or to be included in additional dependency.
-The only needed dependency is Hibernate Validator which would provide both a constraint
-as well as Bean Validation provider implementation.
+Of course, we won't accept everything: the proposed constraints needs to be of general usage and well
+defined but the idea is to have more features in Hibernate Validator out of the box.
+
+This post will be useful to those who have some interesting custom http://beanvalidation.org/[Bean Validation]
+constraints and want to share them with the community.
+
+There are a couple of nice benefits when constraints are part of Hibernate Validator rather than
+standalone ones:
+
+- All the Hibernate Validator users can benefit from these constraints. They are well documented and easy
+to find.
+- These constraints are maintained by the whole team and follow the evolution of Hibernate Validator.
 - They get Hibernate Validator Annotation Processor support. This annotation processor can scan
 classes during compilation and provide warnings/errors when constraint annotations are
-used inappropriately. This helps to spot possible problems during the compile time and not wait
-for runtime errors.
--  https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-programmatic-api[A programmatic constraint definition]
-is available for constraints which are not part of the engine. BUT! Since this is a feature specific to
-Hibernate Validator, other Bean Validation providers cannot be used with it.
+used inappropriately. This helps to spot possible problems at compilation and avoid runtime errors.
+- https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-programmatic-api[A programmatic constraint definition]
+is available for constraints which are part of the engine.
 - Last but definitely not least, it becomes possible for such constraints to get additional required
 functionality on the engine level, such as Hibernate Validator's `ScriptEvaluator` to evaluate a script
 which is required by `@ScriptAssert` and `@ParameterScriptAssert`, or some additional configuration
 property like the newly introduced `temporalValidationTolerance` which is used in temporal constraints
 when comparing temporal instances.
 
-For the purposes of this post a new constraint annotation to check if a given `String`
-is a https://en.wikipedia.org/wiki/International_Standard_Book_Number[valid ISBN]
+For the purposes of this post, a new constraint annotation to check if a given `String`
+is a valid https://en.wikipedia.org/wiki/International_Standard_Book_Number[ISBN]
 will be created.
 
-== Add constraint annotation and validator
+This very constraint has now been included into Hibernate Validator.
+
+== Step 1 - Add constraint annotation and validator
+
+**Commit:** https://github.com/hibernate/hibernate-validator/commit/5ba6668ef0725db718d98a9f34cb9cd4bcaa4a3e
 
 The first main step is to create the constraint itself with corresponding validators and
 register them in the engine.
@@ -50,13 +60,15 @@ ISBN 10 or ISBN 13.
  * During validation all non ISBN characters are ignored. All digits and 'X' are considered
  * to be valid ISBN characters. This is useful when validating ISBN with dashes separating
  * parts of the number (ex. {@code 978-161-729-045-9}).
+ *
+ * @author Marko Bekhta
+ * @since 6.0.6
  */
 @Documented
 @Constraint(validatedBy = { })
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE })
 @Retention(RUNTIME)
 @Repeatable(List.class)
-@ReportAsSingleViolation
 public @interface ISBN {
     String message() default "{org.hibernate.validator.constraints.ISBN.message}";
 
@@ -87,22 +99,23 @@ public @interface ISBN {
 }
 ```
 
-Looking at this code snippet, it is worth to emphasize the following:
+Looking at this code snippet, it is worth emphasizing the following:
 
 - An empty array as `validatedBy` parameter in `@Constraint`. There is no need to declare
 any validators here as they will be registered in the engine directly.
-- Key for default message is in a format `{org.hibernate.validator.constraints.${nameOfConstraint}.message}`,
+- Key for default message is in the format `{org.hibernate.validator.constraints.${nameOfConstraint}.message}`,
 where `${nameOfConstraint}` should be replaced with the same string as the name of constraint.
-- If applicable, a `@Repeatable` should be defined.
+- If applicable, a `@Repeatable` annotation should be defined.
 - New constraints are added to `org.hibernate.validator.constraints` package or its subpackages.
 - It is important to add a javadoc describing what kind of checks are performed by the constraint
 as well as to which types it is applicable.
+- A `@since` tag should specify the version in which we introduce the constraint.
 
 === Add constraint validator
 
 Having the annotation in place, corresponding validators can now be implemented. `ConstraintValidator`
 interface should be implemented for each pair of constraint and applicable type. In case of `@ISBN`,
-it is only `CharacterSequence`. As this will be a constraint specific to Hibernate Validator, its
+it is only `CharSequence`. As this will be a constraint specific to Hibernate Validator, its
 validators should be placed in `org.hibernate.validator.internal.constraintvalidators.hv` package.
 A possible implementation for `ISBNValidator` can be the following:
 
@@ -156,12 +169,12 @@ There is really no difference between constraint validators implemented as part 
 engine, or the ones implemented outside of it. For more details on constraint validator
 implementation see the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-constraint-validator[documentation].
 
-=== Register validator
+=== Register the validator
 
 Now that the validator implementation is in place, it should be registered somehow. When a constraint is
-a part of the engine, there is no need to declare it in `validatedBy` attribute or to use the ServiceLoader
+part of the engine, there is no need to declare it in the `validatedBy` attribute or to use the `ServiceLoader`
 mechanism as described in this http://in.relation.to/2017/03/02/adding-custom-constraint-definitions-via-the-java-service-loader/[post].
-Instead it should be registered directly in `ConstraintHelper` constructor by adding the following line:
+Instead it should be registered directly in the `ConstraintHelper` constructor by adding the following line:
 
 ```java
 putConstraint( tmpConstraints, ISBN.class, ISBNValidator.class );
@@ -170,7 +183,7 @@ putConstraint( tmpConstraints, ISBN.class, ISBNValidator.class );
 It is preferred to keep these declarations of available validators in alphabetical order
 of constraints.
 
-In case of `ISBN` example, there is only one validator, but it is also possible to register
+In the case of the `ISBN` example, there is only one validator, but it is also possible to register
 multiple ones for the same constraint, using the `ConstraintHelper#putConstraints()` method as follows:
 
 ```java
@@ -182,7 +195,9 @@ putConstraints( tmpConstraints, ISBN.class, Arrays.asList(
 ) );
 ```
 
-=== Add default message to resource bundle
+You can see it in action https://github.com/hibernate/hibernate-validator/commit/5ba6668ef0725db718d98a9f34cb9cd4bcaa4a3e#diff-0b7c1166b0b643c962c8ff45bef5898bR420[here].
+
+=== Add a default message to the resource bundle
 
 Message keys in `ValidationMessages.properties` are kept in alphabetical order within groups.
 A default message (in English) must always be added:
@@ -194,13 +209,13 @@ org.hibernate.validator.constraints.Length.message  ...
 ```
 
 It is also much appreciated when a translation is added to other language files, if a reliable
-one can be provided.
+one can be provided but it's definitely not something blocking for your constraint inclusion.
 
 === Test it all
 
 There should be two kinds of tests added for a new constraint. First, all constraint validator
 implementations should be tested to make sure that the checks in them are giving the expected
-results. These tests are added to `org.hibernate.validator.test.internal.constraintvalidators.hv`
+results. These tests are added to the `org.hibernate.validator.test.internal.constraintvalidators.hv`
 package. Both positive and negative scenarios should be present:
 
 ```java
@@ -248,17 +263,17 @@ private ISBN initializeAnnotation(ISBN.Type type) {
 }
 ```
 
-Because `@ISBN` constraint has a `type` attribute, behavior of which should be tested, and because
-`ConstraintValidator` requires an annotation to be passed to init method, the `ConstraintAnnotationDescriptor.Builder`
-can be used to create an annotation proxy, as shown in `initializeAnnotation` method of
-the above example.
+Because the `@ISBN` constraint has a `type` attribute, behavior of which should be tested, and because
+`ConstraintValidator` requires an annotation to be passed to the `initialize()` method,
+the `ConstraintAnnotationDescriptor.Builder` can be used to create an annotation proxy,
+as shown in the `initializeAnnotation()` method of the above example.
 
-These tests ensure that validators work correctly. But it is also required to make sure
-that new constraint and its validators are registered and picked up by the engine. This
-second kind of tests is added to `org.hibernate.validator.test.constraints.annotations.hv`
-package and is extended from `AbstractConstrainedTest`. A simple bean with new constraint
-applied to allowed types and at allowed places (field/method return value/etc.) should be
-added as a `private` `static` class of that test. And `Validator#validate()` method should
+These tests ensure that the validators work correctly. But it is also required to make sure
+that the new constraint and its validators are registered and picked up by the engine. This
+second kind of tests is added to the `org.hibernate.validator.test.constraints.annotations.hv`
+package and is extended from `AbstractConstrainedTest`. A simple bean with the new constraint
+applied to the allowed types and at the allowed places (field/method return value/etc.) should be
+added as a `private` `static` class of that test. And the `Validator#validate()` method should
 be called with the instance of such bean as parameter, to make sure that new constraint works.
 
 An example of such test for the `@ISBN` constraint can be as follows:
@@ -293,26 +308,30 @@ public class ISBNConstrainedTest extends AbstractConstrainedTest {
 }
 ```
 
-To make assertions on constraint violations, `ConstraintViolationAssert` assertion class
-is used. It includes `ConstraintViolationAssert#assertNoViolations()` which will check that
-passed set of constraint violations is empty. It also has `ConstraintViolationAssert#assertThat()`
-method which receives a set of violations and returns `ConstraintViolationSetAssert`
-which provides a rich API to perform assertions on violations. For purposes of the `ConstrainedTest`
-it is enough to check that the expected violations are present with the expected message
-(see `ISBNConstrainedTest#testISBNInvalid()` above).
+To make assertions on constraint violations, the `ConstraintViolationAssert` assertion class
+is used. It includes `ConstraintViolationAssert#assertNoViolations()` which will check that the
+passed set of constraint violations is empty.
 
-NOTE: Preferably, `@TestForIssue` annotation should be added to all tests written for a
+It also has a `ConstraintViolationAssert#assertThat()` method which receives a set of violations
+and returns a `ConstraintViolationSetAssert` which provides a rich API to perform assertions on violations.
+
+For the purposes of the `ConstrainedTest`, it is enough to check that the expected violations are present
+with the expected message (see `ISBNConstrainedTest#testISBNInvalid()` above).
+
+NOTE: Preferably, a `@TestForIssue` annotation should be added to all tests written for a
 constraint. This annotation can either be applied to a test method or to a test class.
 It has just one parameter - `jiraKey` which helps to link back a test to a corresponding
-JIRA ticket (for example `@TestForIssue(jiraKey = "HV-{number}")` where `{number}` is a
+JIRA ticket (for example `@TestForIssue(jiraKey = "HV-{number}")` where `{number}` is the
 number of the corresponding JIRA ticket).
 
-== Add programmatic definition
+== Step 2 - Add programmatic definition
+
+**Commit:** https://github.com/hibernate/hibernate-validator/commit/91c4ed35b04c9a6a98ba9038aee514f94618fc6b
 
 The second main step is to add a programmatic definition for a new constraint. The definition
-itself is added to `org.hibernate.validator.cfg.defs` package. It should extended
-`ConstraintDef` and provide methods which allow to specify all constraint-specific
-attributes:
+itself is added to the `org.hibernate.validator.cfg.defs` package.
+It should extend `ConstraintDef` and provide methods which allow to specify all the
+constraint-specific attributes:
 
 ```java
 public class ISBNDef extends ConstraintDef<ISBNDef, ISBN> {
@@ -328,8 +347,9 @@ public class ISBNDef extends ConstraintDef<ISBNDef, ISBN> {
 }
 ```
 
-Names of methods in `YourConstraintDef` should match the names of the corresponding annotation
-attributes. Methods also should allow chaining so that constraint definition can be initialized
+The names of the methods in `YourConstraintDef` should match the names of the corresponding annotation
+attributes.
+The methods should also allow chaining so that constraint definition can be initialized
 in one go, hence they should return `this`.
 
 Importantly, these programmatic definitions should provide a fluent API and, in more complicated
@@ -375,9 +395,11 @@ private static class Book {
 }
 ```
 
-== Add annotation processor support
+== Step 3 - Add annotation processor support
 
-In the third step, a new constraint should also be registered within https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-annotation-processor[annotation processor]
+**Commit:** https://github.com/hibernate/hibernate-validator/commit/5134f1265f932ccd63fc761221e747ae5d2df03e
+
+In the third step, a new constraint should also be registered within the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-annotation-processor[annotation processor]
 types:
 
 - First, the new constraint should be added to `TypeNames.HibernateValidatorTypes` in alphabetical
@@ -432,9 +454,11 @@ public class ConstraintValidationProcessorTest extends ConstraintValidationProce
 }
 ```
 
-== Add documentation
+== Step 4 - Add documentation
 
-Finally, to finish adding a new constraint to Hibernate Validator engine, documentation for this constraint
+**Commit:** https://github.com/hibernate/hibernate-validator/commit/c7cc895f176fae499fe1fd21e3561e94c7e6bba6
+
+Finally, to finish adding a new constraint to Hibernate Validator, documentation for this constraint
 should be added to the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single[reference guide].
 
 A new list item should be added in the second chapter under https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-defineconstraints-hv-constraints[Additional constraints],
@@ -451,9 +475,14 @@ and to which types it can be applied. List of additional constraints is ordered 
 
 The complete code used throughout this post as an example is available on https://github.com/hibernate/hibernate-validator/pull/893[Github].
 
-This post provided step by step instructions for adding a new constraint to Hibernate Validator.
+This post provided step by step instructions for adding a new constraint to Hibernate Validator:
 
-NOTE: One more thing, not mentioned in the post. Although this isn't necessarily needed, it is recommend
-discussing new constraints before jumping right to their implementation. The discussion could be carried
-out either at our https://hibernate.atlassian.net/projects/HV/summary[JIRA] (in a new ticket created for
+ * Step 1 - Add constraint annotation and validator - https://github.com/hibernate/hibernate-validator/commit/5ba6668ef0725db718d98a9f34cb9cd4bcaa4a3e[commit]
+ * Step 2 - Add programmatic definition - https://github.com/hibernate/hibernate-validator/commit/91c4ed35b04c9a6a98ba9038aee514f94618fc6b[commit]
+ * Step 3 - Add annotation processor support - https://github.com/hibernate/hibernate-validator/commit/5134f1265f932ccd63fc761221e747ae5d2df03e[commit]
+ * Step 4 - Add documentation - https://github.com/hibernate/hibernate-validator/commit/c7cc895f176fae499fe1fd21e3561e94c7e6bba6[commit]
+
+NOTE: One more thing, not mentioned in the post. Although this isn't strictly necessary, it is recommended
+discussing the addition of new constraints before jumping right to their implementation.
+The discussion could be carried out either at our https://hibernate.atlassian.net/projects/HV/summary[JIRA] (in a new ticket created for
 the specific constraint in mind) or via the https://lists.jboss.org/mailman/listinfo/hibernate-dev[mailing list].
