@@ -352,13 +352,7 @@ attributes.
 The methods should also allow chaining so that constraint definition can be initialized
 in one go, hence they should return `this`.
 
-Importantly, these programmatic definitions should provide a fluent API and, in more complicated
-cases where constraint annotation attributes are other annotations, such annotations should also
-be represented as `Def` classes. In case of attribute annotation, its `Def` class should extend
-`AnnotationDef`. See, for example, https://docs.jboss.org/hibernate/stable/validator/api/org/hibernate/validator/cfg/defs/SafeHtmlDef.html[SafeHtmlDef]
-and its attributes.
-
-Programmatic definition should also be tested. Based on its complexity and the amount of
+The programmatic definition should also be tested. Based on its complexity and the amount of
 tests needed, they can either be included into the validator test class (in case of the
 `ISBN` example - into `ISBNValidatorTest`) or have their own test class within the same package.
 
