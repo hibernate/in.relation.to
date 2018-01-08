@@ -21,7 +21,7 @@ In this blog post, Michael uses Hibernate Search to index his tweets and then de
 
 Because Concurrency Control is very important for every enterprise application, Hibernate offers both optimistic and pessimistic locking right out of the box.
 However, sometimes you might need to coordinate the child entity state with a common parent entity, in which case, you need to provide some custom entity listeners.
-This article demonstrates https://vladmihalcea.com/2016/08/30/how-to-increment-the-parent-entity-version-whenever-a-child-entity-gets-modified-with-jpa-and-hibernate/[how you can trigger a parent entity version change whenever a child entity is added, removed or even modified].
+This article demonstrates https://vladmihalcea.com/how-to-increment-the-parent-entity-version-whenever-a-child-entity-gets-modified-with-jpa-and-hibernate/[how you can trigger a parent entity version change whenever a child entity is added, removed or even modified].
 
 The Vertabelo's blog features an article about Composite Primary Keys and http://www.vertabelo.com/blog/technical-articles/how-to-set-up-a-composite-primary-key-in-jooq-and-hibernate[how to map them using Hibernate and jOOQ].
 The article makes a remark which might confuse the reader into thinking that Hibernate didn't support Database-First mapping:
@@ -34,9 +34,9 @@ ____
 Not only Hibernate can be used to generate a database schema from the entity mapping, but in reality, you want to have the database schema managed by an automatic migration tool such a https://flywaydb.org/[FlywayDB].
 
 Thorben Janssen shows you http://www.thoughts-on-java.org/hibernate-tips-count-executed-queries-session/[how you can count queries using Hibernate Statistics].
-You can take this idea one step further and monitor to any SQL statement type (e.g. insert, update, delete), and you can even build a tool that automatically discovers N+1 statements, as demonstrated in https://vladmihalcea.com/2014/02/01/taming-jpa-with-the-sql-statement-count-validator/[this blog post].
+You can take this idea one step further and monitor to any SQL statement type (e.g. insert, update, delete), and you can even build a tool that automatically discovers N+1 statements, as demonstrated in https://vladmihalcea.com/taming-jpa-with-the-sql-statement-count-validator/[this blog post].
 
-I also wrote an article which aims to warn the reader about https://vladmihalcea.com/2016/09/05/the-hibernate-enable_lazy_load_no_trans-anti-pattern/[the dangers of using the `hibernate.enable_lazy_load_no_trans` configuration property].
+I also wrote an article which aims to warn the reader about https://vladmihalcea.com/the-hibernate-enable_lazy_load_no_trans-anti-pattern/[the dangers of using the `hibernate.enable_lazy_load_no_trans` configuration property].
 
 == Time to upgrade
 

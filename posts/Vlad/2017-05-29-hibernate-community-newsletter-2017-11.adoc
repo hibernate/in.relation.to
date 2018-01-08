@@ -11,27 +11,27 @@ Welcome to the Hibernate community newsletter in which we share blog posts, foru
 The pick of this edition is http://heap.engineering/basic-performance-analysis-saved-us-millions/[this article by Heap's Engineering blog]
 which demonstrates the benefits of using batch updates even for reducing database index overhead.
 
-As https://vladmihalcea.com/2017/02/09/how-to-run-integration-tests-at-warp-speed-with-docker-and-tmpfs/[previously explained],
+As https://vladmihalcea.com/how-to-run-integration-tests-at-warp-speed-with-docker-and-tmpfs/[previously explained],
 you can speed up integration tests considerably using a RAM disk or tmpfs.
 Mark Rotteveel‏ tried this approach and looks like https://www.lawinegevaar.nl/firebird/jaybird_tests_docker.html[it works for Firebird as well].
 
 Hibernate 5.2.10 comes with a very handy connection management optimization for RESOURCE_LOCAL transactions.
 If you don't use JTA and you disabled auto-commit at the connection pool level, then it's worth setting the
-https://vladmihalcea.com/2017/05/17/why-you-should-always-use-hibernate-connection-provider_disables_autocommit-for-resource-local-jpa-transactions/[`hibernate.connection.provider_disables_autocommit`] configuration property as well.
+https://vladmihalcea.com/why-you-should-always-use-hibernate-connection-provider_disables_autocommit-for-resource-local-jpa-transactions/[`hibernate.connection.provider_disables_autocommit`] configuration property as well.
 
 When using Oracle, the fastest way to access a database record is to use the `ROWID` pseudocoolumn.
 If using `ROWID` is suitable for your application, then you can
-https://vladmihalcea.com/2017/05/22/the-fastest-way-to-update-a-table-row-when-using-hibernate-and-oracle/[annotate your entities with the `@RowId` annotation]
+https://vladmihalcea.com/the-fastest-way-to-update-a-table-row-when-using-hibernate-and-oracle/[annotate your entities with the `@RowId` annotation]
 and Hibernate will use the `ROWID` pseudocoolumn for UPDATE statements.
 
 The best way to manage a database schema is to use incremental update scripts, and a tool like https://www.sitepoint.com/schema-migration-hibernate-flywaydb/[Flyway].
 Even in this case, you can still benefit from the hbm2ddl tool to validate the entity mappings.
-Check out https://vladmihalcea.com/2017/05/23/how-to-fix-wrong-column-type-encountered-schema-validation-errors-with-jpa-and-hibernate/[how you can deal with schema mismatch exceptions, especially for non-trivial mappings].
+Check out https://vladmihalcea.com/how-to-fix-wrong-column-type-encountered-schema-validation-errors-with-jpa-and-hibernate/[how you can deal with schema mismatch exceptions, especially for non-trivial mappings].
 
 You can use http://www.thoughts-on-java.org/hibernate-tips-log-execution-time-query/[Hibernate statistics] to log query execution time.
-However, in reality, many enterprise application are better off using a https://vladmihalcea.com/2016/05/03/the-best-way-to-log-jdbc-statements/[JDBC `DataSource` or `Driver` Proxy]
+However, in reality, many enterprise application are better off using a https://vladmihalcea.com/the-best-way-to-log-jdbc-statements/[JDBC `DataSource` or `Driver` Proxy]
 which, not only it allows you to log JDBC statements along with their parameters,
-but you can even https://vladmihalcea.com/2014/02/01/how-to-detect-the-n-plus-one-query-problem-during-testing/[detect N+1 query issues automatically during testing].
+but you can even https://vladmihalcea.com/how-to-detect-the-n-plus-one-query-problem-during-testing/[detect N+1 query issues automatically during testing].
 
 == Presentations
 

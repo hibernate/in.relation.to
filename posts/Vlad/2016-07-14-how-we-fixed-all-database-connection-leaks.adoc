@@ -19,7 +19,7 @@ But there are many mode modules: `hibernate-c3p0`, `hibernate-ehcache`, `hiberna
 All in all, we couldn't just browse the code and spot issues.
 We needed an automated connection leak detector.
 
-That being said, I came up with https://vladmihalcea.com/2016/07/12/the-best-way-to-detect-database-connection-leaks/[a solution that works on H2, Oracle, PostgreSQL, and MySQL] as well.
+That being said, I came up with https://vladmihalcea.com/the-best-way-to-detect-database-connection-leaks/[a solution that works on H2, Oracle, PostgreSQL, and MySQL] as well.
 Luckily, no problem was spotted in the actual framework code base.
 All issues were caused by unit tests which did not handle database resources properly.
 
@@ -92,7 +92,7 @@ The first thing to notice is the lack of a try/finally block which should be clo
 But that's not all.
 
 Not a long time ago, I had fixed https://hibernate.atlassian.net/browse/HHH-7412[HHH-7412], meaning that, for `RESOURCE_LOCAL` (e.g. JDBC `Connection`-bound transactions),
-the https://vladmihalcea.com/2014/12/23/a-beginners-guide-to-transaction-isolation-levels-in-enterprise-java/[logical or physical] `Connection` is closed only when the https://vladmihalcea.com/2014/01/05/a-beginners-guide-to-acid-and-database-transactions/[transaction is ended] (either commit or rollback).
+the https://vladmihalcea.com/a-beginners-guide-to-transaction-isolation-levels-in-enterprise-java/[logical or physical] `Connection` is closed only when the https://vladmihalcea.com/a-beginners-guide-to-acid-and-database-transactions/[transaction is ended] (either commit or rollback).
 
 Before HHH-7412 was fixed, the `Connection` was closed automatically when the Hibernate `Session` was closed as well, but this behavior is not supported anymore.
 Nowadays, aside from closing the underlying `Session`, you have to commit/rollback the current running `Transaction` as well:
