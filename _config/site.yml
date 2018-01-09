@@ -4,10 +4,9 @@ title: In Relation To
 # Project id name
 project: in.relation.to
 
-# Default minify settings
-css_minifier: enabled
-js_minifier: enabled
-html_minifier: disabled
+# Default minification settings
+# What to minify is defined in _ext/pipeline.rb
+minify: true
 
 # Disqus settings
 disqus_shortname: inrelationto
@@ -48,9 +47,6 @@ asciidoctor:
 # Update resource URLs based on the profile
 profiles:
   editor: &base
-    css_minifier: disabled
-    js_minifier: disabled
-    html_minifier: disabled
     legacy_post_syntax_highlighting: disabled
     ignore_older_than_days: 10
 
@@ -72,24 +68,18 @@ profiles:
 
   staging:
     << : *base
-    minify: true
-    minified: .min
-    css_minifier: enabled
     legacy_post_syntax_highlighting: enabled
     wget:
       #we don't need to download cached resources when on staging
       enabled: false
     base_url: http://staging.in.relation.to/
-    ignore_older_than_days: -1
+    ignore_older_than_days: 366
     asciidoctor:
       :attributes:
         base_url: "http://staging.in.relation.to/"
 
   production:
     << : *base
-    minify: true
-    minified: .min
-    css_minifier: enabled
     legacy_post_syntax_highlighting: enabled
     wget:
       #we don't need to download cached resources when on staging

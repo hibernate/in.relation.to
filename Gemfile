@@ -6,7 +6,6 @@ gem 'awestruct', '0.5.7'
 gem 'sass'
 gem 'jso'
 gem 'uglifier'         # Ruby wrapper for UglifyJS JavaScript compressor
-gem 'cssminify'        # CSS compression using YUI compressor
 gem 'htmlcompressor'   # Adds in HTML minification, helps remove the warning on awestruct startup
 gem 'redcarpet'        # Markdown processing
 gem 'asciidoctor'      # Asciidoc renderer

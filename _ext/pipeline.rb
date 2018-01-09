@@ -1,6 +1,5 @@
 require 'wget_wrapper'
 require 'js_minifier'
-require 'css_minifier'
 require 'html_minifier'
 require 'file_merger'
 require 'relative'
@@ -105,9 +104,7 @@ Awestruct::Extensions::Pipeline.new do
   extension InRelationTo::Extensions::PaginationLinkRenderer.new()
 
   # register extensions and transformers
-  transformer Awestruct::Extensions::JsMinifier.new
-  transformer Awestruct::Extensions::CssMinifier.new
-  transformer Awestruct::Extensions::HtmlMinifier.new
+  transformer Awestruct::Extensions::Minify.new([:js,:css,:html])
   transformer InRelationTo::Extensions::LegacyPostCodeHighlightingTransformer.new
 
   extension   Awestruct::Extensions::WgetWrapper.new
