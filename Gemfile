@@ -4,7 +4,6 @@ source 'https://rubygems.org'
 #gem 'awestruct', '0.5.4.rc3', :git => 'https://github.com/awestruct/awestruct', :tag => 'v0.5.4.rc3'
 gem 'awestruct', '0.5.7'
 gem 'sass'
-gem 'jso'
 gem 'uglifier'         # Ruby wrapper for UglifyJS JavaScript compressor
 gem 'cssminify'        # CSS compression using YUI compressor
 gem 'htmlcompressor'   # Adds in HTML minification, helps remove the warning on awestruct startup
