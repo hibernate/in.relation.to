@@ -1,0 +1,140 @@
+= Hibernate ORM 5.3.0.Beta1 release
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+This is a first Beta release in the Hibernate ORM 5.3 family.  5.3 represents a JPA 2.2 compatible version
+on top of 5.2 which includes the changes discussed below.
+
+See Jira for the complete list of https://hibernate.atlassian.net/projects/HHH/versions/31612/tab/release-report-all-issues[changes]
+
+See the http://hibernate.org/orm/releases/[downloads] page for details on obtaining this release
+
+__NOTE : we have been having trouble getting documentation uploaded to the JBoss doc server.  So the documentation
+may not be available online at this time.  In that case, the documentation can be obtained from the
+release bundles from SourceForge.  See the http://hibernate.org/orm/releases/[downloads] page
+__
+
+
+== JPA 2.2 features
+
+=== CDI-hosted AttributeConverters
+
+Starting in JPA 2.1 applications could use CDI-hosted beans as entity event listeners.  JPA 2.2 extends
+that support to allow AttributeConverters to be CDI-hosted beans as well.
+
+To facilitate this, we have developed a generic interface that allows access to any kind of bean hosted in
+any type of DI/bean container.  The contract for integrating such bean containers is
+`org.hibernate.resource.beans.container.spi.BeanContainer`.  Hibernate comes with implementations
+of `BeanContainer` for integrating with CDI; we have also tested adapting it to Spring container. Generally
+speaking, Hibernate accesses `BeanContainer` though its `org.hibernate.resource.beans.spi.ManagedBeanRegistry`
+service which hides some of the repetitive details of dealing with `BeanContainer` based on Hibernate's normal
+usage.
+
+Applications would normally not access the `BeanContainer` nor the `ManagedBeanRegistry`.  Integrators
+however might want to use them to leverage Hibernate integration with these back-end containers.
+`ManagedBeanRegistry` is a service and can be accessed from the SessionFactory's ServiceRegistry.
+The `BeanContainer` can be accessed from there via `ManagedBeanRegistry#getBeanContainer` (which
+may return null).
+
+
+=== Support for repeating annotations
+
+JPA 2.2 defines support for repeating annotations (`@java.lang.annotation.Repeatable`).  This includes the addition
+of `@TableGenerators` and `@SequenceGenerators`.  All other JPA annotations already had "containing" annotations.
+
+
+
+=== Query result streaming
+
+JPA 2.2 adds `Query#getStream` to support streaming of the query results.  Of course Hibernate has had this for
+some time, although we had named ours `Query#stream` more in keeping with the choice made in most other
+uses including most JDK uses.  But either way, both are available.. the JPA `javax.persistence.Query#getStream` and
+Hibernate's `org.hibernate.query.Query#stream`.
+
+
+=== Support Java 8 Date and Time API
+
+Again, this is something Hibernate has already supported for quite some time.  But JPA 2.2 has made support for
+the Java 8 date/time APIs part of the standard.
+
+
+
+== Hibernate features
+
+=== Caching and inheritance
+
+5.3 adds the ability to enable/disable caching at any level within a mapped hierarchy.  This is a
+change from previous versions that only allowed controlling caching on the root entity.  See
+https://hibernate.atlassian.net/browse/HHH-12146[HHH-12146] for details
+
+
+=== Java 9 module naming
+
+Hibernate ORM jars now specify Java 9 module naming following the pattern `org.hibernate.orm.${module-name}`.
+For example, the module name for `hibernate-core` is `org.hibernate.orm.core`; the module name for `hibernate-c3p0`
+is `org.hibernate.orm.c3p0`; etc.
+
+
+=== JpaCompliance
+
+During bootstrapping a SessionFactory/EntityManagerFactory can be configured with a level of "JPA compliance"
+that indicates what behaviors it should comply with JPA.  These are generally situations where Hibernate
+has historically done something different or where we think the specification is not the best solution.
+This `JpaCompliance` is used to control how Hibernate should act in these circumstances.  See
+the javadocs for `org.hibernate.jpa.JpaCompliance` for details.
+
+
+=== More intuitive handling of id generator names
+
+Previously when Hibernate encountered a `@GeneratedValue` in relation to an identifier, it would assume that
+there was a matching named generator annotation.  For example, if an application specified
+`@GeneratedValue(strategy=TABLE, name="abc")` Hibernate would expect to see a `@TableGenerator`
+or a `@org.hibernate.annotations.GenericGenerator` with the same name.  Which means that you'd often see
+mappings like:
+
+[source]
+----
+@Entity
+public class AnEntity {
+    @Id
+    @GeneratedValue(strategy=SEQUENCE, name="MY_SEQ")
+    @SequenceGenerator(name="MY_SEQ", sequenceName="MY_SEQ")
+    public Long getId() {...}
+
+    ...
+}
+----
+
+The `SequenceGenerator` in the above example adds no additional information and is really completely
+unnecessary.  So Hibernate now recognizes the following mapping in exactly the same way as the above
+mapping:
+
+
+[source]
+----
+@Entity
+public class AnEntity {
+    @Id
+    @GeneratedValue(strategy=SEQUENCE, name="MY_SEQ")
+    public Long getId() {...}
+
+    ...
+}
+----
+
+
+
+=== Vibur connection pool integration
+
+The new `hibernate-vibur` module defines integration with the Vibur connection pool as a
+`org.hibernate.engine.jdbc.connections.spi.ConnectionProvider` implementation
+
+
+== Bugs, tasks, miscellaneous
+
+* Removed support for legacy HQL-style positional parameters
+* Added Travis CI support
+* Resume uploading Javadoc JARs to Maven
+* Deprecate Environment-scoped settings
+* Drop `hibernate-infinispan` module - relocated to `org.infinispan:infinispan-hibernate-cache`
