@@ -1,0 +1,126 @@
+= "Hibernate OGM 5.2 CR1 is out"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+For the first Hibernate OGM release of the year, I'm happy to announce
+http://hibernate.org/ogm/releases/5.2/#get-it[Hibernate OGM 5.2 CR1].
+
+This will become the next 5.2 Final soon and we added support for Geospatial integration
+and new native operator support with https://www.mongodb.com[MongoDB],
+https://neo4j.com/[Neo4j] queries performance improvements and
+integration with cluster counters for http://infinispan.org[Infinispan] embedded.
+
+If you need to upgrade from a version before 5.2, you can find help on the
+https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes].
+
+All the changes are described in the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31605[release notes].
+
+== Infinispan embedded sequences and id generation
+
+When using the Infinispan embedded dialect, Hibernate OGM will now exploit clustered counters
+for id generation and sequences. If you are not familiar with them you can find more details in
+the http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[Infinispan documentation]
+
+At the moment, Infinispan only support counters for clustered caches, for this reason,
+Hibernate OGM won't be able to generate id or sequences if you are using local caches.
+The Infinispan team is working on this and we are going to fix it as soon as possible.
+Keep an eye on issue https://hibernate.atlassian.net/browse/OGM-1376[OGM-1376]
+if you want to be up-to-date.
+
+We also changed the name of the artifact, the artifact to be included in the POM is now the
+following:
+
+====
+[source,XML]
+----
+<dependency>
+    <groupId>org.hibernate.ogm</groupId>
+    <artifactId>hibernate-ogm-infinispan-embedded</artifactId>
+    <version>5.2.0.CR1</version>
+</dependency>
+----
+====
+
+== Neo4j performance
+
+Thanks to feedback from Klaas Dellschaft, we found out we were doing inefficient
+queries when loading entities from Neo4j. Issue
+https://hibernate.atlassian.net/browse/OGM-1344[OGM-1344] contains more information.
+
+== MongoDB geospatial and native API 
+
+Hibernate OGM now supports the ability to declare geospatial fields by using specific Java types
+that will be automatically converted to GeoJSON objects stored in MongoDB.
+Here's an example:
+
+====
+[source,java]
+----
+@Entity
+@Table(indexes = {
+        @Index(columnList = "location", name = "location_spatial_idx")
+})
+@IndexOptions(
+        @IndexOption(forIndex = "location_spatial_idx", options = "{ _type: '2dsphere' }")
+)
+public class Restaurant {
+
+    // [...]
+
+    GeoPoint location;
+}
+----
+====
+
+More details in the https://docs.jboss.org/hibernate/ogm/5.2/reference/en-US/html_single/#_geospatial_support[Hibernate OGM documentation].
+
+We also improved the MongoDB native CLI API with the addition of new operations:
+replaceOne, updateMany, updateOne, deleteMany, deleteOne, insertMany, insertOne.
+
+Here's an example of a native query:
+
+====
+[source,java]
+----
+String nativeQuery = "db.Poem.remove({ '_id': { '$numberLong': '11' } })";
+session.createNativeQuery( nativeQuery ).executeUpdate();
+----
+====
+
+== Where can I get it?
+
+You can include in your project the dialect of your choice using this maven coordinates:
+
+* http://infinispan.org[Infinispan] 
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan-embedded:5.2.0.CR1_
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.2.0.CR1_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.2.0.CR1_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.2.0.CR1_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.2.0.CR1[from Sourceforge].
+
+If you are intersted about availabe versions, you can check the official
+http://hibernate.org/ogm/releases[Hibernate OGM download page].
+
+== What's next?
+
+We are going to release 5.2 Final and work on 5.3.
+Hibernate OGM 5.3 development will be focused on the HIbernate ORM 5.2 upgrade.
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://forum.hibernate.org/viewforum.php?f=31[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+We are looking forward to hearing your feedback!
+
+
