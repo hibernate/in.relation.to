@@ -1,0 +1,72 @@
+= Hibernate Community Newsletter 03/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Video Course
+
+While getting started with JPA and Hibernate is fairly easy, if you want to master Java Persistence,
+you can't make it without knowing how relational database systems work, how various JDBC drivers address performance-specific topics,
+the Object/Relational mismatch or why we have patterns like Unit of Work, Optimistic and Pessimistic locking, Entity, Inheritance, Identity, and so on.
+
+A video course will always provide the ultimate learning experience and the fastest way to acquire information.
+
+Until the 6th of February, you can get the
+https://vladmihalcea.teachable.com/p/high-performance-java-persistence-mach-1?utm_source=hibernateblog&utm_medium=link&utm_campaign=newsletter[*High-Performance Java Persistence - Mach 1*]
+video course with a $30 discount.
+
+== Articles
+
+Sebastian Daschner describes
+https://blog.sebastian-daschner.com/entries/jpa-sql-script-definitions[how you can customize the database schema creation using the JPA standard configuration properties].
+
+If you want to test a certain JDBC, JPA, Hibernate or even jOOQ feature, you don't have to go through all the trouble of setting up a project,
+figure out how to manage the database schema, bootstrap the data access logic or manage database resources like connections and transactions.
+There's a better way!
+
+Just fork the https://github.com/vladmihalcea/high-performance-java-persistence[high-performance-java-persistence] GitHub repository
+and get started right away. It's an open-source project, and it gets better and better with every new commit.
+For more details, check out
+https://vladmihalcea.com/high-performance-java-persistence-github-repository/[this article which features a nice video presentation as well].
+
+JPA 2.2 brings some improvements to the standard specification, and if you are curious about the new additions, check out
+https://www.infoq.com/articles/JPA-2.2-Brings-Highly-Anticipated-Changes[this article on InfoQ].
+
+If you're using Spring Data JPA and want to use multiple databases, you should definitely read
+http://www.baeldung.com/spring-data-jpa-multiple-databases[this article on Baeldung].
+
+While at it, Martin Farrell shows you how to
+https://www.javabullets.com/access-entitymanager-spring-data-jpa/[access the JPA `EntityManager` when using Spring Data JPA].
+
+And, Emmanouil Gkatziouras shows you how you can
+https://egkatzioura.com/2017/03/02/spring-data-with-jpa-and-namedqueries/[run `@NamedQueries` using Spring Data JPA].
+
+== Time to upgrade
+
+For the Hibernate projects, there were three releases being done since the previous newsletter:
+
+- http://in.relation.to/2018/01/26/hibernate-orm-5112-final-release/[Hibernate ORM 5.1.12]
+- http://in.relation.to/2018/01/29/hibernate-ogm-5-2-CR1-released/[Hibernate OGM 5.2.0 CR1]
+- http://in.relation.to/2018/01/24/hibernate-search-5-9-0-CR1/[Hibernate Search 5.9.0 CR1]
+
+If you are still wondering what should be the right size for a given database connection pool,
+you should start checking out the https://github.com/vladmihalcea/flexy-pool[FlexyPool open-source project]
+which has reached its https://vladmihalcea.com/flexypool-2-released/[2.0 version] and supports Dropwizard Metrics 4.
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/using-sqlserver-sequence-in-hibernare/113/2[Using a SQL Server sequence with Hibernate]
+- https://discourse.hibernate.org/t/access-hibernate-getter-in-for-loop-problem/123/2[Is it a problem to access a Hibernate entity getter in a for loop?]
+- https://discourse.hibernate.org/t/merge-on-object-with-onetomany-attributes-leading-to-javax-persistence-entitynotfoundexception-no-row-with-the-given-identifier-exists/124/2[Merge entity with `OneToMany` attributes leading to javax.persistence.EntityNotFoundException: No row with the given identifier exists ]
+- https://discourse.hibernate.org/t/java-sql-sqlexception-invalid-column-type-2012-when-using-hibernate-and-oracle-stored-procedure-with-ref-cursor/129[java.sql.SQLException: Invalid column type: 2012 when using Hibernate and Oracle stored procedure with REF_CURSOR ]
+- https://discourse.hibernate.org/t/batch-with-insert-values/138[Batch with INSERT VALUES when using Hibernate]
+- https://stackoverflow.com/questions/48404183/migrate-hibernate-4-3-to-5-2-missing-table/48440193#48440193[Migrate Hibernate 4.3 to 5.2 - missing table]
+- https://stackoverflow.com/questions/30088649/multiple-join-fetch-in-one-jpql-query/30093606#30093606[Multiple join fetch in one JPQL query]
+- https://stackoverflow.com/questions/30288464/when-should-i-use-joincolumn-or-jointable/30292348#30292348[When Should I Use `@JoinColumn` or `@JoinTable`?]
+- https://stackoverflow.com/questions/25531053/how-to-fix-staleobjectstateexception/25631126#25631126[How to fix `StaleObjectStateException` with JPA and Hibernate]
+- https://stackoverflow.com/questions/46214322/how-to-force-hibernate-to-remove-orphans-before-update/46224118#46224118[How to force Hibernate to remove orphans before update]
+- https://stackoverflow.com/questions/578433/how-to-solve-the-lazyinitializationexception-using-jpa-and-hibernate/39723192#39723192[How to solve the `LazyInitializationException` when using JPA and Hibernate]
+- https://stackoverflow.com/questions/23719237/mapping-jpa-or-hibernate-projection-query-to-dto-data-transfer-object/45934668#45934668[Mapping JPA or Hibernate projection query to DTO (Data Transfer Object)]
