@@ -1,0 +1,60 @@
+= "Hibernate OGM 5.2 Final is out"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+I'm happy to announce the latest stable release of http://hibernate.org/ogm/[Hibernate OGM]:
+5.2 Final
+
+Compared to the http://in.relation.to/2018/01/29/hibernate-ogm-5-2-CR1-released[latest candidate release], there are not many changes. You can have a look at the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31631[5.2.0.Final changelog]
+to get all the details.
+
+== What's new compared to 5.1 Final?
+
+This version:
+
+* the Infinispan remote dialect can create a cache if it is missing using a default configuration
+* uses Infinispan emebedded http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[clustered counters] for id and sequence generation
+* improves performances with Neo4j
+* provides a way to define https://docs.jboss.org/hibernate/stable/ogm/reference/en-US/html_single/#_geospatial_suppor[Geospatial indexes] for MongoDB
+* additional support for https://docs.jboss.org/hibernate/stable/ogm/reference/en-US/html_single/#ogm-mongodb-cli-syntax[MongoDB CLI syntax]
+
+If you need to upgrade from a version before 5.1, you can find help on the
+https://developer.jboss.org/wiki/HibernateOGMMigrationNotes[migration notes].
+
+== Where can I get it?
+
+You can get the required core library using the following Maven coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-core:5.2.0.Final_
+
+and these are the backends currently available for 5.2.0.Final:
+
+* http://infinispan.org[Infinispan] 
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan-embedded:5.2.0.Final_
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.2.0.Final_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.2.0.Final_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.2.0.Final_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.2.0.Final[from Sourceforge].
+
+== What's next?
+
+The next release will come shortly after this one and the main feature will be the upgrade to
+Hibernate ORM 5.2.
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://discourse.hibernate.org/c/hibernate-ogm[Community forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+We are looking forward to hearing your feedback!
+
