@@ -1,0 +1,120 @@
+= Hibernate 5.3 adds support for repeating JPA annotations
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate 5.3 implements the JPA 2.2 standard.
+Over the following weeks, we are going to present various features introduced by JPA 2.2.
+
+If Hibernate 5.2 has added support for repeating Hibernate-specific annotations,
+JPA 2.2 will allow you to do the same with the JPA-specific annotations.
+
+In this article, we are going to see how the repeating annotations feature is going to
+simplify your entity mappings.
+
+== Prior to JPA 2.2
+
+Now, before JPA 2.2, if you wanted to use multiple `@NamedQuery` annotations,
+you had to use `@NamedQueries` as well.
+
+[source,java]
+----
+@NamedQueries({
+    @NamedQuery(
+        name = "get_person_by_name",
+        query = "select p from Person p where name = :name"
+    ),
+    @NamedQuery(
+        name = "get_read_only_person_by_name",
+        query = "select p from Person p where name = :name",
+        hints = {
+            @QueryHint(
+                name = "org.hibernate.readOnly",
+                value = "true"
+            )
+        }
+    )
+})
+@Entity
+public class Person {
+    ...
+}
+----
+
+== JPA 2.2
+
+JPA 2.2 adds support for https://docs.oracle.com/javase/tutorial/java/annotations/repeating.html[repeating annotations] feature
+introduced in Java 8.
+
+If you open the JPA 2.2, `@NamedQuery` annotation, the source code looks as follows:
+
+[source,java]
+----
+@Repeatable(NamedQueries.class)
+@Target({TYPE})
+@Retention(RUNTIME)
+public @interface NamedQuery {
+
+    /**
+     * (Required) The name used to refer to the query with the {@link EntityManager}
+     * methods that create query objects.
+     */
+    String name();
+
+    /** (Required)
+     * The query string in the Java Persistence query language.
+     */
+    String query();
+
+    /**
+     * (Optional) The lock mode type to use in query execution.  If a <code>lockMode</code>
+     * other than <code>LockModeType.NONE</code> is specified, the query must be executed in
+     * a transaction and the persistence context joined to the transaction.
+     * @since Java Persistence 2.0
+     */
+    LockModeType lockMode() default NONE;
+
+    /** (Optional) Query properties and hints.  May include
+     * vendor-specific query hints.
+     */
+    QueryHint[] hints() default {};
+}
+----
+
+Notice the first line, `@Repeatable(NamedQueries.class)`, which tells that the `@NamedQueries` annotation is to be used
+when we repeat the `@NamedQuery` multiple times.
+
+So, behind the scenes, even if won't declare the `@NamedQueries` annotation, Java will still use it.
+
+Now, using the repeating annotation support, we can change the `Person` entity mapping as follows:
+
+[source,java]
+----
+@NamedQuery(
+    name = "get_person_by_name",
+    query = "select p from Person p where name = :name"
+)
+@NamedQuery(
+    name = "get_read_only_person_by_name",
+    query = "select p from Person p where name = :name",
+    hints = {
+        @QueryHint(
+            name = "org.hibernate.readOnly",
+            value = "true"
+        )
+    }
+)
+@Entity
+public class PersonRepeatingAnnotation {
+
+    ...
+
+}
+----
+
+Much better, right?
+
+== Conclusion
+
+The repeating annotation is a nice enhancement that's going to be very convenient when mapping JPA entities.
