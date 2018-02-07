@@ -1,0 +1,97 @@
+= Hibernate Search 5.9.0.Final was just released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published 5.9.0.Final, the first stable release in the 5.9 branch.
+This release brings a brand-new JSR-352 integration for mass indexing,
+WildFly feature packs, and better integration to modular environments.
+
+== What's new?
+
+If you tried out the Beta/CR, know that this release is virtually identical to 5.9.0.CR1,
+with only a few changes to our internal build process and a micro update to the Elasticsearch client.
+
+If you didn't, then there is something new for you!
+
+[[jsr352]]
+=== JSR 352 (Batch for Java) mass indexing job
+
+A JSR 352 mass indexing job was added, adding in particular the ability to restart
+from a checkpoint when indexing fails.
+
+See https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#jsr352-integration[the documentation]
+for more information,
+and http://in.relation.to/2017/11/28/introducing-hibernate-search-jsr352-mass-indexing-job/[this blog post]
+for an introduction to JSR 352 in Hibernate Search.
+
+[[wildfly-feature-packs]]
+=== JBoss modules now distributed as feature packs
+
+The Hibernate Search JBoss Modules, for use in WildFly or JBoss EAP,
+are now distributed as WildFly feature packs, which makes provisioning
+a WildFly server with an upgraded Hibernate Search version easier than ever.
+The feature packs can also be consumed using http://wildfly-swarm.io/[WildFly Swarm].
+
+Also, the modules are now distributed as *multiple* feature packs,
+which means that components are split in fine grained packages,
+allowing you to pick only the parts you will need.
+For example, you won't need to add the Elasticsearch clients to your server if you only use Lucene.
+
+See https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#search-configuration-deploy-on-wildfly[the documentation]
+for more information on the available feature packs and how to consume them.
+
+=== Other changes
+
+Here are the other notable changes since Hibernate Search 5.8.2.Final:
+
+* https://hibernate.atlassian.net/browse/HSEARCH-2832[HSEARCH-2832]:
+Exception messages when an Elasticsearch work fails are now a bit less
+verbose. In particular they don't include the failing request anymore,
+because it can often be huge and ends up flooding the logs (especially due to request bulking).
+You can still log every Elasticsearch request
+https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#elasticsearch-logging[as explained in the documentation].
+* https://hibernate.atlassian.net/browse/HSEARCH-2909[HSEARCH-2909]:
+Annotations in the default package will no longer make the annotation processing fail.
+* https://hibernate.atlassian.net/browse/HSEARCH-2935[HSEARCH-2935]:
+The CPU cost of static initialization of Hibernate Search loggers
+has been sensibly reduced, improving startup performance.
+* https://hibernate.atlassian.net/browse/HSEARCH-1885[HSEARCH-1885]:
+Custom bridges with specific dependencies such as Tika bridges
+can now be used in a modular environment such as WildFly.
+* https://hibernate.atlassian.net/browse/HSEARCH-2955[HSEARCH-2955]:
+Faceting queries will no longer fail when the index is empty
+or only contains documents without any value in the faceting field.
+* https://hibernate.atlassian.net/browse/HSEARCH-2983[HSEARCH-2983]:
+Boost is now consistently taken into account when building numeric or null encoding queries with the DSL.
+
+For a full list of changes since 5.8,
+please see https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HSEARCH%20AND%20fixVersion%20in%20(5.9.0.Final%2C%205.9.0.CR1%2C%205.9.0.Beta1)%20ORDER%20BY%20updated[this list of tickets on our JIRA instance].
+
+For a full list of changes since 5.9.0.CR1,
+please see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31630[the release notes].
+
+== How to get this release
+
+All details are available and up to date on http://hibernate.org/search/releases/5.9/#get-it[the dedicated page on hibernate.org].
+
+== Next
+
+We are going to release a beta version of 5.10 in the next few days.
+The upgrade to Hibernate ORM 5.3 - supporting JPA 2.2 - will be the main change.
+
+As mentioned previously, the 5.10 release could be of interest to CDI or Spring DI users in particular,
+since it will bring support for injecting CDI or Spring beans into Hibernate Search,
+in particular field bridges.
+CDI support is already working on our development branches,
+and Spring support will probably come as soon as the Spring team integrates Hibernate ORM 5.3.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[Our Discourse instance] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
