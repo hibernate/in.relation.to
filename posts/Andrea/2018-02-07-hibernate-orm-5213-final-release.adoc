@@ -1,0 +1,57 @@
+= Hibernate ORM 5.2.13.Final released
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+The Thirteenth bug-fix release for Hibernate ORM 5.2 has just been published.
+
+== Details
+
+* tag is http://github.com/hibernate/hibernate-orm/releases/tag/5.2.13[here];
+* changes are listed https://hibernate.atlassian.net/projects/HHH/versions/31606/tab/release-report-done[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version=31606&styleName=Html&projectId=10031[here]);
+* release bundles are at http://sourceforge.net/projects/hibernate/files/hibernate-orm/5.2.13.Final/[SourceForge].
+
+For information on consuming the release via your favorite dependency-management-capable build tool, see http://hibernate.org/orm/releases/5.2[releases]
+
+== Changes in the `@TableGenerator` and `@SequenceGenerator` name scope
+
+In order to be compliant with the JPA specifications, the names of identity generators need now be considered global, and no longer scoped to the entity in which they are declared.
+This means existing applications might now have a naming conflict which needs to be addressed to upgrade.
+Configuring two generators, even with different types but with the same name will now cause a `java.lang.IllegalArgumentException` to be thrown at boot time.
+
+For example, the following mappings are no longer valid:
+
+[source,java]
+----
+@Entity
+@TableGenerator(name = "ID_GENERATOR", ... )
+public class FirstEntity {
+    ....
+}
+
+@Entity
+@TableGenerator(name = "ID_GENERATOR", ... )
+public class SecondEntity {
+    ....
+}
+----
+
+or
+
+[source,java]
+----
+@Entity
+@TableGenerator(name = "ID_GENERATOR", ... )
+public class FirstEntity {
+    ....
+}
+
+@Entity
+@SequenceGenerator(name="ID_GENERATOR", ... )
+public class SecondEntity {
+    ....
+}
+
+----
+
+to avoid the name collision between the two id generators, the name of one of them needs to be changed.
