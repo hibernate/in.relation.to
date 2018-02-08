@@ -81,12 +81,12 @@ public class Geography {
 // Select all events within a region
 TypedQuery<Event> eventQuery = entityManager.createQuery( 
 		"select e from Event e where within(actionGeo.position, :area) = true", 
-		Event.class );
+		Event.class);
 
 // Create a polygon describing a box around Europe
-WktDecoder decoder = Wkt.newDecoder( Wkt.Dialect.HANA_EWKT );
-Polygon<?> europeBox = (Polygon<?>) decoder.decode( "POLYGON((35 -10, 35 30, 71 30, 71 -10, 35 -10))" );
-eventQuery.setParameter( "area", europeBox );
+WktDecoder decoder = Wkt.newDecoder(Wkt.Dialect.HANA_EWKT);
+Polygon<?> europeBox = (Polygon<?>) decoder.decode("POLYGON((35 -10, 35 30, 71 30, 71 -10, 35 -10))");
+eventQuery.setParameter("area", europeBox);
 
 // Return all events within the Europe box
 return eventQuery.getResultList();
@@ -137,6 +137,8 @@ Stay tuned for updates on these topics.
 If you want to try out Hibernate on SAP HANA you can get a free version of SAP HANA, Express Edition. Simply go to http://sap.com/sap-hana-express[http://sap.com/sap-hana-express], fill out the registration form and either download the SAP HANA, Express Edition binaries or setup a SAP HANA, Express Edition instance with your favorite cloud provider.
 
 If you need more information on how to get started check out the information at https://www.sap.com/developer/topics/sap-hana-express.html[www.sap.com/developer/topics/sap-hana-express.html].
-Here you can find tutorials which guide you through various topics related to SAP HANA, Express Edition. Of course, there is also a https://www.sap.com/developer/groups/hana-hibernate-getting-started.html[tutorial about getting started with Hibernate on SAP HANA, Express Edition].
+Here you can find tutorials which guide you through various topics related to SAP HANA, Express Edition.
+
+Of course, there is also a https://www.sap.com/developer/groups/hana-hibernate-getting-started.html[tutorial about getting started with Hibernate on SAP HANA, Express Edition].
 
 
