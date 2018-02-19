@@ -1,0 +1,79 @@
+= Hibernate Community Newsletter 04/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+
+== Interviews
+
+We managed to publish
+http://in.relation.to/2018/02/13/meet-jonathan-bregler/[an interview with Jonathan Bregler] from SAP,
+in which he talks about the advantage of using SAP HANA, as well as his story about contributing
+to the SAP HANA Hibernate Dialect.
+
+Enjoy reading it, and, if you want to share your awesome story about database systems, JPA, Hibernate,
+or anything interesting about data just let us know.
+
+== Articles
+
+Franck Pachot, who's an Oracle ACE Director, wrote a very good article about
+http://oakweb02.oaktable.net/node/10143[full-page logging in Postgres and Oracle].
+The impact of full-page writes can impact performance, so you might want to use
+the Hibernate-specific `@DynamicUpdate` for heavy write-based enterprise applications.
+
+Handing multiple time zones is always challenging. In
+https://moelholm.com/2016/11/09/spring-boot-controlling-timezones-with-hibernate/[this article],
+you are going to learn how to control time zones with Spring Boot and Hibernate.
+
+The Hibernate SAP HANA Dialect has been improved considerably, thanks to Jonathan Bregler's work.
+For more details, check out
+http://in.relation.to/2018/02/08/Introducing-Support-For-SAP-HANA/[this article].
+
+Ever wanted to connect to a relational database using Java and didn't know the URL connection string?
+Then,
+https://vladmihalcea.com/jdbc-driver-connection-url-strings/[this article]
+is surely going to help you from now on.
+
+http://www.baeldung.com/jpa-attribute-converters[This article] introduces JPA Attribute Converters
+which are useful when you want to transform a certain entity property from one representation to another.
+
+Using the Hibernate Query Cache for speeding up entity queries is a well-known technique.
+However, you can also cache DTO projections, as explained in
+https://vladmihalcea.com/hibernate-query-cache-dto-projection/[this article].
+
+Citus Data has published
+https://www.citusdata.com/blog/2018/02/13/using-hibernate-and-spring-to-build-multitenant-java-apps[a very good article]
+about implementing a multi-tenancy architecture based on the Hibernate-specific entity `@Filter` feature.
+
+Hibernate 5.3 adds support for JPA 2.2 which provides many improvements, like the repeating JPA annotations feature.
+For more details, check out
+http://in.relation.to/2018/02/07/hibernate-53-repeating-jpa-annotations/[this article].
+
+On the same page, you can read
+https://www.thoughts-on-java.org/jpa-tips-map-duration-attribute/[this article]
+about mapping a Duration attribute with Hibernate.
+
+== Time to upgrade
+
+There were many Hibernate project releases since the last newsletter:
+
+- http://in.relation.to/2018/02/15/hibernate-orm-530-cr1-release/[Hibernate ORM 5.3.0 CR1] and http://in.relation.to/2018/02/07/hibernate-orm-5213-final-release/[Hibernate ORM 5.2.13].
+- http://in.relation.to/2018/02/07/hibernate-search-5-9-0-Final/[Hibernate Search 5.9.0]
+- http://in.relation.to/2018/02/06/hibernate-ogm-5-2-Final-released/[Hibernate OGM 5.2.0]
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/do-i-have-to-use-serializable-for-jpa-and-hibernate-entities/176[Do I have to use Serializable for JPA and Hibernate entities]
+- https://stackoverflow.com/questions/9881611/whats-the-difference-between-jpa-and-hibernate[What's the difference between JPA and Hibernate?]
+- https://stackoverflow.com/questions/29708156/jpa-selecting-subset-of-entity-wont-load-onetoone-property/29746251#29746251[JPA: Selecting subset of entity won't load @OneToOne property]
+- https://stackoverflow.com/questions/27170089/transaction-management-in-hibernate-with-dao-design-pattern/27248135#27248135[Transaction Management in Hibernate with DAO Design Pattern]
+- https://discourse.hibernate.org/t/hibernate-converter-and-retrieve-attribute-name-inside-converter/166[Hibernate Converter and retrieve attribute name inside Converter]
+- https://discourse.hibernate.org/t/problem-in-mapping-date-with-hibernate/173[Problem in mapping Date with Hibernate]
+- https://discourse.hibernate.org/t/does-entitymanager-flush-and-clear-methods-empty-ehcache/174[Does EntityManager flush and clear methods empty Ehcache?]
+- https://discourse.hibernate.org/t/hibernate-orm-parent-and-extended-child-entity-mapping/172[Hibernate ORM parent and extended child entity mapping]
+- https://discourse.hibernate.org/t/ehcache-element-for-key-is-null/210[Ehcache Hibernate 2nd-level cache - Element for key is Null and N+1 query issue]
+- https://stackoverflow.com/questions/48673742/hibernate-projection-jpql-query-to-dto-issue/48690398#48690398[Hibernate JPQL projection query to DTO issue]
+- https://stackoverflow.com/questions/1657124/whats-the-difference-between-pessimistic-read-and-pessimistic-write-in-jpa/40232158#40232158[What's the difference between PESSIMISTIC_READ and PESSIMISTIC_WRITE in JPA?]
