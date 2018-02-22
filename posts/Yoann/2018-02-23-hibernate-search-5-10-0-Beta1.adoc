@@ -1,0 +1,52 @@
+= Hibernate Search 5.10.0.Beta1 is out!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published 5.10.0.Beta1, the first beta release for the 5.10 branch.
+The main goal of this release is to target Hibernate ORM 5.3,
+but it also adds DI framework integration and a TikaBridge improvement: see below!
+
+Hibernate ORM 5.3 has not been officially released yet, and is still just a candidate release,
+so this might be a good time to try to upgrade your application to ORM 5.3 + Search 5.10 and report any problems!
+
+== What's new?
+
+Here are some notable changes since Hibernate Search 5.9.0.Final:
+
+* link:https://hibernate.atlassian.net/browse/HSEARCH-2978[HSEARCH-2978]/link:https://hibernate.atlassian.net/browse/HSEARCH-3017[HSEARCH-3017]:
+Hibernate Search 5.10 is designed to work with Hibernate ORM 5.3.
+* https://hibernate.atlassian.net/browse/HSEARCH-2979[HSEARCH-2979]:
+Hibernate Search now taps into Hibernate ORM's integration to dependency injection frameworks.
+If you use a dependency injection framework integrating with Hibernate ORM 5.3,
+and you add field bridges to your dependency injection context,
+then Hibernate Search will automatically retrieve and use field bridges from this context.
++
+This allows you in particular to inject components from your DI context into your field bridges,
+using your DI framework's features (`@java.injext.Inject`, Spring's `@Autowired`, ...).
++
+The integration is already known to work in a CDI 2.0 environment such as WildFly 12
+(not released yet as of February 23, 2018),
+and the Spring team will probably make it work as soon as it adds support for JPA 2.2.
+* https://hibernate.atlassian.net/browse/HSEARCH-3019[HSEARCH-3019]:
+Tika bridges now offer the option to provide your own Tika parser
+instead of relying on content auto-detection using the default configuration.
+See the https://docs.jboss.org/hibernate/search/5.10/reference/en-US/html_single/#mapping-tika-bridge[TikaBridge documentation]
+for more information.
+
+For a full list of changes since 5.9.0.Final,
+please see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31636[the release notes].
+
+== How to get this release
+
+All details are available and up to date on http://hibernate.org/search/releases/5.10/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
