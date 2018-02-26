@@ -1,0 +1,217 @@
+= "Putting Bean Validation Constraints to Guava's Multimap"
+Gunnar Morling
+:awestruct-tags: [ "Discussions", "Hibernate Validator" ]
+:awestruct-layout: blog-post
+---
+
+The most significant feature in http://beanvalidation.org/news/2017/08/07/bean-validation-2-0-is-a-spec/[Bean Validation 2.0] (JSR 380) is the support for container element constraints.
+I.e. you can now apply constraints to the contents of container types such as `List`, `Map` or `Optional` by annotating their type arguments
+(which became possible with Java 8).
+
+In this blog post you'll learn how to take advantage of that for the validation of custom container types,
+such as `Multimap`, `Table` or `Graph` from Google's widely known https://github.com/google/guava[Guava library].
+
+As an example, let's consider a `Person` class which should be able to keep multiple e-mail addresses of different types
+(e.g. two addresses of type "work" and two "private" addresses).
+Such use case can nicely be modelled using Guava's https://github.com/google/guava/wiki/NewCollectionTypesExplained#multimap[Multimap] type,
+which allows to store multiple values for a single key:
+
+[source,java]
+----
+public class Person {
+
+    public Multimap<String, String> emailsByType;
+
+    // constructor etc.
+}
+----
+
+To ensure that only valid data is stored, let's put some constraints in place:
+
+[source,java]
+----
+public Multimap<@NotBlank String, @NotBlank @Email String> emailsByType;
+----
+
+This should make sure that a `ConstraintViolation` is produced, if the `emailsByType` map contained
+
+* any blank string as a key
+* any blank string or a string which isn't a valid e-mail address as a value
+
+Now let's see what happens if we validate a `Person` instance:
+
+[source,java]
+----
+Person bob = new Person();
+bob.emailsByType.put( "work", "bob@example.com" );
+bob.emailsByType.put( "work", "not-an-email" );
+bob.emailsByType.put( "private", "bob@home.com" );
+
+Validator validator = Validation.buildDefaultValidatorFactory()
+		.getValidator();
+
+Set<ConstraintViolation<Bean>> violations = validator.validate ( bob );
+----
+
+We should get one constraint violation about the second "work" e-mail (which isn't a valid e-mail address), right?
+
+Unfortunately, that's not quite what's happening; instead an exception is raised:
+
+[source,java]
+----
+javax.validation.ConstraintDeclarationException: HV000197:
+No value extractor found for type parameter 'K' of type com.google.common.collect.Multimap.
+----
+
+This is Hibernate Validator's way of telling us that it detected a constraint applying to one of the type parameters of `Multimap`
+(the `<K>` type parameter),
+but then it lacked information about how to obtain the values to be validated (the map keys in this case) from that container.
+
+This makes sense from a specification point of view.
+While the Bean Validation spec defines built-in support for JDK collection types,
+it cannot make assumptions about custom container types such as the one provided by Guava, let alone specific container types just defined in your project.
+
+But the exception message above points us into the right direction:
+instead of just mandating support for a fixed number of container types,
+the spec defines the http://beanvalidation.org/2.0/spec/#valueextractordefinition[value extractors SPI] which is used for the retrieval of container elements.
+By plugging in extractors for the custom container types you use,
+you can put constraints to them and the Bean Validation provider will call that SPI to fetch the container elements in order to validate them.
+
+== Value Extractors for `Multimap`
+
+So let's leverage that SPI for supporting Bean Validation constraints on the keys and values of Guava's `Multimap`.
+
+For each type parameter that should be constrainable, an implementation of `javax.validation.valueextraction.ValueExtractor` is required.
+Let's begin by creating the extractor for multimap values:
+
+[source,java]
+----
+public class MultimapValueExtractor implements ValueExtractor<Multimap<?, @ExtractedValue ?>> {
+
+    @Override
+    public void extractValues(Multimap<?, ?> originalValue, ValueReceiver receiver) {
+        // TODO
+    }
+}
+----
+
+The `ValueExtractor` interface is parameterized with the type to extract from (`Multimap` in our case).
+As a container may support constraints on multiple type parameters, the `@ExtractedValue` annotation is used to mark that type parameter which this extractor deals with.
+
+The interface just defines a single method, `extractValue()`.
+Here we need to implement the logic for fetching those elements from the container that correspond to the type parameter processed by the extractor.
+Each such element is to be passed to a suitable method of the given `ValueReceiver` object:
+
+[source,java]
+----
+@Override
+public void extractValues(Multimap<?, ?> originalValue, ValueReceiver receiver) {
+    for ( Entry<?, ?> entry : originalValue.entries() ) {
+        receiver.keyedValue( "<multimap value>", entry.getKey(), entry.getValue() );
+    }
+}
+----
+
+`ValueReceiver` provides multiple methods such as `keyedValue()`, `indexedValue()` etc.
+One of them must be called for each element of the container.
+All receiver methods accept a node name
+(which will be used in the corresponding property path, should the validation yield any `ConstraintViolation`)
+and the element value.
+Our implementation iterates through the `Multimap` entries and for each entry it passes the string literal `<multimap value>` and the entry value to the receiver.
+
+Depending on the receiver method called by the extractor,
+the property path node in the resulting `ConstraintViolation` will also return a key from `Node#getKey()` or a collection index from `Node#getIndex()`.
+Which of the receiver methods should be called, depends on the semantics of the container type.
+If it supports access by an index (such as `List`), `indexedValue()` should be called.
+For containers with key-style access (such as `Map` or `Multimap`), `keyedValue()` is the right match.
+For other multi-valued containers (e.g. `Iterable`), you'd call `iterableValue()` and finally,
+for any single-valued container (e.g. `Optional`), just `value()` should be called.
+
+Similarly to the extractor for the multimap values, we also declare one for its keys:
+
+[source,java]
+----
+public class MultimapKeyExtractor implements ValueExtractor<Multimap<@ExtractedValue ?, ?>> {
+
+    @Override
+    public void extractValues(Multimap<?, ?> originalValue, ValueReceiver receiver) {
+        for ( Object key : originalValue.keySet() ) {
+            receiver.keyedValue( "<multimap key>", key, key );
+        }
+    }
+}
+----
+
+In this case the `@ExtractedValue` annotation marks ``Multimap``'s type parameter `<K>` and as the validated value the extractor passes the map keys to the receiver.
+
+== Registering the Value Extractors
+
+Having created the two value extractors for `Multimap`, they must be registered with the Bean Validation engine.
+There are multiple ways to do so (e.g. we could pass them to the bootstrap API when programmatically creating a `ValidatorFactory`),
+but the most convenient one is to rely on the service loader mechanism.
+
+For that we just need to declare a file named _META-INF/services/javax.validation.valueextraction.ValueExtractor_
+and give the fully-qualified names of our custom extractor implementations as the contents:
+
+[source]
+----
+com.example.MultimapKeyExtractor
+com.example.MultimapValueExtractor
+----
+
+The Bean Validation provider will automatically pick up all extractor implementations which are registered that way.
+
+Finally, let's run our example again and see how the resulting `ConstraintViolation` and its property path look like.
+(all the assertions in the example are true):
+
+[source,java]
+----
+Person bob = new Person();
+bob.emailsByType.put( "work", "bob@example.com" );
+bob.emailsByType.put( "work", "not-an-email" );
+
+Validator validator = Validation.buildDefaultValidatorFactory()
+    .getValidator();
+
+Set<ConstraintViolation<Bean>> violations = validator.validate (bean );
+assert violations.size() == 1;
+
+// one violation of the @Email constraint
+ConstraintViolation<Bean> violation = violations.iterator().next();
+assert violation.getInvalidValue().equals( "not-an-email" );
+assert violation.getConstraintDescriptor().getAnnotation().annotationType().equals( Email.class );
+
+Iterator<Node> pathNodes = violation.getPropertyPath().iterator();
+assert pathNodes.hasNext() == true;
+
+// first property path node
+Node node = pathNodes.next();
+assert node.getName().equals( "emailsByType" );
+assert node.getKind() == ElementKind.PROPERTY;
+
+assert pathNodes.hasNext() == true;
+
+// second node
+node = pathNodes.next();
+assert node.getName().equals( "<multimap value>" );
+assert node.getKind() == ElementKind.CONTAINER_ELEMENT;
+assert node.getKey().equals( "work" );
+
+assert pathNodes.hasNext() == false;
+----
+
+Of specific interest is the second node in the property path.
+It is of kind `CONTAINER_ELEMENT` and returns the name and key we passed in the value extractor.
+The invalid element's value can be obtained via `ConstraintViolation#getInvalidValue()`.
+
+== Summary
+
+While Bean Validation 2.0 comes with support for many container types http://beanvalidation.org/2.0/spec/#valueextractordefinition-builtinvalueextractors[out of the box]
+(besides the JDK collection types there's for instance also support for `Optional` and the property types from JavaFX),
+it also very easy to add support for other, custom container types by implementing the `ValueExtractor` SPI.
+
+To learn more, take a look at http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_resolution_algorithms[Value extraction] chapter of the Hibernate Validator reference guide.
+It discusses some more advanced cases (e.g. support for non-generic containers) and all the different ways for registering custom extractors.
+
+You can find a complete example with the source code of this blog post in our https://github.com/hibernate/hibernate-demos/tree/master/hibernate-validator/custom-value-extractors[demos repository].
+And if you have any questions around value extractors, please let us know in the comments below.
