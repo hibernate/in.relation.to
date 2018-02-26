@@ -6,7 +6,7 @@ Gunnar Morling
 
 The most significant feature in http://beanvalidation.org/news/2017/08/07/bean-validation-2-0-is-a-spec/[Bean Validation 2.0] (JSR 380) is the support for container element constraints.
 I.e. you can now apply constraints to the contents of container types such as `List`, `Map` or `Optional` by annotating their type arguments
-(which became possible with Java 8).
+(which became possible with Java 8): `List<@Future LocalDate> shipmentDates`.
 
 In this blog post you'll learn how to take advantage of that for the validation of custom container types,
 such as `Multimap`, `Table` or `Graph` from Google's widely known https://github.com/google/guava[Guava library].
@@ -69,7 +69,7 @@ but then it lacked information about how to obtain the values to be validated (t
 
 This makes sense from a specification point of view.
 While the Bean Validation spec defines built-in support for JDK collection types,
-it cannot make assumptions about custom container types such as the one provided by Guava, let alone specific container types just defined in your project.
+it cannot make assumptions about custom container types such as the ones provided by Guava, let alone specific container types just defined in your project.
 
 But the exception message above points us into the right direction:
 instead of just mandating support for a fixed number of container types,
@@ -98,7 +98,7 @@ public class MultimapValueExtractor implements ValueExtractor<Multimap<?, @Extra
 The `ValueExtractor` interface is parameterized with the type to extract from (`Multimap` in our case).
 As a container may support constraints on multiple type parameters, the `@ExtractedValue` annotation is used to mark that type parameter which this extractor deals with.
 
-The interface just defines a single method, `extractValue()`.
+The interface just defines a single method, `extractValues()`.
 Here we need to implement the logic for fetching those elements from the container that correspond to the type parameter processed by the extractor.
 Each such element is to be passed to a suitable method of the given `ValueReceiver` object:
 
@@ -208,9 +208,9 @@ The invalid element's value can be obtained via `ConstraintViolation#getInvalidV
 
 While Bean Validation 2.0 comes with support for many container types http://beanvalidation.org/2.0/spec/#valueextractordefinition-builtinvalueextractors[out of the box]
 (besides the JDK collection types there's for instance also support for `Optional` and the property types from JavaFX),
-it also very easy to add support for other, custom container types by implementing the `ValueExtractor` SPI.
+it is also very easy to add support for other, custom container types by implementing the `ValueExtractor` SPI.
 
-To learn more, take a look at http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_resolution_algorithms[Value extraction] chapter of the Hibernate Validator reference guide.
+To learn more, take a look at the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#chapter-valueextraction[Value extraction] chapter of the Hibernate Validator reference guide.
 It discusses some more advanced cases (e.g. support for non-generic containers) and all the different ways for registering custom extractors.
 
 You can find a complete example with the source code of this blog post in our https://github.com/hibernate/hibernate-demos/tree/master/hibernate-validator/custom-value-extractors[demos repository].
