@@ -1,0 +1,122 @@
+= "Hibernate Validator 6.0.8.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.8.Final
+---
+
+It has been a couple of months since our last Hibernate Validator release and we have made some significant progress since then.
+
+We just released Hibernate Validator {released-version} containing all these bugfixes and enhancements.
+
+This is a recommended upgrade for everyone using Hibernate Validator 6.0.x and it is a drop-in replacement of 6.0.7.Final.
+
+== What's new
+
+=== Pass a payload to your constraint validators
+
+https://github.com/mkurz[Matthias Kurz] worked on allowing to pass an arbitrary payload to the constraint validators.
+
+Think of it as a good way to make your constraint validators behave differently depending on your environment (locale, production/staging environment, global objects you initialize at bootstrap and want to inject in your constraint validators...).
+
+The payload is an `Object` so it can be a `String`, a `Map` or even a proper bean.
+
+You can define the constraint validator payload when initializing the `ValidatorFactory`:
+[source, JAVA]
+----
+ValidatorFactory validatorFactory = Validation.byProvider( HibernateValidator.class )
+    .configure()
+    .constraintValidatorPayload( "US" )
+    .buildValidatorFactory();
+
+Validator validator = validatorFactory.getValidator();
+----
+
+and also refine it when initializing a specific `Validator`:
+[source, JAVA]
+----
+HibernateValidatorFactory hibernateValidatorFactory = Validation.byDefaultProvider()
+    .configure()
+    .buildValidatorFactory()
+    .unwrap( HibernateValidatorFactory.class );
+
+Validator validator = hibernateValidatorFactory.usingContext()
+    .constraintValidatorPayload( "FR" )
+    .getValidator();
+----
+
+Your constraint validator can obtain the constraint validator payload in its `initialize()` method:
+[source, JAVA]
+----
+public class ZipCodeValidator implements HibernateConstraintValidator<ZipCode, String> {
+
+    public String countryCode;
+
+    @Override
+    public void initialize(ConstraintDescriptor<ZipCode> constraintDescriptor,
+            HibernateConstraintValidatorInitializationContext initializationContext) {
+        this.countryCode = initializationContext
+                .getConstraintValidatorPayload( String.class );
+    }
+
+    [...]
+}
+----
+
+You can find all the information related to this new feature in https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#constraint-validator-payload[our reference documentation].
+
+=== Performance and build improvements
+
+https://github.com/marko-bekhta[Marko] worked on a few performance improvements (https://hibernate.atlassian.net/browse/HV-1566[HV-1566], https://hibernate.atlassian.net/browse/HV-1543[HV-1543] and https://hibernate.atlassian.net/browse/HV-1444[HV-1444]) that should make Hibernate Validator 6.0.8.Final faster than ever.
+
+https://hibernate.atlassian.net/browse/HV-1444[HV-1444] also improved our correctness towards the Bean Validation specification in some corner cases related to container element constraints.
+
+We also made quite a lot of build improvements related to JDK 9 and the TCK and upgraded our dependencies.
+
+=== WildFly 12
+
+As WildFly 12 http://wildfly.org/news/2018/02/28/WildFly12-Final-Released/[got released] recently, we updated our build to test Hibernate Validator on WildFly 11 and 12.
+
+We currently produce WildFly patches to upgrade the Hibernate Validator modules inside WildFly for these two versions.
+
+Note that WildFly 12 now includes Bean Validation 2.0 and Hibernate Validator 6.0 (6.0.7.Final) but they are not enabled by default. You need to enable the EE8 preview mode by appending the `ee8.preview.mode` option, as explained in the http://wildfly.org/news/2018/02/28/WildFly12-Final-Released/[WildFly 12 announcement].
+
+=== Bugs fixed
+
+We also fixed a few bugs, most notably:
+
+ * https://hibernate.atlassian.net/browse/HV-1461[HV-1461] - A bug that could interfere with method overriding in a few corner cases - it was fixed by a https://github.com/FasterXML/java-classmate[Classmate] upgrade
+ * https://hibernate.atlassian.net/browse/HV-1551[HV-1551] - It wasn't possible to define `@Size` constraints on raw collections (e.g. `private List myList`)
+
+=== Translation updates
+
+The Spanish translation of the default messages was updated by https://github.com/HillmerCh[Hillmer Chona].
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:{released-version}_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-11.0.0.Final-patch.zip[WildFly 11] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-12.0.0.Final-patch.zip[WildFly 12]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== What's next?
+
+We will continue to publish maintenance releases to fix quickly the issues reported by our users.
+
+We updated http://hibernate.org/validator/roadmap/[our roadmap] with the ideas we have for the future. If you want to join us, don't hesitate to pick a task and come discuss it with us.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
