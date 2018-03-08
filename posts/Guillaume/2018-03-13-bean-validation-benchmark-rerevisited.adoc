@@ -1,0 +1,152 @@
+= "Bean Validation benchmark (re)revisited"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Bean Validation", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate Validator 6.0 has matured a lot since its first release, last August.
+
+We added a couple of new features but we also invested a lot of work in improving the overall performances.
+
+I published http://in.relation.to/2017/10/31/bean-validation-benchmark-revisited/[a first blog post last October] to share an update about our performance work based on 6.0.4.Final.
+
+We just released 6.0.8.Final and have a couple more improvements baked for our next release so it's definitely time for an update.
+
+== Contestants
+
+The idea is to compare the various Bean Validation implementations and show the progress made by Hibernate Validator 6.0.
+
+We decided to benchmark 4 implementations:
+
+ * Hibernate Validator 6.0.9-SNAPSHOT (as of today's master)
+ * Hibernate Validator 6.0.4.Final (released October 25th 2017)
+ * Hibernate Validator 5.4.2.Final (released October 19th 2017)
+ * Apache BVal 1.1.2 (released November 3rd 2016)
+
+Hibernate Validator 5.4 and Apache BVal 1.1 are implementations of Bean Validation 1.1 so, in this benchmark, we won't test the new features of Bean Validation 2.0 but only features common to both versions of the spec.
+
+The Apache BVal folks are currently working on a new version targetting Bean Validation 2.0 so we will probably post a new update once they are done.
+
+== Benchmarks
+
+=== Unit benchmarks
+
+In Hibernate Validator, we maintain https://github.com/hibernate/hibernate-validator/tree/master/performance[a set of JMH benchmarks] that we can run against various versions of Bean Validation implementations.
+
+These benchmarks are very simple: they do not perform complex validation as the whole point is to measure the overhead of the validation engine.
+
+For this benchmark series, we will just run the https://github.com/hibernate/hibernate-validator/blob/master/performance/src/main/java/org/hibernate/validator/performance/simple/SimpleValidation.java[SimpleValidation] benchmark: we just test the validation of a simple bean with a couple of constraints. Nothing fancy, just plain bean validation.
+
+=== Bean Validation benchmark
+
+This benchmark is the evolution of http://carinae.net/2010/06/benchmarking-hibernate-validator-and-apache-beanvalidation-the-two-jsr-303-implementations/[an existing benchmark] that has been put together by the Apache BVal team.
+
+We have imported it https://github.com/hibernate/beanvalidation-benchmark[into GitHub] and made it a bit more stable (you can generate the random beans once and use the same set of beans for several benchmarks) and flexible (easier to use different Hibernate Validator implementations). We also migrated the project to JMH.
+
+It's a rather advanced benchmark as it generates a set of classes with a scenario you can tweak and then run validation on the generated beans.
+
+It supports features as groups, inheritance and so on.
+
+The default scenario we use generates 200 different beans.
+
+It's a decent approximation of what could be a real use case of Bean Validation.
+
+Note that the numbers are not comparable to the ones of the previous blog post as the conversion to JMH totally changed the way the benchmark is run.
+
+== Some numbers (and nice charts!)
+
+OK, you came here for updated numbers and charts and, until now, you just got a presentation of the benchmarks. Don't leave, here they are!
+
+=== SimpleValidation JMH benchmark
+
+Numbers are in *ops/ms*, the *higher* the *better*.
+
+++++
+<div id="simple-validation-jmh-chart"></div>
+++++
+
+=== Bean Validation benchmark
+
+Numbers are in *ops/s*, the *higher* the *better*.
+
+++++
+<div id="bean-validation-benchmark-chart"></div>
+++++
+
+== Conclusion
+
+Hibernate Validator is faster than ever: 6.0.9-SNAPSHOT is significantly faster (~ 40-50%) than 6.0.4.Final, which was already 2 to 3 times faster than 5.4.2.Final and Apache BVal.
+
+In the end, we warmly recommend you to stay tuned and update your Hibernate Validator dependency, especially if you make heavy usage of it (validating big batches of beans for instance).
+
+6.0.9.Final should be released within a month or so.
+
+== Lessons learned
+
+http://in.relation.to/2017/10/31/bean-validation-benchmark-revisited/#a-few-examples-of-the-changes-we-made[In the previous blog post], we shared some of changes we made and the lessons we learned from this first iteration.
+
+For this second iteration, we continued on this path, making small changes, optimizing the common cases and so on.
+
+Nothing big but what we have learned from this work is that each small change can make a difference.
+
+== Reproducing these results
+
+These benchmarks were run on a typical engineer laptop (Core i7 with 16 GB of memory).
+
+As mentioned earlier, all the benchmarks presented in this article are publicly available and Open Source so feel free to run them by yourselves:
+
+ * https://github.com/hibernate/hibernate-validator/tree/master/performance[JMH benchmarks]
+ * https://github.com/hibernate/beanvalidation-benchmark[Bean Validation benchmark]
+
+Considering the random nature of the Bean Validation benchmark, you might get slightly different results but I'm confident they will highlight similar improvements.
+
+++++
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+$(function() {
+	var data = [ {
+		x: [389, 583, 1357, 2023],
+		y: ['BVal 1.1.2', 'HV 5.4.2.Final', 'HV 6.0.4.Final', 'HV 6.0.9-SN.'],
+		error_x: {
+			type: 'data',
+			array: [8, 3, 9, 26],
+			visible: true
+  		},
+		type: 'bar',
+		orientation: 'h',
+		marker: {
+			color: ['#C7754C', '#17BDB8', '#00749F', '#9ee5ff']
+		}
+	} ];
+
+	var layout = {
+		bargap: 0.5,
+		hovermode: 'closest'
+	};
+
+	Plotly.newPlot('simple-validation-jmh-chart', data, layout, { displayModeBar: false });
+
+	var data = [ {
+		x: [184, 174, 657, 954],
+		y: ['BVal 1.1.2', 'HV 5.4.2.Final', 'HV 6.0.4.Final', 'HV 6.0.9-SN.'],
+		error_x: {
+			type: 'data',
+			array: [2, 2, 5, 9],
+			visible: true
+  		},
+		type: 'bar',
+		orientation: 'h',
+		marker: {
+			color: ['#C7754C', '#17BDB8', '#00749F', '#9ee5ff']
+		}
+	} ];
+
+	var layout = {
+		bargap: 0.5,
+		hovermode: 'closest'
+	};
+
+	Plotly.newPlot('bean-validation-benchmark-chart', data, layout, { displayModeBar: false });
+});
+</script>
+++++
