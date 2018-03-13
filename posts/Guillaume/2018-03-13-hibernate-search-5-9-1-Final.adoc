@@ -1,0 +1,35 @@
+= Hibernate Search 5.9.1.Final was just released
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Search", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published 5.9.1.Final, a maintenance release for the 5.9 branch.
+
+This release brings a usability enhancement for our Elasticsearch support needed by one of our users (keep them coming!).
+
+== What's new?
+
+5.9.1.Final only includes 2 changes:
+
+ * https://hibernate.atlassian.net/browse/HSEARCH-3026[HSEARCH-3026]:
+   It is now possible to define a path prefix for the Elasticsearch cluster.
+   Thus, Hibernate Search is now able to connect to clusters with connection URLs such as
+   `http://servername/my/elasticsearch/`.
+ * https://hibernate.atlassian.net/browse/HSEARCH-3027[HSEARCH-3027]:
+   We fixed a low probability issue in the bootstrap code: it could hang on failure if
+   the exception raised was not a `RuntimeException`.
+
+== How to get this release
+
+All the necessary information is available (and updated regularly)
+on http://hibernate.org/search/releases/5.9/#get-it[hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
