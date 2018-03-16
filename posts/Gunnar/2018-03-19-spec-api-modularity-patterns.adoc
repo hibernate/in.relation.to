@@ -1,0 +1,381 @@
+= "Spec API Modularity Patterns"
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+A while ago link:/2017/04/11/accessing-private-state-of-java-9-modules/[we discussed] different ways to have one JPMS ("Java Platform Module System") module access private state of other modules.
+This is a common requirement for libraries such as Hibernate ORM (for reading and writing entity state) or Spring (for injecting dependencies into fields).
+
+In this post we're going to explore how this requirement can be implemented when it comes to specifications, such as JPA, and corresponding implementations such as Hibernate ORM.
+As an example, let's consider three JPMS modules:
+
+* _fieldreader.spec_: a made-up "specification" which defines a single contract for accessing private fields of user classes
+* _acme.fieldreader.impl_: an implementation of the field reader spec
+* _com.example.beans_: a module with a user class and some "application code" that should use the field reader spec API to access the private state of that user class
+
+The _com.example.beans_ module shouldn't depend on any specifics of the ACME implementation of the spec, but solely rely on the field reader spec.
+Let's design the API, the implementation and the code using the API according to this goal in the following.
+
+== The Specification API
+
+The field reader spec defines a single interface, `FieldValueReader`:
+
+[source,java]
+._fieldreader.spec/src/main/java/fieldreader/spec/FieldValueReader.java_
+----
+public interface FieldValueReader {
+    public Object getFieldValue(Object o, String fieldName);
+}
+----
+
+Passing an object and a field name, the reader API should return the value of the given field.
+
+We also need a way to allow code in other modules to bootstrap an implementation of the field reader spec.
+Similar to JPA, Bean Validation and other specifications this can be realized using a static method on an API entry point class:
+
+[source,java]
+._fieldreader.spec/src/main/java/fieldreader/spec/FieldReaderApi.java_
+----
+public class FieldReaderApi {
+
+    public static FieldValueReader getFieldValueReader() {
+        // ...
+    }
+}
+----
+
+Besides any exception and enum types, this entry point class usually will be the only class in the API module which isn't an interface and provides actual method implementations.
+
+== Bootstrapping API Implementations
+
+The implementation of the entry point class can be based on the service loader mechanism.
+An official part of the Java platform since release 6, the https://docs.oracle.com/javase/9/docs/api/index.html?java/util/ServiceLoader.html[service loader] achieved much more prominence with introduction of the Java module system.
+
+In JPMS, services are are first-level construct and the means of binding API contracts in one module to implementation(s) located in other modules.
+To make use of this mechanism, a service contract is needed which serves as integration point between API module and implementation modules:
+
+[source,java]
+._fieldreader.spec/src/main/java/fieldreader/spec/bootstrap/BootstrapDelegate.java_
+----
+public interface BootstrapDelegate {
+    FieldValueReader getFieldValueReader();
+}
+----
+
+In the API's module descriptor we declare the usage of this service and also export the two API packages:
+
+[source,java]
+._fieldreader.spec/src/main/java/module-info.java_
+----
+module fieldreader.spec {
+    exports fieldreader.spec;
+    exports fieldreader.spec.bootstrap;
+    uses fieldreader.spec.bootstrap.BootstrapDelegate;
+}
+----
+
+In the ACME implementation of the spec we create an implementation of the `BootstrapDelegate` contract
+(which returns the ACME `FieldValueReader` implementation):
+
+[source,java]
+._acme.fieldreader.impl/src/main/java/acme/fieldreader/impl/AcmeBootstrapDelegate.java_
+----
+public class AcmeBootstrapDelegate implements BootstrapDelegate {
+
+    @Override
+    public FieldValueReader getFieldValueReader() {
+        // ...
+    }
+}
+----
+
+We then need to register that service implementation in the module descriptor using the `provides` directive:
+
+[source,java]
+._acme.fieldreader.impl/src/main/java/module-info.java_
+----
+module acme.fieldreader.impl {
+    requires fieldreader.spec;
+    provides fieldreader.spec.bootstrap.BootstrapDelegate
+        with acme.fieldreader.impl.AcmeBootstrapDelegate;
+}
+----
+
+We also need the `requires` instruction for declaring the dependence to the API module,
+since this module implements the specification interfaces,
+
+Finally, the `getFieldValueReader()` method in the spec API can be implemented with a few lines of code:
+
+[source,java]
+._fieldreader.spec/src/main/java/fieldreader/spec/FieldReaderApi.java_
+----
+public class FieldReaderApi {
+
+    public static FieldValueReader getFieldValueReader() {
+        ServiceLoader<BootstrapDelegate> loader = ServiceLoader.load( BootstrapDelegate.class );
+
+        return loader.findFirst()
+            .orElseThrow( () -> new IllegalStateException(
+                        "No provider of " + BootstrapDelegate.class.getName() + " available" )
+                    )
+            .getFieldValueReader();
+    }
+}
+----
+
+== Implementing the `FieldValueReader` Contract
+
+So far things look pretty much the same as in pre-JPMS times.
+After all, utilizing the service loader for bootstrapping API implementations in a portable way is an established pattern,
+used by a wide range of Java specifications.
+Just the registration of provided and used services in module descriptors changes a bit when using the JPMS.
+
+Things are getting more interesting when it comes to implementing the `FieldValueReader` contract in the ACME spec implementation.
+One of the goals of JPMS is encapsulation, i.e. non-exported packages and their contents are by default not accessible for code in other modules.
+This means that, unlike in the past, the ACME module cannot simply use reflection to obtain a `java.lang.reflect.Field` instance, call `setAccessible(true)` on it
+and call `Field#get()` to obtain the field's value from a given instance.
+
+Instead, for this to work, the package containing the type to obtain values from would have to be _opened_ towards the ACME implementation modules.
+If that's the case, we can use reflection, or better yet, the new `VarHandle` API to get values from private fields in the user module.
+There are multiple ways for opening up a package, which each provide a different level of granularity.
+
+The simplest is to make the _com.example.beans_ module a completely _open module_.
+This means that code in any other module can apply deep reflection to any type of the _com.example.beans_ module.
+Needless to say that this isn't very desirable in terms of encapsulation.
+
+We get some more control by just opening up a single package:
+
+[source,java]
+._com.example.beans/src/main/java/module-info.java_
+----
+module com.example.beans {
+    requires fieldreader.spec;
+    opens com.example.beans;
+}
+----
+
+This allows any other module to apply deep reflection to the types of `com.example.beans` package.
+That's already better, but it'd be even more preferable to specifically control and limit which other modules are allowed to do so.
+This can be achieved by qualifying the `opens` directive:
+
+[source,java]
+----
+opens com.example.beans to acme.fieldreader.impl;
+----
+
+Now we could go and create an implementation of the `FieldValueReader` interface in the ACME implementation module.
+But, thinking about it, we are now in conflict with one of the original goals we set up:
+the user module shouldn't rely on any specific implementation of the field reader spec, but that's exactly the case now.
+By using the `acme.fieldreader.impl` module name in our module descriptor, portability to other implementations of the field reader spec is diminished.
+
+Instead of opening up our package towards a specific field reader implementation, it'd be preferable to opening it up towards the API module itself:
+
+[source,java]
+----
+opens com.example.beans to fieldreader.spec;
+----
+
+That's nice from a user's perspective, but the question is, how could this be implemented?
+After all, the code performing the private field access will be located in the implementation module and not the spec module itself.
+
+== Propagating Private Access Using Lookups
+
+This is where the https://docs.oracle.com/javase/9/docs/api/index.html?java/lang/invoke/MethodHandles.Lookup.html[MethodHandles.Lookup] class comes in handy.
+As per its JavaDoc, it's "a factory for creating method handles" (and also var handles as of Java 9).
+Put simply, method and var handles can be used as an alternative to the classic reflection API for accessing Java methods and fields in a dynamic way.
+Continuing to quote the docs, "we say that a lookup has private access if its lookup modes include the possibility of accessing private members".
+
+And this the loophole we're after: if the user's package has been opened towards the spec module,
+we can obtain such `Lookup` with private access from within the spec module and pass it along to the implementation module.
+There the lookup object can be used to access the private fields of user classes.
+
+To do so, let's change the `BootstrapDelegate` interface a little bit:
+
+[source,java]
+._fieldreader.spec/src/main/java/fieldreader/spec/bootstrap/BootstrapDelegate.java_
+----
+public interface BootstrapDelegate {
+
+    FieldValueReader getFieldValueReader(LookupProvider lookupProvider);
+
+    public interface LookupProvider {
+        Lookup getPrivateLookup(Object o);
+    }
+}
+----
+
+`getFieldValueReader()` has a `LookupProvider` parameter now.
+This object will later on be used in the implementation of `FieldValueReader#getFieldValue()` to obtain a lookup object with private access for the given object type.
+
+But first let's take a look at the changes required to the `FieldReaderApi` class:
+
+[source,java]
+._fieldreader.spec/src/main/java/fieldreader/spec/FieldReaderApi.java_
+----
+public class FieldReaderApi {
+
+  private static final LookupProvider LOOKUP_PROVIDER = new LookupProviderImpl();
+
+  public static FieldValueReader getFieldValueReader() {
+      ServiceLoader<BootstrapDelegate> loader = ServiceLoader.load( BootstrapDelegate.class );
+
+      return loader.findFirst()
+              .orElseThrow( () -> new IllegalStateException( "No provider of " + BootstrapDelegate.class.getName() + " available" ) )
+              .getFieldValueReader( LOOKUP_PROVIDER );
+  }
+
+  private static class LookupProviderImpl implements BootstrapDelegate.LookupProvider {
+
+      private final ClassValue<Lookup> classValue;
+
+      private LookupProviderImpl() {
+          classValue = new ClassValue<Lookup>() {
+
+              @Override
+              protected Lookup computeValue(Class<?> type) {
+                  FieldValueReader.class.getModule().addReads( type.getModule() );
+                  try {
+                      return MethodHandles.privateLookupIn( type, MethodHandles.lookup() );
+                  }
+                  catch (IllegalAccessException e) {
+                      throw new RuntimeException( e );
+                  }
+              }
+          };
+      }
+
+      @Override
+      public Lookup getPrivateLookup(Object o) {
+          return classValue.get( o.getClass() );
+      }
+  }
+}
+----
+
+The `getFieldValueReader()` method is pretty much the same as before, it still uses the service loader to find `BootstrapDelegate` implementations.
+What's different is that it passes an implementation of `LookupProvider` now.
+
+This implementation takes advantage of the very useful https://docs.oracle.com/javase/9/docs/api/index.html?java/lang/invoke/ClassValue.html[ClassValue] class,
+which serves as a lazily populated cache for the lookup objects for each type to obtain field values from.
+If no `Lookup` is stored yet for a given type, the `computeValue()` method is invoked to retrieve such lookup.
+By calling `MethodHandles.privateLookupIn()`, we can obtain a lookup with private access for the given type.
+Note that this requires that the module making this call, i.e. the spec API module, _reads_ the module owning the given type.
+Naturally, the spec module cannot declare a `requires` directive towards the user module.
+This is why that reads relationship is established dynamically by calling `Module#addReads()` before obtaining the lookup with private access.
+
+All subsequent calls to `getPrivateLookup()` for the same type will return the lookup instance cached in the `ClassValue` instance.
+
+== Implementing the `FieldValueReader` Interface
+
+Now that the API module passes lookups with private access to the implementation module,
+it's time to take a look at the `BootstrapDelegate` and `FieldValueReader` implementations in the ACME implementation module.
+The former is trivial, it just passes on the given lookup object:
+
+[source,java]
+._acme.fieldreader.impl/src/main/java/acme/fieldreader/impl/AcmeBootstrapDelegate.java_
+----
+public class AcmeBootstrapDelegate implements BootstrapDelegate {
+
+    @Override
+    public FieldValueReader getFieldValueReader(LookupProvider lookupProvider) {
+        return new FieldValueReaderImpl( lookupProvider );
+    }
+}
+----
+
+Also the `FieldValueReader` implementation isn't very complex:
+
+[source,java]
+._acme.fieldreader.impl/src/main/java/acme/fieldreader/impl/AcmeBootstrapDelegate.java_
+----
+public class FieldValueReaderImpl implements FieldValueReader {
+
+    private LookupProvider lookupProvider;
+
+    public FieldValueReaderImpl(LookupProvider lookupProvider) {
+        this.lookupProvider = lookupProvider;
+    }
+
+    @Override
+    public Object getFieldValue(Object o, String fieldName) {
+        try {
+            return lookupProvider.getPrivateLookup( o )
+                    .unreflectVarHandle( o.getClass().getDeclaredField( fieldName ) )
+                    .get( o );
+        }
+        catch (Throwable e) {
+            throw new RuntimeException( e );
+        }
+    }
+}
+----
+
+All that's needed in `getFieldValue()` is to obtain a lookup with private access from the provider,
+use this to get a var handle for the field with the given name and obtain the field's value for the given object.
+Of course a more sophisticated implementation could cache the var handle for a given field and likely apply other optimizations.
+
+== Testing
+
+Finally, we got all the pieces in place and can test the field reader API and its implementation from within the user module:
+
+[source,java]
+._com.example.beans/src/main/java/com/example/beans/MyEntity.java_
+----
+public class MyEntity {
+
+    private String name;
+
+    public MyEntity(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+----
+
+[source,java]
+._com.example.beans/src/main/java/com/example/main/FieldReaderTest.java_
+----
+public class FieldReaderTest {
+
+    public static void main(String[] args) {
+        FieldValueReader fieldValueReader = FieldReaderApi.getFieldValueReader();
+        Object value = fieldValueReader.getFieldValue( new MyEntity( "bob" ), "name" );
+        assert "bob".equals( value );
+    }
+}
+----
+
+Note that the module descriptor of the user module doesn't declare any dependence on the ACME implementation.
+Instead it is sufficient to add this module to the module path when executing the application, and the API module will bootstrap the implementation,
+passing the lookup with private access while doing so.
+
+== Summary
+
+In this post we've shown how Java specifications and their implementations can make use of the JPMS to grant private access to classes from user modules.
+
+This is often needed, for instance JPA providers must access the private state of entities if these mandate field access.
+Similarly, Bean Validation providers must access field values for field-level constraints.
+As we've seen, the user module must open up the package with the affected types for this to work.
+For the sake of portability, the packages should not be opened up to specific implementations, though, but instead to the API module.
+The API module can then obtain a lookup with private access to the user types and pass this lookup object into the implementation modules.
+This approach achieves the goal of portability between specs while enabling spec implementations to perform the required private access operations.
+
+An alternative approach could be to have the user code itself bootstrap a lookup with private access and pass this into the API during bootstrap.
+For several reason's that's not ideal, though: the `Lookup` API is rather low-level and user code might fail to correctly implement retrieval of a lookup with private access.
+Also, in container environments, the user code isn't in control of bootstrapping APIs such as JPA or Bean Validation and thus cannot pass a lookup object.
+Finally, if the user classes are spread out across multiple modules, it'd be a challenging task to collect the required lookups from all these user modules.
+
+In comparison, the proposed solution of opening up user packages to spec API modules and let those modules propagate lookups with private access to implementation modules is much easier to use.
+Some adjustments to spec API modules will be needed for this.
+
+It will be interesting to see when the affected specifications will begin to explore the required changes and release updated revisions of their APIs as JPMS-aware modules.
+With the https://mmilinkov.wordpress.com/2018/02/26/and-the-name-is/[recent move of Java EE] to the Eclipse Foundation and its rebranding as Jakarta EE,
+there's a great opportunity for the community - i.e. you - to help with that!
+
+You can find the complete source code including all the three modules we've discussed of this example at ... .
+If you got any feedback on this approach, let us know in the comments below.
+Looking forward to your ideas, thoughts, alternative suggestions, questions on the topic very much!
