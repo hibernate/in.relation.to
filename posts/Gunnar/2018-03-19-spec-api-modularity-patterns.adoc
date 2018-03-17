@@ -162,7 +162,7 @@ module com.example.beans {
 }
 ----
 
-This allows any other module to apply deep reflection to the types of `com.example.beans` package,
+This allows any other module to apply deep reflection to the types of the `com.example.beans` package,
 but not to other packages of that module.
 That's already better, but it'd be even more preferable to specifically control and limit which other modules are allowed to do so.
 This can be achieved by qualifying the `opens` directive:
@@ -172,7 +172,7 @@ This can be achieved by qualifying the `opens` directive:
 opens com.example.beans to acme.fieldreader.impl;
 ----
 
-Now we could go and create an implementation of the `FieldValueReader` interface in the ACME implementation module.
+Now we could go and create an implementation of the `FieldValueReader` interface in the ACME module.
 But, thinking about it, we are now in conflict with the original goal we set up above:
 the user module shouldn't rely on any specific implementation of the field reader spec, but that's exactly the case now.
 By using the `acme.fieldreader.impl` module name in our module descriptor, portability to other implementations of the field reader spec is diminished.
@@ -224,14 +224,17 @@ public class FieldReaderApi {
         ServiceLoader<BootstrapDelegate> loader = ServiceLoader.load( BootstrapDelegate.class );
 
         return loader.findFirst()
-                .orElseThrow( () -> new IllegalStateException( "No provider of " + BootstrapDelegate.class.getName() + " available" ) )
+                .orElseThrow( () -> new IllegalStateException(
+                    "No provider of " + BootstrapDelegate.class.getName() + " available" ) )
                 .getFieldValueReader( PACKAGE_OPENER );
     }
 
     private static class PackageOpenerImpl implements BootstrapDelegate.PackageOpener {
 
         @Override
-        public void openPackageIfNeeded(Module targetModule, String targetPackage, Module specImplModule) {
+        public void openPackageIfNeeded(Module targetModule, String targetPackage,
+                Module specImplModule) {
+
             if ( !targetModule.isOpen( targetPackage, specImplModule ) ) {
                 targetModule.addOpens( targetPackage, specImplModule );
             }
@@ -273,7 +276,7 @@ public class FieldValueReaderImpl implements FieldValueReader {
 
     private final ClassValue<Lookup> lookups;
 
-    public FieldValueReaderImpl(PackageOpener moduleOpener) {
+    public FieldValueReaderImpl(PackageOpener packageOpener) {
         this.lookups = new ClassValue<Lookup>() {
 
             @Override
@@ -282,7 +285,7 @@ public class FieldValueReaderImpl implements FieldValueReader {
                     getClass().getModule().addReads( type.getModule() );
                 }
 
-                moduleOpener.openPackageIfNeeded(
+                packageOpener.openPackageIfNeeded(
                         type.getModule(),
                         type.getPackageName(),
                         FieldValueReaderImpl.class.getModule()
@@ -325,7 +328,7 @@ For this to succeed, this call must be made from within a module towards the pac
 (or the type's own module).
 As the call is made from the ACME implementation module,
 the `ModuleOpener` passed by the spec module is used to establish this opens relationship, if needed.
-This requires that the module to which the package should be opened, _reads_ the module declaring the package.
+This in turn requires that the module to which the package should be opened, _reads_ the module declaring the package.
 Naturally, the ACME implementation module cannot declare a `requires` directive towards the user module in its module descriptor.
 This is why the reads relationship is established dynamically by calling `Module#addReads()` before requesting to open the package.
 
@@ -389,7 +392,7 @@ In this post we've shown how Java specifications can make use of the JPMS to boo
 and how implementation modules can obtain private access to classes from user modules.
 
 This is often needed, for instance JPA providers must access the private state of entities if these mandate field access.
-Similarly, Bean Validation providers must access field values for field-level constraints.
+Similarly, Bean Validation providers must access field values for validating field-level constraints.
 As we've seen, the user module must open up the package with the affected types for this to work.
 For the sake of portability, the packages should not be opened up to specific implementations,
 though, but instead to the API module.
@@ -409,8 +412,8 @@ Finally, if the user classes are spread out across multiple modules, it'd be a c
 
 In comparison, the solution of opening up user packages to spec API modules
 and let those further open the user packages to implementation modules is much easier to work with.
-Some adjustments to spec API modules will be needed for this.
 
+Some adjustments to spec API modules will be needed for this.
 It will be interesting to see when the affected specifications will begin to explore the required changes and release updated revisions of their APIs as JPMS-aware modules.
 With the recent move of Java EE to the Eclipse Foundation and its https://mmilinkov.wordpress.com/2018/02/26/and-the-name-is/[rebranding as Jakarta EE],
 there's a great opportunity for the community - i.e. you - to help with that!
