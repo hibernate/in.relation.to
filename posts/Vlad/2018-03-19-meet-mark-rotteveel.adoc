@@ -1,0 +1,73 @@
+= Meet Mark Rotteveel
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/Avalanche1979[Mark Rotteveel],
+a software developer at SAP working on the SAP HANA database.
+
+image::MarkRotteveel.jpg["Mark Rotteveel, align="center", width="400"]
+
+== Hi, Mark. Would you like to introduce yourself?
+
+Hi Vlad. My name is Mark Rotteveel, and I'm 39 years old. I live in Delft, The Netherlands.
+
+I've been programming since my teens, and professionally for about 12 years (first as a technical tester, then as a developer).
+
+My day job is as a software engineer at https://www.bol.com[bol.com], the largest online retailer in The Netherlands.
+My team develops and maintains a collection of services for sending automatic messages (mainly emails) to customers, third-party sellers, and other recipients (e.g. order confirmation, shipping, etc).
+
+As a hobby, I maintain Jaybird, the Firebird JDBC driver, and I like to answer questions on Stack Overflow related to JDBC, Java, Firebird and other databases.
+I was introduced to Firebird by a database course in my study at the Open University of The Netherlands and stuck around.
+I started actively contributing to Jaybird and Firebird in 2011.
+
+Non-software related hobbies include reading (science fiction and fantasy) and binge-watching series on Netflix.
+
+== You are contributing to the Firebird JDBC Driver. Can you tell us what does FireBird offer and how does it compare to other RDBMS?
+
+Firebird is a complete relational database system with a small footprint, and good performance.
+It is simple to install and use (some claim Firebird has near zero administration effort).
+
+It doesn't have a lot of frills, and sometimes Firebird is a bit rough around the edges, for example for administration you have the included command-line tools,
+but if you want a nice GUI for administration, you need to use third-party GUI tools.
+
+Firebird offers a lot in terms of SQL support, people are sometimes surprised to hear it has (recursive) common table expressions and window functions.
+Compared to other database systems it is missing some of the newer SQL features like XML and JSON support, and things like MATCH_RECOGNIZE and some other minor SQL features I'd like to have
+ (but usually have a workaround).
+
+One of the other things that sets Firebird apart is its embedded engine: Firebird offers an embedded mode that has the same set of features as the normal Firebird server.
+Firebird Embedded can be used with most languages, including Java.
+
+LibreOffice is also switching to Firebird Embedded for LibreOffice Base (turn on experimental features to use it).
+
+== I remember that FireBird was very common for applications written in Delphi. Is FireBird suitable for enterprise applications as well?
+
+Firebird was forked from InterBase back around 2000, and at that time - IIRC - Borland included InterBase with Delphi.
+A lot of software developed in Delphi targeted InterBase, and then also supported Firebird at no extra development cost.
+I've never been active in Delphi nor have I used InterBase, but I believe the switch to Firebird made sense due to licensing costs (ie: none),
+and broader platform support (I believe at that time InterBase only targeted Windows).
+
+In terms of suitability for enterprise use, Firebird scales well due to its MVCC architecture (although you may need to tune the configuration, as the defaults are rather conservative).
+Firebird can support databases up to 32 TB, so size is also not an issues.
+It has support for two-phase commit allowing for distributed transactions, and has support for incremental backups.
+And, as mentioned before, I think it supports most of the SQL features you'll need. All in all, there is nothing that should keep you from using Firebird for enterprise applications.
+
+The only thing in my opinion that is currently really 'missing' (without using third-party tools) is database replication, which is planned for the next release, Firebird 4.
+
+And of course, given the move to micro-services, the meaning of enterprise scale is shifting from one big database to a lot of (usually smaller) databases,
+therefore, the small footprint of Firebird might be an advantage.
+
+== Hibernate also provides a Firebird Dialect. Have you used Firebird and Hibernate in a production system so far?
+
+Unfortunately, no. At bol.com we don't use Firebird, but PostgreSQL and Oracle.
+I do use Hibernate in production there, combined with Spring Data JPA, and it just works. I love it when tools don't get in your way ;-).
+
+With Firebird, I have only used Hibernate with proof-of-concepts and for compatibility testing.
+That is one of the downsides of maintaining a driver without using it in your day-to-day job.
+
+== We always value feedback from our community,  so can you tell us what features you'd like us to add to make easier for other data access frameworks to integrate with JPA or Hibernate?
+
+I'm not actually missing anything at the moment, except maybe time to contribute improvements to Firebird dialects in Hibernate for some of the features added in recent Firebird versions.
+
+*Thank you, Mark, for taking your time. It is a great honor to have you here. To reach Mark, you can follow him on https://github.com/Avalanche1979[Twitter].*
