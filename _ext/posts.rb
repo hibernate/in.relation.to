@@ -98,12 +98,19 @@ module Awestruct
           if html_node.name == 'div' && html_node.attribute('id') && html_node.attribute('id').value == 'preamble'
             section_body = html_node.xpath('div[@class="sectionbody"]').first
             if section_body
-              section_body_children = section_body.xpath('node()[not(self::text())]')
-              if section_body_children.length > 5
-                section_body_children.first(3).each { |p| summary << p.to_xhtml }
-                summary << '<p>[ ... ]</p>'
-              else
-                summary = summary << html_node.to_xhtml
+              section_body_children = section_body.xpath('div')
+              i = 0
+              section_body_children.each do |element|
+                if element.attribute('class').value == 'paragraph' || element.attribute('class').value == 'ulist'
+                  summary = summary << element.to_xhtml
+                else
+                  summary = summary << '<p>[ ... ]</p>'
+                  break
+                end
+                if section_body_children.length > 5 && ++i > 3
+                  summary = summary << '<p>[ ... ]</p>'
+                  break
+                end
               end
             else
               summary = summary << html_node.to_xhtml
