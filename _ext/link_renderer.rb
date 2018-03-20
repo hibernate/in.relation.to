@@ -25,10 +25,10 @@ module InRelationTo
             elsif ( i <= window )
               html += %Q(<a class="item" href="#{page.url}">#{i+1}</a> )
             elsif ( ( i > window ) && ( i < ( current_page_index - window ) ) && ! first_skip  )
-              html += %Q(<a class="disabled item"><a href="#">...</a>)
+              html += %Q(<a class="disabled item">...</a>)
               first_skip = true
             elsif ( ( i > ( current_page_index + window ) ) && ( i < ( ( pages.size - window ) - 1 ) ) && ! second_skip )
-              html += %Q(<a class="item" href="#">...</a>)
+              html += %Q(<a class="disabled item" href="#">...</a>)
               second_skip = true
             elsif ( ( i >= ( current_page_index - window ) ) && ( i <= ( current_page_index + window ) ) )
               html += %Q(<a class="item" href="#{page.url}">#{i+1}</a> )
