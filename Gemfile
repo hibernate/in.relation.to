@@ -12,6 +12,7 @@ gem 'redcarpet'        # Markdown processing
 gem 'asciidoctor'      # Asciidoc renderer
 gem 'i18n'             # Deal with non Ascii names
 gem 'htmlentities'     # Escape/unescape HTML entities
+gem 'nokogiri'         # HTML parser
 
 ## Non Windows
 gem 'therubyracer', :platforms => :ruby
