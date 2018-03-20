@@ -1,3 +1,5 @@
+require 'nokogiri'
+
 module Awestruct
   module Extensions
     class Posts
@@ -62,6 +64,8 @@ module Awestruct
                 page.slug ||= slug
                 context = page.create_context
                 page.output_path = "#{@path_prefix}/#{year}/#{month}/#{day}/#{page.slug}/index.html"
+                page.summary = extract_summary(page.content.force_encoding("UTF-8"))
+
                 posts << page
               end
             end
@@ -85,6 +89,22 @@ module Awestruct
         site.send( "#{@assign_to}=", posts )
 #        site.send( "#{@assign_to}_archive = ", archive )
 
+      end
+
+      def extract_summary( post_content )
+        post_document_fragment = Nokogiri::HTML::fragment(post_content)
+        summary = ''
+        post_document_fragment.children.each do |html_node|
+          if html_node.name == 'div' && html_node.attribute('id') && html_node.attribute('id').value == 'preamble'
+            summary = summary << html_node.to_xhtml
+            break
+          elsif html_node.name == 'div' && html_node.attribute('class') && html_node.attribute('class').value == 'paragraph'
+            summary = summary << html_node.to_xhtml
+          else
+            break
+          end
+        end
+        summary
       end
 
 
