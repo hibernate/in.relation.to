@@ -96,7 +96,17 @@ module Awestruct
         summary = ''
         post_document_fragment.children.each do |html_node|
           if html_node.name == 'div' && html_node.attribute('id') && html_node.attribute('id').value == 'preamble'
-            summary = summary << html_node.to_xhtml
+            section_body = html_node.xpath('div[@class="sectionbody"]').first
+            if section_body
+              section_body_children = section_body.xpath('node()[not(self::text())]')
+              if section_body_children.length > 5
+                section_body_children.first(3).each { |p| summary << p.to_xhtml }
+              else
+                summary = summary << html_node.to_xhtml
+              end
+            else
+              summary = summary << html_node.to_xhtml
+            end
             break
           elsif html_node.name == 'div' && html_node.attribute('class') && html_node.attribute('class').value == 'paragraph'
             summary = summary << html_node.to_xhtml
