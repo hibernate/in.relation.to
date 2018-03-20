@@ -101,6 +101,7 @@ module Awestruct
               section_body_children = section_body.xpath('node()[not(self::text())]')
               if section_body_children.length > 5
                 section_body_children.first(3).each { |p| summary << p.to_xhtml }
+                summary << '<p>[ ... ]</p>'
               else
                 summary = summary << html_node.to_xhtml
               end
