@@ -100,6 +100,13 @@ module Awestruct
             break
           elsif html_node.name == 'div' && html_node.attribute('class') && html_node.attribute('class').value == 'paragraph'
             summary = summary << html_node.to_xhtml
+          # old posts
+          elsif html_node.name == 'div' && html_node.attribute('id') && html_node.attribute('id').value == 'documentDisplay'
+            first_node = html_node.xpath('node()[not(self::text())]').first
+            if first_node && first_node.name == 'p'
+              summary = first_node.to_xhtml
+            end
+            break
           else
             break
           end
