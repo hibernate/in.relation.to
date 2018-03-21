@@ -93,7 +93,11 @@ module Awestruct
 
       def extract_summary( post_content )
         post_document_fragment = Nokogiri::HTML::fragment(post_content)
+
+        manual_cut = post_content.include? '<!-- more -->'
+
         summary = ''
+
         post_document_fragment.children.each do |html_node|
           if html_node.name == 'div' && html_node.attribute('id') && html_node.attribute('id').value == 'preamble'
             section_body = html_node.xpath('div[@class="sectionbody"]').first
@@ -101,15 +105,24 @@ module Awestruct
               section_body_children = section_body.xpath('div')
               i = 0
               section_body_children.each do |element|
-                if element.attribute('class').value == 'paragraph' || element.attribute('class').value == 'ulist'
-                  summary = summary << element.to_xhtml
+                if manual_cut
+                  element_xhtml = element.to_xhtml
+                  if element_xhtml.include? '<!-- more -->'
+                    break
+                  else
+                    summary = summary << element_xhtml
+                  end
                 else
-                  summary = summary << '<p>[ ... ]</p>'
-                  break
-                end
-                if section_body_children.length > 5 && ++i > 3
-                  summary = summary << '<p>[ ... ]</p>'
-                  break
+                  if element.attribute('class').value == 'paragraph' || element.attribute('class').value == 'ulist'
+                    summary = summary << element.to_xhtml
+                  else
+                    summary = summary << '<p>[ ... ]</p>'
+                    break
+                  end
+                  if section_body_children.length > 5 && ++i > 3
+                    summary = summary << '<p>[ ... ]</p>'
+                    break
+                  end
                 end
               end
             else
