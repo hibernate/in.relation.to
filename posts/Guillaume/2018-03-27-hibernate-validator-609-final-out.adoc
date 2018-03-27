@@ -1,0 +1,81 @@
+= "Hibernate Validator 6.0.9.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.9.Final
+---
+
+Following the "release early, release often" motto, here comes a new version of Hibernate Validator, 6.0.9.Final.
+
+It brings some nice improvements and fixes a couple of bugs.
+
+This is a recommended upgrade for everyone using Hibernate Validator and it is a drop-in replacement of 6.0.8.Final, except if you already started to use the new constraint validator payload feature (see below).
+
+== What's new
+
+=== Performance improvements
+
+We made a couple of further performance tweaks in this release, making Hibernate Validator faster for common use cases.
+
+You can check the results in http://in.relation.to/2018/03/20/bean-validation-benchmark-rerevisited/[this blog post] we published a week ago.
+
+=== Constraint validator payload changes
+
+This feature is still incubating and https://github.com/mkurz[Matthias Kurz] made some changes to fix a caching issue and change how the payload was passed to the constraint validator.
+
+The payload is now part of the `HibernateConstraintValidatorContext` instead of the `HibernateConstraintValidatorInitializationContext`, meaning it is now designed to be used in the `isValid()` method rather than the `init()` method.
+
+Check https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#constraint-validator-payload[our updated documentation] for more information.
+
+=== Karaf features improvements
+
+Our Karaf features are now split in several smaller features:
+
+* `hibernate-validator`
+* `hibernate-validator-jsoup`
+* `hibernate-validator-joda-time`
+* `hibernate-validator-javax-money`
+* `hibernate-validator-groovy`
+* `hibernate-validator-paranamer`
+
+The dependencies are more fined grained and you can pick exactly what you need.
+
+We plan to propose an upgrade of Hibernate Validator in Karaf very soon. In the meantime, you can use the http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-osgi-karaf-features/6.0.9.Final/hibernate-validator-osgi-karaf-features-6.0.9.Final-features.xml[features file we publish to Maven Central].
+
+=== Bugs fixed
+
+We also fixed a couple of bugs:
+
+ * https://hibernate.atlassian.net/browse/HV-1596[HV-1596] - This one is a regression we had since the start of the 6.0.x cycle. It could cause ``NullPointerException``s when building the metadata of beans using cascading on properties with specific class hierarchies.
+ * https://hibernate.atlassian.net/browse/HV-1594[HV-1594] - A dependency was missing in our Karaf features, making it impossible to install Hibernate Validator on some Karaf environments.
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:{released-version}_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-11.0.0.Final-patch.zip[WildFly 11] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-12.0.0.Final-patch.zip[WildFly 12]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== What's next?
+
+Our efforts are now directed towards the new 6.1, which will introduce some structuring new features.
+
+We plan to publish a ultimate 6.0.x release in the light of changes we made to the Bean Validation TCK.
+
+We updated http://hibernate.org/validator/roadmap/[our roadmap] with the ideas we have for the future. If you want to join us, don't hesitate to pick a task and come discuss it with us.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
