@@ -5,17 +5,20 @@ Fabio Massimo Ercoli
 ---
 
 We're happy to announce the release of
-http://hibernate.org/ogm/releases/5.3/#get-it[Hibernate OGM 5.3.1.Final]
+http://hibernate.org/ogm/releases/5.3/#get-it[Hibernate OGM 5.3.1.Final].
+
 This is the first maintenance release of the 5.3 branch.
 
 == What's new compared to 5.3.0.Final?
 
 This is a maintenance release fixing issues related to native queries pagination and projection.
-Now pagination works perfectly for MongoDB native queries that use aggregates.
+
+Pagination now works perfectly for MongoDB native queries that use aggregates.
+
 You can see a complete list of the changes in the
 https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31644[release notes].
 
-This version is fully compatible with 5.3.0.
+This version is fully compatible with 5.3.0.Final.
 
 == Components upgrade
 
@@ -25,6 +28,7 @@ This version is fully compatible with 5.3.0.
 
 It is not possible anymore to execute a native query with projection
 and extract the returned values as an entity list.
+
 Given the entity:
 
 ====
@@ -59,7 +63,10 @@ session.createNativeQuery( "db.Movie.find( {}, { 'id' : 1, 'name' : 1  } )" )
 An exception will be thrown and this message will be logged:
 
 ====
+[source]
+----
 OGM000091: Projection and addEntity are not allowed in the same query on <Movie>
+----
 ====
 
 It is allowed either to use **projection** without **addEntity**:
@@ -84,6 +91,7 @@ session.createNativeQuery( "db.Movie.find( {} )" )
 ====
 
 This is true for all dialects supporting native queries, which at the moment of writing those lines are the MongoDB and Neo4j dialects.
+
 This is consistent with the behavior of Hibernate ORM.
 
 == Where can I get it?
