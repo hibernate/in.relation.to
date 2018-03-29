@@ -1,0 +1,117 @@
+= "Hibernate OGM 5.3.1.Final is out"
+Fabio Massimo Ercoli
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We're happy to announce the release of
+http://hibernate.org/ogm/releases/5.3/#get-it[Hibernate OGM 5.3.1.Final]
+This is the first maintenance release of the 5.3 branch.
+
+== What's new compared to 5.3.0.Final?
+
+This is a maintenance release fixing issues related to native queries pagination and projection.
+Now pagination works perfectly for MongoDB native queries that use aggregates.
+You can see a complete list of the changes in the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31644[release notes].
+
+This version is fully compatible with 5.3.0.
+
+== Components upgrade
+
+ * Hibernate ORM 5.2.16.Final
+
+== Projection and addEntity are not allowed in the same query
+
+It is not possible anymore to execute a native query with projection
+and extract the returned values as an entity list.
+Given the entity:
+
+====
+[source,java]
+----
+@Entity
+public class Movie {
+
+	@Id
+	private Integer id;
+	private String name;
+	private String author;
+	private Integer year;
+
+	public Movie() {
+	}
+}
+----
+====
+
+If we try to get all movies using **projection** and **addEntity**:
+
+====
+[source,java]
+----
+session.createNativeQuery( "db.Movie.find( {}, { 'id' : 1, 'name' : 1  } )" )
+	.addEntity( Movie.class )
+	.uniqueResult();
+----
+====
+
+An exception will be thrown and this message will be logged:
+
+====
+OGM000091: Projection and addEntity are not allowed in the same query on <Movie>
+====
+
+It is allowed either to use **projection** without **addEntity**:
+
+====
+[source,java]
+----
+session.createNativeQuery( "db.Movie.find( {}, { 'id' : 1, 'name' : 1  } )" )
+	.uniqueResult();
+----
+====
+
+Or to use **addEntity** without **projection**:
+
+====
+[source,java]
+----
+session.createNativeQuery( "db.Movie.find( {} )" )
+	.addEntity( Movie.class )
+	.uniqueResult();
+----
+====
+
+This is true for all dialects supporting native queries, which at the moment of writing those lines are the MongoDB and Neo4j dialects.
+This is consistent with the behavior of Hibernate ORM.
+
+== Where can I get it?
+
+You can include in your project the dialect of your choice using this Maven coordinates:
+
+* http://infinispan.org[Infinispan]
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan-embedded:5.3.1.Final_
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.3.1.Final_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.3.1.Final_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.3.1.Final_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.3.1.Final[from Sourceforge].
+
+If you are interested about available versions, you can check the official
+http://hibernate.org/ogm/releases[Hibernate OGM download page].
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://discourse.hibernate.org/c/hibernate-ogm[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+We are looking forward to hearing your feedback!
+
+
