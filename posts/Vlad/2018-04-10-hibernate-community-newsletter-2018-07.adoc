@@ -1,0 +1,70 @@
+= Hibernate Community Newsletter 07/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are
+especially relevant to our users.
+
+== Articles
+
+If you want to use Kotlin with Hibernate, then you should check out http://www.baeldung.com/kotlin-jpa[this article].
+On the same page, there's also this https://github.com/roamingthings/kotlin-jpa-workbench[GitHub repository] that shows you how to use Kotlin, JPA, and Spring Boot.
+
+CDC (Change Data Capture) is a very useful technique to push database changes as events to other systems.
+Debezium is an open-source project aiming to simplify this process, and, in
+http://debezium.io/blog/2018/03/08/creating-ddd-aggregates-with-debezium-and-kafka-streams/[this article],
+you will how to create DDD aggregates with Debezium and Kafka Streams.
+
+When using PostgreSQL, it's quite common to use a SERIAL column for Primary Keys.
+However, SERIAL column types have limitations when using JPA and Hibernate.
+For more details, check out
+https://vladmihalcea.com/postgresql-serial-column-hibernate-identity/[this article].
+
+There is a great variety of Java connection pool frameworks, so choosing one that fits your application requirements might not be a trivial task.
+https://beansroasted.wordpress.com/2017/07/29/connection-pool-analysis/[This article]
+shows a very detailed analysis of the most well-known connection pools, so choosing the right framework will be easier after you read it.
+
+Apart from supporting the standard JPA annotation, Hibernate offers many other annotations that allow you to deal with various data access requirements.
+One such annotation, `@Immutable` lets you fetch entities in read-only mode by default. For more details, check out
+https://vladmihalcea.com/immutable-entity-jpa-hibernate/[this article].
+
+By default, Apache TomEE ships with OpenJPA. However, you can use any JPA provider you want, and
+https://fmdojo.wordpress.com/2018/04/03/hibernate-5-2-spatial-jpa-in-apache-tomee-7/[this article]
+shows how to set up TomEE to use Hibernate.
+
+Sam Kruglov wrote a very
+https://samkruglov.wordpress.com/2018/01/07/json-filtering-with-spring/[interesting article]
+about filtering RESTful JSON views with Spring and JPA.
+
+If you are starting learning Java EE,
+https://www.halfastack.com/java-ee-jpa-introduction-i/[this article]
+is a very good introduction to Java Persistence API.
+
+If you are using Criteria API and want to know how to order results, then check out
+https://www.thoughts-on-java.org/hibernate-tips-order-by-clause-criteriaquery/[this article].
+
+== Time to upgrade
+
+There were two Hibernate project releases since the last newsletter:
+
+- http://in.relation.to/2018/03/29/hibernate-ogm-5-3-1-Final-released/[Hibernate OGM 5.3.1.Final is out]
+- http://in.relation.to/2018/03/27/hibernate-validator-609-final-out/[Hibernate Validator 6.0.9.Final is released]
+
+== Questions and answers
+
+- https://stackoverflow.com/questions/43467484/hibernate-caching-and-lazy-loaded-associations/49487615#49487615[Hibernate Caching and lazy loaded associations]
+- https://discourse.hibernate.org/t/retrieving-a-few-records-at-one-time-from-database-with-jpa/432[Retrieving a few records at one time from the database with JPA]
+- https://stackoverflow.com/questions/30019731/hibernate-jpql-throws-update-delete-queries-cannot-be-typed/30019803#30019803[Hibernate JPQL throws Update/delete queries cannot be typed]
+- https://discourse.hibernate.org/t/entity-loader-does-not-take-into-consideration-a-subsequent-lock-request/467[Entity Loader does not take into consideration a subsequent lock request ]
+- https://discourse.hibernate.org/t/do-i-need-hibernate-cfg-xml-if-i-use-jpa/468[Do I need the `hibernate.cfg.xml` if I use JPA?]
+- https://discourse.hibernate.org/t/avoiding-unnecessary-join-with-many-to-many-relation/465[Avoiding unnecessary Join with Many-to-many relation]
+- https://stackoverflow.com/questions/27804069/hibernate-mapping-between-postgresql-enum-and-java-enum/46303099#46303099[Hibernate mapping between PostgreSQL enum and Java enum]
+- https://stackoverflow.com/questions/30288464/when-should-i-use-joincolumn-or-jointable/30292348#30292348[When should I use `@JoinColumn` or `@JoinTable`?]
+- https://stackoverflow.com/questions/28363625/exclude-entity-field-when-doing-update-with-jpa/28363801#28363801[How to exclude an entity field when doing an update with JPA]
+- https://stackoverflow.com/questions/97197/what-is-n1-select-query-issue/39696775#39696775[What is the N+1 SELECT query issue?]
+- https://stackoverflow.com/questions/1590422/immutable-vs-entitymutable-false-in-hibernate/49651679#49651679[`@Immutable` vs `@Entity(mutable=false)` in Hibernate]
+- https://discourse.hibernate.org/t/where-annotation-does-no-refresh-after-updating-the-child-collection/503[`@Where` annotation does no refresh after updating the child collection]
+- https://stackoverflow.com/questions/33496956/postgresql-stored-procedure-and-hibernate[PostgreSQL Stored Procedure and Hibernate]
+- https://stackoverflow.com/questions/28253838/can-i-use-hibernate-for-jta/28260359#28260359[Can I use Hibernate for JTA?]
