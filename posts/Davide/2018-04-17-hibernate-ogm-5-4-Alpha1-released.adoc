@@ -1,0 +1,130 @@
+= "Hibernate OGM 5.4.0.Alpha1 is out"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We're happy to announce the release of http://hibernate.org/ogm/releases/5.4/#get-it[Hibernate OGM 5.4.0.Alpha1].
+
+Hibernate OGM is now compatible with Hibernate ORM 5.3 (still a candidate release)
+and JPA 2.2. We support Infinipan 9.2 and
+JBoss modules are now available as https://github.com/wildfly/wildfly-build-tools[WildFly
+feature packs].
+
+You can run server-side JavaScript on MongoDB or Java code in Infinispan Embedded as if they
+were stored procedures
+https://docs.jboss.org/hibernate/ogm/5.4/reference/en-US/html_single/#_using_stored_procedures[using
+the JPA approach].
+
+When using the Infinispan Remote dialect it is now possible to
+https://docs.jboss.org/hibernate/ogm/5.4/reference/en-US/html_single/#_caches_creation_and_configuration[configure
+new caches] using the `@CacheConfiguration` annotation.
+
+All the changes are described in detail in the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31632[release notes].
+
+== What happened to the JBoss modules?
+
+The Hibernate OGM JBoss Modules, for use in WildFly or JBoss EAP, are now distributed as
+WildFly feature packs. The feature packs can also be consumed using
+http://wildfly-swarm.io/[WildFly Swarm].
+
+This means that from version 5.4 of Hibernate OGM you won't find anymore the zip file
+containing them on SourceForge.
+
+The modules are now distributed as multiple feature packs,
+which means that components are split in fine grained packages,
+allowing you to pick only the parts you will need.
+
+https://docs.jboss.org/hibernate/ogm/5.4/reference/en-US/html_single/#_packaging_hibernate_ogm_applications_for_wildfly_12_0[See the documentation]
+for more information on the available feature packs and how to consume them.
+
+You can also find a quick-start 
+https://github.com/hibernate/hibernate-ogm/tree/master/documentation/examples/wildfly-quickstart[on the Hibernate OGM repository on GitHub].
+
+== JavaScript code as stored procedures in MongoDB
+
+Here's an example of how you can register a server-side function (`find_cars_by_brand` in this
+example) as a stored procedure and call it:
+
+====
+----
+@Entity
+@NamedStoredProcedureQueries({
+        @NamedStoredProcedureQuery(name = "find_cars_by_brand", procedureName = "resultSetResultProc", parameters = {
+                @StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
+                @StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
+        }, resultSetMappings = "carMapping")
+})
+@SqlResultSetMapping(name = "carMapping", entities = { @EntityResult(entityClass = Car.class) })
+public class Car {
+  ...
+}
+----
+
+----
+javax.persistence.EntityManager em = ...
+
+StoredProcedureQuery storedProcedureQuery = em.createNamedStoredProcedureQuery( "find_cars_by_brand" );
+storedProcedureQuery.setParameter( 1, "Bentley" );
+List<Car> cars = storedProcedureQuery.getResultList();
+----
+====
+
+Note that this is JPA code and it will work for all the dialects supporting stored procedures and
+positional parameters.
+
+== Apache Ignite dialect for Hibernate OGM 5.3.1.Final
+
+We also released a new dialect for Hibernate OGM 5.3.1.Final and https://ignite.apache.org/[Apache Ignite]:
+Hibernate OGM Apache Ignite 5.3.1.Final
+
+You can include the dialect in your progiect using the maven coordinates:
+
+* _org.hibernate.ogm:hibernate-ogm-ignite:5.3.1.Final_
+
+The source code is on GitHub: https://github.com/hibernate/hibernate-ogm-ignite
+
+This dialect has been developed by the community and it is still experimental.
+Please, let us know what you think about it.
+
+== Where can I get Hibernate OGM?
+
+You can include in your project the dialect of your choice using this Maven coordinates:
+
+* http://infinispan.org[Infinispan]
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.4.0.Alpha1_
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan-embedded:5.4.0.Alpha1_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.4.0.Alpha1_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.4.0.Alpha1_
+* https://github.com/wildfly/wildfly-build-tools[WildFly Feature Pack]
+** Infinispan Remote: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-remote:5.4.0.Alpha1_
+** Infinispan Embedded: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-embedded:5.4.0.Alpha1_
+** MongoDB: _org.hibernate.ogm:hibernate-ogm-featurepack-mongodb:5.4.0.Alpha1_
+** Neo4j: _org.hibernate.ogm:hibernate-ogm-featurepack-neo4j:5.4.0.Alpha1_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.4.0.Alpha1[from Sourceforge].
+
+If you are interested about available versions, you can check the official
+http://hibernate.org/ogm/releases[Hibernate OGM download page].
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://discourse.hibernate.org/c/hibernate-ogm[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+== Contributions
+
+Some of the new features have been contributed by 
+Pavel Novikov, Sergey Chernolyas, Viet Nguyen and Raghav Jha.
+Thanks a lot!
+
+We are looking forward to hearing your feedback!
+
+
