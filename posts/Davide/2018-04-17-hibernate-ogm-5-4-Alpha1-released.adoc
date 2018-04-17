@@ -44,14 +44,14 @@ https://github.com/hibernate/hibernate-ogm/tree/master/documentation/examples/wi
 
 == JavaScript code as stored procedures in MongoDB
 
-Here's an example of how you can register a server-side function (`find_cars_by_brand` in this
+Here's an example of how you can register a server-side function (`findByBrandJS` in this
 example) as a stored procedure and call it:
 
 ====
 ----
 @Entity
 @NamedStoredProcedureQueries({
-        @NamedStoredProcedureQuery(name = "find_cars_by_brand", procedureName = "resultSetResultProc", parameters = {
+        @NamedStoredProcedureQuery(name = "find_cars_by_brand", procedureName = "findByBrandJS", parameters = {
                 @StoredProcedureParameter(mode = ParameterMode.REF_CURSOR, type = Void.class),
                 @StoredProcedureParameter(mode = ParameterMode.IN, type = String.class)
         }, resultSetMappings = "carMapping")
@@ -97,7 +97,6 @@ You can include in your project the dialect of your choice using this Maven coor
 ** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan-embedded:5.4.0.Alpha1_
 * https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.4.0.Alpha1_
 * http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.4.0.Alpha1_
-* https://github.com/wildfly/wildfly-build-tools[WildFly Feature Pack]
 ** Infinispan Remote: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-remote:5.4.0.Alpha1_
 ** Infinispan Embedded: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-embedded:5.4.0.Alpha1_
 ** MongoDB: _org.hibernate.ogm:hibernate-ogm-featurepack-mongodb:5.4.0.Alpha1_
