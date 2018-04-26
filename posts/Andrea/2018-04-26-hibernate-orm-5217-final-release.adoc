@@ -1,0 +1,22 @@
+= 18th bug-fix release for ORM 5.2
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+The 18th bug-fix release for Hibernate ORM 5.2 has just been published.
+
+== What’s new ?
+
+This release introduces several minor features and fixes more bugs.
+
+== Details
+
+* tag is http://github.com/hibernate/hibernate-orm/releases/tag/5.2.17[here];
+* the complete list of changes can be found https://hibernate.atlassian.net/projects/HHH/versions/31651/tab/release-report-done[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version=31651&styleName=Html&projectId=10031[here]);
+* release bundles are at http://sourceforge.net/projects/hibernate/files/hibernate-orm/5.2.17.Final/[SourceForge].
+
+For information on consuming the release via your favorite dependency-management-capable build tool, see http://hibernate.org/orm/releases/5.2[releases]
+
+== Changes in the `@TableGenerator` and `@SequenceGenerator` name scope
+
+From http://in.relation.to/2018/02/07/hibernate-orm-5213-final-release/[5.2.13] the id generator name scope was considered global but realizing this change could cause trouble for some existing projects (see https://hibernate.atlassian.net/browse/HHH-12454[HHH-12454]), starting from 5.2.17 the scope of the id generators names will be considered local by default (which is the pre-5.2.13 behavior) and a new configuration setting `hibernate.jpa.compliance.global_id_generators` can be used to enable the JPA compliant global scoping.
