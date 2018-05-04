@@ -1,0 +1,53 @@
+= Hibernate Search 5.10.0.CR1 is out!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published 5.10.0.CR1, the first candidate release for the 5.10 branch.
+This release mainly includes an upgrade to Hibernate ORM 5.3.0.CR2,
+but it also adds a few bugfixes and improvements: see below!
+
+== What's new?
+
+Here are some notable changes since Hibernate Search 5.10.0.Beta1:
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3143[HSEARCH-3143]:
+Hibernate Search's ORM integration now depends on Hibernate ORM 5.3.0.CR2.
+* https://hibernate.atlassian.net/browse/HSEARCH-3125[HSEARCH-3125]:
+Hibernate Search now offers a way to access the Elasticsearch client directly.
+See the https://docs.jboss.org/hibernate/search/5.10/reference/en-US/html_single/#elasticsearch-client-access[documentation]
+for more information.
+* https://hibernate.atlassian.net/browse/HSEARCH-3138[HSEARCH-3138]:
+We restored binary compatibility with applications built against Hibernate Search 5.5,
+so that Hibernate Search 5.10 can be included in the upcoming WildFly release.
+* https://hibernate.atlassian.net/browse/HSEARCH-3000[HSEARCH-3000]:
+We added automatic https://en.wikipedia.org/wiki/Java_Platform_Module_System[JPMS module] names to our JARs.
+Note that Hibernate Search JARs still can only be used as automatic modules,
+because some of our dependencies cannot easily be used as modules yet.
+Here are the module names:
+** `org.hibernate.search.engine`
+** `org.hibernate.search.orm`
+** `org.hibernate.search.backend.elasticsearch`
+** `org.hibernate.search.backend.elasticsearch.aws`
+** `org.hibernate.search.clustering.jms`
+** `org.hibernate.search.clustering.jgroups`
+** `org.hibernate.search.jsr352.core`
+** `org.hibernate.search.jsr352.jberet`
+** `org.hibernate.search.serialization.avro`
+
+For a full list of changes since 5.10.0.Beta2,
+please see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31659[the release notes].
+
+== How to get this release
+
+All details are available and up to date on http://hibernate.org/search/releases/5.10/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
