@@ -1,0 +1,60 @@
+= Hibernate Community Newsletter 09/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are
+especially relevant to our users.
+
+== Articles
+
+For our Portuguese readers,
+http://blog.koalite.com/2018/04/lo-minimo-a-entender-sobre-transacciones/[this article]
+gives a very good introduction to database transactions and isolation levels.
+
+Hibernate Query Cache can help you reduce the number of queries that are sent to the database,
+but you have to pay attention to the entity cache expiration policy, as otherwise, you might bump into
+https://vladmihalcea.com/hibernate-query-cache-n-plus-1-issue/[N+1 query problems].
+
+The Hibernate `@Immutable` annotation allows you to optimize the Persistence Context size and the dirty checking mechanism
+if entities should never be modified. For more details, check out
+http://www.baeldung.com/hibernate-immutable[this article].
+
+When mapping bidirectional associations, it is
+https://vladmihalcea.com/jpa-hibernate-synchronize-bidirectional-entity-associations/[very important to synchronize both sides of the association].
+Otherwise, you might encounter inconsistencies which prevent entity state transitions from being propagated to the database.
+
+If you're using Spring Boot, check out
+https://www.callicoder.com/hibernate-spring-boot-jpa-one-to-many-mapping-example/[this tutorial]
+about mapping a `@OneToMany` JPA association.
+
+With Hibernate 5.2.17, you can now use the `@PrePersist` and `@PreUpdate` entity listeners even on embeddable types.
+For more details, check out
+https://vladmihalcea.com/prepersist-preupdate-embeddable-jpa-hibernate/[this article].
+
+With Hibernate, you can map a `@ManyToOne` association using the result of a query, as explained in
+https://www.thoughts-on-java.org/hibernate-tips-easiest-way-to-manage-bi-directional-associations/[this article].
+
+== Time to upgrade
+
+There were several Hibernate project releases since the last newsletter:
+
+- Hibernate ORM http://in.relation.to/2018/04/27/hibernate-orm-530-cr2-release/[5.3.0 CR2] and http://in.relation.to/2018/04/26/hibernate-orm-5217-final-release/[5.2.17]
+- Hibernate Search http://in.relation.to/2018/05/09/hibernate-search-5-10-0-CR1/[5.10.0 CR1]
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/hibernate-envers-revisions-and-indexes-for-revinfo-table/604[Hibernate Envers, #Revisions and Indexes for REVINFO table]
+- https://stackoverflow.com/questions/24407162/where-to-find-the-dtd-of-hibernate/24407435#24407435[Where to find the DTD of Hibernate?]
+- https://discourse.hibernate.org/t/about-query-embedded-object-in-hibernate/697[Query embedded object in Hibernate]
+- https://discourse.hibernate.org/t/how-can-i-set-hibernate-to-fix-the-fetch-first-rows-only-in-oracle/622)[How can I set Hibernate to fix the “fetch first ? rows only” in Oracle]
+- https://discourse.hibernate.org/t/how-to-write-mapping-file-and-java-entity-class-to-store-and-retrieve-images-binary-files-in-sql-server/611)[How to write mapping file and java entity class to store and retrieve images, binary files in SQL Server]
+- https://discourse.hibernate.org/t/write-not-equal-restriction-with-hibernate-criteria-if-the-particular-column-is-not-null/653)[Write not equal Restriction with Hibernate Criteria if the particular column is not null]
+- https://discourse.hibernate.org/t/best-onetoone-mapping-recommendation/645/10)[Best `@OneToOne` mapping recommendation]
+- https://discourse.hibernate.org/t/hibernate-returns-different-results-for-the-same-query-than-directly-on-sql-server/650)[Hibernate returns different results for the same query than directly on SQL Server]
+- https://discourse.hibernate.org/t/how-does-hibernate-determine-whether-an-entity-needs-to-be-updated/652)[How does Hibernate determine whether an entity needs to be updated?]
+- https://stackoverflow.com/questions/438146/hibernate-hbm2ddl-auto-possible-values-and-what-they-do/23678638#23678638)[Hibernate hbm2ddl.auto possible values and what they do?]
+- https://stackoverflow.com/questions/2986318/calculated-property-with-jpa-hibernate/29004311#29004311)[Calculated property with JPA / Hibernate]
+- https://stackoverflow.com/questions/45905924/what-is-the-java-annotation-in-hibernate-used-to-auto-increment-a-mysql-primary/45919831#45919831)[What is the Java annotation in Hibernate used to auto increment a MySQL Primary Key - `@Id`]
+- https://stackoverflow.com/questions/30288464/when-should-i-use-joincolumn-or-jointable/30292348#30292348)[When Should I Use @JoinColumn or @JoinTable?]
