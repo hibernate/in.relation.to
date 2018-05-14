@@ -1,0 +1,130 @@
+= Hibernate ORM 5.3.0.Final release
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+Hibernate ORM version 5.3.0.Final has just been released.
+
+== JPA 2.2 Suppport
+
+Hibernate ORM 5.3 implements support for JPA 2.2.
+
+
+=== CDI-hosted AttributeConverters
+
+Starting with JPA 2.1 applications may use CDI-hosted beans as entity event listeners.  JPA 2.2 extends
+that support to allow AttributeConverters to be CDI-hosted beans as well.
+
+To facilitate this, we have developed a generic interface that allows access to any kind of bean hosted in
+any type of DI/bean container.  The contract for integrating such bean containers is
+`org.hibernate.resource.beans.container.spi.BeanContainer`.  Hibernate comes with implementations
+of `BeanContainer` for integrating with CDI; we have also tested adapting it to Spring container.  
+
+
+Applications would normally not access these services.  Integrators however might want to use them to leverage Hibernate integration with these back-end containers.  The `BeanContainer` can be accessedd from the `org.hibernate.resource.beans.spi.ManagedBeanRegistry` which is a service that hides the repetitive details of dealing with `BeanContainer` based on Hibernate’s normal usage.  `ManagedBeanRegistry` is a service and can be accessed from the SessionFactory's ServiceRegistry.
+
+
+=== Support for repeating annotations
+
+JPA 2.2 defines support for repeating annotations (`@java.lang.annotation.Repeatable`).  This includes the addition
+of `@TableGenerators` and `@SequenceGenerators`.  All other JPA annotations already had "containing" annotations.
+
+
+
+=== Query result streaming
+
+JPA 2.2 adds `Query#getStream` to support streaming of the query results.  Of course Hibernate has had this for
+some time, although we had named ours `Query#stream` more in keeping with the choice made in most other
+uses including most JDK uses.  But either way, both are available.. the JPA `javax.persistence.Query#getStream` and
+Hibernate's `org.hibernate.query.Query#stream`.
+
+
+=== Support Java 8 Date and Time API
+
+Again, this is something Hibernate has already supported for quite some time.  But JPA 2.2 has made support for
+the Java 8 date/time APIs part of the standard.
+
+
+=== Caching and inheritance
+
+5.3 adds the ability to enable/disable caching at any level within a mapped hierarchy.  This is a
+change from previous versions that only allowed controlling caching on the root entity.  See
+https://hibernate.atlassian.net/browse/HHH-12146[HHH-12146] for details.
+
+
+=== JpaCompliance
+
+During bootstrapping a SessionFactory/EntityManagerFactory can be configured with a level of "JPA compliance"
+that indicates what behaviors it should comply with JPA.  These are generally situations where Hibernate
+has historically done something different or where we think the specification is not the best solution.
+This `JpaCompliance` is used to control how Hibernate should act in these circumstances.  See
+the javadocs for `org.hibernate.jpa.JpaCompliance` for details.
+
+
+=== More intuitive handling of id generator names
+
+Previously when Hibernate encountered a `@GeneratedValue` in relation to an identifier, it would assume that
+there was a matching named generator annotation.  For example, if an application specified
+`@GeneratedValue(strategy=TABLE, name="abc")` Hibernate would expect to see a `@TableGenerator`
+or a `@org.hibernate.annotations.GenericGenerator` with the same name.  Which means that you'd often see
+mappings like:
+
+[source]
+----
+@Entity
+public class AnEntity {
+    @Id
+    @GeneratedValue(strategy=SEQUENCE, name="MY_SEQ")
+    @SequenceGenerator(name="MY_SEQ", sequenceName="MY_SEQ")
+    public Long getId() {...}
+
+    ...
+}
+----
+
+The `SequenceGenerator` in the above example adds no additional information and is really completely
+unnecessary.  So Hibernate now recognizes the following mapping in exactly the same way as the above
+mapping:
+
+
+[source]
+----
+@Entity
+public class AnEntity {
+    @Id
+    @GeneratedValue(strategy=SEQUENCE, name="MY_SEQ")
+    public Long getId() {...}
+
+    ...
+}
+----
+
+
+== Binary Compatibility
+
+Hibernate version 5.2 introduced some unintented (as well as some intended) binary incompatiblities.  Gail Badner did a great 
+job identifying and categorizing these binary incompatibilities which led to a group of work to fix these unintended ones and 
+to document the intended ones in the migration guide if not already.  See https://hibernate.atlassian.net/browse/HHH-12424[HHH-12424] 
+for details.
+
+
+== Java 9 module naming
+
+Hibernate ORM jars now specify Java 9 module naming following the pattern `org.hibernate.orm.${module-name}`.
+For example, the module name for `hibernate-core` is `org.hibernate.orm.core`; the module name for `hibernate-c3p0`
+is `org.hibernate.orm.c3p0`; etc.
+
+
+== Improved Memory Consumption
+
+Improvements made under https://hibernate.atlassian.net/browse/HHH-12556[HHH-12556] and 
+https://hibernate.atlassian.net/browse/HHH-12558[HHH-12558] can significantly reduced the amount of memory consumed by 
+a Hibernate SessionFactory in many aplications.
+
+
+== Additional Information
+
+* http://hibernate.org/orm/releases/5.3/[Downloads]
+* http://hibernate.org/orm/documentation/5.3/[Documentation]
+
+
