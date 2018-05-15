@@ -1,0 +1,72 @@
+= "Hibernate Validator 6.0.10.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.10.Final
+---
+
+We just released Hibernate Validator 6.0.10.Final which comes with bugfixes and a brand new Dutch translation.
+
+This is a recommended upgrade for everyone using Hibernate Validator and it is a drop-in replacement of 6.0.9.Final (see https://developer.jboss.org/wiki/HibernateValidatorMigrationGuide[our migration guide]).
+
+== What's new
+
+=== Bug fixes
+
+This release is mainly about fixing a few bugs and regressions and adding compatibility with the Bean Validation TCK 2.0.3.Final that was recently released.
+
+The main fixes are:
+
+ * https://hibernate.atlassian.net/browse/HV-1604[HV-1604] - Initializing `JPATraversableResolver` fails with `IllegalAccessException`: this is a regression from 6.0.3.Final, the `JPATraversableResolver` was not correctly instantiated and thus not used, even in a JPA environment.
+ * https://hibernate.atlassian.net/browse/HV-1609[HV-1609] - CDI extension should not rely on `@WithAnnotations` filtering: `@WithAnnotations` does not consider the annotations in the class hierarchy so a bean with constraint annotations only in the class hierarchy would not see these constraints applied.
+ * https://hibernate.atlassian.net/browse/HV-1614[HV-1614] - Unable to specify constraints at more than 1 nested parameter of a typed container: in the programmatic API, nested container element constraints and cascading were not working as expected.
+
+=== JDK 10 support
+
+You can now build and use Hibernate Validator with JDK 10.
+
+Note that OSGi integration tests are excluded as we are still waiting for a new Pax-Exam release containing https://github.com/ops4j/org.ops4j.pax.exam2/commit/aa0b70d15e930465c28575db3a52b3fc5c12b224[this fix].
+
+=== Dutch translation
+
+https://github.com/Maurice-Betzel[Maurice Betzel] contributed a Dutch translation for our default validation messages.
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Thanks
+
+For this release, we received nice contributions from:
+
+ * our usual suspect https://github.com/marko-bekhta[Marko Bekhta],
+ * https://github.com/RADickinson[Rob Dickinson],
+ * https://github.com/Maurice-Betzel[Maurice Betzel],
+ * and Nathan James Deckard.
+
+Thanks a lot for your bug reports and patches.
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:{released-version}_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-11.0.0.Final-patch.zip[WildFly 11] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-12.0.0.Final-patch.zip[WildFly 12]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== What's next?
+
+Our efforts are now directed towards the new 6.1, which will introduce some structuring changes such as allowing getters with non standard names (`name()` instead of `getName()` for instance), switching to Stax instead of JAXB for XML parsing as JAXB is being removed from JDK 11 and much more.
+
+We updated http://hibernate.org/validator/roadmap/[our roadmap] with the ideas we have for the future. If you want to join us, don't hesitate to pick a task and come discuss it with us.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
