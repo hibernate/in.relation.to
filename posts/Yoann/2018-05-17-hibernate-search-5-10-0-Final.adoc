@@ -1,0 +1,125 @@
+= Hibernate Search 5.10.0.Final is out!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published 5.10.0.Final, the first stable release in the 5.10 branch.
+This release brings an upgrade of the ORM integration to ORM 5.3 and JPA 2.2,
+an integration to DI frameworks through Hibernate ORM 5.3,
+an upgrade to WildFly 12 and JGroups 4,
+and JPMS automatic module names.
+
+== What's new?
+
+If you didn't pay attention after the 5.9.0.Final release, then there is a lot of news for you!
+Below is a summary of notable changes since 5.9.
+
+If you tried out the Betas/CR, know that this release only adds two changes on top of 5.10.0.CR1:
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3159[HSEARCH-3159]:
+Hibernate Search's ORM integration now depends on Hibernate ORM 5.3.0.Final.
+* https://hibernate.atlassian.net/browse/HSEARCH-3156[HSEARCH-3156]:
+`@ContainedIn` will not fail anymore at runtime when targeting a class for which only some subclasses are configured in Search.
+
+[[orm53]]
+=== ORM 5.3 and JPA 2.2 compatibility
+
+Hibernate Search 5.10 is designed to work with Hibernate ORM 5.3.
+
+[[dependency-injection]]
+=== Integration to DI frameworks through Hibernate ORM 5.3
+
+Hibernate Search now taps into Hibernate ORM's integration to dependency injection frameworks.
+If you use a dependency injection framework integrating with Hibernate ORM 5.3,
+and you add field bridges to your dependency injection context,
+then Hibernate Search will automatically retrieve and use field bridges from this context.
+
+This allows you in particular to inject components from your DI context into your field bridges,
+using your DI framework's features (`@java.inject.Inject`, Spring's `@Autowired`, ...).
+
+The integration is already known to work in a CDI 2.0 environment such as WildFly 12,
+and the Spring team will probably make it work as soon as it adds support for JPA 2.2.
+
+[[wildfly-12]]
+=== Upgrade to WildFly 12 and JGroups 4
+
+Hibernate Search's JBoss modules now target WildFly 12.
+This means in particular that the JGroups backend now uses JGroups 4 and is no longer compatible with JGroups 3.
+
+Also, we took this opportunity to move the JGroups backend's JBoss modules out of the engine feature pack to
+https://docs.jboss.org/hibernate/search/5.10/reference/en-US/html_single/#_jgroups_feature_pack[a dedicated feature pack].
+
+[[jpms-automatic-module-names]]
+=== JPMS automatic module names
+
+We added automatic https://en.wikipedia.org/wiki/Java_Platform_Module_System[JPMS module] names to our JARs.
+
+Note that Hibernate Search JARs still can only be used as automatic modules,
+because some of our dependencies cannot easily be used as modules yet.
+
+Here are the module names:
+
+* `org.hibernate.search.engine`
+* `org.hibernate.search.orm`
+* `org.hibernate.search.backend.elasticsearch`
+* `org.hibernate.search.backend.elasticsearch.aws`
+* `org.hibernate.search.clustering.jms`
+* `org.hibernate.search.clustering.jgroups`
+* `org.hibernate.search.jsr352.core`
+* `org.hibernate.search.jsr352.jberet`
+* `org.hibernate.search.serialization.avro`
+
+[[elasticsearch-client-access]]
+=== Direct access to the Elasticsearch client
+
+Hibernate Search now offers a way to access the Elasticsearch client directly.
+See the https://docs.jboss.org/hibernate/search/5.10/reference/en-US/html_single/#elasticsearch-client-access[documentation]
+for more information.
+
+=== Other changes
+
+Here are the other notable changes since Hibernate Search 5.9.0.Final:
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3026[HSEARCH-3026]:
+If your Elasticsearch cluster is accessed through a URL with a non-root path,
+you can now use `hibernate.search.default.elasticsearch.path_prefix` to tell Hibernate Search about that path.
+* https://hibernate.atlassian.net/browse/HSEARCH-3039[HSEARCH-3039]:
+We removed the ability to analyze document identifiers from Search a few versions ago,
+but some parts of Hibernate Search still performed analysis on document identifiers in some cases,
+in particular when querying them and when embedding a document ID using `@IndexedEmbedded`.
+This has been fixed: Hibernate Search now consistently skips analysis on document identifiers.
+* https://hibernate.atlassian.net/browse/HSEARCH-3021[HSEARCH-3021]:
+The integration to dependency injection frameworks is now
+https://docs.jboss.org/hibernate/search/5.10/reference/en-US/html_single/#section-bridge-dependency-injection[properly documented].
+* https://hibernate.atlassian.net/browse/HSEARCH-3138[HSEARCH-3138]:
+We restored binary compatibility with applications built against Hibernate Search 5.5,
+so that Hibernate Search 5.10 can be included in the upcoming WildFly release.
+
+For a full list of changes since 5.9.0.Final,
+please see https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HSEARCH%20AND%20fixVersion%20in%20(5.10.0.Final%2C%205.10.0.CR1%2C%205.10.0.Beta2%2C%205.10.0.Beta1)%20ORDER%20BY%20updated[this list of tickets on our JIRA instance].
+
+For a full list of changes since 5.10.0.CR1,
+please see https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31668[the release notes].
+
+== How to get this release
+
+All details are available and up to date on http://hibernate.org/search/releases/5.10/#get-it[the dedicated page on hibernate.org].
+
+== Next
+
+We are still working on Hibernate Search 6,
+with the https://github.com/hibernate/hibernate-search-6-poc[proof of concept] now providing both an Elasticsearch and a Lucene backend,
+with generic APIs that will avoid the need to add Lucene to your classpath when you only need Elasticsearch.
+
+There is still https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HSEARCH%20AND%20fixVersion%20IN%20(6-before-POC-merge%2C%206-after-POC-merge%2C%206)%20order%20by%20status%20DESC[a lot of work to do],
+but we expect to be able to release an Alpha in the next few months.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
