@@ -1,0 +1,83 @@
+= "Hibernate OGM 5.4.0.Beta1 release"
+Davide D'Alto
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+http://hibernate.org/ogm/releases/5.4/#get-it[Hibernate OGM 5.4.0.Beta1] has been released!
+
+The main differences from the previous release is the upgrade to Hibernate ORM 5.3.0.Final, 
+the support for Infinispan Remote native queries and the use of cluster counters
+for local caches when generating sequences with Infinispan Embedded.
+
+All the changes are described in detail in the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31632[release notes].
+
+== Hibernate ORM 5.3
+
+You can find all the details about it in the
+http://in.relation.to/2018/05/14/hibernate-orm-530-final-release/[Hibernate ORM 5.3.0.Final release post].
+The main things I will mention here is that it comes with support for JPA 2.2.
+
+== Infinispan Remote queries
+
+You can execute queries in Infinispan using the query language called
+https://blog.infinispan.org/2016/12/meet-ickle.html[Ickle]. This latest version of Hibernate OGM
+will convert the JPQL queries into an equivalent in Ickle. You can also run native query directly.
+
+Here is an example of a native query execution:
+
+====
+[source, JAVA]
+----
+String ickleQuery = "from HibernateOGMGenerated.Registry where level > 3 order by start"
+List result = session.createNativeQuery( ickleQuery )
+				.addEntity( Employee.class )
+				.list();
+----
+====
+
+With Ickle you can also write queries using the Lucene syntax, as long as the field is
+indexed. Note that this will only work if the cache already exists on the server and the
+fields are indexed. Hibernate OGM won't keep track of indexing information when it creates
+new caches.
+
+== Where can I get Hibernate OGM?
+
+You can include in your project the dialect of your choice using these Maven coordinates:
+
+* http://infinispan.org[Infinispan]
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.4.0.Beta1_
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan-embedded:5.4.0.Beta1_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.4.0.Beta1_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.4.0.Beta1_
+** Infinispan Remote: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-remote:5.4.0.Beta1_
+** Infinispan Embedded: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-embedded:5.4.0.Beta1_
+** MongoDB: _org.hibernate.ogm:hibernate-ogm-featurepack-mongodb:5.4.0.Beta1_
+** Neo4j: _org.hibernate.ogm:hibernate-ogm-featurepack-neo4j:5.4.0.Beta1_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.4.0.Beta1[from Sourceforge].
+
+If you are interested about available versions, you can check the official
+http://hibernate.org/ogm/releases[Hibernate OGM download page].
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://discourse.hibernate.org/c/hibernate-ogm[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+== Contributions
+
+Some of the new features have been contributed by 
+Bato-Bair, Sergey Chernolyas and The Viet Nguyen.
+Thanks a lot!
+
+We are looking forward to hearing your feedback!
+
+
