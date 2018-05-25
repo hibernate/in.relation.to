@@ -1,0 +1,53 @@
+= Hibernate Community Newsletter 10/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are
+especially relevant to our users.
+
+== Articles
+
+https://www.theserverside.com/tip/How-JPA-and-Hibernate-simplify-data-persistence[This article]
+explains how JPA and Hibernate simplify data persistence.
+
+Working up with Hibernate in Java EE or Spring is fairly easy since the bootstrap part is taken care of by the application server or
+by Spring. When using Java SE, you can still bootstrap JPA and Hibernate, and
+https://sayemdb.wordpress.com/2014/08/15/jpa-tutorial-setting-up-jpa-in-a-java-se-environment/[this article] shows you how to do that.
+
+For our Korean readers, http://jojoldu.tistory.com/295[this article] explains how to
+fix the `@GenerationType.AUTO` performance issues when using MySQL with Spring Data JPA.
+
+Data consistency models are not very easy to grasp, especially since it applies to both read-write visibility or multi-register atomic operations.
+https://vladmihalcea.com/linearizability/[This article] aims to explain what Linearizability means and why it is a strong consistency model.
+
+When mapping a `ZonedDateTime`, it's better to set the `hibernate.jdbc.time_zone` configuration property as well, as explained in
+https://www.thoughts-on-java.org/hibernate-tips-whats-the-best-way-to-persist-a-zoneddatetime/[this article].
+
+By default, many database systems run in weaker isolation levels, and for this reason, data anomalies are permitted.
+https://vladmihalcea.com/dirty-read/[This article] explains the Dirty Read phenomenon and, even if most of the time this anomaly is not desirable,
+sometimes it's the only way to track the progress of a concurrent transaction.
+
+http://www.baeldung.com/spring-test-programmatic-transactions[This article] shows you how to use programmatic transactions in the Spring TestContext framework.
+
+== Time to upgrade
+
+There were several Hibernate project releases since the last newsletter:
+
+- Hibernate ORM http://in.relation.to/2018/05/14/hibernate-orm-530-final-release/[5.3.0] and http://in.relation.to/2018/05/11/hibernate-orm-5114-final-release/[5.1.14]
+- Hibernate Search http://in.relation.to/2018/05/17/hibernate-search-5-10-0-Final/[5.10.0]
+- Hibernate Validator http://in.relation.to/2018/05/15/hibernate-validator-6010-final-out/[6.0.10]
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/partitions-and-performance/837/2[Hibernate and Oracle Partitions]
+- https://discourse.hibernate.org/t/how-to-start-contributing-as-a-developer/827/4[How to start contributing as a developer]
+- https://discourse.hibernate.org/t/hibernate-proxy-initialization-when-accessing-the-identifier/811[Hibernate Proxy initialization when accessing the identifier]
+- https://discourse.hibernate.org/t/specify-order-in-which-hibernate-deletes-related-objects/815[Specify the order in which Hibernate deletes related objects]
+- https://discourse.hibernate.org/t/how-can-i-use-index-with-hql/803/2[How can I use a database index with HQL]
+- https://discourse.hibernate.org/t/proxy-initilization-when-accessing-the-identifier/811[Hibernate Proxy initialization when accessing the identifier]
+- https://stackoverflow.com/questions/27879451/does-spring-transactional-use-any-hibernate-cache/27882206#27882206[Does Spring `@Transactional` use any Hibernate cache?]
+- https://stackoverflow.com/questions/5360795/what-is-the-difference-between-unidirectional-and-bidirectional-jpa-and-hibernat/48681422#48681422[What is the difference between a unidirectional and a bidirectional JPA and Hibernate association?]
+- https://stackoverflow.com/questions/50282293/hibernate-manytomany-not-uses-jointable-and-produces-cartesian-instead-of-inner/50291229#50291229[Hibernate `@ManyToMany` not uses joinTable and produces Cartesian instead of inner join]
+- https://stackoverflow.com/questions/50309754/hibernate-batch-insert-with-spring-and-hibernate-not-working/50344682#50344682[Hibernate batch insert with Spring and Hibernate]
