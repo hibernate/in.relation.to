@@ -7,17 +7,18 @@ Davide D'Alto
 http://hibernate.org/ogm/releases/5.4/#get-it[Hibernate OGM 5.4.0.Beta1] has been released!
 
 The main differences from the previous release is the upgrade to Hibernate ORM 5.3.0.Final, 
-the support for Infinispan Remote native and JPQL queries (without using Hibernate Search),
+the support for Infinispan Remote native and JPQL queries (without requiring Hibernate Search),
 and the use of cluster counters for local caches when generating sequences with Infinispan Embedded.
 
-All the changes are described in detail in the
+More detail available in the 
 https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31660[release notes].
 
 == Hibernate ORM 5.3
 
-You can find all the details about it in the
+Hibernate ORM 5.3 has a huge list of improvements, most notably it implements JPA 2.2.
+
+You can find all the details about it in the 
 http://in.relation.to/2018/05/14/hibernate-orm-530-final-release/[Hibernate ORM 5.3.0.Final release post].
-The main things I will mention here is that it comes with support for JPA 2.2.
 
 == Infinispan Remote queries
 
@@ -37,10 +38,10 @@ List result = session.createNativeQuery( ickleQuery )
 ----
 ====
 
-With Ickle you can also write queries using the Lucene syntax, as long as the field is
-indexed. Note that this will only work if the cache already exists on the server and the
-fields are indexed. Hibernate OGM won't keep track of indexing information when it creates
-new caches.
+With Ickle you can also write queries which use Infinispan's full-text capabilities backed by Apache Lucene, as long as the field is indexed. It's a nice language combining some notions from JPQL and the Lucene query languages.
+
+Note that this will only work if the cache already exists on the server and the
+fields are indexed. Currently Hibernate OGM is able to automatically generate protobuf schemas but the generated metadata will not include index definitions, so you might need to add these as needed.
 
 == Where can I get Hibernate OGM?
 
