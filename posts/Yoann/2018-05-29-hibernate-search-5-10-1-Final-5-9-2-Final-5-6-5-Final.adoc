@@ -1,0 +1,57 @@
+= Triple bugfix release for Hibernate Search
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published bugfix releases for the branches we actively maintain:
+
+Version 5.10.1.Final:: The latest and greatest, compatible with Hibernate ORM 5.3 and JPA 2.2.
+Version 5.9.2.Final:: Latest version compatible with Hibernate ORM 5.2 (5.2.3.Final and later 5.2.x).
+Version 5.6.5.Final:: Latest version compatible with Hibernate ORM 5.0 and 5.1.
+
+== What's new?
+
+Below are some notable changes since the previous releases.
+
+In 5.10.1.Final::
+* https://hibernate.atlassian.net/browse/HSEARCH-3173[HSEARCH-3173]:
+Hibernate Search now targets Hibernate ORM 5.3.1, which includes several bugfixes.
+* https://hibernate.atlassian.net/browse/HSEARCH-3163[HSEARCH-3163]:
+In some integrations (mostly CDI environments such as WildFly),
+bootstrap errors were swallowed by Hibernate Search, which prevented them from appearing in the logs.
+This is no longer the case: bootstrap errors will be propagated as they should be.
+
+In 5.9.2.Final::
+* https://hibernate.atlassian.net/browse/HSEARCH-3039[HSEARCH-3039]:
+We removed the ability to analyze document identifiers from Search a few versions ago,
+but some parts of Hibernate Search still performed analysis on document identifiers in some cases,
+in particular when querying them and when embedding a document ID using `@IndexedEmbedded`.
+This has been fixed: Hibernate Search now consistently skips analysis on document identifiers.
+
+In 5.6.5.Final and 5.9.2.Final::
+* https://hibernate.atlassian.net/browse/HSEARCH-3156[HSEARCH-3156]:
+`@ContainedIn` will not fail anymore at runtime when targeting a class for which only some subclasses are configured in Search.
+
+For a full list of changes since the previous releases, please see the release notes:
+
+* https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31671[5.6.5.Final]
+* https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31655[5.9.2.Final]
+* https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31666[5.10.1.Final]
+
+== How to get this release
+
+All details are available and up to date on the dedicated pages on hibernate.org:
+
+* http://hibernate.org/search/releases/5.6/#get-it[5.6]
+* http://hibernate.org/search/releases/5.9/#get-it[5.9]
+* http://hibernate.org/search/releases/5.10/#get-it[5.10]
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
