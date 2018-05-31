@@ -1,0 +1,44 @@
+= WildFly 13 released, featuring all latest Hibernate versions!
+Sanne Grinovero
+:awestruct-tags: [ "WildFly", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Last night the modern JakartaEE server WildFly http://wildfly.org/news/2018/05/30/WildFly13-Final-Released/[released the 13th version] and among the list of enhancements you can find an update to all included Hibernate libraries.
+
+Actually it includes both sets of old and new versions of Hibernate libraries!
+
+WildFly 13, like version 12, aims at JavaEE 7 certification so if you start it via its default configuration you will get the old set of Hibernate libraries: Hibernate ORM `5.1.x` to implement the `JPA 2.1` specification, the older matching Hibernate Search, and the old Hibernate Validator providing the `Bean Validation 1.1` implementation.
+
+The full JavaEE 8 server is expected to be implemented by WildFly 14 - however the version released today can give you a taste of most of the EE8 implementations already by enabling a flag:
+
+   ./standalone.sh -Dee8.preview.mode=true
+
+Especially if you don't care about an all-or-nothing approach and are good with having a combination of some specifications at EE7 and some others at EE8, this means you can start benefiting from the new features today!
+
+
+== New Hibernate versions in the "EE8 Preview Mode"
+
+When enabling the `ee8.preview.mode=true` property, rather than the old stack your applications will get the latest Hibernate libraries, freshly released just some days ago.
+
+Hibernate ORM 5.3.1.Final:: Implements JPA 2.2, and http://in.relation.to/2018/05/14/hibernate-orm-530-final-release/[a whole lot of improvements across the board: new features, enhanced performance].
+
+Hibernate Search 5.10.1.Final:: While the main reason to update it is to align dependencies with Hibernate ORM, it implies lots of improvements as we jump from versions `5.5` to `5.10`. In particular Hibernate Search now features https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/#elasticsearch-integration[Elasticsearch integration]. This integration is not included in WildFly but can be easily added - we'll follow up with detailed instructions soon.
+
+Hibernate Validator 6.0.10.Final:: Reference implementation of the http://beanvalidation.org/[Bean Validation 2.0] specification, bringing http://in.relation.to/2017/08/07/and-here-comes-hibernate-validator-60/[among other features] container element constraints and http://in.relation.to/2018/03/20/bean-validation-benchmark-rerevisited/[massive performance improvements].
+
+=== What about Hibernate OGM?
+
+Hibernate OGM is not included in WildFly but - as usual - we release "feature packs" to make it easy to add it yourself.
+
+Similar feature packs exist already but they target WildFly 12, we will update the project to target WildFly 13 soon so watch this space!
+
+== Your help is needed!
+
+While we're very excited that WildFly users can finally benefit from the result of the last few years of work of the Hibernate community, we're not off the hook yet:
+
+enabling the _ee8.preview.mode=true_ switch is clearly meant to be a preview.
+
+We've been working hard to make it easy to update existing applications to the latest Hibernate versions: please follow the respective migration guides for the essential steps, yet if you end up having trouble please let us know!
+
+You can ask on the https://discourse.hibernate.org/[new forums], or create an issue on https://hibernate.atlassian.net[JIRA]. If you could check for existing and similar issues to avoid duplicates and provide details / reproducers / a test that's incredibily helpful!
