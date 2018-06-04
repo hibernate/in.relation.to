@@ -1,0 +1,215 @@
+= The best way to write a Hibernate ORM issue test case
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM"]
+:awestruct-layout: blog-post
+---
+
+A while ago, I wrote http://in.relation.to/2016/01/14/hibernate-jpa-test-case-template/[this article]
+on the Hibernate blog which shows you how to create a test case which reproduces a certain Hibernate ORM issue.
+
+In the meanwhile, I came to realize that there is a much better way which I will explain in this article.
+
+== The hibernate-test-case-templates drawbacks
+
+Although the https://github.com/hibernate/hibernate-test-case-templates[`hibernate-test-case-templates`] is much better than
+having to come up with your own test case and figure out the bootstrapping part, there are several drawbacks to it:
+
+- Being hosted on GitHub, some developers submit their test cases as Pull Requests for the `hibernate-test-case-templates` instead of
+attaching them to the associate Hibernate JIRA issue.
+- As a developer, you won't benefit from our `doInJPA` or `doInHibernate` utilities we have developed for the Hibernate ORM suite of tests.
+- Replicating a test case across various databases requires manually changing the database connectivity configuration properties.
+- The Hibernate ORM developers need to download the test case from the JIRA issue and manually integrate it to the Hibernate ORM project.
+However, this also means we cannot attribute the original work to the test case author.
+
+== The alternative
+
+One alternative which could work better for both Hibernate ORM clients and the core developers is if test cases are submitted as Pull Requests
+for the `hibernate-orm` project itself.
+
+=== Forking the repository
+
+First, you need to fork the https://github.com/hibernate/hibernate-orm[`hibernate-orm`] repository on GitHub.
+
+image::testcase/GitHubFork.png["GitHub repository fork, align="center"]
+
+That's exactly how anyone contributing to the Hibernate ORM project work.
+
+=== Setting up the project
+
+You can find a very detailed explanation of how you can setup and build the `hibernate-orm` project on
+https://github.com/hibernate/hibernate-orm[the main GitHub] page.
+
+If you are using IntelliJ IDEA is as simple as importing the project from Gradle.
+
+=== Creating the test case
+
+Now that you have set up the `hibernate-orm` project, to create a test case you should extend from one of these
+two base classes:
+
+`BaseEntityManagerFunctionalTestCase`::For JPA-based test cases.
+`BaseNonConfigCoreFunctionalTestCase`::For test cases requiring the Hibernate-specific bootstrap mechanism.
+
+Let's assume we want to create a test case for the
+https://hibernate.atlassian.net/browse/HHH-12561[HHH-12561] JIRA issue.
+
+The first thing we need to do is to create a new branch:
+
+[source,bash]
+----
+git checkout -b HHH-12561
+----
+
+The test case can look as follows:
+
+[source,java]
+----
+@TestForIssue( JIRAKey = "HHH-12561" )
+public class GlobalQuotedIdentifiersBulkIdTest
+        extends BaseEntityManagerFunctionalTestCase {
+
+    @Override
+    protected Class<?>[] getAnnotatedClasses() {
+        return new Class<?>[] {
+            Person.class,
+            Doctor.class,
+            Engineer.class
+        };
+    }
+
+    @Override
+    protected void addConfigOptions(Map options) {
+        options.put(
+            AvailableSettings.GLOBALLY_QUOTED_IDENTIFIERS,
+            Boolean.TRUE
+        );
+        options.put(
+            AvailableSettings.HQL_BULK_ID_STRATEGY,
+            InlineIdsOrClauseBulkIdStrategy.class.getName()
+        );
+    }
+
+    @Before
+    public void setUp() {
+        doInJPA( this::entityManagerFactory, entityManager -> {
+            for ( int i = 0; i < entityCount(); i++ ) {
+                Doctor doctor = new Doctor();
+                doctor.setEmployed( ( i % 2 ) == 0 );
+                doctor.setEmployedOn(
+                    Timestamp.valueOf( "2018-06-01 00:00:00" )
+                );
+                entityManager.persist( doctor );
+            }
+
+            for ( int i = 0; i < entityCount(); i++ ) {
+                Engineer engineer = new Engineer();
+                engineer.setEmployed( ( i % 2 ) == 0 );
+                engineer.setEmployedOn(
+                    Timestamp.valueOf( "2018-06-01 00:00:00" )
+                );
+                engineer.setFellow( ( i % 2 ) == 1 );
+                entityManager.persist( engineer );
+            }
+        });
+    }
+
+    protected int entityCount() {
+        return 5;
+    }
+
+    @Test
+    public void testBulkUpdate() {
+        doInJPA( this::entityManagerFactory, entityManager -> {
+            int updateCount = entityManager.createQuery(
+                "UPDATE Person u " +
+                "SET u.employedOn = :date " +
+                "WHERE u.id IN :userIds"
+            )
+            .setParameter( "date", Timestamp.valueOf( "2018-06-03 00:00:00" ) )
+            .setParameter( "userIds", Arrays.asList(1L, 2L, 3L ) )
+            .executeUpdate();
+
+            assertEquals(3, updateCount);
+        });
+    }
+
+    @Entity(name = "Person")
+    @Inheritance(strategy = InheritanceType.JOINED)
+    public static class Person {
+
+        @Id
+        @GeneratedValue
+        private Long id;
+
+        private String name;
+
+        private boolean employed;
+
+        @Temporal( TemporalType.TIMESTAMP )
+        private Date employedOn;
+
+        //Getters and setters omitted for brevity
+    }
+
+    @Entity(name = "Doctor")
+    public static class Doctor extends Person {}
+
+    @Entity(name = "Engineer")
+    public static class Engineer extends Person {
+
+        private boolean fellow;
+
+        //Getters and setters omitted for brevity
+    }
+}
+----
+
+There are several methods which we have overridden from the base class, like:
+
+`getAnnotatedClasses`:: Which defines the entity classes we want this test case to use.
+`addConfigOptions`:: Which defines the additional configuration properties we'd like to provide to Hibernate.
+
+The `setUp` method uses the `@Before` JUnit annotation, and so it will be called before every test execution.
+
+The `testBulkUpdate` method defines the test logic which replicates the Hibernate issue in question.
+
+Notice the use of the `doInJPA` methods which hide all the logic for creating an `EntityManager`,
+starting a transaction, committing it and closing the `EntityManager`.
+
+All you need to do is to provide the data access logic.
+
+=== Committing the test case
+
+Now, we can commit all changes:
+
+[source,bash]
+----
+git commit -am "HHH-12561 - bulk_id_strategy does not work with globally_quoted_identifiers"
+----
+
+Next, we need to push the local branch to our fork:
+
+[source,bash]
+----
+git push origin HHH-12561
+----
+
+Now, go to your `hibernate-orm` fork page on GitHUb and press the `Compare and pull request` button:
+
+image::testcase/CompareAndPullRequest.png["Compare and Pull Request, align="center"]
+
+Now, add a commit message, choose the `JIRA issue Test Case` label, and click the `Click Pull Request` button:
+
+image::testcase/OpenPullRequest.png["Open Pull Request, align="center"]
+
+That's it!
+
+You've just submitted your test case to the `hibernate-orm` project which can be integrated along with the fix.
+
+image::testcase/PullRequests.png["Pull Requests, align="center"]
+
+== Conclusion
+
+As you can see, providing a test case for the `hibernate-orm` project as a GitHub Pull Request is even easier
+than working with the `hibernate-test-case-templates`.
+
+Therefore, if you spot a Hibernate issue, prior to creating the Hibernate JIRA issue, please provide a test case which reproduces the issue in question.
