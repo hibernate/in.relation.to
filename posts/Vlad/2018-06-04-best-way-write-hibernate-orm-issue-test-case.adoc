@@ -177,6 +177,31 @@ starting a transaction, committing it and closing the `EntityManager`.
 
 All you need to do is to provide the data access logic.
 
+=== Testing on various RDBMS
+
+One of the best advantages of using the actual Hibernate ORM tets suite is that you can easily switch the underlying database.
+
+For instance, to run this test on PostgreSQL, just run the following Gradle command from the `hibernate-core` folder:
+
+[source,bash]
+----
+gradlew test --tests org.hibernate.test.bulkid.GlobalQuotedIdentifiersBulkIdTest -Pdb=pgsql
+----
+
+Or, if you want to run this test on a specific database right from your IDE make sure you setup the current database using the following command
+from within the Hibernate module folder the test is located (e.g. `hibernate-core`):
+
+[source,bash]
+----
+gradlew sDB -Pdb=pgsql
+----
+
+Now, when you run the `GlobalQuotedIdentifiersBulkIdTest` from your IDE, the test will run on PostgreSQL.
+
+> In `hibernate-orm/gradle/databases.gradle` configuration file, you can find and customize the database profiles that you can pass via the `-Pdb` Gradle property.
+
+Awesome stuff!
+
 === Committing the test case
 
 Now, we can commit all changes:
