@@ -1,0 +1,54 @@
+= Second maintenance release for Hibernate Search 5.10
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search version 5.10.2.Final,
+the second maintenance release of Hibernate Search 5.10.
+This release adds previously missing handling of `minimumShouldMatch` constraints in boolean junctions.
+
+== What's new?
+
+Most of the changes are purely internal and related to building Hibernate Search from sources.
+
+The only change impacting users is the introduction of `minimumShouldMatch` constraints in boolean junctions.
+This was an issue for users of the Elasticsearch integration in particular,
+since they could create a Lucene `BooleanQuery` with a `minimumShouldMatch` constraint,
+but the constraint was ignored when the query was translated to Elasticsearch.
+This is no longer the case.
+
+We took this opportunity to backport the parts of the Query DSL that allow to set `minimumShouldMatch` constraints
+from the next version of Hibernate Search.
+You can now simply use code similar to this:
+
+```
+FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager( entityManager );
+QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
+		.buildQueryBuilder().forEntity( MyEntity.class ).get();
+Query luceneQuery = queryBuilder.bool()
+		.minimumShouldMatchNumber( 2 ) // This is new
+		.should( queryBuilder.keyword().onField( "foo" ).matching( "text1" ).createQuery() )
+		.should( queryBuilder.keyword().onField( "bar" ).matching( "text2" ).createQuery() )
+		.should( queryBuilder.keyword().onField( "foobar" ).matching( "text3" ).createQuery() )
+		.createQuery();
+FullTextQuery query = fullTextEntityManager.createFullTextQuery( query, MyEntity.class );
+```
+
+\... and the resulting query will only match documents that match at least two should clauses.
+
+There are more advanced syntaxes, please refer to the javadoc of `org.hibernate.search.query.dsl.BooleanJunction`
+for more detailed information.
+
+== How to get this release
+
+All details are available and up to date on http://hibernate.org/search/releases/5.10/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
