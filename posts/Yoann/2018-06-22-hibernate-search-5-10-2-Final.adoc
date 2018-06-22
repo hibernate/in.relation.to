@@ -22,7 +22,7 @@ We took this opportunity to backport the parts of the Query DSL that allow to se
 from the next version of Hibernate Search.
 You can now simply use code similar to this:
 
-```
+```java
 FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager( entityManager );
 QueryBuilder queryBuilder = fullTextEntityManager.getSearchFactory()
 		.buildQueryBuilder().forEntity( MyEntity.class ).get();
