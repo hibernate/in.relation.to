@@ -32,7 +32,7 @@ Query luceneQuery = queryBuilder.bool()
 		.should( queryBuilder.keyword().onField( "bar" ).matching( "text2" ).createQuery() )
 		.should( queryBuilder.keyword().onField( "foobar" ).matching( "text3" ).createQuery() )
 		.createQuery();
-FullTextQuery query = fullTextEntityManager.createFullTextQuery( query, MyEntity.class );
+FullTextQuery query = fullTextEntityManager.createFullTextQuery( luceneQuery, MyEntity.class );
 ```
 
 \... and the resulting query will only match documents that match at least two should clauses.
