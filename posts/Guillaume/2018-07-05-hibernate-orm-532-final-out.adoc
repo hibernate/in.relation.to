@@ -1,0 +1,63 @@
+= "Hibernate ORM 5.3.2.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.3.2.Final
+---
+
+We just released Hibernate ORM 5.3.2.Final with a lot of bugfixes and improvements.
+
+We received some nice contributions during this development cycle so a big thanks to our contributors. Also, we have more and more users now reporting issues with a self contained test case which is very much appreciated.
+
+This is a recommended upgrade for everyone using Hibernate ORM 5.3.x and we hope more and more people will migrate from 5.2 to this shiny new version.
+
+== What's new
+
+=== Bug fixes
+
+We fixed quite a lot of issues, and not only regressions from 5.2 so you should give this version a try.
+
+=== Bootstrap errors now correctly reported
+
+In 5.3, when you had misconfigured your persistence unit, you could have a very cryptic error message or even no error.
+
+This was fixed as part of https://hibernate.atlassian.net/browse/HHH-12247[HHH-12247] and you now have a comprehensive error that will help you understand what's wrong.
+
+=== Cache behavior changes
+
+==== Automatically creating caches
+
+In 5.3, Hibernate ORM started to fail at bootstrap when one of your entity/collection/query caches was not available: ORM did not create the caches anymore and relied on you having declared explictly all the necessary caches. This change was made because, if we automatically create caches without a sane configuration, your caches could be very badly configured (no size limit, no expiration time for instance) and that could ultimately lead to unwanted behaviors (namely OOM issues).
+
+While it's certainly a good thing to configure your caches, we decided to soften this constraint and, starting with 5.3.2, Hibernate ORM will raise warnings for all the non-existing caches and create them. Of course, you are still very much encouraged to configure properly your caches (either by defining a sane default configuration in your cache implementation or by declaring explicitly each cache).
+
+This should improve ORM usability while still being safe enough. You can configure this behavior by using the `hibernate.javax.cache.missing_cache_strategy` property. See http://docs.jboss.org/hibernate/stable/orm/userguide/html_single/Hibernate_User_Guide.html#caching-provider-jcache-missing-cache-strategy[our documentation] for more information.
+
+==== Query cache region name changes
+
+Long story short, the names of the query cache regions have changed in 5.3.2: they are now short names that will be stable (prior to that, they were tied to internal class names so subject to changes when we refactored things).
+
+The new names are:
+
+ * `default-query-results-region` for the query results cache;
+ * `default-update-timestamps-region` for the table update timestamp cache.
+
+Note that if you haven't configured your caches with these new names, we will still try to use the caches with the old names so it shouldn't require any changes on your part.
+
+== Full changelog
+
+You can find the full list of changes https://hibernate.atlassian.net/projects/HHH/versions/31676/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version=31676&styleName=Html&projectId=10031[here]).
+
+== Getting {released-version}
+
+All details are available and up to date on http://hibernate.org/orm/releases/5.3/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[hibernate tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
