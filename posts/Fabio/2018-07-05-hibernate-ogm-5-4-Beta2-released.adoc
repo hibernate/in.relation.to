@@ -1,0 +1,98 @@
+= "Hibernate OGM 5.4.0.Beta2 release"
+Fabio Massimo Ercoli
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+http://hibernate.org/ogm/releases/5.4/#get-it[Hibernate OGM 5.4.0.Beta2] has been released!
+
+Here's a list of the main changes:
+
+* We support server side indexes definition for fast queries with Neo4j.
+* We support scripting and java tasks for Infinispan server.
+* Datastore client configuration using https://github.com/wildfly/wildfly-nosql/tree/master/doc[WildFly NoSQL] subsystem.
+* Support for MongoDB GeoJSON type https://docs.mongodb.com/manual/reference/geojson/#geometrycollection[GeometryCollection].
+* You can provide a custom Protocol Buffer schema in Infinispan remote.
+* Infinispan remote supports now all unidirectional collections.
+* Infinispan remote sequences now uses http://infinispan.org/docs/stable/user_guide/user_guide.html#clustered_counters[Clustered Counters].
+
+More details available in the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31678[release notes].
+
+== Components upgrade
+
+* Hibernate ORM 5.3.2.Final
+* Hibernate Search 5.10.2.Final
+* Infinispan 5.3.0.Final
+
+== Neo4j server side indexes definition
+
+JPA 2.1+ `@Index` annotation is now supported for Neo4j dialect.
+This means that Hibernate OGM will create server side indexes for you, according to the entity definition.
+For instance, given the following entity:
+
+====
+[source,java]
+----
+@Entity
+@Table(indexes = {
+	@Index(columnList = "firstname,lastname"), #<1>
+	@Index(columnList = "middlename"), #<2>
+	@Index(columnList = "nickname", unique = true) #<3>
+})
+private static class Person {
+
+	@Id
+	private String id;
+	private String firstname;
+	private String middlename;
+	private String lastname;
+	private String nickname;
+}
+----
+====
+
+Hibernate OGM will create three indexes:
+
+1. an index, allowing duplicates, on field pair (firstname, lastname)
+2. an index, allowing duplicates, on field middlename
+3. an index, not allowing duplicates, on field nickname
+
+== Where can I get Hibernate OGM?
+
+You can include in your project the dialect of your choice using these Maven coordinates:
+
+* http://infinispan.org[Infinispan]
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.4.0.Beta2_
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan-embedded:5.4.0.Beta2_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.4.0.Beta2_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.4.0.Beta2_
+** Infinispan Remote: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-remote:5.4.0.Beta2_
+** Infinispan Embedded: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-embedded:5.4.0.Beta2_
+** MongoDB: _org.hibernate.ogm:hibernate-ogm-featurepack-mongodb:5.4.0.Beta2_
+** Neo4j: _org.hibernate.ogm:hibernate-ogm-featurepack-neo4j:5.4.0.Beta2_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.4.0.Beta2[from Sourceforge].
+
+If you are interested about available versions, you can check the official
+http://hibernate.org/ogm/releases[Hibernate OGM download page].
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://discourse.hibernate.org/c/hibernate-ogm[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+== Contributions
+
+Some of the new features have been contributed by:
+Aleksandr Mylnikov, Sergey Chernolyas, The Viet Nguyen and Aliaksandr Salauyou.
+Thanks a lot guys!
+
+Looking forward to hearing your feedback!
+
