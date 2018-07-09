@@ -1,0 +1,65 @@
+= Hibernate Community Newsletter 13/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are
+especially relevant to our users.
+
+== Videos
+
+If you are using Spring Boot, you should definitely check out https://spring.io/blog/2018/06/06/spring-tips-jpa[this video] from Josh Long
+where he shares several tips about JPA, Spring, and Hibernate.
+
+== Articles
+
+When using Hibernate, the impact of JPQL query parsing might be overlooked.
+However, as explained
+https://vladmihalcea.com/hibernate-query-plan-cache/[in this article],
+it is very important to make sure that the Query Cache Plan can handle the vast majority of JPQL and Criteria API queries.
+
+If you are planning on using Spring Boot with Hibernate ORM and Hibernate Search,
+then you should definitely read
+https://www.javacodegeeks.com/2018/04/spring-hibernate-tutorial.html[this tutorial].
+
+For our Chinese readers,
+https://juejin.im/post/5b3ca5386fb9a04fd34370d2[this article] shows some interesting problems that Lombok can cause when using JPA and Hibernate.
+
+When using a relational database, most applications rely on the default isolation level, which, most often,
+is either Read Committed (e.g. Oracle, PostgreSQL, SQL Server) or Repeatable Read (e.g. MySQL, MariaDB).
+However, none of these default isolation levels can prevent the Phantom Read anomaly.
+For more details about this phenomenon and how you can prevent it, check out
+https://vladmihalcea.com/phantom-read/[this article].
+
+In
+https://medium.com/@paul.klingelhuber/hibernate-dirty-checking-with-converted-attributes-1b6d1cd27f68[this article],
+Paul Klingelhuber explains how entity attributes annotated with `@Convert` are handled by the Hibernate dirty checking mechanism.
+
+
+
+== Time to upgrade
+
+There were several Hibernate project releases since the last newsletter:
+
+- http://in.relation.to/2018/07/05/hibernate-orm-532-final-out/[Hibernate ORM 5.3.2] and http://in.relation.to/2018/07/04/hibernate-orm-5115-final-release/[Hibernate ORM 5.1.15]
+- http://in.relation.to/2018/07/05/hibernate-ogm-5-4-Beta2-released/[Hibernate OGM 5.4.0 Beta2]
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/org-hibernate-query-query-typed-parameter-recommendations-setparameter-string-object-vs-setparameter-string-object-type/957/2[`org.hibernate.query.Query` typed parameter recommendations: `setParameter(String, Object)` vs. `setParameter(String, Object, Type)`]
+- https://stackoverflow.com/questions/11938253/jpa-joincolumn-vs-mappedby/51055434#51055434[What's the difference between` @JoinColumn` and `mappedBy` when using a `@OneToMany` association]
+- https://stackoverflow.com/questions/4334970/hibernate-cannot-simultaneously-fetch-multiple-bags/51055523#51055523[Hibernate cannot simultaneously fetch multiple bags]
+- https://stackoverflow.com/questions/1372317/how-do-we-count-rows-using-hibernate/51055670#51055670[How do we count rows using Hibernate?]
+- https://stackoverflow.com/questions/11746499/solve-failed-to-lazily-initialize-a-collection-of-role-exception/51055820#51055820[How to solve the “failed to lazily initialize a collection of role” Hibernate exception]
+- https://discourse.hibernate.org/t/postupdateevent-state-oldstate-array-order/975[What is the order of properties when calling getDirtyProperties from `PostUpdateEvent`]
+- https://discourse.hibernate.org/t/jpa-criteriabuilider-custom-join-on-clause/973[JPA CriteriaBuilider custom JOIN ON clause]
+- https://discourse.hibernate.org/t/how-to-sync-the-manual-entries-for-pk-given-through-any-shell-script-with-those-generated-through-a-hibernate-sequence/1015[How to sync the manual entries for PK given through any shell script with those generated through a Hibernate sequence]
+- https://stackoverflow.com/questions/9762101/what-is-linearizability/50653833#50653833[What is “Linearizability”?]
+- https://stackoverflow.com/questions/11043712/what-is-difference-between-non-repeatable-read-and-phantom-read/51123574#51123574
+- https://stackoverflow.com/questions/21721818/why-does-hibernate-set-dynamic-insert-false-by-default/43040605#43040605[hy does Hibernate set dynamic insert=false by default]
+- https://stackoverflow.com/questions/25738569/jpa-map-json-column-to-java-object/47039984#47039984[JPA map JSON column to Java Object]
+- https://stackoverflow.com/questions/25911359/read-write-splitting-hibernate/26026237#26026237[Read/Write splitting Hibernate]
+- https://stackoverflow.com/questions/27519399/why-is-the-jpa-fetchtype-eager-by-default-for-the-manytoone-relationship/27520593#27520593[Why is the JPA FetchType `EAGER` by default for the `@ManyToOne` relationship?]
+
+
