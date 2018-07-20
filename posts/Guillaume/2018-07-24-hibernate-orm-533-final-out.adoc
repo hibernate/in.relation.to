@@ -1,0 +1,62 @@
+= "Hibernate ORM 5.3.3.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.3.3.Final
+:release-id: 31687
+---
+
+Just two weeks after 5.3.2.Final, here is a new maintenance release for the 5.3 branch, namely Hibernate ORM 5.3.3.Final.
+
+No big changes but a lot of bugfixes and tweaks (keep the test cases coming!).
+
+The big news is that we can now run our tests with the latest build of the upcoming JDK 11.
+
+This is a recommended upgrade for everyone using Hibernate ORM 5.3.x.
+
+== What's new
+
+=== Bug fixes
+
+We fixed quite a lot of issues. Some are present in 5.2, so you should think about upgrading to 5.3.
+
+Here is a quick selection of fixes:
+
+ * https://hibernate.atlassian.net/browse/HHH-12740[HHH-12740] - Subselect fetching doesn't work when multiLoad was used
+ * https://hibernate.atlassian.net/browse/HHH-12776[HHH-12776] - `NullPointerException` when executing native query on an Audited Entity
+ * https://hibernate.atlassian.net/browse/HHH-12718[HHH-12718] - Entity changes in `@PreUpdate` callback are not persisted when lazy loading is active for more than one field
+ * https://hibernate.atlassian.net/browse/HHH-12786[HHH-12786] - Deleting an entity leads to `NullPointerException` in ByteBuddy proxy
+ * https://hibernate.atlassian.net/browse/HHH-12795[HHH-12795] - Setting `FlushMode` to manual for a `@NamedQuery` is ignored
+
+=== Dependency upgrade
+
+You should update your dependencies to Javassist and ByteBuddy:
+
+ * Javassist: 3.23.1-GA
+ * ByteBuddy: 1.8.13
+
+They were upgraded to versions supporting JDK 11.
+
+=== JDK 11 support
+
+We made quite a lot of build changes to support running our tests with the latest build of JDK 11.
+
+They are now run on our CI on a daily basis so we should be ready when JDK 11 gets released.
+
+== Full changelog
+
+You can find the full list of changes https://hibernate.atlassian.net/projects/HHH/versions/{release-id}/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here]).
+
+== Getting {released-version}
+
+All details are available and up to date on http://hibernate.org/orm/releases/5.3/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[hibernate tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
