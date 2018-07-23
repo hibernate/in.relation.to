@@ -1,0 +1,61 @@
+= Hibernate Community Newsletter 14/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are
+especially relevant to our users.
+
+== Articles
+
+If you want to call SQL functions from the `SELECT` clause of a JPQL or Criteria API queries,
+then you should register the function as otherwise, the entity query will not compile.
+For more details about the best way to register such SQL function, check out
+https://vladmihalcea.com/hibernate-sql-function-jpql-criteria-api-query/[this article].
+
+https://www.codesod.com/2018/04/jpa-tips-avoiding-n-1-select-problem.html[This article]
+shows that collection EAGER fetching can lead to N+1 query problems.
+However, this can happen not only to entity collections. You can bump into this issue with `@ManyToOne` or `@OneToOne`
+associations as well since they are fetched eagerly by default too.
+The best way to address the N+1 query issue is to detect it automatically during testing, as explained
+https://vladmihalcea.com/how-to-detect-the-n-plus-one-query-problem-during-testing/[in this article].
+
+For our Russian readers, there is
+https://habr.com/post/416851/[a very good article on Habr] which addresses many topics that
+are very useful when using JPA and Hibernate.
+
+If you want to customize the default mapping between JPA entities and database columns, you can use
+a custom naming strategy.
+https://www.devglan.com/hibernate/hibernate-naming-strategy[This article] explains how you can do that with both
+Hibernate 4 and 5.
+
+If you are using Hazelcast as a Hibernate 2nd-level cache provider, and you are running on Java 10, check out
+https://dzone.com/articles/migrate-hibernate-caching-with-hazelcast-in-java-1[this article]
+for how to set up your project dependencies in Maven so that everything works properly.
+
+The Java Magazine features
+http://www.javamagazine.mozaicreader.com/MayJune2018/Twitter#&pageSet=27&page=0&contentItem=0[one article]
+about some design patterns to consider when using JPA and Hibernate.
+
+== Time to upgrade
+
+If you are using Hibernate Validator 6.0, you might want to upgrade to the
+http://in.relation.to/2018/07/18/hibernate-validator-6011-final-out/[6.0.11] version
+which comes with improved compatibility with JDK 11 and a couple of bug fixes.
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/association-between-independent-entities/1078[How to map an association between independent entities]
+- https://discourse.hibernate.org/t/collections-are-not-able-to-access-in-reference-variable/1082[Parent-side Hibernate collection does not contain any child record]
+- https://discourse.hibernate.org/t/how-to-fetch-one-side-of-a-many-to-many-association-while-filtering-the-other-using-hibernate/1095[How to fetch one side of a many-to-many association while filtering the other using Hibernate]
+- https://discourse.hibernate.org/t/how-to-change-hibernate-schema-at-run-time/1093[How to change the Hibernate database schema at runtime]
+- https://stackoverflow.com/questions/11431670/how-can-i-avoid-the-warning-firstresult-maxresults-specified-with-collection-fe/46195656#46195656[How can I avoid the Warning “firstResult/maxResults specified with collection fetch; applying in memory!”?]
+- https://stackoverflow.com/questions/12346845/registering-a-sql-function-with-jpa-and-hibernate/51285944?stw=2#51285944[Registering a SQL function with JPA and Hibernate]
+- https://stackoverflow.com/questions/7349464/bulk-insert-or-update-with-hibernate/51324134#51324134[Bulk insert or update with Hibernate?]
+- https://stackoverflow.com/questions/25362831/solve-hibernate-lazy-init-issue-with-hibernate-enable-lazy-load-no-trans/39723142#39723142[Solve Hibernate Lazy-Init issue with hibernate.enable_lazy_load_no_trans]
+- https://stackoverflow.com/questions/23923886/jpa-lazy-fetch-not-working-and-throwing-lazyinitializationexception/23927111#23927111[JPA lazy fetch not working and throwing LazyInitializationException]
+- https://stackoverflow.com/questions/34588354/difference-between-size-length-and-columnlength-value/34589474#34589474[Difference between `@Size`, `@Length` and `@Column(length=value)` when using JPA and Hibernate]
+- https://stackoverflow.com/questions/31725820/hql-returning-timestamp-for-given-timezone/31741171#31741171[How to return a timestamp for given timezone using HQL]
+- https://stackoverflow.com/questions/39915906/how-to-update-only-a-part-of-all-entity-attributes-with-hibernate/39917954#39917954[How to update only a part of all entity attributes with Hibernate]
+- https://stackoverflow.com/questions/1607532/when-to-use-entitymanager-find-vs-entitymanager-getreference-with-jpa/50945279#50945279[When to use EntityManager.find() vs EntityManager.getReference() with JPA]
