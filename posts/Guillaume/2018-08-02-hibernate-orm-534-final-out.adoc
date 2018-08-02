@@ -1,0 +1,50 @@
+= "Hibernate ORM 5.3.4.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.3.4.Final
+:release-id: 31688
+---
+
+We just released today a new maintenance release of Hibernate ORM 5.3.
+
+== What's new
+
+=== Bug fixes
+
+This release mostly contains bugfixes:
+
+ * https://hibernate.atlassian.net/browse/HHH-12492[HHH-12492] - JPA delete query generated has missing table alias and thus incorrect semantics
+ * https://hibernate.atlassian.net/browse/HHH-12835[HHH-12835] - Wrong assertion in BatchFetchQueueHelper
+ * https://hibernate.atlassian.net/browse/HHH-12846[HHH-12846] - Merge cascade of collection fails when orphan removal enabled with flush mode commit
+ * https://hibernate.atlassian.net/browse/HHH-12847[HHH-12847] - NullPointerException in FetchStyleLoadPlanBuildingAssociationVisitationStrategy::adjustJoinFetchIfNeeded
+ * https://hibernate.atlassian.net/browse/HHH-12868[HHH-12868] - Using CacheConcurrencyStrategy.NONE leads to a NPE when trying to load an entity
+ * https://hibernate.atlassian.net/browse/HHH-12869[HHH-12869] - SingletonEhcacheRegionFactory initialization fails
+
+The fix for HHH-12847 might have consequences on your applications if you are using lock options to load your entities: prior to the fix, the lock mode if set by lock options was ignored and thus not applied. Note that it only concerns you if you are using lock options, using lock modes directly was already working correctly.
+
+=== Dependency upgrade
+
+You should update your ByteBuddy dependency to 1.8.15 if you define it manually.
+
+=== Security manager support with ByteBuddy as bytecode provider
+
+Since ByteBuddy became our default bytecode provider, we did not support running with the security manager enabled. This is now possible.
+
+== Full changelog
+
+You can find the full list of changes https://hibernate.atlassian.net/projects/HHH/versions/{release-id}/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here]).
+
+== Getting {released-version}
+
+All details are available and up to date on http://hibernate.org/orm/releases/5.3/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
