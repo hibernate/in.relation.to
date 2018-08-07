@@ -1,0 +1,48 @@
+= Meet Jan-Willem Gmelig Meyling
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Interview" ]
+:awestruct-layout: blog-post
+---
+
+In this post, I'd like you to meet https://twitter.com/janwillemyme[Jan-Willem Gmelig Meyling],
+software developer, and open source enthusiast.
+
+image::JanWillemGmeligMeyling.jpg["Jan-Willem Gmelig Meyling, align="center", width="400"]
+
+== Hi, Jan-Willem. Would you like to introduce yourself?
+
+Hi Vlad! My name is Jan-Willem Gmelig Meyling. I am a software developer working at http://athenastudies.co.uk[AthenaStudies] in Amsterdam, the Netherlands. I got in touch with the JBoss stack when I started developing DevHub, a continuous integration/code repository platform developed at the Delft University of Technology developed to give students a simple practical introduction into modern software development. The well-structured API and thorough documentation with plenty examples for both Java EE and Hibernate got me hooked onto the technology immediately. As a result, I have been building Java EE applications on top of WildFly/Hibernate for about four years now.
+
+About two years ago I first introduced Hibernate at my company and we started migrating from our custom active record code to Hibernate ORM. In the process, I found the need for reprojection within queries (i.e. selecting from another select statement). I also needed to implement some recursive queries, something I much rather did within my JPA domain than with plain SQL with a custom result set mapping. After a long search, I found the https://github.com/Blazebit/blaze-persistence[Blaze-Persistence] library, which provides a custom CriteriaBuilder that allowed me to build Common Table Expressions (CTEs) for my queries in Hibernate. The CTE's allowed me to create temporary parameterized and even recursive "tables" for queries. Certainly, at the time, Blaze-Persist was under heavy development, so I stumbled upon some issues which then lead to contributing to Blaze-Persist. Besides CTE's Blaze-Persist is packed with features allowing you to write VALUES clauses, create fast entity projections using EntityViews, and provide pagination for queries out of the box. While we're constantly working on Blaze-persist, we sometimes stumble upon an issue or feature we need in Hibernate, and as such I've recently started contributing to Hibernate as well. But hey, what software is perfect, right?
+
+== You've been contributing significantly to the Hibernate ORM project lately. What drives you to make these improvements to the Hibernate ORM project?
+
+Using Hibernate so extensively, sometimes I just stumble upon something for which StackOverflow simply won't have the answer. Taking more active role in the Hibernate community allows me to keep track of new features, requests, changed code that may affect my use, and overall make an easier evaluation whether something that's not working for me should work, and whether I should try and find a workaround or perhaps implement this as a new feature. Furthermore, using so much open source software, I feel it only makes sense to at least give a try at new features or minor issues that you could resolve.
+
+Another driver for me is that I just try to shy away from workarounds. Of course, I can just change my mapping here and use a native SQL query there, but would I work around the issue now, then my colleagues won't be able to recognize what that code is for, probably invalidly refactor it at some point, or encounter the exact same issue themselves elsewhere. I much rather resolve the issue at the root, so that both my software is more maintainable and my dependencies become more stable and feature-rich. Also, what's the fun of a workaround if you can spend a couple of hours spitting through the Hibernate code? ;-)
+
+== Is it difficult to start contributing to Hibernate? How did you find the process (GitHub, Gradle, reviewing)?
+
+Hibernate being such a sophisticated and large code base can be fairly overwhelming. It certainly was to me at first! In my experience, there will always be issues that require quite some prior knowledge to resolve and thus are not particularly suitable for starters. For some features, I have been stepping through the code for days in a row before I got a feeling for what was going on in that particular segment. Nevertheless, I do think that this should never discourage to at least have a try at an issue. Some issues are actually fairly easy to resolve. The codebase is very readable and properly documented which also helps to find a place to start.
+
+The process is very well described in the https://github.com/hibernate/hibernate-orm/blob/master/README.md[README] available in the repository and the project website. For me personally, everything was easily set up. Admittedly, enthusiastic as I was, I only read them after I had already forked and set up the project, but that's really my mistake. The review process for external contributors is quite extensive and I think rightfully so. The codebase is just complex and some features will inherently require some discussion or at least thorough verification of the implementation. I actually think it would be a good idea to consistently require reviews on internal contributions as well.
+
+One problem that I think is common for everyone contributing to Hibernate is the dilemma between Hibernate 5.x and 6.0. Some new features just aren't sensible to build in 5.x because some aspects are severely reworked in 6.0. Other features are simply dependent on the structural changes in 6.0. On the other hand, contributing to 5.x will give you a much quicker release cycle to actually start using your newly added feature. Furthermore, it seems just difficult to get a foot in the door with 6.0, the current state of development is not very transparent, nor it is very clear how and where to contribute. So, in conclusion, I think contributing to 5.x is fairly easy, but contributing to 6.0 seems rather difficult.
+
+== Tell us what's been your experience using Hibernate in the enterprise projects you've been working on?
+
+Over the years, I've noticed that JPA, with its Persistence Contexts, managed entities, and handling of transactions, is all but intuitive. And the catchy thing is that it appears to be very intuitive because you already know your RDBMS, BCNF, Java types, annotations, and the documentation of both Hibernate and JPA is very good.
+
+So you think you know what you're doing, but you really don't. Honestly, before you start doing anything with Hibernate (or JPA for that fact), I strongly recommend reading at least one Hibernate primer from cover to cover. Personally, I've read https://www.manning.com/books/java-persistence-with-hibernate[Java Persistence with Hibernate (C. Bauer, 2006)], and it just taught me so much about the design and intended behavior of JPA and Hibernate and explained a lot of "quirks" I experienced in the beginning.
+
+So every new team member that I get on board now first has to go through at least one JPA primer. It just saves me a lot of time cleaning up wrongly produced Hibernate code or unexpected bugs because didn't understand when an entity was still tracked and will be flushed at some point.
+
+== We always value feedback from our community,  so can you tell us what features you'd like us to add to make easier for other data access frameworks to integrate with JPA or Hibernate?
+
+With the pull requests that I have submitted, I have found out that some (mostly optional) JPA features and Hibernate extensions are not always working as expected when used together. This compatibility is not documented to my knowledge. I'd like to see some sort of feature matrix. I also think we should extend bug reports with a "spec mandatory", "spec optional", "hibernate extension" flag and base prioritization on that. Currently, the reporter just sets any priority and it's really difficult to find actual "important" issues in the issue tracker. I also think its a good idea to have this reflected in the test suite.
+
+Furthermore, I think the test suite should be extended to more sophistically check the produced SQL (number of queries, number of joins) and eagerly fetched attributes (unexpected failure from lazy loading). Some recent pull requests and bug reports have shown that it's relatively easy to "break" lazy loading or join fetching in some cases and this raises the question whether we should put more effort to protect ourselves against the ever so unfortunate performance issues.
+
+Thanks for having me!
+
+*Thank you, Jan-Willem, for taking your time. It is a great honor to have you here. To reach Jan-Willem, you can follow him on https://twitter.com/janwillemyme[Twitter].*
