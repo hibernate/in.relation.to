@@ -1,0 +1,51 @@
+= "Hibernate ORM 5.3.5.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.3.5.Final
+:release-id: 31695
+---
+
+Today, we released a new maintenance release of Hibernate ORM 5.3.
+
+It will be the version included in WildFly 14.
+
+== What's new
+
+=== Bug fixes
+
+This release mostly contains bugfixes:
+
+ * https://hibernate.atlassian.net/browse/HHH-12875[HHH-12875] and https://hibernate.atlassian.net/browse/HHH-12882[HHH-12882] - Various fixes regarding `@Where` support
+ * https://hibernate.atlassian.net/browse/HHH-12871[HHH-12871] - Metamodel contains managed types related to dynamic-map entities that have been excluded
+ * https://hibernate.atlassian.net/browse/HHH-12905[HHH-12905] - Passing null as parameter is not allowed even when enablePassingNulls() has been called
+ * https://hibernate.atlassian.net/browse/HHH-12906[HHH-12906] - Statistics.getCollectionRoleNames() reports incorrect value
+ * https://hibernate.atlassian.net/browse/HHH-12907[HHH-12907] - Avoid garbage collection pressure when creating proxies with ByteBuddy
+
+=== Naive limit handler for Sybase
+
+We implemented a naive limit handler for Sybase: it will only be triggered for traditional `SELECT` and `SELECT DISTINCT` queries and will add a `TOP` clause to these queries.
+
+While simple, it should be useful in a lot of common scenarios.
+
+=== Dependency upgrade
+
+You should update your ByteBuddy dependency to 1.8.17 if you define it manually.
+
+== Full changelog
+
+You can find the full list of changes https://hibernate.atlassian.net/projects/HHH/versions/{release-id}/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here]).
+
+== Getting {released-version}
+
+All details are available and up to date on http://hibernate.org/orm/releases/5.3/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
