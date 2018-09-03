@@ -1,0 +1,47 @@
+= Hibernate Community Newsletter 17/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+When using native SQL with Hibernate, you might bump into the __No Dialect mapping for JDBC type__ issue if you try to select an SQL column type that's not recognized by Hibernate.
+https://vladmihalcea.com/hibernate-no-dialect-mapping-for-jdbc-type/[This article] explains how to register JDBC column types either globally or at Hibernate `NativeQuery`-level.
+
+Concurrency control is of paramount importance when using a database system. Luckily, JPA and Hibernate provide support for both optimistic and pessimistic locking. In https://blog.arnoldgalovics.com/optimistic-locking-in-jpa-hibernate/[this article], Arnold Galovics explains how the optimistic locking mechanism works when using JPA and Hibernate.
+
+Eugen Paraschiv has published an article about https://www.baeldung.com/hibernate-search[Hibernate Search]. If you want to use full-text search in your application, you should definitely give Hibernate Search a try.
+
+Multitenancy is a very good solution when you need to accommodate multiple customers on the same database instance. Hibernate offers support for both catalog and schema-based multitenancy. For more details, check out https://vladmihalcea.com/hibernate-database-schema-multitenancy/[this article].
+
+http://blogs.innovationm.com/hibernate-mapping/[This article] offers a short introduction to the one-to-one, one-to-many and many-to-many table relationships, and how they are mapped when using JPA and Hibernate.
+
+If you want to validate the JPA entity attributes at runtime without mixing the validation logic with the business one, you should check the Hibernate Validator project. https://www.thoughts-on-java.org/hibernate-tips-validate-1-of-2-associations-not-null/[This article] shows you how to use Hibernate Validator to ensure that associations are not null.
+
+== Time to upgrade
+
+There were several Hibernate project releases since the last newsletter:
+
+- http://in.relation.to/2018/08/30/hibernate-orm-5116-final-release/[Hibernate ORM 5.1.16]
+- http://in.relation.to/2018/08/23/hibernate-validator-6013-final-out/[Hibernate Validator 6.0.13]
+
+== Questions and answers
+
+- https://stackoverflow.com/questions/39895759/org-hibernate-mappingexception-no-dialect-mapping-for-jdbc-type-2003/51964946#51964946[org.hibernate.MappingException: No Dialect mapping for JDBC type: 2003]
+- https://stackoverflow.com/questions/25097957/hibernate-throws-org-hibernate-exception-lockacquisitionexception/25099277#25099277[Hibernate throws org.hibernate.exception.LockAcquisitionException]
+- https://stackoverflow.com/questions/27090348/hibernate-doesnt-remove-object-from-collection-with-children-in-specific-case/27090542#27090542[Hibernate doesn't remove object from a child collection]
+- https://stackoverflow.com/questions/30731627/hibernate-auto-key-generation-with-mysql-and-oracle/31044252#31044252[Hibernate auto key generation with MySQL and Oracle]
+- https://stackoverflow.com/questions/38928741/does-hibernate-5-support-xml-based-entity-mappings/38939467#38939467[Does Hibernate 5 support XML based entity mappings?]
+- https://stackoverflow.com/questions/14335939/how-to-call-oracle-function-or-procedure-using-hibernate-entitymanager-or-jpa/40458620#40458620[How to call Oracle Function or Procedure using Hibernate (EntityManager) or JPA 2]
+- https://discourse.hibernate.org/t/hibernate5-querysyntaxexception-table-is-not-mapped/1317[Hibernate throws “Caused by: org.hibernate.hql.internal.ast.QuerySyntaxException: MemorySpace is not mapped” ]
+- https://discourse.hibernate.org/t/hibernate-uuid2-uses-lowercase-string-while-sql-server-uniqueidentifier-expects-an-uppercase-string/1329[Hibernate uuid2 uses lowercase String while SQL Server uniqueidentifier expects an uppercase String]
+- https://discourse.hibernate.org/t/hibernate-throws-error-syntax-error-at-or-near-how-to-escape-a-column-name/1324/2[Hibernate throws “ERROR: syntax error at or near”. How to escape a column name?]
+- https://discourse.hibernate.org/t/hikaricp-illegalargumentexception-datasource-or-datasourceclassna-or-jdbcurl-is-required/1312[HikariCP: IllegalArgumentException: dataSource or dataSourceClassNa or jdbcUrl is required]
+- https://discourse.hibernate.org/t/n-1-query-problem-with-manytoone-association/1293[N+1 query problem with @ManyToOne association]
+- https://discourse.hibernate.org/t/generate-statistics-grows-querystatistics-concurrenthashmap-indefinitely/1287[Hibernate statistics grows QueryStatistics ConcurrentHashMap indefinitely ]
+- https://discourse.hibernate.org/t/efficient-queries-avoiding-massive-joins-with-broad-class-hierarchy/1254[Efficient Queries Avoiding Massive Joins with Broad Class Hierarchy]
+- https://discourse.hibernate.org/t/multischema-support-for-hibernate-5-x/1285[Multischema support for Hibernate 5]
+- https://discourse.hibernate.org/t/statelesssession-fills-up-statefulpersistencecontext/1267[Hibernate StatelessSession fills up StatefulPersistenceContext]
