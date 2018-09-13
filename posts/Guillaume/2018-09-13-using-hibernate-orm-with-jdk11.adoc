@@ -1,0 +1,69 @@
+= "Using Hibernate ORM with JDK 11"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+JDK 11 is almost there and you might want to start testing your applications with it.
+
+Your applications use Hibernate technologies? It shouldn't be a problem but here are some important information.
+
+== Hibernate technologies and JDK 11 support
+
+We started testing the Hibernate technologies with JDK 11 very early so we have some good news: http://hibernate.org/orm/[Hibernate ORM] (5.3.3+), http://hibernate.org/search/[Hibernate Search] (5.10.4+) and http://hibernate.org/validator/[Hibernate Validator] (6.0.12+) can be used with JDK 11.
+
+Note that, for now, even though we define automatic module names, running as Jigsaw modules is not fully tested and not expected to work.
+
+== A few quirks with ORM though
+
+While Hibernate ORM 5.3 supports (and is tested with) JDK 11, there are a few things you need to tweak while waiting for Hibernate ORM 5.4.
+
+=== JAXB dependency
+
+JAXB is not provided by the JDK anymore so you need an external dependency for it:
+
+```xml
+<dependency>
+    <groupId>javax.xml.bind</groupId>
+    <artifactId>jaxb-api</artifactId>
+    <version>2.3.0</version>
+</dependency>
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>2.3.0.1</version>
+</dependency>
+```
+
+These dependencies will be added in Hibernate ORM 5.4.
+
+=== ByteBuddy experimental support
+
+When using ORM with JDK 11, you might end up with the following exception coming from http://bytebuddy.net[ByteBuddy]:
+
+```
+Caused by: org.hibernate.bytecode.enhance.spi.EnhancementException: Failed to enhance class org.hibernate.jpa.test.enhancement.TestLazyPropertyOnPreUpdate
+	at org.hibernate.bytecode.enhance.internal.bytebuddy.EnhancerImpl.enhance(EnhancerImpl.java:117)
+	at org.hibernate.testing.bytecode.enhancement.BytecodeEnhancerRunner$2.loadClass(BytecodeEnhancerRunner.java:94)
+	... 40 more
+Caused by: java.lang.UnsupportedOperationException
+	at net.bytebuddy.jar.asm.ClassVisitor.visitNestMemberExperimental(ClassVisitor.java:248)
+	at net.bytebuddy.jar.asm.ClassReader.accept(ClassReader.java:651)
+	at net.bytebuddy.jar.asm.ClassReader.accept(ClassReader.java:391)
+	at net.bytebuddy.pool.TypePool$Default.parse(TypePool.java:1051)
+```
+
+This is due to https://asm.ow2.io/[ASM] (the component used by ByteBuddy to manipulate the bytecode) only supporting some JDK 11 features as experimental. ByteBuddy does the same and you need a specific flag to enable the support of these features.
+
+To get everything in order, you need to add the following flag to your JVM: `-Dnet.bytebuddy.experimental=true`.
+
+Hopefully, ASM 7 will be released soon.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://discourse.hibernate.org/[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
