@@ -1,0 +1,91 @@
+= "Hibernate OGM 5.4.0.CR1 release"
+Fabio Massimo Ercoli
+:awestruct-tags: [ "Hibernate OGM", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+http://hibernate.org/ogm/releases/5.4/#get-it[Hibernate OGM 5.4.0.CR1] has been released!
+
+Here's a list of the main changes:
+
+* We support Infinispan remote transactions over HotRod client
+* Java types `java.time.LocalDate`, `java.time.LocalDateTime` and `java.time.LocalTime` are natively supported as field types
+* It is possible to configure the MongoDB `ReadConcern` strategy.
+
+More details available in the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31690[release notes].
+
+== Components upgrade
+
+* Hibernate ORM 5.3.4.Final
+* Hibernate Search 5.10.4.Final
+* Infinispan 9.3.3.Final
+
+== Use java.type.LocalDate
+
+Now you can define an entity having `java.time` fields.
+Such as:
+
+====
+[source,java]
+----
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
+@Entity
+public class LocalDateEntity {
+
+	@Id
+	private Integer id;
+
+	private LocalDate day; #<1>
+	private LocalDateTime moment; #<2>
+	private LocalTime time; #<3>
+}
+----
+====
+
+Hibernate OGM will handle the fields:
+
+1. day, as a `java.time.LocalDate` type
+2. moment, as a `java.time.LocalDateTime` type
+3. time, as a `java.time.LocalTime` type
+
+== Where can I get Hibernate OGM?
+
+You can include the dialect of your choice in your project using the following Maven coordinates:
+
+* http://infinispan.org[Infinispan]
+** Remote: _org.hibernate.ogm:hibernate-ogm-infinispan-remote:5.4.0.CR1_
+** Embedded: _org.hibernate.ogm:hibernate-ogm-infinispan-embedded:5.4.0.CR1_
+* https://www.mongodb.com[MongoDB]: _org.hibernate.ogm:hibernate-ogm-mongodb:5.4.0.CR1_
+* http://neo4j.com[Neo4j]: _org.hibernate.ogm:hibernate-ogm-neo4j:5.4.0.CR1_
+** Infinispan Remote: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-remote:5.4.0.CR1_
+** Infinispan Embedded: _org.hibernate.ogm:hibernate-ogm-featurepack-infinispan-embedded:5.4.0.CR1_
+** MongoDB: _org.hibernate.ogm:hibernate-ogm-featurepack-mongodb:5.4.0.CR1_
+** Neo4j: _org.hibernate.ogm:hibernate-ogm-featurepack-neo4j:5.4.0.CR1_
+
+Alternatively, you can download archives containing all the binaries, source code and documentation
+https://sourceforge.net/projects/hibernate/files/hibernate-ogm/5.4.0.CR1[from Sourceforge].
+
+If you are interested about available versions, you can check the official
+http://hibernate.org/ogm/releases[Hibernate OGM download page].
+
+== How can I get in touch?
+
+You can find us through the following channels:
+
+* https://discourse.hibernate.org/c/hibernate-ogm[User forum]
+* https://hibernate.atlassian.net/browse/OGM[Issue tracker]
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list]
+* http://stackoverflow.com[Stack Overflow]: we monitor the tag _hibernate-ogm_
+* https://www.hipchat.com/gXEjW5Wgg[HipChat]: Hibernate OGM hipchat room
+
+== Contributions
+
+Some of the new features have been contributed by Aleksandr Mylnikov.
+Thanks a lot Aleksandr!
+
+Looking forward to hearing your feedback!
+
