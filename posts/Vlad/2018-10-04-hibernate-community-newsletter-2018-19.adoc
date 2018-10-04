@@ -1,0 +1,55 @@
+= Hibernate Community Newsletter 19/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+Arnold Gálovics continues his concurrency control series with
+https://blog.arnoldgalovics.com/pessimistic-locking-in-jpa-hibernate/[this article about pessimistic locking in JPA and Hibernate].
+
+Debezium allows you to parse the database transaction log and extract changes. You can use the change events to maintain a materialized view
+or update an application-level cache. In https://debezium.io/blog/2018/09/20/materializing-aggregate-views-with-hibernate-and-debezium/[this article],
+you are going to find how to materialize aggregate views with Hibernate and Debezium.
+
+Spring framework 5.1 has been released with a Hibernate optimization for read-only transactions.
+Check out https://vladmihalcea.com/spring-read-only-transaction-hibernate-optimization/[this article] for more details.
+
+Eugen Paraschiv published two articles on his website:
+
+. https://www.baeldung.com/hibernate-save-persist-update-merge-saveorupdate[The first article],
+ explains the difference between the JPA `EntityManager` `persist`, `merge` methods and the Hibernate-specific `Session`
+`save`, `update` and `saveOrUpdate` methods.
+. https://www.baeldung.com/hibernate-date-time[The second article] explains how to persist Date and Time objects with JPA and Hibernate.
+
+If you are using SAP HANA, https://developers.sap.com/romania/tutorials/hana-hibernate-setup.html[this article] explains
+how to setup Hibernate for SAP HANA in your Eclipse project.
+
+== Time to upgrade
+
+http://in.relation.to/2018/10/01/hibernate-ogm-5-4-CR1-released/[Hibernate OGM 5.4 CR1] has been released bringing the following features:
+
+- support Infinispan remote transactions over HotRod client,
+- Java types `java.time.LocalDate`, `java.time.LocalDateTime` and `java.time.LocalTime` are natively supported as field types,
+- configure the MongoDB ReadConcern strategy.
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/org-hibernate-mappingexception-no-dialect-mapping-for-jdbc-type-9/1412/2[Hibernate throws org.hibernate.MappingException: No Dialect mapping for JDBC type: -9 with Oracle dialect]
+- https://discourse.hibernate.org/t/how-can-add-costomflushingeventlistener-jpa-in-spring-boot/1414[How to add a custom Hibernate FlushingEventListener with Spring Boot]
+- https://stackoverflow.com/questions/5155718/hibernate-performance[Hibernate Performance Tips]
+- https://stackoverflow.com/a/41507047/1025118[How can we call a stored procedure with Hibernate and JPA?]
+- https://discourse.hibernate.org/t/how-to-log-the-class-and-method-that-generated-a-given-sql-query-with-jpa-and-hibernate/1421[How to log the class and method that generated a given SQL query with JPA and Hibernate ]
+- https://www.quora.com/What-are-some-differences-between-Spring-caching-and-Hibernate-caching/answer/Vlad-Mihalcea-1[What are some differences between Spring caching and Hibernate caching?]
+- https://www.quora.com/What-is-hibernate-cache-mechanism/answer/Vlad-Mihalcea-1[What is the Hibernate cache mechanism?]
+- https://www.quora.com/Is-stored-procedure-better-than-any-ORM-frameworks-like-hibernate-or-is-it-the-other-way[Is using stored procedures better than any ORM frameworks like Hibernate or is it the other way around?]
+- https://discourse.hibernate.org/t/hibernate-throws-caused-by-org-hibernate-hql-internal-ast-querysyntaxexception-memoryspace-is-not-mapped/1317[Hibernate throws “Caused by: org.hibernate.hql.internal.ast.QuerySyntaxException: MemorySpace is not mapped”]
+- https://www.quora.com/How-do-I-use-where-clause-in-hibernate-mapping-file[How do I use the @Where clause in Hibernate HBM XML mapping file?]
+- https://stackoverflow.com/questions/52519013/hibernate-6-what-is-sqm/52584844#52584844[Hibernate 6: What is SQM?]
+- https://stackoverflow.com/questions/23825060/embeddeble-pk-nullable-field-no-returns/23888014#23888014[JPA Embeddeble PK and nullable field]
+- https://stackoverflow.com/questions/28495817/how-to-load-the-actual-hibernate-entity-association-and-not-the-lazy-proxy/28538427#28538427[How to load the actual Hibernate entity association and not the LAZY proxy]
+- https://discourse.hibernate.org/t/hibernate-l2-cache-for-many-many-relationship-in-a-joining-table/1480[Hibernate second-level cache for many-many relationship in a joining table]
+- https://discourse.hibernate.org/t/resultset-holdability-not-working-with-hibernate/1445/10[ResultSet Holdability not working with Hibernate]
