@@ -1,0 +1,51 @@
+= Hibernate Community Newsletter 22/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+Merging entities is fairly easy since you can use the `merge` provided by the `EntityManager` or the Hibernate `Session`. However, merging collections requires more consideration, as explained by
+https://vladmihalcea.com/merge-entity-collections-jpa-hibernate/[this article].
+
+If you are using Kotlin and want to use JPA and Hibernate for you data access layer,
+https://dzone.com/articles/kotlin-data-classes-and-jpa[this article]
+explains how to implement the `equals()`,  `hashCode()`, `copy()`, and `toString()` methods.
+
+https://www.baeldung.com/hibernate-field-naming-spring-boot[This article]
+shows you how to use a custom Hibernate naming strategy when using Spring Boot.
+
+Every entity query, be it JPQL or Criteria API, needs to be parsed and compiled to an AST (Abstract Syntax Tree) in order to generate the associated SQL query. The entity query compilation takes time, as explained in
+https://vladmihalcea.com/hibernate-query-plan-cache/[this article]
+so Hibernate provides a `QueryPlanCache` to store already-compiled plans.
+
+Starting with Hibernate 5.4, the Hibernate `Statistics` object allows you to monitor the Query Plan Cache, and
+https://vladmihalcea.com/optimize-jpql-criteria-api-query-plans-hibernate-statistics/[this article]
+shows you how to take advantage of this feature to speed up IN query performance.
+
+== Time to upgrade
+
+http://in.relation.to/2018/10/30/hibernate-ogm-5-4-Final-released/[Hibernate OGM 5.4.0] has been released. For more details about this version, check out the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10160&version=31724[release notes].
+
+== Questions and answers
+
+- https://www.quora.com/Is-the-Java-Hibernate-framework-archaic-and-obsolete-in-the-age-of-NoSQL-storage-technologies/answer/Vlad-Mihalcea-1[Is the Java Hibernate framework archaic and obsolete in the age of NoSQL storage technologies?]
+- https://discourse.hibernate.org/t/do-i-need-to-implement-equals-and-hashcode-for-entities-in-a-manytomany-associations-with-an-extra-column/1616[Do I need to implement equals() and hashCode() for entities in a @ManyToMany associations with an extra column]
+- https://stackoverflow.com/questions/53019285/how-to-set-parentid-in-child-entity-of-one-to-many-mapping-using-spring-boot-dat/53019467#53019467[How to set parentId in Child Entity of one to many mapping using Spring Boot Data JPA]
+- https://discourse.hibernate.org/t/can-i-use-the-number-sign-in-a-column-name-with-postgresql-and-hibernate/1622[Can I use the number sign (#) in a column name with PostgreSQL and Hibernate?]
+- https://discourse.hibernate.org/t/hibernate-partition-table/482/4[How to use table partitioning with Hibernate]
+- https://stackoverflow.com/questions/53145008/jpa-multiple-manytoone-with-shared-fk/53160517#53160517[JPA multiple ManyToOne with shared FK]
+- https://stackoverflow.com/questions/11948895/how-to-automatically-serialize-and-deserialize-json-string-using-jpa-and-hiberna/47053807#47053807[How to automatically serialize and deserialize JSON string using JPA and Hibernate?]
+- https://discourse.hibernate.org/t/org-hibernate-engine-jdbc-internal-jdbcservicesimpl-hhh000342-could-not-obtain-connection-to-query-metadata-this-resultset-is-closed/1281[org.hibernate.engine.jdbc.internal.JdbcServicesImpl - HHH000342: Could not obtain connection to query metadata : This ResultSet is closed]
+- https://discourse.hibernate.org/t/massindexer-consistently-stops-at-684-000/1648/2[Hibernate Search MassIndexer consistently stops at 684,000]
+- https://stackoverflow.com/questions/4929243/clarifying-terminology-hydrating-an-entity-fetching-properties-from-the-db/29538797#29538797[Clarifying terminology: “Hydrating” an entity when fetching properties from the DB]
+- https://stackoverflow.com/questions/53166546/hibernate-type-mapping-java-sql-date-to-java-time-localdate/53257919#53257919[Hibernate native SQL query type mapping from java.sql.Date to java.time.LocalDate]
+- https://stackoverflow.com/questions/53193257/how-to-apply-the-same-naming-strategy-to-index-columnlist-as-for-column/53209855#53209855[How to apply the same naming strategy to @index columnList as for column?]
+- https://discourse.hibernate.org/t/map-one-object-to-another-object-without-using-foreign-key/1640/7[Map one object to another object without using foreign key]
+- https://stackoverflow.com/questions/53092909/most-efficient-data-transfer-object-with-spring-data-jpa/53095237#53095237[The most efficient data transfer object with Spring Data JPA]
+- https://stackoverflow.com/questions/3585034/how-to-map-a-composite-key-with-hibernate/48269371#48269371[How to map a composite key with Hibernate?]
+
