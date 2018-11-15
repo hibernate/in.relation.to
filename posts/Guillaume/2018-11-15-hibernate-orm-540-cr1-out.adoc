@@ -1,0 +1,88 @@
+= "Hibernate ORM 5.4.0.CR1 released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.4.0.CR1
+:release-id: 31691
+---
+
+Today, we release the first candidate release of Hibernate ORM 5.4.0.
+
+5.4 is the direct continuation of 5.3 and you should plan for an upgrade to continue getting fresh fixes as soon as the Final is released.
+
+Please consider testing this candidate release so the upgrade can be as smooth as possible.
+
+== What's new
+
+=== EntityGraph improvements
+
+JPA's EntityGraph feature is cumbersome to define and use. Hibernate 5.4 adds 2 new features to help make working with EntityGraphs easier.
+
+Note that all these improvements are considered incubating.
+
+==== EntityGraph parsing
+
+The first feature is the ability to create a graph from a String representation. E.g., given a Person entity, we might want to make sure the Person's spouse is eagerly fetched:
+
+[source, JAVA]
+----
+final EntityGraph eg = org.hibernate.graph.EntityGraphs.parse( Person.class, "spouse", entityManager );
+
+final Person personAndSpouse = entityManager.find( Person.class, 1,
+    Collections.singletonMap( "javax.persistence.fetchgraph", eg );
+----
+
+This parsing supports all of the features of EntityGraph creation including sub-graphs (though see second feature) and sub-class graphs.
+See http://docs.jboss.org/hibernate/orm/5.4/userguide/html_single/Hibernate_User_Guide.html#fetching-strategies-dynamic-fetching-entity-graph[the documentation] for in-depth discussion and examples.
+
+==== EntityGraph manipulation
+
+This is mainly about combining graphs. E.g.
+
+[source, JAVA]
+----
+final EntityGraph eg1 = org.hibernate.graph.EntityGraphs.parse( Person.class, "spouse", entityManager );
+final EntityGraph eg2 = org.hibernate.graph.EntityGraphs.parse( Person.class, "spouse(age, dob)", entityManager );
+final EntityGraph combinedGraph = org.hibernate.graph.EntityGraphs.merge( entityManager, Person.class, eg1, eg2 )
+
+final Person personAndSpouse = entityManager.find( Person.class, 1,
+    Collections.singletonMap( "javax.persistence.fetchgraph", combinedGraph );
+----
+
+This is a very trivial example meant just for illustration. It can actually be much more easily defined as:
+
+[source, JAVA]
+----
+final EntityGraph combinedGraph = org.hibernate.graph.EntityGraphs.parse( Person.class, "spouse( age, dob )", entityManager );
+
+final Person personAndSpouse = entityManager.find( Person.class, 1,
+    Collections.singletonMap( "javax.persistence.fetchgraph", combinedGraph );
+----
+
+=== JDK 11 support
+
+5.4.0 will support JDK 11 out of the box e.g. no need for additional dependencies or environment variable as http://in.relation.to/2018/09/13/using-hibernate-orm-with-jdk11/[required with 5.3].
+
+=== Bug fixes and minor improvements
+
+This release contains a lot of bugfixes and minor improvements.
+
+You can find the full list of changes https://hibernate.atlassian.net/projects/HHH/versions/{release-id}/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here]).
+
+== Getting {released-version}
+
+All details are available and up to date on http://hibernate.org/orm/releases/5.4/#get-it[the dedicated page on hibernate.org].
+
+== What's next?
+
+We will release 5.4.0.Final in the coming weeks and will release regular maintenance releases thereafter.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
