@@ -1,0 +1,61 @@
+= Hibernate Community Newsletter 23/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+Since Hibernate 5, the `GenerationType.AUTO` identifier strategy is handled by the `SequenceStyleGenerator`. If the underlying database supports sequences, then a database sequence is going to be used to generate the entity identifier. Otherwise, the `TABLE` generator will be used, and this can cause performance and scalability issue, as illustrated by
+https://sybrenbolandit.nl/2018/11/23/hibernate-id-generation-strategies/[this article].
+
+Therefore, if you're using MySQL you are better off using the IDENTITY generator. If database portability is your concern, then you can use the `SEQUENCE` generator by default since it is supported by Oracle, SQL Server 2012, PostgreSQL and MariaDB 10.3, and just fall back to IDENTITY using the `orm.xml` for MySQL.
+For more details about how you can override an annotation-based mapping using XML configs, check out
+https://vladmihalcea.com/how-to-replace-the-table-identifier-generator-with-either-sequence-or-identity-in-a-portable-way/[this article] as well.
+
+Anghel Leonard wrote an article where he covers over 50 JPA and Hibernate performance tips:
+
+ - https://dzone.com/articles/50-best-performance-practices-for-hibernate-5-amp[Best Performance Practices for Hibernate 5 and Spring Boot 2 (Part 1)]
+ - https://dzone.com/articles/best-performance-practices-for-hibernate-5-and-spr[Best Performance Practices for Hibernate 5 and Spring Boot 2 (Part 2)]
+
+When working with Hibernate, it's common to use the Camel Case (e.g. `phoneNumber`) notation for entity properties while, on the database side, the Snake Case (e.g. `phone_number`) notation is more widespread. Although you could use the `@Column` annotation to map each individual entity attribute to its database identifier, it's much more convenient to use a Hibernate naming strategy that applies all these rules consistently.
+
+https://vladmihalcea.com/map-camel-case-properties-snake-case-column-names-hibernate/[This article] introduces the `CamelCaseToSnakeCaseNamingStrategy` which is available via the https://github.com/vladmihalcea/hibernate-types[hibernate-types] open-source project.
+
+In https://www.baeldung.com/jpa-error-java-lang-string-cannot-be-cast[this article], Eugen Paraschiv shows you how to fix the `java.lang.String cannot be cast to [Ljava.lang.String` error when using JPA and Hibernate.
+
+The JPA specification provides a dual meaning for the `DISTINCT` keyword in a JPQL or Criteria API query. While passing the `DISTINCT` keyword is fine for scalar queries, you don't want to do that for entity queries where `DISTINCT` is only used after the JDBC `ResultSet` is assembled in a parent-child tree representation. To prevent passing the `DISTINCT` keyword to the SQL query, you should use the
+https://vladmihalcea.com/jpql-distinct-jpa-hibernate/[`HINT_PASS_DISTINCT_THROUGH`] JPA query hint.
+
+Hibernate 5.4 provides a way to build JPA EntityGraphs from a String representation. For more details about this new feature, check out
+https://thoughts-on-java.org/parse-string-into-entitygraph/[this article].
+
+== Time to upgrade
+
+http://in.relation.to/2018/11/15/hibernate-orm-540-cr1-out/[Hibernate ORM 5.4.0 CR1] has been released. This is the first release of the 5.4 version, so we are looking forward to getting your feedback about the latest features we integrated into the framework. For more details, check out the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version=31691&styleName=Html&projectId=10031[release notes].
+
+http://in.relation.to/2018/11/22/hibernate-search-5-10-5-Final/[Hibernate Search 5.10.5] has been released. For more details, check out the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31717[release notes].
+
+== Questions and answers
+
+- https://stackoverflow.com/questions/42830497/select-distinct-on-jpa/53406130#53406130[Select DISTINCT on JPA]
+- https://discourse.hibernate.org/t/hibernate-case-when-expression-not-using-arithmetic-operation/1671[Hibernate CASE WHEN expression not using arithmetic operation]
+- https://discourse.hibernate.org/t/how-to-soft-delete-a-child-entity-to-allow-the-client-to-review-it-before-it-finally-gets-deleted/1695[How to soft delete a child entity to allow the client to review it before it finally gets deleted]
+- https://stackoverflow.com/questions/23764528/persistenceunitinfo-appname-has-transactiontype-jta-but-does-not-have-a-jtada/23768775#23768775[PersistenceUnitInfo [appName] has transactionType JTA, but does not have a jtaDataSource defined]
+- https://stackoverflow.com/questions/9667703/jpa-implementing-model-hierarchy-mappedsuperclass-vs-inheritance/47197591#47197591[JPA: Implementing Model Hierarchy - @MappedSuperclass vs. @Inheritance]
+- https://stackoverflow.com/questions/25681386/hibernate-entity-fields-camelcase-database-underscore/53293897#53293897[How to map Hibernate entity fields using camelCase to snake_case (underscore) database identifiers]
+- https://discourse.hibernate.org/t/switch-database-dynamically-at-runtime/1700/6[How to switch database dynamically at runtime]
+- https://stackoverflow.com/questions/1346181/using-distinct-in-jpa/53406102#53406102[Using DISTINCT in JPA]
+- https://discourse.hibernate.org/t/onetoone-mapping-giving-attempted-to-assign-id-from-null-one-to-one-property-error/1777/2[Hibernate throws “org.hibernate.id.IdentifierGenerationException: attempted to assign id from null one-to-one property [com.newModel.Compensation.order]”]
+- https://discourse.hibernate.org/t/deprecation-of-hibernate-criteria-and-how-it-we-can-still-prevent-it/788/16[Deprecation of Hibernate Criteria and how we can still prevent it]
+- https://discourse.hibernate.org/t/how-to-transfer-embedded-pkey-from-grand-parent-to-grand-child-onetomany-mapping-using-crud/1755/19[How to transfer the embedded identifier from a grandparent to a grandchild `@OneToMany` mapping using Hibernate]
+- https://stackoverflow.com/questions/52950436/how-to-override-hibernate-jpa-filter-on-inherited-class/53373949#53373949[How to override hibernate JPA filter on inherited class?]
+- https://stackoverflow.com/questions/53166546/hibernate-native-sql-query-type-mapping-from-java-sql-date-to-java-time-localdat/53257919#53257919[Hibernate native SQL query type mapping from java.sql.Date to java.time.LocalDate]
+- https://stackoverflow.com/questions/594597/hibernate-annotations-which-is-better-field-or-property-access/29004723#29004723[Hibernate Annotations - Which is better, field or property access?]
+- https://stackoverflow.com/questions/30211335/how-to-setup-org-hibernate-org-hibernate-flushmode-for-spring-boot-application/30213835#30213835[How to set up org.hibernate.org.hibernate.FlushMode for Spring Boot application?]
+- https://discourse.hibernate.org/t/column-activity-who-entity-is-invalid-in-the-select-list-because-it-is-not-contained-in-either-an-aggregate-function-or-the-group-by-clause-sql-server/1780/2[Hibernate throws “Column is invalid in the select list because it is not contained in either an aggregate function or the GROUP BY clause” - SQL Server]
+- https://discourse.hibernate.org/t/hibernate-throws-org-hibernate-id-identifiergenerationexception-attempted-to-assign-id-from-null-one-to-one-property-com-newmodel-compensation-order/1777[Hibernate throws “org.hibernate.id.IdentifierGenerationException: attempted to assign id from null one-to-one property”]
