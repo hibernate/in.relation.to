@@ -1,0 +1,229 @@
+= Get a sneak peek into the future of Hibernate Search with 6.0.0.Alpha1!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Alpha1,
+the first release for the next major version of Hibernate Search.
+
+This version is not suitable for production due to its limitations and to the fact APIs are still unstable.
+However, it's a great way to get a feeling of where Hibernate Search is going and give us your feedback.
+
++++<!-- more -->+++
+
+== Getting started
+
+If you want to dive right in, a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+== What's new
+
+For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31657[release notes].
+Be warned, though: there is a lot in there. You may find the summary below easier to process.
+
+=== Preview status
+
+Hibernate Search 6.0 is currently a *technology preview* and is not ready for production.
+
+While the core of Hibernate Search 6 is there, there are still a lot of limitations:
+
+* Features are partially implemented or simply missing.
+For example, you cannot index a `Double` property yet,
+you cannot configure custom Lucene directories,
+you cannot ignore bridges in the predicate DSL,
+and so on.
+* APIs are not considered stable yet.
+* The low-level parts of Hibernate Search 5 that improve its efficiency haven't been
+ported to Hibernate Search 6 yet.
+This results in obvious performance bottlenecks,
+such as all the indexing works from a multi-threaded application being executed
+one after another and without any form of batching.
+
+The exact features that are currently implemented and expected to work will be added to the reference documentation
+as new Alpha versions are released, but to sum up, here is what you can start to play with:
+
+* ORM integration:
+** Mapping of entities using either annotation mapping or programmatic mapping.
+However, we do not offer all the options that were available in Search 5 (yet),
+and we do not support all the data types (yet).
+** Automatic indexing of ORM entities as they are persisted within a transaction
+(enabled automatically if Hibernate Search is in your classpath and the entity is mapped).
+** Search for ORM entities using their Hibernate Search index,
+and retrieving managed entities as results.
+However, we do not offer many options regarding how the entities are retrieved and initialized (yet).
+** Custom, user-defined type bridges, property bridges or value bridges.
+However, the API to retrieve information from POJOs is currently quite cumbersome:
+we know that and will work on a lighter API
+(see https://hibernate.atlassian.net/browse/HSEARCH-3297[HSEARCH-3297],
+https://hibernate.atlassian.net/browse/HSEARCH-3298[HSEARCH-3298]).
+* Search DSL
+** All the predicates listed in `org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext`.
+However, we do not offer all the options that were available in Search 5 (yet).
+** All the sorts listed in `org.hibernate.search.engine.search.dsl.sort.SearchSortContainerContext`.
+However, we do not offer all the options that were available in Search 5 (yet).
+** All the projections listed in `org.hibernate.search.engine.search.dsl.projection.SearchProjectionFactoryContext`.
+However, we do not offer all the options that were available in Search 5 (yet).
+
+[[orm-version]]
+=== ORM version
+
+Hibernate Search 6 still relies on ORM 5.3 at the moment,
+because it requires features that are not yet implemented in ORM 6 (still in development).
+
+[[lucene-7]]
+=== Lucene 7
+
+The Lucene backend now uses Lucene 7.5.
+
+[[elasticsearch-6]]
+=== Elasticsearch 6
+
+The Elasticsearch backend now works with Elasticsearch 5.6 or 6.5.
+Support for older versions of Elasticsearch was dropped.
+
+[[api-refresh]]
+=== API refresh
+
+A lot of APIs have been changed, for multiple reasons.
+
+==== No more Lucene in Hibernate Search APIs
+
+Hibernate Search APIs now abstract from the Lucene APIs,
+so that alternative backends such as Elasticsearch can be used without having Lucene on your classpath.
+
+This should also allow us to upgrade the Lucene version more easily:
+in Search 5, as Lucene was "part of" our APIs,
+we were severely limited when we wanted to upgrade to a newer Lucene version,
+because any breaking change in Lucene could mean a breaking change for our users, too.
+Now that using Lucene APIs is no longer necessary to use Hibernate Search,
+upgrades should be faster.
+
+==== New Search DSL
+
+The Search DSL is brand new, with several improvements:
+
+* Ability to use lambdas for more concise query definition, even when queries are complex.
+* Type-safe projections thanks to the brand new projection DSL.
+* Injection of native predicates (`org.apache.lucene.search.Query`, JSON for Elasticsearch)
+within DSL-created predicates.
+This is not new for the Lucene integration, but it is for the Elasticsearch integration.
+See `org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext.extension(SearchPredicateFactoryContextExtension<T>)`
+`org.hibernate.search.backend.elasticsearch.ElasticsearchExtension.get()` and
+`org.hibernate.search.backend.lucene.LuceneExtension.get()`.
+
+Here is an example of what running a search query in Search 6 looks like:
+
+[source, JAVA, indent=0]
+----
+FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager( entityManager );
+
+FullTextQuery<Book> query = fullTextEntityManager.search( Book.class ).query()
+        .asEntity()
+        .predicate( factory -> factory.match()
+                .onFields( "title", "authors.name" )
+                .matching( "Refactoring: Improving the Design of Existing Code" )
+                .toPredicate()
+        )
+        .build();
+
+List<Book> result = query.getResultList();
+----
+
+And projections to custom beans look like this:
+
+[source, JAVA, indent=0]
+----
+FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager( entityManager );
+
+FullTextSearchTarget<Book> target = fullTextEntityManager.search( Book.class );
+
+FullTextQuery<MyProjectionBean> query = target.query()
+		.asProjection(
+				searchTarget.projection().composite(
+						MyProjectionBean::new,
+						searchTarget.projection().field( "id_stored", Long.class ).toProjection(),
+						searchTarget.projection().field( "title", String.class ).toProjection()
+				).toProjection()
+		)
+        .predicate( factory -> factory.match()
+                .onFields( "title", "authors.name" )
+                .matching( "Refactoring: Improving the Design of Existing Code" )
+                .toPredicate()
+        )
+        .build();
+
+List<MyProjectionBean> result = query.getResultList();
+----
+
+[[bridge-2.0]]
+==== Bridge 2.0
+
+The bridge APIs had to change as part of the API refresh,
+so we took this opportunity to overhaul bridge APIs to make bridges more powerful.
+
+The new Bridge APIs are completely different, but with a lot of improvements:
+
+* Custom (user-defined) bridge annotations, allowing to pass type-safe parameters, and not just strings.
+* Better support for dirty checking optimization in bridges (in `TypeBridge` in particular),
+by allowing bridges to declare what parts of the entity they use.
+* Predicates on non-String fields will work without having to bypass bridges (`.ignoreFieldBridge()`) like in Search 5.
+* And more!
+
+=== Easier to use automatic indexing
+
+Automatic indexing improvements are not limited to bridges:
+`@IndexedEmbedded` is easier to configure properly in Search 6, too.
+
+To be precise, changes on indexed-embedded entities trigger reindexing of the "embedding" entity automatically,
+and annotating the inverse side of the association with `@ContainedIn` is no longer needed in most cases.
+A mapping error will be reported when the inverse side of the association cannot be resolved.
+
+[[runtime-joins]]
+=== Runtime joins
+
+Hibernate Search 6.0 introduces  "nested" fields and predicates,
+similar to the feature with the same name in Elasticsearch.
+
+See `org.hibernate.search.mapper.pojo.mapping.definition.annotation.IndexedEmbedded.storage`
+and `org.hibernate.search.engine.search.dsl.predicate.SearchPredicateFactoryContext.nested()`.
+
+== Migrating from Search 5
+
+As mentioned above, Search 6 breaks many APIs, so migrating older projects will be more work than usual.
+The http://hibernate.org/search/documentation/migrate/6.0/[migration guide]
+will be completed as we release new versions and the APIs get more and more stable,
+but for now we recommend to only test Search 6 on small projects.
+
+Ultimately, we intend to provide additional "compatibility" modules
+that will allow you to use the Search 5 APIs with Search 6 under the hood.
+However, our goal is not full backward compatibility: for some features that changed dramatically,
+it may not be possible to use the Search 5 APIs anymore.
+The main purpose of this compatibility layer will be to spread the migration effort:
+you will have to change your Maven dependencies, configuration and more complex mappings/queries immediately,
+but you will be able to delay the more repetitive parts of the migration work (simple queries, simple entity mappings)
+to later.
+
+Finally, for those who cannot, or do not want to, spend the time required to migrate,
+we intend to continue maintenance releases (= bugfixes) of Hibernate Search 5.x:
+no end-of-life date has been set at the moment.
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+Note that, if you want to try Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
