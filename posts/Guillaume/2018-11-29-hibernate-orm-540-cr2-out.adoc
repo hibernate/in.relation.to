@@ -1,0 +1,45 @@
+= "Hibernate ORM 5.4.0.CR2 released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.4.0.CR2
+:release-id: 31729
+---
+
+We released the second candidate release of Hibernate ORM 5.4.0.
+
+We have fixed a few issues and improved the documentation a bit.
+
+Please consider testing this candidate release so the upgrade can be as smooth as possible.
+
+== What's new
+
+=== JAXB upgrade
+
+We eventually decided to upgrade JAXB to 2.3.1 because the JAXB 2.2 pom files are invalid and cause problems in certain situations.
+
+Our OSGi tests (which were the reason we kept JAXB 2.2 for CR1) are still using 2.2, which is the version included in Karaf, but the rest of ORM uses 2.3.1.
+
+=== Bug fixes and minor improvements
+
+This release contains a few other bugfixes and minor improvements.
+
+You can find the full list of changes https://hibernate.atlassian.net/projects/HHH/versions/{release-id}/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here]).
+
+== Getting {released-version}
+
+All details are available and up to date on http://hibernate.org/orm/releases/5.4/#get-it[the dedicated page on hibernate.org].
+
+== What's next?
+
+We will release 5.4.0.Final in the coming weeks and will release regular maintenance releases thereafter.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
