@@ -1,0 +1,154 @@
+= Hibernate ORM 6.0.0.Alpha1 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Alpha1
+:release-id: 23251
+---
+
+We are excited to announce the release of 6.0 Alpha1.
+
+
+The main design goal for 6.0 is to improve even more Hibernate's through-put performance.  High-load performance
+testing showed that Hibernate's approach of reading values from `ResultSet` by name to be its most limiting factor in
+scaling through-put.  At its most basic, 6.0 is all about changing from its old strategy of read-by-name to
+read-by-position.  But that simple goal has a lot of ramifications.
+
+We have come really far, but still it is an Alpha, so there is still plenty more to do.  Each section below breaks
+down what works, what does not work, what is not yet implemented.
+
+
+
+[[type-system]]
+=== Type system
+
+The change from read-by-name to read-by-position obviously affects the actual calls Hibernate makes to the
+`ResultSet`.  That in turn affects how Hibernate's "type system" is defined to be able to call the positional
+overloads on `ResultSet`.
+
+[IMPORTANT]
+====
+If you write or use custom Hibernate types, this set of changes will not be source nor binary compatible
+from the previous version.  It is unfortunately the one set of contracts where this difference shows through,
+passing a String versus passing an int.
+====
+
+Alpha1 contains the initial proposal for handling various "basic value" customizations including `BasicType`,
+`UserType`, `@SqlType`, `@SqlTypeDescriptor`, `@SqlTypeRegistration`, `@JavaTypeDescriptor`, `@JavaTypeRegistration`.
+
+The descriptors for managed-types and collections have also changed significantly.  See `RuntimeModelDescriptorFactory`
+and `RuntimeModelDescriptorClassResolver`
+
+
+So far development in this area has focused on supporting:
+
+basic values:: fully implemented
+embeddable values:: fully implemented
+one-to-one:: supported (see note about "non-aggregated composite identifiers")
+many-to-one:: fully implemented
+one-to-many:: implemented except:
+* adding values to an existing collection
+* removing values from an existing collection
+* non-bidirectional mappings using a join table works, not using a join table does not
+many-to-many:: partially implemented
+any:: not yet implemented
+many-to-any:: not yet implemented
+
+
+Known limitations:
+
+* extra-lazy collection fetching is, for the most part, not yet implemented
+* "non-aggregated composite identifiers" (`@IdClass`) are not yet supported
+* post-insert identifier generation (IDENTITY, etc) not yet implemented
+* inheritance is not yet implemented (limited support for discriminator-based)
+* support for `@SQLInsert`, `@SQLDelete`, etc not yet implemented
+
+
+See https://github.com/hibernate/hibernate-orm/blob/6.0.0.Alpha1/design/type-customization.adoc.  It is a
+work-in-progress document describing how to customize Hibernate's type system and how Hibernate maps values
+to the database.  This document will eventually become a chapter in the user guide.
+
+
+
+[[generated-sql]]
+=== Generated SQL
+
+We expect the main performance improvement to come from the actual JDBC `ResultSet` calls.  However, there are
+a number of secondary benefits especially when it comes to the SQL we generate.
+
+Since we no longer need the result aliases to be able to read the results, we don't need to generate them into the SQL.
+
+And given other changes in 6.0 we have better insight into being able to further slim dow the generated SQL in other ways
+such as avoiding joins we needed to render before.
+
+Also, all of these changes in the generated SQL makes what we send to the database much more concise which improves
+performance over the wire and performance for the database parser/analyzer.  And its just plain easier to read - bonus!
+
+
+=== HQL
+
+Hibernate now uses Antlr v4 for interpreting HQL queries.  Antlr v4 is significantly faster than Antlr v2, which
+is what Hibernate has been using up through (and including) 5.x.
+
+We also cleaned up and refactored the grammars to perform better.
+
+Quite a few new HQL language features are planned for 6.0.  Alpha1  includes the following:
+
+* Nested dynamic-instantiations - use dynamic-instantiation as an argument to another dynamic-instantiation.  E.g.
+	`select new DTO( a.id, new AnotherDTO( a.name, .... ), ... ) ...`
+* Multiple dynamic-instantiations - mix dynamic-instantiations with other result types freely. E.g.
+	`select a.id, new DTO( a.key, a.text ), new AnotherDTO( a.name, .... ), ...`
+* Expanded literal type support using JDBC escape-like syntax.  E.g. `... where e.startTime < {ts '1999-01-01 00:00:00.0'}`
+* Better support for custom query functions.  Better, but different - suppliers of custom functions will need to update
+	to the new signatures designed to work with an AST and work with the new type system
+
+
+=== Non-HQL Queries
+
+As of 6.0, Hibernate's legacy `org.hibernate.Criteria` support has been removed.  Support for
+JPA Criteria is not yet implemented.
+
+Support for native queries has also not yet been implemented
+
+
+=== Artifacts
+
+All Hibernate ORM artifacts have been moved to a new groupdId - from `org.hibernate` to `org.hibernate.orm`.
+Relocation artifacts are published for each published module
+
+`hibernate-envers` has been folded into the `hibernate-core` module to provide better integration - easier
+and more powerful for users.
+
+`hibernate-spatial`, `hibernate-ehcache`, `hibernate-infinispan` and `hibernate-jcache` are
+temporarily disabled.  And in fact there is some discussion about removing 2 of them completely for 6.0:
+
+* `hibernate-ehcache` - this module supports using Ehcache 2 which I have been told by the Ehcache developers
+	is "no longer supported".  But then there was a release just a few weeks ago.  :)  At any rate, the preferred
+	way to use Ehcache as the second level cache is via `hibernate-jcache` + Ehcache 3.
+* `hibernate-infinispan` - Integration for using Infinispan as a Hibernate second level cache have moved to being
+	developed under the Infinispan developers.  This module already had a relocation published back as far as 5.3
+
+
+=== Next step
+
+The plan for Alpha2 includes implementing:
+
+* Implementing inheritance support
+* Complete association mapping implementation
+* Implementing Criteria support
+
+
+
+=== More information
+
+See the http://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Alpha1/migration-guide.adoc[migration guide].
+
+Also check out the http://hibernate.org/orm/releases/6.0/[release page].
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
