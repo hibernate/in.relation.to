@@ -1,0 +1,76 @@
+= Hibernate Community Newsletter 24/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+In https://medium.com/@manika09singh/hibernate-mistakes-to-avoid-f1636e4ee1d7[this article],
+Manika Singh shows 7 mistakes you should avoid when using JPA and Hibernate.
+
+If you want to execute a custom SQL function from a JPQL or Criteria API query,
+it's best to register the function so that Hibernate knows how to pass arguments and map the return value.
+https://vladmihalcea.com/sql-functions-multiple-parameters-jpql-hibernate/[This article] explains how you can
+register an SQL function which can take parameters from the executing `Query` or reference the underlying
+table columns via the entity properties in the JPQL query.
+
+https://www.baeldung.com/jpa-hibernate-difference[This article] explains the difference between
+the JPA standard and the Hibernate framework which implements the Java Persistence specification.
+
+If you're using PostgreSQL and want to map Java Enums to the PostgreSQL-specific Enum types,
+https://www.javaadvent.com/2018/12/how-to-map-postgresql-enums-to-jpa-entity-properties-using-hibernate.html[this article] explains how you can do that without even having to write a new custom Hibernate Type.
+
+For our Portuguese readers,
+http://naweb.info/o-que-e-o-problema-das-queries-n1-sql-banco-de-dados-terminologia/[this article]
+explains what the N+1 query issue is and how you can overcome it when using JPA and Hibernate.
+
+The `org.hibernate.Hibernate` utility class defines an `initialize` method which takes an entity or a collection
+proxy and forces the proxy initialization. However, this is only useful if the proxy can be fetched from the second-level cache. If the proxy initialization triggers a database query, then it's much more efficient
+to simply fetch the lazy association with the initial database query.
+For more details, check out
+https://vladmihalcea.com/initialize-lazy-proxies-collections-jpa-hibernate/[this article].
+
+Debezium is an open-source framework which allows you to extract CDC (Change Data Capture) events from the database log and consume them either via an embeddable driver or using Kafka.
+https://debezium.io/blog/2018/12/05/automating-cache-invalidation-with-change-data-capture/[This article]
+explains how you can use Debezium to detect database changes that happen outside of Hibernate
+and invalidate the second-level cache entries associated with the recently changed table rows.
+
+Hibernate is a very customizable framework, and because you can override the default CRUD statements,
+it's very easy to implement a https://vladmihalcea.com/the-best-way-to-soft-delete-with-hibernate/[soft delete mechanism] which allows you to retain deleted entities in the database, but to hide them in the application
+after they were logically deleted.
+https://thoughts-on-java.org/hibernate-tips-exclude-deactivated-elements-from-association/[This article] shows you
+got to exclude deleted entities from a given association.
+
+== Time to upgrade
+
+There were two releases for the Hibernate ORM project:
+
+- http://in.relation.to/2018/11/29/hibernate-orm-540-cr2-out/[Hibernate ORM 5.4.0 CR2] is the second release candidate for the 5.4 branch. We are looking forward to getting your feedback for this release.
+- The http://in.relation.to/2018/11/28/hibernate-orm-5117-final-release/[Hibernate ORM 5.1.17] release provides bug fixes and improvements for the 5.1 branch. If you are using Hibernate ORM 5.1, you should upgrade to benefit from the latest enhancements.
+
+There were two releases for Hibernate Search project as well:
+
+- http://in.relation.to/2018/11/29/hibernate-search-6-0-0-Alpha1/[Hibernate Search 6.0.0 Aplha1] is the first release for the 6th major version of this project. Although this version is not suitable for production due to its limitations and to the fact APIs are still unstable, it’s a great way to get a feeling of where Hibernate Search is going and provide your feedback.
+- http://in.relation.to/2018/12/05/hibernate-search-5-11-0-CR1/[Hibernate Search 5.11.0 CR1] is  the first candidate release for the 5.11 branch, and it mainly includes an upgrade to Hibernate ORM 5.4.0.CR2.
+
+== Questions and answers
+
+- https://stackoverflow.com/questions/32453989[What is the solution for the N+1 issue in JPA and Hibernate?]
+- https://stackoverflow.com/questions/53466913/[How to avoid initializing a Hibernate proxy when only the entity id is needed]
+- https://stackoverflow.com/questions/53452571/[What Phenomena does MySQL try to prevent by locking the whole table upon executing Delete statement with the condition on a non-indexed column]
+- https://stackoverflow.com/questions/53499478/[What is the JPQL equivalent of the PostgreSQL date_trunc('day', (entity.date AT TIME ZONE 'UTC')) function when using JPA and Hibernate]
+- https://stackoverflow.com/questions/53429410/[What is the relationship between DTO and lazy-loading in Hibernate]
+- https://stackoverflow.com/questions/53562850/[MySQL Repeatable Read isolation level and Lost Update phenomena]
+- https://www.quora.com/Is-the-Java-Hibernate-framework-archaic-and-obsolete-in-the-age-of-NoSQL-storage-technologies/answer/Vlad-Mihalcea-1[Is the Java Hibernate framework archaic and obsolete in the age of NoSQL storage technologies?]
+- https://discourse.hibernate.org/t/dto-projection-hibernate-expects-a-constructor-although-a-resulttransformer-aliastobean-is-set/1831[DTO Projection: Hibernate expects a constructor although a resultTransformer ((AliasToBean)) is set]
+- https://discourse.hibernate.org/t/how-to-synchronize-data-when-using-multiple-nodes-for-the-hibernate-second-level-cache/1834[How to synchronize data when using multiple nodes for the Hibernate second-level cache]
+- https://stackoverflow.com/questions/53643458/[Is there a way to let Hibernate handle removal of an entry in a @ManyToMany association if I remove an entity not managing this association?]
+- https://discourse.hibernate.org/t/how-to-order-columns-alphabetically-when-creating-a-database-table-with-hibernate/1839[How to order columns alphabetically when creating a database table with Hibernate]
+- https://discourse.hibernate.org/t/batch-fetch-style-recommendations/631/29[Hibernate Batch Fetch style recommendations]
+- https://stackoverflow.com/questions/31726987[How to use two different Hibernate caching strategies for a couple of entities]
+- https://stackoverflow.com/questions/28865222[Mapping Java boolean to Oracle Number column with JPA and Hibernate]
+- https://stackoverflow.com/questions/31239172[How to use Space in column name with JPA and Hibernate]
+
