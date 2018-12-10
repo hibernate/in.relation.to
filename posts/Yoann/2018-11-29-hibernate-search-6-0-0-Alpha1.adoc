@@ -141,13 +141,13 @@ FullTextEntityManager fullTextEntityManager = Search.getFullTextEntityManager( e
 FullTextSearchTarget<Book> target = fullTextEntityManager.search( Book.class );
 
 FullTextQuery<MyProjectionBean> query = target.query()
-		.asProjection(
-				searchTarget.projection().composite(
-						MyProjectionBean::new,
-						searchTarget.projection().field( "id_stored", Long.class ).toProjection(),
-						searchTarget.projection().field( "title", String.class ).toProjection()
-				).toProjection()
-		)
+        .asProjection(
+                searchTarget.projection().composite(
+                        MyProjectionBean::new,
+                        searchTarget.projection().field( "id_stored", Long.class ).toProjection(),
+                        searchTarget.projection().field( "title", String.class ).toProjection()
+                ).toProjection()
+        )
         .predicate( factory -> factory.match()
                 .onFields( "title", "authors.name" )
                 .matching( "Refactoring: Improving the Design of Existing Code" )
