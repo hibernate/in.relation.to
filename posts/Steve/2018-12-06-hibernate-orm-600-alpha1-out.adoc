@@ -8,7 +8,6 @@ Steve Ebersole
 
 We are excited to announce the release of 6.0 Alpha1.
 
-
 The main design goal for 6.0 is to improve even more Hibernate's through-put performance.  High-load performance
 testing showed that Hibernate's approach of reading values from `ResultSet` by name to be its most limiting factor in
 scaling through-put.  At its most basic, 6.0 is all about changing from its old strategy of read-by-name to
@@ -17,10 +16,8 @@ read-by-position.  But that simple goal has a lot of ramifications.
 We have come really far, but still it is an Alpha, so there is still plenty more to do.  Each section below breaks
 down what works, what does not work, what is not yet implemented.
 
-
-
 [[type-system]]
-=== Type system
+== Type system
 
 The change from read-by-name to read-by-position obviously affects the actual calls Hibernate makes to the
 `ResultSet`.  That in turn affects how Hibernate's "type system" is defined to be able to call the positional
@@ -71,7 +68,7 @@ to the database.  This document will eventually become a chapter in the user gui
 
 
 [[generated-sql]]
-=== Generated SQL
+== Generated SQL
 
 We expect the main performance improvement to come from the actual JDBC `ResultSet` calls.  However, there are
 a number of secondary benefits especially when it comes to the SQL we generate.
@@ -85,7 +82,7 @@ Also, all of these changes in the generated SQL makes what we send to the databa
 performance over the wire and performance for the database parser/analyzer.  And its just plain easier to read - bonus!
 
 
-=== HQL
+== HQL
 
 Hibernate now uses Antlr v4 for interpreting HQL queries.  Antlr v4 is significantly faster than Antlr v2, which
 is what Hibernate has been using up through (and including) 5.x.
@@ -103,7 +100,7 @@ Quite a few new HQL language features are planned for 6.0.  Alpha1  includes the
 	to the new signatures designed to work with an AST and work with the new type system
 
 
-=== Non-HQL Queries
+== Non-HQL Queries
 
 As of 6.0, Hibernate's legacy `org.hibernate.Criteria` support has been removed.  Support for
 JPA Criteria is not yet implemented.
@@ -111,7 +108,7 @@ JPA Criteria is not yet implemented.
 Support for native queries has also not yet been implemented
 
 
-=== Artifacts
+== Artifacts
 
 All Hibernate ORM artifacts have been moved to a new groupdId - from `org.hibernate` to `org.hibernate.orm`.
 Relocation artifacts are published for each published module
@@ -129,7 +126,7 @@ temporarily disabled.  And in fact there is some discussion about removing 2 of 
 	developed under the Infinispan developers.  This module already had a relocation published back as far as 5.3
 
 
-=== Next step
+== Next step
 
 The plan for Alpha2 includes implementing:
 
@@ -139,7 +136,7 @@ The plan for Alpha2 includes implementing:
 
 
 
-=== More information
+== More information
 
 See the http://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
 https://github.com/hibernate/hibernate-orm/blob/6.0.0.Alpha1/migration-guide.adoc[migration guide].
