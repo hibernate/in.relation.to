@@ -1,0 +1,58 @@
+= Hibernate Community Newsletter 25/2018
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Presentations
+
+The Voxxed Days Cluj 2018 https://www.youtube.com/watch?v=48w_8i9mCoM[Hibernate Performance Tips] has been uploaded. If you need to tune your data access layer, you should definitely watch this presentation.
+
+== Articles
+
+If you're using Spring Data JPA,
+https://blog.ippon.tech/boost-the-performance-of-your-spring-data-jpa-application/[this article on Ippon tech blog]
+shows you how to boost the performance of your data access layer.
+
+Hibernate is a very customizable framework, and its event/listener mechanism makes it possible for Envers to integrate with the Hibernate ORM core. https://vladmihalcea.com/hibernate-event-listeners/[This article] explains how the Hibernate ORM /listener mechanism works, and how you can use it to replicate changes from one database table to a follower table.
+
+When working with hierarchical data structures, it's very convenient to use recursive SQL CTE (Common Table Expressions) queries. https://jivimberg.io/blog/2018/08/04/recursive-queries-on-rdbms-with-jpa/[This article]
+explains that relying on JPQL alone is not very efficient when working with hierarchical data,
+and that you should use SQL-specific tree processing queries, like the CONNECT BY Oracle clause.
+
+https://medium.com/@jerolba/persisting-fast-in-database-1af4a281e3a[This article] provides a step-by-step guide
+to speeding up data writing operations when working with JPA and Hibernate.
+
+Eugen Paraschiv published three articles about JPA and Hibernate on his site:
+
+- https://www.baeldung.com/hibernate-named-query[How to use named queries with JPA and Hibernate]
+- https://www.baeldung.com/hibernate-entitymanager[How to use the JPA `EntityManager` with Hibernate]
+- https://www.baeldung.com/hibernate-c3p0[Using c3p0 with Hibernate]
+
+When using JPA and Hibernate, the entity attributes can be accessed either via their associated fields or Java Bean properties. For more details about access strategies, check out https://thoughts-on-java.org/access-strategies-in-jpa-and-hibernate/[this article].
+
+== Time to upgrade
+
+The http://in.relation.to/2018/12/12/hibernate-orm-540-final-out/[Hibernate ORM 5.4.0] version was released with support for Java 11. If you are planning on using the latest version of Java, then you should definitely upgrade to Hibernate ORM 5.4.
+
+The http://in.relation.to/2018/12/18/hibernate-ogm-5-4-1-Final-released/[Hibernate OGM 5.4.1] version was released with support for Wildfly 14.
+
+== Questions and answers
+
+- https://stackoverflow.com/questions/53723204/53737053#53737053[How to replicate INSERT/UPDATE/DELETE statements using JPA and Hibernate]
+- https://stackoverflow.com/questions/53675530/53775026#53775026[How to avoid polymorphism in superclass query when using JPA and Hibernate]
+- https://stackoverflow.com/questions/51854951/53766830#53766830[Register Event Listener with Spring and Hibernate 5]
+- https://stackoverflow.com/questions/53651170/53693619#53693619[JPA entityManager.merge converts LocalDateTime to SQLServer 2012 DATETIME2]
+- https://stackoverflow.com/questions/19928568/53685264#53685264[Hibernate: best practice to pull all lazy collections]
+- https://stackoverflow.com/questions/17318340/53685180#53685180[How does Hibernate.initialize() work]
+- https://discourse.hibernate.org/t/hibernate-envers-revtype-not-working/1843[Hibernate envers REVTYPE not working]
+- https://discourse.hibernate.org/t/how-to-shut-off-an-error-or-warning-on-a-per-query-basis-using-hibernate/1879[How to shut off an error or warning on a per query basis using Hibernate]
+- https://discourse.hibernate.org/t/hibernate-uses-old-closed-sessionimpl-instead-of-given-sessionimpl/1866[Hibernate uses old and closed SessionImpl instance instead of the current open SessionImpl]
+- https://discourse.hibernate.org/t/is-it-possible-to-replace-hibernate-foreignkey-annontations-on-a-class-with-a-jpa-style-foreignkey-annontation/1861/5[Is it possible to replace Hibernate @ForeignKey annotations on a CLASS with a JPA-style ForeignKey annotation?]
+- https://discourse.hibernate.org/t/how-to-persist-inherited-third-party-classes/1869[How to persist Inherited third-party classes]
+- https://discourse.hibernate.org/t/how-to-get-the-column-name-for-an-entity-attribute-using-hibernate/1872/2[How to get the column name for an entity attribute using Hibernate]
+- https://discourse.hibernate.org/t/how-to-add-tables-at-run-time-using-hibernate/1897[How to add tables at runtime using Hibernate]
+- https://stackoverflow.com/questions/23973872/23974103#23974103[Native query and caching mechanism of Hibernate]
+- https://stackoverflow.com/questions/27486104/27615246#27615246[When are connections returned to the connection pool with Spring JPA (Hibernate) Entity Manager?]
