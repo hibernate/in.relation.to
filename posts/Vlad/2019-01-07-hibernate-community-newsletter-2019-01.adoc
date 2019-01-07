@@ -1,0 +1,48 @@
+= Hibernate Community Newsletter 01/2019
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+For our Korean readers, https://pkgonan.github.io/2019/01/hibrnate-autocommit-tuning[this article] shows how you can speed up transaction response time by setting the `hibernate.connection.provider_disables_autocommit` property when the underlying connection pool already disabled the auto-commit mode at the JDBC `Connection` level. For more details about the `hibernate.connection.provider_disables_autocommit` Hibernate property, check out https://vladmihalcea.com/why-you-should-always-use-hibernate-connection-provider_disables_autocommit-for-resource-local-jpa-transactions/[this article] as well.
+
+For our Russian readers, https://habr.com/post/433958/[this article] explains how to write database integration tests when using Hibernate and Spring Boot.
+
+PostgreSQL offers a great variety of database column types like `inet`, `hstore` or `array` types. While the Hibernate ORM framework does not support them by default, you can either write a custom Hibernate Type for all the non-standard column types or use an open-source framework that already offers support for the types you are interested in.
+
+For instance, if you're using PostgreSQL, the following two articles show you how to:
+
+- https://vladmihalcea.com/map-postgresql-enum-array-jpa-entity-property-hibernate/[map a PostgreSQL Enum ARRAY to a JPA entity property using Hibernate]
+- https://vladmihalcea.com/map-postgresql-hstore-jpa-entity-property-hibernate/[map a PostgreSQL HStore entity property with JPA and Hibernate]
+
+If we plan on using Spring Boot with Hibernate, http://sinhamohit.com/writing/spring-boot-hibernate-tips[this article] shows you how to get started and set up the project in very simple steps.
+
+When using JPA and Hibernate, you have the pay attention to the amount of data you are fetching when executing a given business use case. http://www.mastertheboss.com/jboss-frameworks/hibernate-jpa/hibernate-configuration/hibernate-fetching-performance-tuning[This article] explains how you can avoid N+1 query issues when using JPQL, Criteria API or direct entity fetching.
+
+== Time to upgrade
+
+The http://in.relation.to/2019/01/07/hibernate-validator-6014-final-out/[Hibernate Validator 6.0.14] version was released with a fix for the https://hibernate.atlassian.net/browse/HV-1684[HV-1684] critical issue. If you're using the 6.x branch, you should definitely upgrade to this version.
+
+The http://in.relation.to/2018/12/20/hibernate-search-5-11-0-Final/[Hibernate Search 5.11.0 ] version was released with support for JDK 11 and Wildfly 14.
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/1904[Mapping custom column type with PostgreSQL and Hibernate]
+- https://discourse.hibernate.org/t/1901[Hibernate Criteria API throws NullPointerException from SearchedCaseExpression when building a CASE expression]
+- https://discourse.hibernate.org/t/1907[C3p0 throws "ThreadPoolAsynchronousRunner DeadlockDetector APPARENT DEADLOCK!"]
+- https://discourse.hibernate.org/t/1926/4[How to disable the first-level cache with JPA and Hibernate]
+- https://discourse.hibernate.org/t/1974[How to reference a parent association using @JoinColumns without referencing the parent identifier with JPA and Hibernate]
+- https://discourse.hibernate.org/t/1941[Hibernate Envers throws “the owning Session was closed” with Spring 5.1 and Hibernate ORM 5.3]
+- https://discourse.hibernate.org/t/1378[Hibernate does not support database name containing a dash (e.g. my-db) sign when using MySQL]
+- https://discourse.hibernate.org/t/1932[Why does Hibernate Criteria generate a JOIN clause when using FetchType.EAGER]
+- https://discourse.hibernate.org/t/1928[JPA entity graphs and Hibernate @Fetch(FetchMode.SELECT) mode]
+- https://discourse.hibernate.org/t/1926[How to disable the first-level cache with JPA and Hibernate]
+- https://stackoverflow.com/questions/26106557/54023983#54023983[How to query using an Enum parameter mapped as ORDINAL using JPA and Hibernate]
+- https://stackoverflow.com/questions/21383457/54061210#54061210[How to use PostgreSQL hstore/json with Java]
+- https://stackoverflow.com/questions/53993982/53998747#53998747[How to restrict Hibernate to generate SQL query with columns only from root entity in Criteria API involving multiple entities]
+- https://stackoverflow.com/questions/53923203/53928173#53928173[How to create `@OneToOne` `LAZY` fetch and `optional = true` relationship for composite key entities with JPA and Hibernate]
+- https://stackoverflow.com/questions/53847917/53848099#53848099[PostgreSQL throws "column is of type jsonb but expression is of type bytea" with JPA and Hibernate]
