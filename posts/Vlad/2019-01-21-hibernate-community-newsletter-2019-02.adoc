@@ -1,0 +1,72 @@
+= Hibernate Community Newsletter 02/2019
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+When fetching parent entities along with their child associations, Hibernate applies the root-level pagination in-memory
+while the SQL query fetches all the data matching the provided filtering criteria. When paginating entity results in-memory,
+Hibernate issues the following warning message in the application log:
+
+====
+[source,text]
+----
+HHH000104: firstResult/maxResults specified with collection fetch; applying in memory!
+----
+====
+
+However, if the number of parent and child records is large, it's much more efficient to apply SQL-level pagination.
+https://vladmihalcea.com/fix-hibernate-hhh000104-entity-fetch-pagination-warning-message/[This article] explains how to
+limit the number of parent entities that are fetched along with their associated child records.
+
+By default, Hibernate loads all entity properties when fetching an entity, and this might not be very efficient if you have Blob/Clob or large columns.
+For this purpose, Hibernate offers the bytecode enhancement mechanism which can be configured to load entity attributes lazily.
+https://rieckpil.de/how-to-lazy-loading-of-jpa-attributes-with-hibernate/[This article] provides more details about the `enableLazyInitialization`
+bytecode enhancement mode.
+
+When logging SQL statements, it's very useful to print the underlying database transaction id so you can later aggregate
+the SQL statements by their associated transaction id.
+https://vladmihalcea.com/current-database-transaction-id/[This article] shows you how you can fetch the database transaction id when using
+Oracle, SQL Server, PostgreSQL, and MySQL.
+
+To help you find the source of an issue, Hibernate provides context-specific exceptions.
+https://www.baeldung.com/hibernate-exceptions[This article] provides a comprehensive list of exception types that can be thrown by Hibernate
+as well as how you can overcome the underlying problem that triggered each exception.
+
+The entity identifier can be either manually assigned or generated automatically. For the auto-generated entity identifiers,
+ you can choose an auto-incremented numeric column or a UUID.
+If you want to use a UUID identifier, https://jivimberg.io/blog/2018/11/05/using-uuid-on-spring-data-jpa-entities/[this article]
+explains how to optimize the generated SQL statements when persisting the entity using Spring Data Repositories.
+
+If you want to map an entity whose Primary Key is formed out of multiple columns, you need to use a composite identifier.
+https://hellokoding.com/jpa-hibernate-composite-primary-key-entity-mapping-example-with-mysql/[This article] demonstrates how you can achieve this goal
+using the Hibernate-specific multiple `@Id` mapping.
+
+When using JPA and Hibernate, the link table of a many-to-many table relationship is hidden at the entity modeling level, as only the parent sides
+need to be mapped.
+https://hellokoding.com/jpa-many-to-many-relationship-mapping-example-with-spring-boot-maven-and-mysql/[This article] shows you how to map
+a many-to-many relationship with JPA, Hibernate and Spring Boot.
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/how-to-avoid-updating-column-values-as-null-using-dynamicupdate/1988/2[How to prevent Hibernate from updating column values as null in a PUT web request when the entity uses @DynamicUpdate]
+- https://stackoverflow.com/questions/14102334/how-to-prevent-sql-injection-in-hibernate/54122517#54122517[How to prevent SQL Injection with JPA and Hibernate?]
+- https://stackoverflow.com/questions/40420794/how-to-use-hibernate-register-function-in-hql-query/40421088#40421088[How to use Hibernate register function in HQL query]
+- https://discourse.hibernate.org/t/database-update-2nd-level-cache-on-two-components/2009[How to synchronize the Hibernate second-level cache with the database across multiple JVMs]
+- https://discourse.hibernate.org/t/how-to-map-a-column-to-a-jpa-property-if-it-was-already-mapped-in-an-manytoone-association-when-using-hibernate/2013[How to map a column to a JPA property if it was already mapped in an @ManyToOne association when using Hibernate]
+- https://discourse.hibernate.org/t/hibernate-issuing-individual-insert-statements-even-though-batch-insert-is-enabled/2014[Hibernate issuing individual insert statements, even though batch insert is enabled]
+- https://stackoverflow.com/questions/40420794/how-to-register-sql-functions-so-that-you-can-call-them-hql-queries-with-jpa-and/40421088#40421088[How to register SQL functions so that you can call them in JPQL or HQL queries with JPA and Hibernate]
+- https://discourse.hibernate.org/t/configure-log4j-2-to-store-logging-information-in-database-table-using-hibernate/2024[Configure Log4j 2 to store the logging information in a database table using Hibernate]
+- https://discourse.hibernate.org/t/hibernate-n-1-query-issue-when-fetching-onetoone-associations-with-jpa-criteria-and-lazytoone/2037[Hibernate N+1 query issue when fetching @OneToOne associations with JPA Criteria and @LazyToOne]
+- https://discourse.hibernate.org/t/can-no-longer-use-mappedsuperclass-and-inheritance-annotations-in-hibernate-5-4/2016[Can no longer use @MappedSuperclass and @Inheritance annotations in Hibernate 5.4 ]
+- https://discourse.hibernate.org/t/how-to-update-a-timestamp-property-when-only-some-entity-fields-get-modified-with-jpa-and-hibernate/2050[How to update a Timestamp property when only some entity fields get modified with JPA and Hibernate]
+- https://stackoverflow.com/questions/18534502/oracle-transaction-id-of-transaction-that-caused-trigger/54224570#54224570[How to get the Oracle transaction id of the transaction that caused a trigger]
+- https://stackoverflow.com/questions/26620966/mysql-5-5-getting-the-current-transaction-id/54224636#54224636[Getting the current transaction ID with MySQL]
+- https://discourse.hibernate.org/t/how-to-set-sql-server-options-ansi-nulls-ansi-padding-ansi-warnings-using-hibernate/2073[How to set SQL Server options (ANSI_NULLS, ANSI_PADDING, ANSI_WARNINGS) using Hibernate]
+- https://discourse.hibernate.org/t/why-does-hibernate-execute-2-sql-query-when-using-a-pessimistic-write-lockmode-on-a-jpql-query/2075[Why does Hibernate execute 2 SQL query when using a PESSIMISTIC_WRITE LockMode on a JPQL query?]
+- https://discourse.hibernate.org/t/mysql-rollback-not-working/2077[Rollback does not work with MyISAM storage engine with Hibernate and MySQL]
+- https://stackoverflow.com/questions/31470414/jpa-orphan-removal-does-not-work-for-onetoone-relations/31471415#31471415[JPA orphan removal does not work for OneToOne relations]
