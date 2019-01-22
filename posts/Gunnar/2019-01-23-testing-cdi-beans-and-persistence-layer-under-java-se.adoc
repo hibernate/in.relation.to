@@ -1,0 +1,437 @@
+= Testing CDI Beans and the Persistence Layer Under Java SE
+Gunnar Morling
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+When it comes to testing Java EE applications, there's a wide spectrum of tools and approaches at our disposal.
+Depending on the specific goals and requirements of a given test, options range from
+plain unit tests of single classes to comprehensive integration tests deployed into a container (e.g. via http://arquillian.org/[Arquillian])
+and driven through tools such as http://rest-assured.io/[REST Assured].
+
+In this post I'd like to discuss one testing approach which represents some kind of a middle ground:
+launching a local CDI container and a JPA runtime, connected to an in-memory database.
+That way you can test CDI beans (e.g. containing business logic) in conjunction with the persistence layer (e.g. JPA-based repositories) under plain Java SE.
+
+This allows to test individual classes and components as they interact with others
+(e.g. without mocking of repositories when testing the business logic),
+while still benefitting from fast execution times (no container management/deployment and remote API calls needed).
+The approach also allows tests around services our application might rely on, such as interceptors, transactional semantics and other things
+that'd otherwise require deployment into a container.
+Finally, these tests are easy to debug, as everything runs in the local VM and no remote processes are involved.
+
+To make the approach worthwhile, the following requirements should be satisfied by the testing infrastructure:
+
+* Allow to obtain CDI beans via dependency injection, with support for all the CDI goodness such as interceptors, decorators, events etc.
+* Allow to obtain a JPA entity manager via dependency injection
+* Allow to use dependency injection in JPA entity listeners
+* Allow to use declarative transaction control via `@Transactional`
+* Allow to use transactional event observers (e.g. event observers running after transaction completion)
+
+In the following let's see how these requirements can be addressed.
+You can find a complete version of the shown code in the Hibernate https://github.com/hibernate/hibernate-demos/tree/master/other/cdi-jpa-testing[examples repository] on GitHub.
+That example project uses https://weld.cdi-spec.org/[Weld] as the CDI container, https://hibernate.org/orm/[Hibernate ORM] as the JPA provider and http://www.h2database.com/html/main.html[H2] as a database.
+Note the post is mostly interested in the interaction of CDI and the persistence layer, you could also use this approach with any other database such as Postgres or MySQL.
+
+== Obtaining CDI Beans via Dependency Injection
+
+Firing up a CDI container under Java SE is trivial using the http://www.cdi-spec.org/news/2017/05/15/CDI_2_is_released/[bootstrap API] standardized in CDI 2.0.
+So we could simply go and use that API in our tests.
+One alternative to consider is https://github.com/weld/weld-junit[Weld JUnit], a small extension to Weld (the CDI reference implementation) aimed at the purposes of testing.
+Amongst other things, Weld JUnit allows to specify which CDI scopes should be active when invoking CDI beans during the test.
+This comes in handy when testing `@RequestScoped` beans for instance.
+
+A first simple test using Weld JUnit could look like this
+(note I'm using the JUnit 4 API here, but Weld JUnit also comes with support for JUnit 5):
+
+[source,java]
+----
+public class SimpleCdiTest {
+
+    @Rule
+    public WeldInitiator weld = WeldInitiator.from(GreetingService.class)
+        .activate(RequestScoped.class)
+        .inject(this)
+        .build();
+
+    @Inject
+    private GreetingService greeter;
+
+    @Test
+    public void helloWorld() {
+        assertThat(greeter.greet("Java")).isEqualTo("Hello, Java");
+    }
+}
+----
+
+== Obtaining a JPA Entity Manager via Dependency Injection
+
+In the next step let's see how we can obtain an JPA entity manager via dependency injection.
+Usually you'd obtain such reference using the `@PersistenceContext` annotation
+(and indeed Weld JUnit provides a way to enable that),
+but for the sake of consistency with other injection points I prefer to obtain entity managers via `@Inject` as defined by https://www.jcp.org/en/jsr/detail?id=330[JSR 330].
+This also allows for constructor injection instead of field injection.
+
+To do so, we can simply define a CDI producer for `EntityManagerFactory` like this:
+
+[source,java]
+----
+@ApplicationScoped
+public class EntityManagerFactoryProducer {
+
+    @Produces
+    @ApplicationScoped
+    public EntityManagerFactory produceEntityManagerFactory() {
+        return Persistence.createEntityManagerFactory("myPu", new HashMap<>());
+    }
+
+    public void close(@Disposes EntityManagerFactory entityManagerFactory) {
+        entityManagerFactory.close();
+    }
+}
+----
+
+This uses the JPA bootstrap API to build an (application-scoped) entity manager factory.
+In a similar way, a request-scoped entity manager bean can be produced:
+
+[source,java]
+----
+@ApplicationScoped
+public class EntityManagerProducer {
+
+    @Inject
+    private EntityManagerFactory entityManagerFactory;
+
+    @Produces
+    @RequestScoped
+    public EntityManager produceEntityManager() {
+        return entityManagerFactory.createEntityManager();
+    }
+
+    public void close(@Disposes EntityManager entityManager) {
+        entityManager.close();
+    }
+}
+----
+
+Note that you'd have to register these beans as https://docs.jboss.org/weld/reference/latest/en-US/html/specialization.html[alternatives] in case you already had such producers in your main code.
+
+With the producers in place, we can inject an entity manager into CDI beans via `@Inject`:
+
+[source,java]
+----
+@ApplicationScoped
+public class GreetingService {
+
+    private final EntityManager entityManager;
+
+    @Inject
+    public TestService(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
+
+    // ...
+}
+----
+
+== Dependency Injection in JPA Entity Listeners
+
+JPA 2.1 introduced support for CDI within JPA entity listeners.
+For this to work, the JPA provider (e.g. Hibernate ORM) must have a reference to the current CDI bean manager.
+
+In an application server such as http://wildfly.org/[WildFly], the container would do that wiring automatically for us.
+For our test set-up, we need to pass the bean manager reference ourselves when bootstrapping JPA.
+Luckily, that's not too complicated; in the entity manager factory producer we can obtain a `BeanManager` instance via `@Inject` and then pass it on to JPA using the "javax.persistence.bean.manager" property key:
+
+[source,java]
+----
+@ApplicationScoped
+public class EntityManagerFactoryProducer {
+
+    @Inject
+    private BeanManager beanManager;
+
+    @Produces
+    @ApplicationScoped
+    public EntityManagerFactory produceEntityManagerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put("javax.persistence.bean.manager", beanManager);
+        return Persistence.createEntityManagerFactory("myPu", props);
+    }
+
+    public void close(@Disposes EntityManagerFactory entityManagerFactory) {
+        entityManagerFactory.close();
+    }
+}
+----
+
+This lets us make use of dependency injection within JPA entity listeners:
+
+[source,java]
+----
+@ApplicationScoped
+public class SomeListener {
+
+    private final GreetingService greetingService;
+
+    @Inject
+    public SomeListener(GreetingService greetingService) {
+        this.greetingService = greetingService;
+    }
+
+    @PostPersist public void onPostPersist(TestEntity entity) {
+        greetingService.greet(entity.getName());
+    }
+}
+----
+
+== Declarative Transaction Control via `@Transactional` and transactional event observers
+
+The last missing piece to satisfy our original requirements is support for the `@Transactional` annotation and transactional event observers.
+This one is a bit more complex to tackle, as it requires the integration of a transaction manager compatible with JTA (the Java Transaction API).
+
+In the following we're going to use http://narayana.io/[Narayana] which also is the transaction manager used in WildFly.
+For Narayana to work, a JNDI server is needed, from which it can obtain the JTA datasource.
+Furthermore, the Weld JTA module is required.
+Please refer to the https://github.com/hibernate/hibernate-demos/blob/master/other/cdi-jpa-testing/pom.xml[pom.xml] of the example project for the exact artifact ids and versions.
+
+With these dependencies in place, the next step is to plug in a custom `ConnectionProvider` into Hibernate ORM,
+which makes sure that Hibernate ORM works with `Connection` objects that use transactions managed by Narayana.
+Thankfully, my colleague Gytis Trikleris has provided https://github.com/jbosstm/quickstart/blob/master/jta-and-hibernate-standalone/src/main/java/org/jboss/narayana/quickstart/jta/TransactionalConnectionProvider.java[such implementation] already as part of the Narayana examples on GitHub.
+I'm shamelessly going to copy this implementation:
+
+[source,java]
+----
+public class TransactionalConnectionProvider implements ConnectionProvider {
+
+    public static final String DATASOURCE_JNDI = "java:testDS";
+    public static final String USERNAME = "sa";
+    public static final String PASSWORD = "";
+
+    private final TransactionalDriver transactionalDriver;
+
+    public TransactionalConnectionProvider() {
+        transactionalDriver = new TransactionalDriver();
+    }
+
+    public static void bindDataSource() {
+        JdbcDataSource dataSource = new JdbcDataSource();
+        dataSource.setURL("jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1");
+        dataSource.setUser(USERNAME);
+        dataSource.setPassword(PASSWORD);
+
+        try {
+            InitialContext initialContext = new InitialContext();
+            initialContext.bind(DATASOURCE_JNDI, dataSource);
+        }
+        catch (NamingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Connection getConnection() throws SQLException {
+        Properties properties = new Properties();
+        properties.setProperty(TransactionalDriver.userName, USERNAME);
+        properties.setProperty(TransactionalDriver.password, PASSWORD);
+        return transactionalDriver.connect("jdbc:arjuna:" + DATASOURCE_JNDI, properties);
+    }
+
+    @Override
+    public void closeConnection(Connection connection) throws SQLException {
+        if (!connection.isClosed()) {
+            connection.close();
+        }
+    }
+
+    @Override
+    public boolean supportsAggressiveRelease() {
+        return false;
+    }
+
+    @Override
+    public boolean isUnwrappableAs(Class aClass) {
+        return getClass().isAssignableFrom(aClass);
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> aClass) {
+        if (isUnwrappableAs(aClass)) {
+            return (T) this;
+        }
+
+        throw new UnknownUnwrapTypeException(aClass);
+    }
+}
+----
+
+This registers an H2 datasource with JNDI, from where Narayana's `TransactionalDriver` will fetch it when Hibernate ORM requests a connection.
+This connection will use JTA transactions, no matter whether transactions are controlled declaratively (through `@Transactional`), via an injected `UserTransaction` or using the entity manager transaction API.
+
+In the next step that connection provider must be registered with Hibernate ORM.
+This could be done in _persistence.xml_, but as this provider only should be used during testing,
+a better place is our entity manager factory producer method:
+
+[source,java]
+----
+@Produces
+@ApplicationScoped
+public EntityManagerFactory produceEntityManagerFactory() {
+    Map<String, Object> props = new HashMap<>();
+    props.put("javax.persistence.bean.manager", beanManager);
+    props.put(Environment.CONNECTION_PROVIDER, TransactionalConnectionProvider.class);
+
+    return Persistence.createEntityManagerFactory("myPu", props);
+}
+----
+
+In order to hook up Weld with the transaction manager, an implementation of Weld's https://docs.jboss.org/weld/javadoc/3.0/weld-spi/index.html?org/jboss/weld/transaction/spi/TransactionServices.html[TransactionServices] SPI is needed:
+
+[source,java]
+----
+public class TestingTransactionServices implements TransactionServices {
+
+    @Override
+    public void cleanup() {
+    }
+
+    @Override
+    public void registerSynchronization(Synchronization synchronizedObserver) {
+        jtaPropertyManager.getJTAEnvironmentBean()
+            .getTransactionSynchronizationRegistry()
+            .registerInterposedSynchronization(synchronizedObserver);
+    }
+
+    @Override
+    public boolean isTransactionActive() {
+        try {
+            return com.arjuna.ats.jta.UserTransaction.userTransaction().getStatus() == Status.STATUS_ACTIVE;
+        }
+        catch (SystemException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public UserTransaction getUserTransaction() {
+        return com.arjuna.ats.jta.UserTransaction.userTransaction();
+    }
+}
+----
+
+This lets Weld
+
+* register JTA synchronizations (which is used to make transactional observer methods work),
+* query for the current transaction status and
+* obtain the user transaction (so to enable injection of the `UserTransaction` object).
+
+The `TransactionServices` implementation is picked up using the service loader mechanism,
+so a file _META-INF/services/org.jboss.weld.bootstrap.api.Service_ with the fully-qualified name of our implementation as its contents is required:
+
+[source,java]
+----
+org.hibernate.demos.jpacditesting.support.TestingTransactionServices
+----
+
+And with that, we can now test code like this which makes use of transactional observers:
+
+[source,java]
+----
+@ApplicationScoped
+public class SomeObserver {
+
+    public void observes(@Observes(during=TransactionPhase.AFTER_COMPLETION) String event) {
+        // handle event ...
+    }
+}
+----
+
+We also can use JTA's `@Transactional` annotation to benefit from declarative transaction control:
+
+[source,java]
+----
+@ApplicationScoped
+public class TransactionalGreetingService {
+
+    @Transactional(TxType.REQUIRED)
+    public String greet(String name) {
+        // ...
+    }
+}
+----
+
+When this `greet()` method is invoked, it must be run in an transaction context,
+which either has been started before or will be started if needed.
+Now, if you have used transactional CDI beans before, you might wonder where the associated method interceptor is.
+As it turns out, Narayana comes with CDI support and provides us with everything needed: method interceptors for the different transactional behaviours (`REQUIRED`, `MANDATORY` etc.)
+as well as a portable extension which registers the interceptors with the CDI container.
+
+== Configuring the Weld Initiator
+
+There's one last detail we have ignored so far, and that is how Weld will detect all the beans we need for our test,
+be it actual components under test such as `GreetingService` or testing infrastructure such as the `EntityManagerProducer`.
+The simplest is to let Weld scan the classpath itself and pick up all beans it finds.
+This is enabled by passing a new `Weld` instance to the `WeldInitiator` rule:
+
+[source,java]
+----
+public abstract class CdiJpaTest {
+
+    @Rule
+    public WeldInitiator weld = WeldInitiator.from(new Weld())
+        .activate(RequestScoped.class)
+        .inject(this)
+        .build();
+
+    @Test
+    public void someTest() {
+        // ...
+    }
+}
+----
+
+That's very convenient, but it might cause some slowness for larger classpaths.
+So alternatively, all bean types to be used during the test can be passed explicitly:
+
+[source,java]
+----
+@Rule
+public WeldInitiator weld = WeldInitiator.from(
+        GreetingService.class,
+        TransactionalGreetingService.class,
+        EntityManagerProducer.class,
+        EntityManagerFactoryProducer.class,
+        TransactionExtension.class,
+        // ...
+    )
+    .activate(RequestScoped.class)
+    .inject(this)
+    .build();
+----
+
+This avoids the classpath scanning but comes at the cost of increased efforts for writing and maintaining the test.
+My recommendation would be to go for the classpath scanning approach and only switch over to explicitly listing all classes if the scanning actually isn't feasible.
+
+== Summary
+
+In this post we've explored how to test the CDI beans of an application in conjunction with the JPA-based persistence layer in a plain Java SE environment.
+This can be an interesting middle ground for certain tests, where you'd like to go beyond testing individual classes in complete isolation,
+but at the same time are shying away from running full-blown integration tests in a Java EE (or should I say, Jakarta EE) container.
+
+Is this to say that all tests of an enterprise application should be implemented in the described way?
+Certainly not.
+Pure unit tests are a great choice in order to assert the correct internal functioning of a single class.
+Complete integration tests make lots of sense to ensure that all the pieces and layers of an application correctly work together,
+from top to bottom.
+But the suggested alternative can be a very useful tool in the box to ensure correct interaction of business logic and persistence layer without incurring the overhead of container deployments,
+amongst other things testing correct transactional behaviour, transactional observer methods and entity listeners using CDI services.
+
+That being said, it'd be desirable if much less glue code was needed in order to realize these tests.
+I've opened https://github.com/weld/weld-junit/issues/65[a ticket] in the Weld JUnit project,
+discussing the idea of adding a separate JPA/JTA module to the project,
+which would largely simplify the set-up.
+If you're interested in this or perhaps even would like to work on this, make sure to get in touch with the Weld team.
+
+You can find the complete source code for this blog post in our https://github.com/hibernate/hibernate-demos/tree/master/other/cdi-jpa-testing[examples repository].
+Your feedback is more than welcomed, just add a comment below.
+Looking forward to hearing from you!
