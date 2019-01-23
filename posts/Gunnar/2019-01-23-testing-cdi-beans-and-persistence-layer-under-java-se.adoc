@@ -13,6 +13,8 @@ In this post I'd like to discuss one testing approach which represents some kind
 launching a local CDI container and a JPA runtime, connected to an in-memory database.
 That way you can test CDI beans (e.g. containing business logic) in conjunction with the persistence layer (e.g. JPA-based repositories) under plain Java SE.
 
++++<!-- more -->+++
+
 This allows to test individual classes and components as they interact with others
 (e.g. without mocking of repositories when testing the business logic),
 while still benefitting from fast execution times (no container management/deployment and remote API calls needed).
@@ -262,28 +264,49 @@ public class TransactionalConnectionProvider implements ConnectionProvider {
 This registers an H2 datasource with JNDI, from where Narayana's `TransactionalDriver` will fetch it when Hibernate ORM requests a connection.
 This connection will use JTA transactions, no matter whether transactions are controlled declaratively (through `@Transactional`), via an injected `UserTransaction` or using the entity manager transaction API.
 
-The `bindDataSource()` method must be called before test execution,
-after starting the JNDI server and binding the transaction manager itself to the JNDI tree:
+The `bindDataSource()` method must be called before test execution.
+It's a good idea to encapsulate that step in a custom https://github.com/junit-team/junit4/wiki/rules[JUnit rule],
+that way this set-up can easily be re-used in different tests:
 
 [source,java]
 ----
-public class CdiJpaTest {
+public class JtaEnvironment extends ExternalResource {
 
-    private static NamingBeanImpl NAMING_SERVER;
+    private NamingBeanImpl NAMING_BEAN;
 
-    @Rule
-    public WeldInitiator weld = ...;
-
-    @BeforeClass
-    public static void startJndiAndBindJtaAndDataSource() throws Exception {
-        NAMING_SERVER = new NamingBeanImpl();
-        NAMING_SERVER.start();
+    @Override
+    protected void before() throws Throwable {
+        NAMING_BEAN = new NamingBeanImpl();
+        NAMING_BEAN.start();
 
         JNDIManager.bindJTAImplementation();
         TransactionalConnectionProvider.bindDataSource();
     }
 
-    // Tests ...
+    @Override
+    protected void after() {
+        NAMING_BEAN.stop();
+    }
+}
+----
+
+This will start the JNDI server and bind the transaction manager as well as the datasource to the JNDI tree.
+In actual test classes all we need to do then is to create an instance of that rule and annotate the field with `@Rule`:
+
+[source,java]
+----
+public class CdiJpaTest {
+
+    @ClassRule
+    public static JtaEnvironment jtaEnvironment = new JtaEnvironment();
+
+    @Rule
+    public WeldInitiator weld = ...;
+
+    @Test
+    public void someTest() {
+        // ...
+    }
 }
 ----
 
@@ -388,7 +411,7 @@ as well as a portable extension which registers the interceptors with the CDI co
 == Configuring the Weld Initiator
 
 There's one last detail we have ignored so far, and that is how Weld will detect all the beans we need for our test,
-be it actual components under test such as `GreetingService` or testing infrastructure such as the `EntityManagerProducer`.
+be it actual components under test such as `GreetingService`, or testing infrastructure such as the `EntityManagerProducer`.
 The simplest is to let Weld scan the classpath itself and pick up all beans it finds.
 This is enabled by passing a new `Weld` instance to the `WeldInitiator` rule:
 
@@ -396,13 +419,20 @@ This is enabled by passing a new `Weld` instance to the `WeldInitiator` rule:
 ----
 public class CdiJpaTest {
 
+    @ClassRule
+    public static JtaEnvironment jtaEnvironment = new JtaEnvironment();
+
     @Rule
     public WeldInitiator weld = WeldInitiator.from(new Weld())
         .activate(RequestScoped.class)
         .inject(this)
         .build();
 
+    @Inject
+    private EntityManager entityManager;
 
+    @Inject
+    private GreetingService greetingService;
 
     @Test
     public void someTest() {
@@ -449,11 +479,11 @@ But the suggested alternative can be a very useful tool in the box to ensure cor
 amongst other things testing correct transactional behaviour, transactional observer methods and entity listeners using CDI services.
 
 That being said, it'd be desirable if much less glue code was needed in order to realize these tests.
-While you could easily encapsulate all the needed infrastructure in a base class, JUnit rule or similar,
-ideally this all wouldn't be needed.
-I've opened https://github.com/weld/weld-junit/issues/65[a ticket] in the Weld JUnit project,
+While you we could encapsulate the management of the needed infrastructure in custom JUnit rule,
+ideally this already would be provided for us.
+So I've opened https://github.com/weld/weld-junit/issues/65[a ticket] in the Weld JUnit project,
 discussing the idea of creating a separate JPA/JTA module in the project.
-Simply adding the dependency to such module would then be enough to get you started with testing your CDI beans and the persistence layer under Java SE.
+Simply adding the dependency to such module would then give you everything needed to get you started with testing your CDI beans and the persistence layer under Java SE.
 If you're interested in this or perhaps even would like to work on this, make sure to get in touch with the Weld team.
 
 You can find the complete source code for this blog post in our https://github.com/hibernate/hibernate-demos/tree/master/other/cdi-jpa-testing[examples repository].
