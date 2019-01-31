@@ -1,0 +1,149 @@
+= Hibernate Search 6.0.0.Alpha2 and 5.11.1.Final released!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 5.11.1.Final,
+the first bugfix release for the stable 5.11 branch,
+as well as 6.0.0.Alpha2, the second release for the still-in-development 6.0 branch.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 is still in development and its APIs differ significantly from Search 5.
+
+For more information about the current status of this branch, see
+http://hibernate.org/search/releases/6.0/#whats-new[the page dedicated to Search 6 on hibernate.org].
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== Hibernate Search 6 at FOSDEM
+
+If you happen to be at FOSDEM in Brussels this weekend, you may be interested in
+https://fosdem.org/2019/schedule/event/hibernate_search_6/[my talk about Hibernate Search 6] in the Search devroom.
+
+The presentation will be short (about 20 minutes + questions)
+and mainly aimed at Hibernate Search newcomers,
+but we can always have a talk afterwards!
+
+== What's new
+
+=== 5.11.1.Final
+
+Hibernate Search *5.11.1.Final* mainly includes an upgrade to Hibernate ORM 5.4.1.Final
+(https://hibernate.atlassian.net/browse/HSEARCH-3470[HSEARCH-3470]),
+which fixes a few major bugs.
+
+For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31747[release notes].
+
+=== 6.0.0.Alpha2
+
+Here are some notable changes in Hibernate Search *6.0.0.Alpha2*:
+
+* Features ported from Search 5:
+** https://hibernate.atlassian.net/browse/HSEARCH-3052[HSEARCH-3052]:
+Elasticsearch index lifecycle settings, including strategies (`create`, `drop-and-create`, `validate`, ...)
+were ported from Search 5.
+** https://hibernate.atlassian.net/browse/HSEARCH-3268[HSEARCH-3268]:
+The mass indexer was ported from Search 5.
+** https://hibernate.atlassian.net/browse/HSEARCH-3086[HSEARCH-3086]:
+We added the remaining projections that were missing compared to Search 5:
+explanation (gives an explanation of scoring, for debugging purposes),
+document (projects on the whole document in Lucene), source (projects on the whole document in Elasticsearch).
+** https://hibernate.atlassian.net/browse/HSEARCH-3351[HSEARCH-3351]:
+`FullTextQuery#getResultSize()` was ported from Search 5.
+
+* Improvements implying API changes:
+** https://hibernate.atlassian.net/browse/HSEARCH-3291[HSEARCH-3291]:
+The field definition API, used in bridges, was split in two: type definition and field definition.
+This makes the API cleaner in `ValueBridge`,
+and lays the groundwork for adding support for dynamic fields one day.
+This does make the API more verbose,
+but we intend to mitigate the issue in https://hibernate.atlassian.net/browse/HSEARCH-3444[HSEARCH-3444].
+** https://hibernate.atlassian.net/browse/HSEARCH-3438[HSEARCH-3438]:
+Type names and annotation names related to bridges and container extractors in the mapping
+should now be shorter and cleaner:
+*** `@GenericField(extractors = @ContainerValueExtractorBeanReference(type = Foo.class))` becomes
+`@GenericField(extractors = @ContainerExtractorRef(type = Foo.class))`
+*** `@GenericField(valueBridge = @ValueBridgeBeanReference(type = Foo.class))` becomes
+`@GenericField(valueBridge = @ValueBridgeRef(type = Foo.class))`
+*** ... and similarly for other types and annotations.
+** https://hibernate.atlassian.net/browse/HSEARCH-3374[HSEARCH-3374]:
+We switched back to the Search 5 syntax for including/excluding bounds in range predicates.
+** https://hibernate.atlassian.net/browse/HSEARCH-3416[HSEARCH-3416]:
+Identifier predicates now correctly expect arguments of the type of the `@Id`/`@DocumentId` property,
+instead of always expecting strings.
+** https://hibernate.atlassian.net/browse/HSEARCH-3421[HSEARCH-3421]:
+Identifier predicates now work correctly when multi-tenancy is enabled.
+** https://hibernate.atlassian.net/browse/HSEARCH-3101[HSEARCH-3101]:
+The backend type in the settings no longer needs to be the fully-qualified name of an internal class:
+you can now simply use the strings "lucene" and "elasticsearch".
+** https://hibernate.atlassian.net/browse/HSEARCH-3450[HSEARCH-3450]:
+Several configuration properties, mainly in the Lucene backend, have been renamed for consistency.
+See the getting started guide for the new property names.
+** https://hibernate.atlassian.net/browse/HSEARCH-3451[HSEARCH-3451]:
+Index defaults in configuration properties are now prefixed with
+`hibernate.search.backends.<name of the backend>.index_defaults.`,
+instead of `hibernate.search.indexes.default.index_defaults.`.
+This effectively means index defaults are defined on a per-backend basis,
+and not globally, allowing to use multiple backend types more easily.
+** https://hibernate.atlassian.net/browse/HSEARCH-3464[HSEARCH-3464]:
+The `*Settings` classes,
+holding property names for use when programmatically configuring Hibernate Search,
+have been renamed for consistency.
+
+* Other improvements and bug fixes:
+** https://hibernate.atlassian.net/browse/HSEARCH-3454[HSEARCH-3454]:
+Upgrade to Lucene 7.6.0
+** https://hibernate.atlassian.net/browse/HSEARCH-3472[HSEARCH-3472]:
+Upgrade to Elasticsearch 6.6.0
+** https://hibernate.atlassian.net/browse/HSEARCH-3470[HSEARCH-3470]:
+Upgrade Hibernate ORM to 5.4.1.Final
+** https://hibernate.atlassian.net/browse/HSEARCH-3174[HSEARCH-3174]:
+For settings passed through programmatic APIs (for example the `java.util.Map` passed to the JPA startup methods),
+Hibernate Search now also accepts values of the exact property type (integer, enum, ...)
+instead of only accepting Strings.
+** https://hibernate.atlassian.net/browse/HSEARCH-3429[HSEARCH-3429]:
+The projection DSL now allows a lambda-based syntax consistent with the other DSLs.
+** https://hibernate.atlassian.net/browse/HSEARCH-3053[HSEARCH-3053]:
+The full work orchestration mechanics of the Elasticsearch backend were ported from Search 5:
+performance is back to a production-grade level.
+** https://hibernate.atlassian.net/browse/HSEARCH-3453[HSEARCH-3453]:
+Hibernate Search no longer executes blocking ORM-related operations in the Elasticsearch HTTP request pool,
+which could slow down the Elasticsearch backend dramatically.
+** https://hibernate.atlassian.net/browse/HSEARCH-3170[HSEARCH-3170]:
+CDI/Spring beans are now released as soon as they are no longer needed,
+instead of being released on shutdown.
+This should bring some improvement for beans that are only needed during bootstrap,
+such as bridge builders or configurers.
+
+For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31732[release notes].
+
+== How to get these releases
+
+All details are available and up to date on the dedicated pages on hibernate.org:
+
+* http://hibernate.org/search/releases/6.0/#get-it[this one for 6.0]
+* http://hibernate.org/search/releases/5.11/#get-it[this one for 5.11]
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
