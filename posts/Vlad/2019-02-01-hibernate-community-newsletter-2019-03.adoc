@@ -1,0 +1,51 @@
+= Hibernate Community Newsletter 03/2019
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+While it is not a good idea to use SQL-reserved keywords for database identifiers like table or column names, if you inherit a legacy schema that's difficult to change, you will then have to escape the all database identifiers using SQL-reserved words. To achieve this goal, you can either use the JPA `@Column` annotation or choose an automated globally escaping approach provided by Hibernate.
+For more details, check out https://vladmihalcea.com/escape-sql-reserved-keywords-jpa-hibernate/[this article].
+
+If you want to use Spring Boot with JPA and Hibernate,
+https://loiane.com/2019/01/crud-rest-api-using-spring-boot-2-hibernate-jpa-and-mysql/[this article] provides very detailed step-by-step instructions which will help you set up your project.
+
+PostgreSQL provides a wide variety of database column types like JSON, ARRAY, INET or RANGE types.
+The https://github.com/vladmihalcea/hibernate-types[`hibernate-types`] open-source project aims to add support for all these types.
+The 2.4.0 version comes with a `PostgreSQLRangeType` which allows you to use any type of range that PostgreSQL supports (e.g. integer, number, date or timestamp).
+For more details about using a PostgreSQL Range type with JPA and Hibernate, check out https://vladmihalcea.com/map-postgresql-range-column-type-jpa-hibernate/[this article].
+
+If you want to map a one-to-one association with JPA and Hibernate, https://hellokoding.com/jpa-one-to-one-foreignkey-relationship-example-with-spring-boot-maven-and-mysql/[this article] demonstrates how you can achieve this goal.
+
+When using JPA and Hibernate, the link table of a many-to-many table relationship is hidden at the entity modeling level, as only the parent sides need to be mapped.
+However, if you need to map extra columns, you need to map the link table as an entity so that Hibernate can persist any additional columns. https://hellokoding.com/jpa-many-to-many-extra-columns-relationship-mapping-example-with-spring-boot-maven-and-mysql/[This article] explains how you can map a many-to-many relationship with extra columns when using JPA, Hibernate and Spring Boot.
+
+== Time to upgrade
+
+The http://in.relation.to/2019/01/22/hibernate-orm-541-final-out/[Hibernate ORM 5.4.1] version was released, so if you're using the 5.4 branch, you should definitely upgrade to 5.4.1. For more details about the enhancements it brings, check out the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version=31726&styleName=Html&projectId=10031[release notes].
+
+The Hibernate Search project has released two new versions: 5.11.1 and 6.0.0.Alpha2. For more details, check out http://in.relation.to/2019/02/01/hibernate-search-6-0-0-Alpha2-and-5-11-1-Final/[this article].
+
+== Questions and answers
+
+- https://stackoverflow.com/questions/54293863/spring-data-issue-org-hibernate-hibernateexception-identifier-of-an-instance/54294112#54294112[Spring data issue - org.hibernate.HibernateException: identifier of an instance of {Entity} was altered from 1 to 2]
+- https://discourse.hibernate.org/t/how-to-escape-a-column-name-with-jpa-and-hibernate/2132[How to escape a column name with JPA and Hibernate?]
+- https://stackoverflow.com/questions/2224503/creating-field-with-reserved-word-name-with-jpa/54426867#54426867[Creating field with reserved word name with JPA]
+- https://stackoverflow.com/questions/24220826/in-a-hibernate-sql-query-how-do-you-escape-in-the-field-name/54428910#54428910[In a Hibernate SQL query, how do you escape the `?` character in the field name]
+- https://discourse.hibernate.org/t/query-caching-with-jpa-2-1/2169/4[Query caching with JPA 2.1]
+- https://discourse.hibernate.org/t/how-to-handle-lob-properties-when-using-2-different-databases-with-hibernate/2171[How to handle `@Lob` properties when using 2 different databases with Hibernate]
+- https://discourse.hibernate.org/t/how-to-update-a-hibernate-entity-when-a-column-is-updated-externally/2178[How to update a Hibernate entity when a column is updated externally]
+- https://discourse.hibernate.org/t/collectiontable-join-with-two-column-one-with-fixed-value-depending-on-package/2162/3[How to add a one-to-many association based on two columns where one has a FIXED VALUE]
+- https://discourse.hibernate.org/t/automatically-setting-childs-parent-using-hibernate/2138[Automatically setting child’s parent using Hibernate]
+- https://discourse.hibernate.org/t/how-to-map-a-composite-identifier-using-an-automatically-generatedvalue-with-jpa-and-hibernate/2166/2[How to map a composite identifier using an automatically `@GeneratedValue` with JPA and Hibernate]
+- https://discourse.hibernate.org/t/finding-where-why-an-sql-insert-was-executed-with-hibernate/2167/3[Finding where why an SQL INSERT was executed with Hibernate]
+- https://stackoverflow.com/questions/23100888/why-is-hibernate-connection-autocommit-true-not-recommended-in-hibernate/28245096#28245096[Why enabling the `hibernate.connection.autocommit` configuration is not recommended in Hibernate?]
+- https://stackoverflow.com/questions/24727610/spring-boot-with-hibernate-generating-drop-constraint-errors-on-startup-with-h2/24731485#24731485[Spring Boot with Hibernate generating drop constraint errors on startup with H2 database]
+- https://stackoverflow.com/questions/28949853/hibernate-embedded-entity/28951807#28951807[Is it possible to force Hibernate to embed an Entity?]
+- https://stackoverflow.com/questions/40204113/hibernate-5-bytecode-enhancement-association-management-works-just-in-one-direct/40204206#40204206[Hibernate 5 Bytecode Enhancement Association Management works just in one direction]
+- https://stackoverflow.com/questions/27133260/how-to-save-data-with-unique-field-in-many-to-many-relationship-using-jpa-and-hi/27137206#27137206[How to save data with a unique field in many-to-many relationship using JPA and Hibernate]
+- https://stackoverflow.com/questions/28817120/spring-jpa-multiple-persistence-units-injecting-entitymanager/28820952#28820952[How to inject multiple JPA EntityManager (persistence units) when using Spring]
