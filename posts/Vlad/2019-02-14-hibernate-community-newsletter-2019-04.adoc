@@ -1,0 +1,59 @@
+= Hibernate Community Newsletter 04/2019
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+The Okta developer blog published https://developer.okta.com/blog/2019/02/01/spring-hibernate-guide[an article] about using Hibernate with Spring Boot while also securing the application with OAuth 2.0.
+
+Hibernate allows you to map the natural business key via the `@NaturalId` annotation.
+https://dzone.com/articles/how-to-use-hibernate-natural-ids-in-spring-boot[This article] explains how to
+expose the Hibernate-specific natural identifier API via the Spring Data `Repository` contract.
+
+If you need to map a given entity property to a JSON column, you can use the https://github.com/vladmihalcea/hibernate-types[`hibernate-types`] project as it provides support for both `String` and binary JSON column types. For more details about mapping a `String` property to a JSON column, check out
+https://vladmihalcea.com/map-string-jpa-property-json-column-hibernate/[this article].
+
+If you're using Hibernate with Spring Boot,
+https://dzone.com/articles/best-performance-practices-for-hibernate-5-and-spr-1[this article]
+explains various optimizations you can make to speed up application performance.
+
+For our Korean readers,
+http://kwonnam.pe.kr/wiki/java/hibernate/performance[this article] provides a list of resources
+you can use to learn more about Hibernate Performance Tuning.
+
+When using JPA and Hibernate, you can call a database stored procedure using either
+the JPA `StoredProcedureQuery` or the Hibernate-specific `ProcedureCall`.
+https://vladmihalcea.com/best-way-call-stored-procedure-jpa-hibernate/[This article]
+explains how the underlying `CallableStatement` is handled by Hibernate and the best way to close the
+associated JDBC resources as soon as possible.
+
+The Lombok frameworks can generate the `equals`, `hashCode` and `toString` methods on your behalf.
+However, for JPA entities, there are several considerations to keep in mind, and
+https://mdeinum.github.io/2019-02-13-Lombok-Data-Ojects-Arent-Entities/[this article]
+explains you the best way to generate `equals` and `hashCode` with Lombok when using JPA and Hibernate.
+
+To declare the transaction boundaries declaratively, you can use the `@Transactional` annotation.
+https://codete.com/blog/5-common-spring-transactional-pitfalls/[This article] explains how the `@Transactional`
+works in Spring and how to get the best out of it.
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/2185[Hibernate @OneToMany association with Lazy Loading and Cascade.ALL is fetched eagerly]
+- https://discourse.hibernate.org/t/2205[Is it possible to use Hibernate Envers asynchronously?]
+- https://discourse.hibernate.org/t/2210[Hibernate @ManyToMany with FetchMode.JOIN and FetchType.EAGER generates secondary queries]
+- https://discourse.hibernate.org/t/2219[How to fix “org.hibernate.QueryException: query specified join fetching, but the owner of the fetched association was not present in the select list”]
+- https://discourse.hibernate.org/t/2252[Why does the JPA @ManyToMany association remove all entries and reinserts the remaining ones back upon modifications]
+- https://discourse.hibernate.org/t/2277[Handling Proxy Types Correctly for Inheriting Stored Types]
+- https://discourse.hibernate.org/t/2272[Polymorphic associations with Hibernate and Relational Database]
+- https://discourse.hibernate.org/t/2265[Join unrelated entities using JPA or Hibernate Criteria]
+- https://discourse.hibernate.org/t/2225[Hibernate Envers ValidityAuditStrategy throws a “Cannot update previous revision for entity” exception]
+- https://discourse.hibernate.org/t/2227[Hibernate Envers performance overhead]
+- https://discourse.hibernate.org/t/2208[Hibernate.default_schema usage in Hibernate 5]
+- https://stackoverflow.com/questions/27799455/54528693#54528693[Hibernate creating N+1 queries for @ManyToOne JPA annotated property]
+- https://stackoverflow.com/questions/54552156/54556567#54556567[@Where with @SecondaryTable does not work with Hibernate]
+- https://stackoverflow.com/questions/50316970/[The JPA createStoredProcedureQuery throws “ORA-01000: maximum open cursors exceeded” when using Hibernate]
+- https://stackoverflow.com/questions/54674418/54687050#54687050[Hibernate performs N+1 selects instead of 1 query when using the Query Cache]
