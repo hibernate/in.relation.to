@@ -1,0 +1,51 @@
+= Hibernate Community Newsletter 05/2019
+Vlad Mihalcea
+:awestruct-tags: [ "Discussions", "Hibernate ORM", "Newsletter" ]
+:awestruct-layout: blog-post
+---
+
+Welcome to the Hibernate community newsletter in which we share blog posts, forum, and StackOverflow questions that are especially relevant to our users.
+
+== Articles
+
+Valentin Kovalenko wrote
+https://sites.google.com/site/aboutmale/techblog/sqlinunnestarray[a very good summary] of why it would be worth to pass the IN query clause parameters using an ARRAY and a single bind parameter value. This functionality is not yet implemented in Hibernate, but we should definitely investigate it for Hibernate ORM 6.
+
+The JPA `EntityManager` exposes the `persist` and `merge` methods if you want to insert an entity or to update it after it was changed in the detached state. However, Hibernate offers three additional methods (`save`, `update`, and `saveOrUpdate`) which can also be used to trigger an INSERT or UPDATE statement.
+https://vladmihalcea.com/jpa-persist-merge-hibernate-save-update-saveorupdate/[This article] explains the difference between `persist`, `merge`, `save`, `update`, and `saveOrUpdate`.
+
+If you want to learn how to executes aggregate queries using JPQL, then
+https://www.baeldung.com/hibernate-aggregate-functions[this article] gives you a short introduction to this topic.
+
+https://thoughts-on-java.org/hibernate-tips-how-to-map-java-time-year-with-jpa-and-hibernate/[This article] explains how to map a `java.time.Year` using a JPA `AttributeConverter`. If you want to use a Hibernate Type, or if you want to map `java.time.Month` or `java.time.YearMonth`, then check out
+https://vladmihalcea.com/java-time-year-month-jpa-hibernate/[this article].
+
+If you using Spring Boot,
+https://www.baeldung.com/hibernate-field-naming-spring-boot[this article] explains how to customize the Hibernate naming strategies.
+
+Logging the current database transaction identifier is a very useful feature when you want to aggregate all log messages that belong to the same database transaction.
+https://vladmihalcea.com/log-database-transaction-id-mdc-logging/[This article] introduces the MDC (Mapped Diagnostic Context) feature supported by many Java logging solutions and which allows you to pass variables programmatically to log entries.
+
+== Time to upgrade
+
+The Hibernate ORM project got two new maintenance releases http://in.relation.to/2019/02/19/hibernate-orm-538-final-out/[5.3.8] and http://in.relation.to/2019/02/25/hibernate-orm-539-final-out/[5.3.9].
+
+If you're using Hibernate Validator 6, you might want to upgrade to version http://in.relation.to/2019/02/18/hibernate-validator-6015-final-out/[6.0.15] which was just released
+
+== Questions and answers
+
+- https://discourse.hibernate.org/t/2293[Hibernate with EAGER loading issues two queries instead of one]
+- https://stackoverflow.com/questions/54761884/54769007#54769007[Calling clear on a JPA entity property using AccessType.PROPERTY fails]
+- https://stackoverflow.com/questions/29943132/29944491#29944491[Overriding @Id defined in a @MappedSuperclass with JPA]
+- https://stackoverflow.com/questions/52479113/54769305#54769305[How to use MDC logging with Java]
+- https://stackoverflow.com/questions/27284228/27294019#27294019[How to query by custom object entity property with JPA and Hibernate]
+- https://stackoverflow.com/questions/54782738/54900644#54900644[Hibernate query optimization library]
+- https://stackoverflow.com/questions/161224/54907032#54907032[What are the differences between the different saving methods in Hibernate?]
+- https://www.quora.com/What-is-the-main-and-most-important-between-save-and-saveOrUpdate-method-in-Hibernate[What is the main and most important between save and saveOrUpdate method in Hibernate?]
+- https://discourse.hibernate.org/t/2369[Informix Dialect throws “java.lang.UnsupportedOperationException: query result offset is not supported” when using pagination]
+- https://discourse.hibernate.org/t/2382[Hibernate @Filter can only filter table fields. What should I use to filter on entity properties, and not table columns? ]
+- https://discourse.hibernate.org/t/2380[How to map a JSON hierarchy with JPA and Hibernate]
+- https://stackoverflow.com/questions/23925322/23926548#23926548[Delete child from parent and parent from child automatically with JPA annotations]
+- https://stackoverflow.com/questions/54857459/54893053#54893053[How to get a single instance for an associated read-only entity with JPA and Hibernate?]
+- https://stackoverflow.com/questions/27971114/27973370#27973370[The Hibernate SessionFactory is always null when using Spring dependency injection]
+- https://stackoverflow.com/questions/24666205/24668563#24668563[What is the role of mappedBy in JPA or inverse="true" in Hibernate?]
