@@ -1,0 +1,122 @@
+= Why Quarkus
+Emmanuel Bernard
+:awestruct-tags: [ "Discussions" ]
+:awestruct-layout: blog-post
+---
+About eight months ago, I started a very thrilling journey.
+That journey is just beginning and I am even more excited today than I was when we started.
+Yesterday, we announced link:https://quarkus.io[Quarkus] which to me represents three things:
+
+* Java is at a new junction point
+* Java is back in the game in container platforms and serverless
+* developer experience is king
+
+== A new paradigm shift
+
+Java has had a few paradigm shifts in the past.
+Two of them resonate for me as I contributed to them:
+
+1. Java's ecosystem got taken over by Open Source
+2. Java introduced `@Annotations` and that changed the programming model significantly (`XML` anyone?). Some frameworks ignored it (they are gone), some embraced it and new annotation-native frameworks got created. This revolutionalized the Java ecosystem.
+
+I believe we are at one of these junctions.
+Java is embracing Ahead of Time Compilation (AOT) and that's going to change everything.
+For people that don't know, link:https://graalvm.org[GraalVM] and specifically Substrate VM are opening that door.
+
+GraalVM is great because it brings Java code to milliseconds start time (or first response time as we prefer to measure it) and 10+ MB of Resident Set Size (RSS).
+When you measure memory in Java, you need to be aware of two things:
+
+* the heap size (that's the `-Xmx` thing)
+* and the non heap size (that's what the JVM needs to keep its structure around and other things, in short, not our app data)
+
+Together, they add up to the total memory consumed which is nicely represented by RSS.
+RSS is what matters in real life and particularly in containers.
+When you go over your memory limit, Kubernetes rightly kills you (a bit rude but it told you not to go over limit and you are not alone).
+
+GraalVM brings low RSS and boot time.
+That's great but GraalVM comes with a dark side too.
+The dynamic nature of Java is severely constrained (class loading at runtime, reflection, proxies, etc).
+In practice, it means 90% of the Java ecosystem does not work without change.
+
+So the Java ecosystem must adapt.
+It must accept to do much less magic trickery at startup time.
+The good news is that we can do most of them at build time :)
+
+Quarkus does bring an infrastructure for frameworks to
+embrace build time metadata discovery (like annotations),
+declare which classes need reflection at runtime,
+boot at _build time_, and generally offer a lot GraalVM optimization for free (or cheap at least).
+
+If I caricature, Quarkus makes GraalVM usable for framework developers (and for users, see later).
+
+== But wait, why do I care about memory and startup time
+
+People embrace agility.
+To do that, they embrace new instant deployment platforms like Kubernetes or alternatives.
+The idea is that you deploy between one and many instances of your app with the click of a button or close to.
+Combine that with microservices which also help on the agility front and you have many many deployments on these platforms.
+The extreme of that model is serverless with minimal functions deployed: you could imagine 200 functions doing what one good old app was doing.
+
+The idea of Java taking 100 MB, 200 MB or even more of fix cost before your app does anything useful is prohibitive when you deploy 20x or even 200x Java processes.
+Specifically on the function as a service side, 2s or more means that the cool kids have to leave Java behind.
+
+No more.
+In our tests, we found that Quarkus applications compiled with GraalVM have a very good requests/s/MB number.
+We care about requests/s/MB because it's really easy in deployment platforms like Kubernetes to deploy a second instane of your app and roughly double the requests/s.
+You don't scale one process up, you scale processes out.
+
+Oh and the memory and boot time for Quarkus on your good old OpenJDK HotSpot is nothing short of impressive too.
+Which brings me to my next point.
+
+== Developer experience
+
+All of this is cool, but at the end of the day, developer is king. Saving a few MB but losing a joyful, productive, easy to use experience is not going to cut it.
+
+The good news is that when you can start the full application in less than a second from _cold_ boot, and even faster from _warm_ boot, there are lots of interesting opportunities opening in front of you.
+
+We ran with it! And some more!
+Quarkus has an awesome developer experience:
+
+Really fast test suite run::
+Your test suite will run _really fast_, fast enough that tricks like mocking services to speed things up, lazy startup of components, testing with a subset of your application, etc become   unnecessary (or less common).
+The days to check Facebook while the test suite runs are numbered.
+
+image::images/quarkus_graphics_v2_devjoy_01.png[]
+
+Live reload::
+We have a live reload mode that works with _zero_ configuration nor IDE trick. You hit save in your IDE, it compiles, and boom you can refresh your browser to see the results. Your app has been redeployed for you in subsecond. Writing changes involving UI and  database changes is really easy with such short feedback loop.
+
+* Add a new Hibernate `@Entity`, hit save => it's deployed, yes with the database schema change
+* Add a new REST endpoint, a CDI bean, hit save => it's deployed
+* change a configuration in `application.properties` or a resource file like `index.html` => boom it's deployed
+
+And the best part is that we redeploy the _full application_ because starting in Quarkus is so cheap. No need to do hot replace of bytecode or anything.
+
+Cohesive and opinionated platform::
+While we reuse standards and popular frameworks, we want a really easy to use experience.
+That means one configuration file, not two, not one per technology.
+This surfaces in Quarkus everywhere but let me give you one example:
+no need for a `persistence.xml`.
+We support it if you want to.
+But out of the box we detect your database settings from `application.properties` and figure the rest out for you.
+
+Productivity with Panache::
+We also looked at the 80% use cases that should be as simple as possible because well, you do them all the time.
+For these, we took a more dramatic approach and offer a opinionated, concise and readable approach that sits on top of the usual technology.
+One of the canonical example of that is the simplified model we worked on on top of JPA and Hibernate ORM.
+This is entirely optional, but if you embrace the approach, your code will be loads simpler and smaller.
+We internally use the code name Panache for these approaches.
+Panache means _flamboyant manner and style_.
+Check out link:https://quarkus.io/guides/hibernate-orm-panache-guide[Hibernate with Panache] for the first example of this.
+
+== Join the revolution
+
+With all that I have not told you what link:https://quarkus.io[Quarkus] is but hopefully picked your intered.
+Yes I used very emphatic words, but I am truly excited for Java developers right now.
+Quarkus is to be experienced more than described with words, so link:https://quarkus.io/get-started/[give it a spin].
+
+Quarkus is at its beginning.
+There is a lot to do: lots of technologies to integrate, lots of development simplification opportunities.
+My hope is that an ecosystem builds around it to become the Java ecosystem that runs on GraalVM.
+If you want to add support for your favorite framework, have an idea for a simpler use case, or simply want to try, join the revolution.
+link:http://quarkus.io/community[Come talk to us] and join the Quarkers :)
