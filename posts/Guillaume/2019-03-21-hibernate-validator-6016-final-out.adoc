@@ -1,0 +1,59 @@
+= "Hibernate Validator 6.0.16.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.16.Final
+---
+
+We just released Hibernate Validator 6.0.16.Final which includes several improvements and bugfixes. 
+
+This is a recommended upgrade for everyone using Hibernate Validator and it is a drop-in replacement for 6.0.15.Final.
+
+== What's new
+
+=== Performance improvements
+
+We fixed a performance regression compared to 5.x when validating *unconstrained* beans.
+
+Note that Hibernate Validator 6.x is http://in.relation.to/2018/03/20/bean-validation-benchmark-rerevisited/[significantly faster than 5.x] and it keeps improving.
+
+=== Rounding error with @Min/@Max/@DecimalMin/@DecimalMax constraints
+
+All the min/max constraints were affected by a https://hibernate.atlassian.net/browse/HV-1699[rounding error].
+
+=== JDK 12 support
+
+Hibernate Validator is now also tested with JDK 12.
+
+=== Windows build
+
+It was not possible to run the full build on Windows, it is fixed now.
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the following GAV coordinates:
+
+ * _org.hibernate.validator:hibernate-validator:{released-version}_
+ * _org.hibernate.validator:hibernate-validator-cdi:{released-version}_
+ * _org.hibernate.validator:hibernate-validator-annotation-processor:{released-version}_
+
+Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-16.0.0.Final-patch.zip[WildFly 16] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-15.0.1.Final-patch.zip[WildFly 15]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
