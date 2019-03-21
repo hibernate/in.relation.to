@@ -1,0 +1,257 @@
+= Hibernate Search 6.0.0.Alpha3 released!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Alpha3, the third release for the still-in-development 6.0 branch.
+This release mainly adds support for more field types and predicates,
+and brings more consistent and less verbose APIs.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 is still in development and its APIs differ significantly from Search 5.
+
+For more information about the current status of this branch, see
+http://hibernate.org/search/releases/6.0/#whats-new[the page dedicated to Search 6 on hibernate.org].
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+It's been a long time since the last release.
+But this also means we've made a lot of progress!
+
+=== Quarkus integration
+
+You may have heard of https://quarkus.io/[Quarkus],
+a framework and toolset aiming at dramatically improving the boot time and memory usage of Java applications.
+
+https://hibernate.atlassian.net/browse/HSEARCH-3523[We've been working] on integrating Hibernate Search into Quarkus,
+and an experimental Quarkus Extension should be released soon.
+Stay tuned!
+
+=== Most basic Java types can now be indexed
+
+In https://hibernate.atlassian.net/browse/HSEARCH-3047[HSEARCH-3047]
+and https://hibernate.atlassian.net/browse/HSEARCH-3503[HSEARCH-3503],
+we restored the ability to index most basic Java types.
+
+The following types are now supported:
+
+* `java.lang.String`
+* `java.lang.Character`, `char`
+* `java.lang.Byte`, `byte`
+* `java.lang.Short`, `short`
+* `java.lang.Integer`, `int`
+* `java.lang.Long`, `long`
+* `java.lang.Double`, `double`
+* `java.lang.Float`, `float`
+* `java.lang.Boolean`, `boolean`
+* `java.net.URI`
+* `java.net.URL`
+* `java.time.Instant`
+* `java.time.LocalDate`
+* `java.time.LocalTime`
+* `java.time.LocalDateTime`
+* `java.time.OffsetDateTime`
+* `java.time.OffsetTime`
+* `java.time.ZonedDateTime`
+* `java.time.ZoneId`
+* `java.time.ZoneOffset`
+* `java.time.Period`
+* `java.time.Duration`
+* `java.time.Year`
+* `java.time.YearMonth`
+* `java.time.MonthDay`
+* `java.util.UUID`
+* `java.util.Calendar`
+* `java.util.Date`
+* `java.sql.Timestamp`
+* `java.sql.Date`
+* `java.sql.Time`
+
+The only notable types that aren't supported yet are https://hibernate.atlassian.net/browse/HSEARCH-3487[`BigDecimal` and `BigInteger`].
+
+See the documentation for more information:
+
+* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-bridge-valuebridge-builtin[Indexable types]
+* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-bridge-identifierbridge-builtin[Document ID types]
+
+=== Most search predicates are now implemented
+
+In Alpha2, only some of the search predicates were implemented:
+
+* matchAll
+* id
+* bool
+* match
+* range
+* nested
+* spatial "within" (distance)
+
+In https://hibernate.atlassian.net/browse/HSEARCH-3091[HSEARCH-3091]
+and https://hibernate.atlassian.net/browse/HSEARCH-3256[HSEARCH-3256],
+we made sure that most predicate options available in Search 5 are available in Search 6
+(only the https://hibernate.atlassian.net/browse/HSEARCH-3312[analyzer override] is missing).
+
+In https://hibernate.atlassian.net/browse/HSEARCH-3089[HSEARCH-3089], we implemented the following predicates:
+
+* phrase
+* wildcard
+* simpleQueryString
+
+Bringing us almost on par with Search 5, with only `facet` and `moreLikeThis` missing.
+
+=== Unified, more straightforward APIs
+
+We've been hard at work to make the change of APIs in Search 6 really worth it.
+
+The previous releases made sure that APIs were more powerful,
+allowing in particular to safely create predicates targeting multiple indexes,
+or to create type-safe queries.
+
+In this release, we ensured that the names were more consistent,
+more straightforward and less verbose than in Search 5.
+
+Below is a query as you would write it in Search 5.
+
+[source, JAVA, indent=0]
+----
+FullTextSession ftSession = Search.getFullTextSession(session);
+QueryBuilder bookQb = ftSession.getSearchFactory().buildQueryBuilder().forEntity(Book.class).get();
+QueryBuilder dvdQb = ftSession.getSearchFactory().buildQueryBuilder().forEntity(Dvd.class).get();
+
+// Find all long documents: books with more than 500 pages or dvd lasting more than 2 hours
+Query luceneQuery = bookQb.bool()
+    .should(bookQb.range().onField("pageCount").above(500).createQuery())
+    .should(dvdQb.range().onField("durationInMinutes").above(120).createQuery())
+    .createQuery();
+
+FullTextQuery query = ftSession.createFullTextQuery(luceneQuery, Book.class, Dvd.class);
+
+query.setMaxResults(pageSize).setFirstResult(selectedPage*pageSize); // Pagination
+
+@SuppressWarnings("unchecked")
+List<Document> results = query.list();
+----
+
+Below is an equivalent query in Search 6 Alpha1/Alpha2:
+no more per-type query builders, no more "lucene query", no more dodgy raw types that must be casted.
+
+[source, JAVA, indent=0]
+----
+FullTextSession ftSession = Search.getFullTextSession(session);
+
+FullTextQuery<Document> query = ftSession.search(Arrays.asList(Book.class, Dvd.class)).query().asEntity()
+    .predicate(f -> f.bool()
+        .should(f.range().onField("pageCount").above(500))
+        .should(f.range().onField("durationInMinutes").above(120))
+        .toPredicate()
+    )
+    .build();
+
+query.setMaxResults(pageSize).setFirstResult(selectedPage*pageSize); // Pagination
+
+List<Document> results = query.list();
+----
+
+And below is an equivalent query in Search 6 Alpha3:
+no more meaningless `query()` or `toPredicate()` calls,
+a unified naming for all types (prefixed with `Search`)
+and a unified method name to retrieve results (`fetch`, `fetchHits`, `fetchCount`, ...)
+
+[source, JAVA, indent=0]
+----
+SearchSession searchSession = Search.getSearchSession(session);
+
+SearchQuery<Document> query = searchSession.search(Arrays.asList(Book.class, Dvd.class)).asEntity()
+    .predicate(f -> f.bool()
+        .should(f.range().onField("pageCount").above(500))
+        .should(f.range().onField("durationInMinutes").above(120))
+    )
+    .toQuery();
+
+List<Document> results = query.fetchHits(pageSize, selectedPage*pageSize);
+----
+
+For details, see:
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3444[HSEARCH-3444]: Reduce the verbosity of the predicate/projection/sort DSLs and index schema DSL
+* https://hibernate.atlassian.net/browse/HSEARCH-3403[HSEARCH-3403]: Remove the inheritance from FullTextQuery/FullTextSession to the corresponding Hibernate ORM types
+* https://hibernate.atlassian.net/browse/HSEARCH-3498[HSEARCH-3498]: Move optional predicate DSL parameters to the terminal contexts
+* https://hibernate.atlassian.net/browse/HSEARCH-3511[HSEARCH-3511]: Make the entry points to the Search API more intuitive
+
+We also changed the syntax for adding values to documents in bridges:
+see https://hibernate.atlassian.net/browse/HSEARCH-3295[HSEARCH-3295].
+
+And finally, we made the names of configuration properties more consistent
+between the Elasticsearch and Lucene backend: https://hibernate.atlassian.net/browse/HSEARCH-3482[HSEARCH-3482].
+
+=== Documentation
+
+The documentation is still sparse, but it continues to grow.
+We documented in particular the configuration properties
+(https://hibernate.atlassian.net/browse/HSEARCH-3473[HSEARCH-3473],
+see https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#configuration[here])
+and the limitations of using the data/time types from `java.util`
+(https://hibernate.atlassian.net/browse/HSEARCH-3509[HSEARCH-3509],
+see https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-legacy-date-time-apis[here]).
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3483[HSEARCH-3483]:
+Upgrade to Lucene 7.7.0
+* https://hibernate.atlassian.net/browse/HSEARCH-3520[HSEARCH-3520]:
+Upgrade to Elasticseearch 6.6.2
+* https://hibernate.atlassian.net/browse/HSEARCH-3490[HSEARCH-3490]:
+There is now experimental support for Elasticsearch 7.0.0-beta1.
+* https://hibernate.atlassian.net/browse/HSEARCH-3514[HSEARCH-3514]:
+We restored automatic Java module names to our JARs, which can thus be safely referenced from your `module-info.java`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3485[HSEARCH-3485],
+https://hibernate.atlassian.net/browse/HSEARCH-3493[HSEARCH-3493]:
+Hibernate Search still targets JDK8 and JDK11, but now we also test compatibility with JDK12 and JDK13 regularly.
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3424[HSEARCH-3424]:
+The showcase module now uses Spring Boot,
+for a more realistic example of how to use Hibernate Search in an application.
+See https://github.com/hibernate/hibernate-search/tree/master/integrationtest/showcase/library[the code on GitHub].
+* https://hibernate.atlassian.net/browse/HSEARCH-3257[HSEARCH-3257]: Allow to bypass bridges in projections
+* https://hibernate.atlassian.net/browse/HSEARCH-2658[HSEARCH-2658]: Support @Inject in all user-provided components: bridges, configurers, ...
+* https://hibernate.atlassian.net/browse/HSEARCH-1640[HSEARCH-1640]: boolean field should never be analyzed
+* https://hibernate.atlassian.net/browse/HSEARCH-2908[HSEARCH-2908]: Incorrect mapping for 'java.lang.Short and java.lang.Byte' fields with Elasticsearch.
+* https://hibernate.atlassian.net/browse/HSEARCH-3481[HSEARCH-3481]: Change max_connections_per_route default value to 10
+* https://hibernate.atlassian.net/browse/HSEARCH-3251[HSEARCH-3251]: Avoid "fuzzy" query in Elasticsearch and prefer "match" query with "fuzziness" parameter
+* https://hibernate.atlassian.net/browse/HSEARCH-2248[HSEARCH-2248]: Remove deprecated threshold method for fuzzy queries from the DSL
+* https://hibernate.atlassian.net/browse/HSEARCH-3477[HSEARCH-3477]: Wrong incompatible types error when query a full text field across different indexes on Lucene backend
+* https://hibernate.atlassian.net/browse/HSEARCH-3489[HSEARCH-3489]: Improve the error message when the inverse side of an association cannot be found by Hibernate Search
+* https://hibernate.atlassian.net/browse/HSEARCH-3529[HSEARCH-3529]: MassIndexer fails for entities with primitive ID type
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31753[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
