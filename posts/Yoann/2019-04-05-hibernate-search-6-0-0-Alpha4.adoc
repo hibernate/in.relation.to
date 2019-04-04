@@ -1,0 +1,149 @@
+= Hibernate Search 6.0.0.Alpha4 released!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Alpha4, the fourth release for the still-in-development 6.0 branch.
+This release mainly adds an "exists" predicate,
+improves the DSL by allowing to bypass DSL and projection converters or to override analyzers,
+restores the Elasticsearch AWS integration,
+and upgrades the Lucene backend to Lucene 8.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 is still in development and its APIs differ significantly from Search 5.
+
+For more information about the current status of this branch, see
+http://hibernate.org/search/releases/6.0/#whats-new[the page dedicated to Search 6 on hibernate.org].
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== New "exists" predicate
+
+We added support for the "exists" predicate in the Search DSL,
+allowing to filter documents according to the presence or absence of a non-`null` value for a given field:
+
+[source, JAVA, indent=0]
+----
+SearchQuery<MyEntity> query = searchSession.search(MyEntity.class).asEntity()
+    .predicate(f -> f.exists().onField("someField"))
+    .toQuery();
+----
+
+=== The Elasticsearch AWS integration is back
+
+We restored the AWS integration as part of https://hibernate.atlassian.net/browse/HSEARCH-3051[HSEARCH-3051].
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-elasticsearch-configuration-aws[the dedicated section in the documentation]
+to configure your backend to talk with an AWS-managed Elasticsearch service.
+
+=== Converters can be bypassed in predicates
+
+DSL and projection converters automatically convert values from the type expected by the user to the underlying type exposed by backends.
+For example `java.util.Date` properties have a converter between that type and `Instant`.
+
+Just like the `.ignoreFieldBridge` option in Search 5,
+https://hibernate.atlassian.net/browse/HSEARCH-3510[there is now an option] to bypass these converters in Search 6:
+
+[source, JAVA, indent=0]
+----
+// When the user input is a java.util.Date
+SearchQuery<MyEntity> query = searchSession.search(MyEntity.class).asEntity()
+    .predicate(f -> f.match().onField("myJavaUtilDate").matching(javaUtilDateUserInput))
+    .toQuery();
+// When the user input is a java.time.Instant
+SearchQuery<MyEntity> query = searchSession.search(MyEntity.class).asEntity()
+    .predicate(f -> f.match().onField("myJavaUtilDate").matching(instantUserInput, DslConverter.DISABLED))
+    .toQuery();
+----
+
+[source, JAVA, indent=0]
+----
+// When we need the projection as a java.util.Date
+SearchQuery<Date> query = searchSession.search(MyEntity.class)
+    .asProjection(f -> f.field("myJavaUtilDate", Date.class)
+    .predicate(f -> f.matchAll())
+    .toQuery();
+
+
+// When we need the projection as a java.time.Instant
+SearchQuery<Instant> query = searchSession.search(MyEntity.class)
+    .asProjection(f -> f.field("myJavaUtilDate", Instant.class, ProjectionConverter.DISABLED)
+    .predicate(f -> f.matchAll())
+    .toQuery();
+----
+
+=== Analyzers can be overridden at query time
+
+Analyzers could already be overridden in Search 5, but only at the `QueryBuilder` level and on a per-field basis,
+which could be annoying if you had many fields in your predicates or if you needed two predicates with different overrides.
+
+In Search 6, https://hibernate.atlassian.net/browse/HSEARCH-3312[you can now override analyzers on a per-predicate basis]:
+
+[source, JAVA, indent=0]
+----
+SearchQuery<MyEntity> query = searchSession.search(MyEntity.class).asEntity()
+    .predicate(f -> f.match().onField("name_autocomplete").matching(javaUtilDateUserInput).analyzer("edgengram_query"))
+    .toQuery();
+----
+
+=== Configuration
+
+Since https://hibernate.atlassian.net/browse/HSEARCH-3521[HSEARCH-3521],
+the property keys for index-scoped configuration properties are now prefixed with `.backends.<backend name>`:
+for example `hibernate.search.backends.myBackend.indexes.myIndex.lifecycle.strategy = create`.
+
+See the https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#configuration[section about configuration in the reference documentation]
+for more information.
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3531[HSEARCH-3531]: Upgrade to Lucene 8.0.0
+* https://hibernate.atlassian.net/browse/HSEARCH-3533[HSEARCH-3533]: Upgrade to Hibernate ORM 5.4.2
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3507[HSEARCH-3507]: Improve consistency of naming for methods related to native Elasticsearch/Lucene features (fromJsonString, etc.)
+* https://hibernate.atlassian.net/browse/HSEARCH-3554[HSEARCH-3554]: The Elasticsearch backend defaults to a 10 element hit limit
+* https://hibernate.atlassian.net/browse/HSEARCH-2534[HSEARCH-2534]: Allow using query-only analyzer definitions with Elasticsearch
+* https://hibernate.atlassian.net/browse/HSEARCH-2185[HSEARCH-2185]: Phrase query with the DSL does not consider the `ignoreAnalyzer()` options
+* https://hibernate.atlassian.net/browse/HSEARCH-2423[HSEARCH-2423]: Projecting an unstored field should raise an exception with Elasticsearch
+* https://hibernate.atlassian.net/browse/HSEARCH-2518[HSEARCH-2518]: Allow to assign a name to an analyzer class/instance
+* https://hibernate.atlassian.net/browse/HSEARCH-2757[HSEARCH-2757]: Allow usage of FieldSelectors when using Spatial indexing
+* https://hibernate.atlassian.net/browse/HSEARCH-3530[HSEARCH-3530]: Update the date formats in the reference documentation
+* https://hibernate.atlassian.net/browse/HSEARCH-3532[HSEARCH-3532]: Fix the java module name for hibernate-search-util-common
+* https://hibernate.atlassian.net/browse/HSEARCH-3538[HSEARCH-3538]: Disabling projection converters in projections is ignored when checking compatibility
+* https://hibernate.atlassian.net/browse/HSEARCH-3540[HSEARCH-3540]: The NONE Elasticsearch index lifecycle strategy throws an AssertionFailure
+* https://hibernate.atlassian.net/browse/HSEARCH-3543[HSEARCH-3543]: Allow to set GeoPointBridges as sortable to enable distance sorts
+* https://hibernate.atlassian.net/browse/HSEARCH-3548[HSEARCH-3548]: ZonedDateTime with zone = ZoneOffset.UTC fails when indexing in Elasticsearch 5.6
+* https://hibernate.atlassian.net/browse/HSEARCH-3549[HSEARCH-3549]: Indexing MonthDay.of( 2, 29 ) fails on Elasticsearch
+* https://hibernate.atlassian.net/browse/HSEARCH-3557[HSEARCH-3557]: ZonedDateTime at later offset during DST change gets parsed incorrectly
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31763[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
