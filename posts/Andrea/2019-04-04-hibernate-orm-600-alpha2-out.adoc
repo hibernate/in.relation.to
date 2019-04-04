@@ -1,0 +1,45 @@
+= Hibernate ORM 6.0.0.Alpha2 released
+Andrea Boriero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Alpha2
+:release-id: 23251
+---
+
+We are excited to announce the release of 6.0 Alpha2.
+
+See the announcements for previous 6.0 development releases: http://in.relation.to/2018/12/06/hibernate-orm-600-alpha1-out/[Alpha1]
+
+This release introduces:
+
+ * support for multi-valued query parameter bindings
+ * query mutations handling improvements
+ ** initial hooks for entity hierarchy specific mutation strategy
+ ** special handling for composite ids
+ ** special handling for no restriction deletes
+ ** special handling for deletes predicated on no non-id attributes
+ ** table-based, inline and cte strategies for "multi-table" mutations ported
+
+ * support for one-to-many and many-to-many was further extended (@Where, @Order, @Parent are not still supported)
+
+== Next step
+
+The plan for Alpha3 includes implementing:
+
+* Inheritance support
+* Criteria support
+
+
+== More information
+
+See the http://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Alpha1/migration-guide.adoc[migration guide].
+
+Also check out the http://hibernate.org/orm/releases/6.0/[release page].
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
