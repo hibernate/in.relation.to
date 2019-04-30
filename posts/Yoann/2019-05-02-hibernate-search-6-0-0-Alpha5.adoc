@@ -1,0 +1,115 @@
+= Hibernate Search 6.0.0.Alpha5 released!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Alpha5, the fifth release for the still-in-development 6.0 branch.
+This release mainly restores the "indexNullAs" feature,
+adds a brand new API to declare dependencies in bridges,
+and adds compatibility with Elasticsearch 6.7 and 7.0.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 is still in development and its APIs differ significantly from Search 5.
+
+For more information about the current status of this branch, see
+http://hibernate.org/search/releases/6.0/#whats-new[the page dedicated to Search 6 on hibernate.org].
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== "indexNullAs" is back
+
+The https://hibernate.atlassian.net/browse/HSEARCH-3099["indexNullAs" feature is back],
+allowing to replace null properties with a value of your choice when indexing:
+
+[source, JAVA, indent=0]
+----
+@GenericField(indexNullAs = "1900-01-01")
+public LocalDate getBirthDate() {
+	return birthDate;
+}
+----
+
+The "indexNullAs" attribute is passed as a String in the annotation,
+but the String is expected to be formatted according to the property type
+(integer, date, etc.).
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-directfieldmapping-indexnullas[the documentation]
+for more information.
+
+Note that:
+
+* Support for "default" null tokens configured in the configuration properties was removed,
+because it no longer makes sense when each field requires a null token of a different type
+(https://hibernate.atlassian.net/browse/HSEARCH-3553[HSEARCH-3553]).
+* Support for "indexNullAs" in `@IndexedEmbedded` was removed because it was poorly defined in some corner cases
+(like when `@IndexedEmbedded.prefix` does not contain any dot)
+and cannot be implemented for Elasticsearch
+(https://hibernate.atlassian.net/browse/HSEARCH-2465[HSEARCH-2465]).
+An "exists" predicate for object fields will be added in a future release to compensate
+(https://hibernate.atlassian.net/browse/HSEARCH-2389[HSEARCH-2389]).
+
+=== Simpler API to declare dependencies in bridges
+
+In an effort to make bridges easier to use,
+we added a more direct way to declare the properties a `TypeBridge` or `PropertyBridge` will use.
+
+This feature, and bridges in general, will be documented in more details once we feel they are ready,
+but if you are interested you can already find examples
+https://github.com/hibernate/hibernate-search/blob/6.0.0.Alpha5/integrationtest/showcase/library/src/main/java/org/hibernate/search/integrationtest/showcase/library/bridge/AccountBorrowalSummaryBridge.java#L42[in the showcase]
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3518[HSEARCH-3518] and https://hibernate.atlassian.net/browse/HSEARCH-3568[HSEARCH-3568]:
+Add compatibility with Elasticsearch 6.7
+* https://hibernate.atlassian.net/browse/HSEARCH-3541[HSEARCH-3541]: Add compatibility with Elasticsearch 7.0
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3534[HSEARCH-3534]:
+Default value for "minimumShouldMatch" is different between Elasticsearch and Lucene.
+Elasticsearch, before version 7, used to use non-trivial rules to determine whether a "should" clause is required to match,
+notably taking into account whether this clause is nested in a "filter" clause.
+This was different from the behavior of the Lucene backend, and (even worse) different from the behavior in Elasticsearch 7+.
+We made sure to override the defaults so that every predicate created with the Hibernate Search DSL
+will behave as Lucene.
+Thanks to Goran Jaric for reporting this.
+* https://hibernate.atlassian.net/browse/HSEARCH-3563[HSEARCH-3563]:
+When Elasticsearch dialects are configured explicitly,
+you no longer need to point to a dialect explicitly but can simply provide the Elasticsearch version you expect,
+and Hibernate Search will pick the right dialect for you.
+* https://hibernate.atlassian.net/browse/HSEARCH-1656[HSEARCH-1656]:
+Recognize annotations from implemented interfaces.
+* https://hibernate.atlassian.net/browse/HSEARCH-2941[HSEARCH-2941]:
+`MassIndexerProgressMonitor` methods now consistently use the `long` type.
+* https://hibernate.atlassian.net/browse/HSEARCH-3566[HSEARCH-3566]:
+Reindexing is now triggered when an association mentioned in an `@IndexingDependency.derivedFrom` is updated.
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31769[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
