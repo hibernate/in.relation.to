@@ -1,0 +1,239 @@
+= Hibernate Search 6.0.0.Alpha6 released!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Alpha6,
+a new release of the still-in-development 6.0 branch.
+This release mainly restores decent performance for Lucene index reads and writes,
+adds support for indexing `BigDecimal` and `BigInteger`,
+reduces the verbosity of the search DSL,
+and adds support for configuring on-commit synchronization for automatic indexing.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 is still in development and its APIs differ significantly from Search 5.
+
+For more information about the current status of this branch, see
+http://hibernate.org/search/releases/6.0/#whats-new[the page dedicated to Search 6 on hibernate.org].
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== Orchestration of Lucene index accesses
+
+The Lucene backend now https://hibernate.atlassian.net/browse/HSEARCH-3118[more efficiently orchestrates index writes and reads],
+delegating those to background threads like it used to in Search 5.
+
+Though no benchmarks were attempted yet,
+performance should be back to a level comparable to Search 5.
+
+=== Indexing of `BigDecimal` and `BigInteger` as scaled numbers
+
+`BigDecimal` and `BigInteger` can now be indexed with Hibernate Search out of the box.
+
+For predicates (match, range, ...) and sorts, these numbers will be scaled down and indexed as a `long`,
+keeping only the most significant digits.
+
+Projections are not affected by scaling: projections on a `BigDecimal` or `BigInteger`
+will return the original number, not just the most significant digits.
+
+By default, the scale used will be extracted from Hibernate ORM's `@Column.scale` attribute.
+You can override that with Hibernate Search's `@ScaledNumberField` annotation and its `decimalScale` attribute.
+
+For more information, see the section of the documentation
+about https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-directfieldmapping-annotations-scalednumberfield[@ScaledNumberField].
+
+=== Search API improvements
+
+The Search API has once again been improved, mainly by reducing its verbosity:
+
+* `.asEntity()` can now be omitted (https://hibernate.atlassian.net/browse/HSEARCH-3578[HSEARCH-3578]);
+* `.toQuery()` can now be omitted (https://hibernate.atlassian.net/browse/HSEARCH-3572[HSEARCH-3572]);
+* extensions can now be used at the very start of the DSL (https://hibernate.atlassian.net/browse/HSEARCH-3544[HSEARCH-3544]),
+and will be transparently applied to all steps: projections, predicates, sorts.
+
+As a result, this:
+
+[source, JAVA, indent=0]
+----
+SearchResult<Book> result = Search.getSearchSession(em).search(Book.class)
+        .asEntity()
+        .predicate(f -> f.extension(ElasticsearchExtension.get()).fromJson("{'match_all': {}}"))
+        .sort(f -> f.extension(ElasticsearchExtension.get()).fromJson("{'field1': 'asc'}"))
+        .toQuery()
+        .fetch(20, 0);
+----
+
+Can now be written like this:
+
+[source, JAVA, indent=0]
+----
+SearchResult<Book> result = Search.getSearchSession(em).search(Book.class)
+        .extension(ElasticsearchExtension.get())
+        .predicate(f -> f.fromJson("{'match_all': {}}"))
+        .sort(f -> f.fromJson("{'field1': 'asc'}"))
+        .fetch(20, 0);
+----
+
+=== Mapping API improvements
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3463[HSEARCH-3463],
+the syntax for specifying container extractors in the annotation mapping
+is now less error-prone and more future-proof.
+
+In short, this:
+
+[source, JAVA, indent=0]
+----
+// Default: automatically resolved
+@GenericField
+private List<Integer> field1;
+// Explicit extractors (built-in)
+@GenericField(extractors = @ContainerExtractorRef(BuiltinContainerExtractor.MAP_KEY))
+private Map<Integer, String> field2;
+// No extractor at all
+@GenericField(extractors = {}, valueBridge = @ValueBridgeRef(type = MyOptionalIntBridge.class))
+private OptionalInt field3;
+// Explicit extractors (builtin, multiple)
+@GenericField(extractors = {
+        @ContainerExtractorRef(BuiltinContainerExtractor.MAP_KEY),
+        @ContainerExtractorRef(BuiltinContainerExtractor.COLLECTION),
+}))
+private Map<List<Integer>, String> field4;
+// Explicit extractors (custom)
+@GenericField(extractors = @ContainerExtraction({
+        @ContainerExtractorRef(type = MyContainerExtractor.class),
+        @ContainerExtractorRef(BuiltinContainerExtractor.COLLECTION)
+}))
+private MyContainer<List<Integer>> field5;
+----
+
+Should now be written like this:
+
+[source, JAVA, indent=0]
+----
+// Default: automatically resolved
+@GenericField
+private List<Integer> field1;
+// Explicit extractors (built-in)
+@GenericField(extraction = @ContainerExtraction(BuiltinContainerExtractors.MAP_KEY))
+private Map<Integer, String> field2;
+// No extractor at all
+@GenericField(extraction = @ContainerExtraction(extract = ContainerExtract.NO))
+private OptionalInt field3;
+// Explicit extractors (builtin, multiple)
+@GenericField(extraction = @ContainerExtraction({
+        BuiltinContainerExtractors.MAP_KEY,
+        BuiltinContainerExtractors.COLLECTION,
+}))
+private Map<List<Integer>, String> field4;
+// Explicit extractors (custom) => Requires the names to be assigned to classes using a mapping configurer
+@GenericField(extraction = @ContainerExtraction({
+        "myExtractor1",
+        BuiltinContainerExtractors.COLLECTION
+}))
+private MyContainer<List<Integer>> field5;
+----
+
+=== Configurable synchronization for automatic indexing
+
+In https://hibernate.atlassian.net/browse/HSEARCH-3316[HSEARCH-3316],
+we reworked how to configure the behavior of automatic indexing,
+in particular how much Hibernate Search should wait for indexing to finish on transaction commits.
+
+You can now set the configuration property `hibernate.search.automatic_indexing.synchronization_strategy`
+to one of three values:
+
+* `queued` to simply queue the indexing tasks in memory and not wait at all;
+* `committed` (the default) to wait for indexing tasks to be processed and committed to persistent storage
+before returning from the database commit;
+* `searchable` to do the same as `committed`, and then also wait for changes to be visible in indexes,
+so that a search query executed just after the database commit will be consistent with the committed transaction,
+without any further delay.
+
+Each synchronization strategy has pros and cons.
+Depending on your application, you may opt for `queued` to favor throughput
+or `searchable` to ensure the index is always immediately up-to-date after a transaction is committed.
+The last one is particularly suitable for automated tests.
+
+Note that configuration goes beyond just this configuration property:
+you can override the setting on a per-session basis
+(to temporarily set it to `queued` when performing batch operations, for example)
+or even define your own, custom strategy.
+
+For more information, head to the section of the documentation
+about https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-automatic[automatic indexing].
+
+=== Search hit explanation
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3353[HSEARCH-3353],
+Lucene and Elasticsearch queries now once again expose `explain()` methods,
+providing a description of the computation that lead to the score of a given document.
+
+Use `.extension(LuceneExtension.get())` or `.extension(ElasticsearchExtension.get())` in the query DSL
+to retrieve a `LuceneSearchQuery` or an `ElasticsearchQuery`, which expose these `explain()` methods.
+
+For more information, refer to the javadoc of `LuceneSearchQuery` and `ElasticsearchQuery`.
+
+=== Experimental support for Bytecode-enhanced entities
+
+In https://hibernate.atlassian.net/browse/HSEARCH-3581[HSEARCH-3581]
+we introduced experimental support for extracting information from lazy properties
+of bytecode-enhanced entities.
+
+We are looking for feedback: if you use bytecode enhancement, give it a try and please us know of any problem.
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3573[HSEARCH-3573]:
+The `.object()` projection has been renamed to `.entity()`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3577[HSEARCH-3577]:
+Longs can no longer be passed to `.fetch()` and `.fetchHits` query methods,
+because neither Lucene nor Elasticsearch supports it.
+Use integers instead.
+* https://hibernate.atlassian.net/browse/HSEARCH-3571[HSEARCH-3571]:
+The syntax of requests sent to Elasticsearch has been slightly altered to avoid warnings with Elasticsearch 6.7 and above.
+* https://hibernate.atlassian.net/browse/HSEARCH-3539[HSEARCH-3539]:
+Lucene distance projections are now thread safe.
+* https://hibernate.atlassian.net/browse/HSEARCH-3324[HSEARCH-3324]:
+Multi-valued fields must now be declared.
+This should only affect you if you use a custom `TypeBridge` or `PropertyBridge`;
+otherwise, Hibernate Search will detect multi-valued fields automatically.
+* https://hibernate.atlassian.net/browse/HSEARCH-3213[HSEARCH-3213]:
+@Spatial bridge set at type level are no longer applied regardless of `@IndexedEmbedded.includePaths`.
+* https://hibernate.atlassian.net/browse/HSEARCH-2663[HSEARCH-2663]:
+Null handling for multi-valued properties is now consistent with single-valued properties.
+* https://hibernate.atlassian.net/browse/HSEARCH-1857[HSEARCH-1857]:
+An exception will now be thrown on usage of a `SearchSession` whose underlying ORM `Session` is closed.
+* https://hibernate.atlassian.net/browse/HSEARCH-1645[HSEARCH-1645]:
+The `@ProvidedId` annotation has now been officially removed.
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31771[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
