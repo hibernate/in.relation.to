@@ -1,0 +1,50 @@
+= Hibernate Search 5.11.2.Final and 5.10.6.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published two bugfix releases for Hibernate Search:
+5.11.2.Final and 5.10.6.Final.
+These releases mainly upgrade Hibernate Search to the latest compatible Hibernate ORM versions
+and fix several issues with the Elasticsearch integration.
+
++++<!-- more -->+++
+
+== What's new
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3545[HSEARCH-3545]:
+`.withPrefixLength` is no longer ignored for `.keyword().fuzzy()` queries in the Elasticsearch integration.
+* https://hibernate.atlassian.net/browse/HSEARCH-3561[HSEARCH-3561]:
+`transpositions` setting is no longer ignored for `FuzzyQuery` in the Elasticsearch integration.
+Thanks to  Rick Gagne for fixing this.
+* https://hibernate.atlassian.net/browse/HSEARCH-3537[HSEARCH-3537]:
+Clarify in the documentation that the maximum number of facets is limited to 100 by default.
+Thanks to Bernhard Scholz for reporting this.
+* https://hibernate.atlassian.net/browse/HSEARCH-3595[HSEARCH-3595]:
+Hibernate Search 5.11.2.Final depends on Hibernate ORM 5.4.3.Final.
+* https://hibernate.atlassian.net/browse/HSEARCH-3495[HSEARCH-3495]:
+Hibernate Search 5.10.6.Final depends on Hibernate ORM 5.3.8.Final.
+
+The other changes are mainly related to our build process.
+
+For a full list of changes since the previous releases, please see the release notes:
+
+* https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31754[5.11.2.Final]
+* https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31734[5.10.6.Final]
+
+== How to get these releases
+
+All details are available and up to date on the dedicated pages on hibernate.org:
+
+* http://hibernate.org/search/releases/5.11/#get-it[5.11]
+* http://hibernate.org/search/releases/5.10/#get-it[5.10]
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
