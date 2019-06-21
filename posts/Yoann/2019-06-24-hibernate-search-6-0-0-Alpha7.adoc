@@ -1,0 +1,126 @@
+= Hibernate Search 6.0.0.Alpha7 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Alpha7,
+a new release of the still-in-development 6.0 branch.
+This release mainly restores missing parameters for index field types,
+restores explicit indexing APIs,
+and upgrades to Elasticsearch 6.8 and 7.1.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 is still in development and its APIs differ significantly from Search 5.
+
+For more information about the current status of this branch, see
+http://hibernate.org/search/releases/6.0/#whats-new[the page dedicated to Search 6 on hibernate.org].
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== All Hibernate Search 5 field type parameters are implemented
+
+https://hibernate.atlassian.net/browse/HSEARCH-3048[HSEARCH-3048] added support
+for the `searchable`, `norms` and `termVectors` field type parameters,
+bringing Search 6 on par with Search 5.
+
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-directfieldmapping-annotation-attributes[this section of the documentation]
+for a description of all available field type parameters.
+
+=== Explicit index write APIs are back
+
+https://hibernate.atlassian.net/browse/HSEARCH-3049[HSEARCH-3049] introduced APIs for explicit writes to indexes,
+as an alternative or complement to automatic indexing.
+
+The APIs are different from Search 5, but provide similar features.
+
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-explicit[the "Explicit indexing" section]
+of the documentation for more information.
+
+=== Backward-incompatible API changes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3610[HSEARCH-3610]:
+`Search.getSearchSession(Session)` was renamed to `Search.session(Session)`.
+The old method is still available, but will be removed soon.
+* https://hibernate.atlassian.net/browse/HSEARCH-3591[HSEARCH-3591]:
+`SearchQueryContext#sort` now expects a `Function` parameter instead of a `Consumer`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3617[HSEARCH-3617]:
+The `by(SearchSort)` method was removed from the sort DSL.
+* https://hibernate.atlassian.net/browse/HSEARCH-3604[HSEARCH-3604]:
+The concept of "reference projection" has been renamed to "entity reference projection":
+in the search DSL, `asReference()` became `asEntityReference()`
+and `reference()` became `entityReference()`.
+Search queries returning references to entities now use
+the `org.hibernate.search.mapper.orm.common.EntityReference` type instead of `PojoReference`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3605[HSEARCH-3605]:
+Some API types related to bridges, container extractors and annotation-based entity mapping
+have been moved for the sake of consistency.
+* https://hibernate.atlassian.net/browse/HSEARCH-3587[HSEARCH-3587]:
+`MarkerMapping#builder` was renamed to `MarkerMapping#marker`.
+
+=== Documentation
+
+The documentation continues to grow:
+
+* There is javadoc on all APIs (https://hibernate.atlassian.net/browse/HSEARCH-3367[HSEARCH-3367]).
+* Every available https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-predicate[predicate],
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-sort[sort]
+and https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-projection[projection]
+is referenced and has at least one example in the documentation.
+* Newly reintroduced features such as the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-explicit[write APIs]
+are being documented progressively.
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3611[HSEARCH-3611]: Add support for Elasticsearch 6.8
+* https://hibernate.atlassian.net/browse/HSEARCH-3592[HSEARCH-3592]: Upgrade to Elasticsearch 7.1
+* https://hibernate.atlassian.net/browse/HSEARCH-3595[HSEARCH-3595]: Upgrade to Hibernate ORM 5.4.3.Final
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-2539[HSEARCH-2539]:
+`MassIndexer.start()` now returns a `CompletableFuture` instead of a `Future`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3203[HSEARCH-3203]:
+`@DocumentId` now works correctly on properties that are not the entity ID.
+* https://hibernate.atlassian.net/browse/HSEARCH-3254[HSEARCH-3254]:
+When building a field sort, `.onMissingValue().use()` now works properly for string fields with the Lucene backend.
+* https://hibernate.atlassian.net/browse/HSEARCH-3255[HSEARCH-3255]:
+When building a field sort, `.onMissingValue().use()` now works properly for date/time fields with the Elasticsearch backend.
+* https://hibernate.atlassian.net/browse/HSEARCH-3616[HSEARCH-3616]:
+When building a "match id" predicate, the `matchingAny()` now expects a `Collection<?>` instead of `Collection<Object>`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3618[HSEARCH-3618]:
+Distance projection will no longer lead to missing hits.
+* https://hibernate.atlassian.net/browse/HSEARCH-3192[HSEARCH-3192]:
+`SearchPredicate`, `SearchSort` and `SearchProjection` can now safely be cached and reused
+from one scope instance to another: Hibernate Search will check that they are compatible with the new scope.
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31773[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
