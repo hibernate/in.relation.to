@@ -69,11 +69,20 @@ profiles:
   development:
     << : *base
     ignore_older_than_days: 366
+    # Hash for https://code.jquery.com/jquery-3.1.1.js generated using srihash.org
+    jquery_js_url_integrity: "sha384-VC7EHu0lDzZyFfmjTPJq+DFyIn8TUGAJbEtpXquazFVr00Q/OOx//RjiZ9yU9+9m"
+    # Hash for https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic.js generated using srihash.org
+    semantic_ui_js_url_integrity: "sha384-/OCHdyuUZjDPStDj7ti/VaVeGQ4U9HxuJhh0FNfMTf0eO1VeBLAam8EiKCIK+jso"
 
   staging:
     << : *base
     minify: true
     minified: .min
+    # Hash for https://code.jquery.com/jquery-3.1.1.min.js generated using srihash.org
+    jquery_js_url_integrity: "sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7"
+    # Hash for https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic.min.js generated using srihash.org
+    semantic_ui_js_url_integrity: "sha384-KfrAxmzWxzKdfquWGNOhm/N9kEjIgoP2yBPMQmAjQ+Is0hp+3BlcWT6PcI7NuKEP"
+    # Update the integrity hashcode if don't use the minified scripts
     css_minifier: enabled
     legacy_post_syntax_highlighting: enabled
     wget:
@@ -89,6 +98,10 @@ profiles:
     << : *base
     minify: true
     minified: .min
+    # Hash for https://code.jquery.com/jquery-3.1.1.min.js generated using srihash.org
+    jquery_js_url_integrity: "sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7"
+    # Hash for https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic.min.js generated using srihash.org
+    semantic_ui_js_url_integrity: "sha384-KfrAxmzWxzKdfquWGNOhm/N9kEjIgoP2yBPMQmAjQ+Is0hp+3BlcWT6PcI7NuKEP"
     css_minifier: enabled
     legacy_post_syntax_highlighting: enabled
     wget:
