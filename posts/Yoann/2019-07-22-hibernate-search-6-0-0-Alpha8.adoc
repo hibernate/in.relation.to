@@ -1,0 +1,115 @@
+= Hibernate Search 6.0.0.Alpha8 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Alpha8,
+a new release of the still-in-development 6.0 branch.
+This release mainly restores configuration options for entity loading and Lucene index storage,
+brings simpler and more powerful bridge APIs,
+and upgrades to Elasticsearch 7.2 and Lucene 8.1.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 is still in development and its APIs differ significantly from Search 5.
+
+For more information about the current status of this branch, see
+http://hibernate.org/search/releases/6.0/#whats-new[the page dedicated to Search 6 on hibernate.org].
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== Configurable, tested and optimized entity loading
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3349[HSEARCH-3349],
+entity loading has been optimized, tested more thoroughly,
+and is now configurable.
+
+Head to https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-query-entity-loading-options[this section of the documentation]
+for more information about configuration options.
+
+=== Configurable and extensible Lucene storage
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3440[HSEARCH-3440],
+Lucene index storage can now be configured more finely,
+and if you're an integrator, you can even plug in your own storage technology.
+
+Head to https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-configuration-directory[this section of the documentation]
+for more information about configuration options.
+
+=== Simpler and more powerful bridge APIs
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3609[HSEARCH-3609],
+the new bridge APIs have been polished to be simpler to use for simple cases,
+and safer yet powerful for more complex use cases.
+
+For an early look at these APIs, head over to https://github.com/hibernate/hibernate-search/pull/2034[this pull request].
+More in-depth explanations will be added to the documentation in the next few releases.
+
+=== Backward-incompatible API changes
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3602[HSEARCH-3602],
+DSL interface now use the "Step" suffix instead of the "Context" suffix.
+This generally should not impact existing client code,
+as these interfaces are not meant to be used directly
+(you don't need to declare variables with these types).
+
+Some types have also been renamed for consistency,
+and these renamings will impact existing code: in particular,
+the type of the "context" parameter in `*Configurer` types
+has changed.
+
+https://hibernate.atlassian.net/browse/HSEARCH-3609[HSEARCH-3609]
+also brought backward-incompatible changes to the bridge APIs,
+which are not yet documented.
+
+=== Documentation
+
+The documentation was restored for the following features:
+
+* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-configuration-directory[Configuration of the Lucene index storage]
+* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-query-entity-loading-options[Loading entities in search queries]
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3637[HSEARCH-3637]: Upgrade to Lucene 8.1.1
+* https://hibernate.atlassian.net/browse/HSEARCH-3625[HSEARCH-3625]: Upgrade to Elasticsearch 7.2.0
+* https://hibernate.atlassian.net/browse/HSEARCH-3627[HSEARCH-3627]: Upgrade to Elasticsearch 6.8.1
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3607[HSEARCH-3607]:
+`@GenericField` can now be used on properties of type `GeoPoint`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3641[HSEARCH-3641]:
+It is now possible to define a native Elasticsearch field with a type
+that is not supported directly by Hibernate Search.
+Thanks to Alexis Cucumel for https://discourse.hibernate.org/t/hibernate-search-6-suggesters-completion-type/2978[reporting this]!
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31782[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
