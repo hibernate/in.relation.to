@@ -1,0 +1,247 @@
+= Bytecode enhancement as proxy
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM"]
+:awestruct-layout: blog-post
+
+Generally speaking, an ORM solution will have support for creating a lazy proxy for an entity
+based on its identifier value.  Historically Hibernate supported generating these proxies using
+Java's proxy feature (see `java.lang.reflect.Proxy`).  Hibernate now supports proxying an entity
+using bytecode enhancement.
+
+== Example model
+
+To discuss the different solutions to lazy loading, consider the following mapping:
+
+[source]
+----
+@Entity
+public class Person {
+    @Id
+    public Integer getId() {...}
+
+    String getName() {...}
+
+    @Lob
+    @Basic(fetch=LAZY)
+    String getSignature() {...}
+    ...
+}
+----
+
+and the following call:
+
+[source]
+----
+Session session = ...;
+Person p = session.load( Person.class, 1 );
+----
+
+which is the same as:
+
+[source]
+----
+EntityManager em = ...;
+Person p = em.getReference( Person.class, 1 );
+----
+
+
+
+== Historical solution
+
+As mentioned, historically Hibernate leveraged Java proxies to achieve this.  On the
+call to `#load` in the example Hibernate would use `java.lang.reflect.Proxy` to create
+a proxy instance including just the id.  In pseudo-code:
+
+[source]
+----
+HibernateProxy proxy = new HibernateProxy(Person.class, 1);
+----
+
+The returned proxy extends `Person` such that it can act like a Person to the application.
+The proxy remains lazy until one of the non-id attributes (here `name` or `signature` is accessed, at which
+point the proxy is initialized.  Initializing the proxy triggers Hibernate to instantiate a `Person` directly
+and to associate it with the proxy.  Again in pseudo-code:
+
+[source]
+----
+Person target = new Person();
+target.setId( 1 );
+proxy.injectTarget( target );
+----
+
+At that point all calls to the proxy by the application are delegated to the "real" `Person` instance.
+
+
+== Initial bytecode enhancement support
+
+Say, for example, that `signature` is expensive to load from the database (it is a LOB after all) - so
+we want to load `signature` only when it is accessed by the application.  To support this use case,
+Hibernate added limited support for bytecode enhancement allowing individual attributes of an entity to be
+loaded later.
+
+In this approach when a `Person` is loaded Hibernate will:
+
+1. instantiate a `Person` instance and inject the id
+2. select it's non-lazy state (here `name`) from the database and inject it into the instantiated `Person`
+
+Later, if `Person#getSignature` is called, Hibernate will load `signature` from the database
+and inject it into the `Person` instance.
+
+Additionally, if the entity defined multiple lazy attributes, Hibernate allows the application to
+group the attributes into a "lazy fetch group" (see `@LazyGroup`) to be loaded together.  Attributes
+not explicitly assigned to a group are grouped together into an implicit group.  When any not-yet-initialized
+attribute is accessed, all of the attributes in the group to which that accessed attribute belongs are also
+initialized.
+
+
+== Bytecode enhancement as proxy
+
+You can think of this new feature as a combination of the above 2 approaches.
+
+[NOTE]
+====
+This new enhancement-as-proxy feature is considered a "tech preview" meaning it is currently supported on a
+best effort basis. This feature must be enabled using the `hibernate.bytecode.allow_enhancement_as_proxy` setting.
+
+It uses the same enhancement code meaning entities do not need to be re-enhanced to move from the initial
+bytecode support to this new bytecode-as-proxy feature.
+
+It also works with lazy fetch groups.
+====
+
+At a high-level, when the `Person` is loaded Hibernate will:
+
+1. instantiate a `Person` instance and inject the id
+
+That is it.  It does not load any database state at this point.
+
+To describe how Hibernate initializes these proxies we need to first define some terms:
+
+baseline group::
+    This group is defined by all of the entity's non-lazy attributes.
+implicit group::
+    All lazy attributes not explicitly assigned to a group
+explicit group::
+    Lazy attributes explicitly associated with a group via `@LazyGroup`
+
+The implicit and explicit group distinction is the same as we discussed with regard to the legacy enhancement
+support.
+
+What is new here is the baseline group.  Whenever initialization of any part of the entity proxy is
+triggered we need to load this baseline group because it represents non-lazy state.  Loading this baseline state
+happens in addition to loading the triggered lazy group.
+
+For example, say we have:
+
+[source]
+----
+Session session = ...;
+Person p = session.load( Person.class, 1 );
+String name = p.getName();
+----
+
+The call to `p.getName()` here triggers initialization of the proxy.  `name` is non-lazy and therefore
+belongs to the baseline group.  It is loaded as soon as the proxy is initialized (also because it is the
+attribute accessed, but ignore that for now).
+
+However, because `signature` is defined as lazy and because its lazy-group (the implicit group) is not accessed,
+its data is not loaded from the database.
+
+
+If instead we do:
+
+[source]
+----
+Session session = ...;
+Person p = session.load( Person.class, 1 );
+String signature = p.getSignature();
+----
+
+Now both `name` (as part of the baseline group) and `signature` (part of the accessed lazy group) are loaded.
+Specifically, both are loaded in the same SQL SELECT.
+
+
+Now consider:
+
+[source]
+----
+Session session = ...;
+Person p = session.load( Person.class, 1 );
+String name = p.getName();
+String signature = p.getSignature();
+----
+
+Be aware that this triggers 2 different SQL SELECT statements - `p.getName()` triggers loading of the baseline
+state and then `p.getSignature()` triggers loading the implicit group.
+
+
+
+== Limitations
+
+The only real limitation is related to inheritance hierarchies.  Specifically we do not create bytecode proxies for
+entities which have mapped subclasses.  For these we fall back to using Java proxies.  We need the indirection
+inherent in a proxy to allow for "narrowing" of the reference.
+
+Consider a model with inheritance:
+
+[source]
+----
+@Entity
+@Inheritance
+class Payment {
+    @Id
+    Integer getId() {...}
+
+    @Basic(fetch=LAZY)
+    MonetaryAmount getAmount() {...}
+
+    ...
+}
+
+@Entity
+class CardPayment extends Payment {
+    String getTransactionNumber();
+    ...
+}
+
+@Entity
+class CheckPayment extends Payment {
+    String getDriversLicenseNumber() {...}
+    ...
+}
+----
+
+and:
+
+[source]
+----
+Session session = ...;
+session.save( new CardPayment( 1, ... ) );
+...
+
+Session session = ...;
+Payment p = session.load( Payment.class, 1 );
+MonetaryAmount paidAmount = p.getAmount();
+----
+
+The application has asked Hibernate to load `Payment` with an id of `1`.  However, at this point, Hibernate has
+no idea whether `Payment#1` is a `CardPayment` or a `CheckPayment`.  It will not know that until the proxy
+is initialized.
+
+The call to `p.getAmount()` trigger initialization of the proxy at which point Hibernate knows that the `Payment#1`
+reference actually refers to a `CardPayment`.  At this point Hibernate would need to instantiate a `CardPayment`.  The
+problem with that is there is no way for Hibernate to "swap" the `p` reference held by the application to be a
+`CardPayment` instead of the more general `Payment`.
+
+The Java proxy approach does not have this limitation.  Because the Java proxy wraps the "real" entity Hibernate
+can delay the determination of the type of the entity until the proxy is initialized.  The application still has
+a reference to the proxy and the proxy offers an indirection to the real entity.
+
+
+== Wrap up
+
+Using enhancement-as-proxy offers a more performant approach to lazy loading.  And because it works on top of the
+existing enhancement it works seamlessly with the other enhancement-based feature Hibernate supports - dirty-tracking,
+etc.
+
+Give it a try and let us know what you think.
