@@ -1,0 +1,127 @@
+= Hibernate Search 6.0.0.Alpha9 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Alpha9,
+a new release of the still-in-development 6.0 branch.
+This release mainly
+introduces correct handling of session flushing and clearing,
+restores support for static sharding
+and upgrades to Elasticsearch 7.3, Lucene 8.2 and Hibernate ORM 5.4.4.Final.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 is still in development and its APIs differ significantly from Search 5.
+
+For more information about the current status of this branch, see
+http://hibernate.org/search/releases/6.0/#whats-new[the page dedicated to Search 6 on hibernate.org].
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== Correct handling of session flushing and clearing
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3360[HSEARCH-3360],
+multiple long-standing problems (https://hibernate.atlassian.net/browse/HSEARCH-1270[HSEARCH-1270],
+https://hibernate.atlassian.net/browse/HSEARCH-1350[HSEARCH-1350], ...)
+related to clearing the Hibernate ORM session have been solved.
+
+It is now possible to transparently implement batch processing with a periodic `flush`/`clear`:
+
+* calls to Hibernate Search APIs such as `fullTextSession.flushToIndexes()` are no longer necessary;
+* entities removed from the session in the `clear` will no longer lead to a `LazyInitializationException`;
+* every document created in a transaction containing a loop with a periodic `flush`/`clear`
+will correctly be indexed on transaction commit (and not in the middle of the transaction).
+
+Note that Hibernate Search still needs to store the documents in memory
+until they are indexed on transaction commit,
+which may be more than what your JVM heap can handle,
+depending on the number and complexity of your documents.
+Several solutions to this problems are included in
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-explicit-writeplan-process-execute[the section of the documentation about explicit indexing].
+
+=== Static sharding
+
+Support for static sharding has been restored as of
+https://hibernate.atlassian.net/browse/HSEARCH-3314[HSEARCH-3314].
+It is now possible to leverage routing keys with Elasticsearch,
+and to split a Lucene index into several (statically defined) shards.
+
+See the https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#concepts-sharding-routing[section of the documentation about sharding]
+for more information.
+
+=== Backward-incompatible API changes
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3642[HSEARCH-3642],
+the `DslConverter` and `ProjectionConverter` enums used in the search DSL
+have been replaced with a single enum, `ValueConvert`.
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3660[HSEARCH-3660]: Upgrade to Elasticsearch 7.3.0
+* https://hibernate.atlassian.net/browse/HSEARCH-3646[HSEARCH-3646]: Upgrade to Lucene 8.2.0
+* https://hibernate.atlassian.net/browse/HSEARCH-3648[HSEARCH-3648]: Upgrade to Hibernate ORM 5.4.4
+
+[WARNING]
+====
+Hibernate Search 6 now requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will not work correctly.
+
+This is caused by a change (https://hibernate.atlassian.net/browse/HSEARCH-3447[HSEARCH-3447])
+that was necessary to avoid the deprecated native criteria APIs that may be removed in ORM 6 .
+====
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3612[HSEARCH-3612]:
+Patterns are now consistently normalized in wildcard/prefix predicates.
+* https://hibernate.atlassian.net/browse/HSEARCH-3062[HSEARCH-3062]:
+It is now possible to project on single-valued fields within nested object fields.
+* https://hibernate.atlassian.net/browse/HSEARCH-3551[HSEARCH-3551]:
+Hibernate Search will now boot correctly when declared as a dependency in a `module-info.java`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3068[HSEARCH-3068]:
+Hibernate Search 6 will now correctly trigger indexing on flush
+when performing entity changes outside of a transaction (not recommended).
+* https://hibernate.atlassian.net/browse/HSEARCH-3643[HSEARCH-3643]:
+Entities will now be unproxied before attempting to extract field values when indexing.
+Thanks to Alexis Cucumel for bringing this bug to our attention.
+* https://hibernate.atlassian.net/browse/HSEARCH-899[HSEARCH-899]:
+Uses of `@IndexedEmbedded` on types that are not mapped in any way (no `@GenericField`, no custom bridge, ...)
+will now trigger a bootstrap failure.
+// Not mentioned
+//https://hibernate.atlassian.net/browse/HSEARCH-3652[HSEARCH-3652]: Refresh Jenkinsfiles to match the new CI environment
+//https://hibernate.atlassian.net/browse/HSEARCH-3651[HSEARCH-3651]: Do not specify a type in Elasticsearch _explain requests
+//https://hibernate.atlassian.net/browse/HSEARCH-3644[HSEARCH-3644]: ORM warning on bootstrap: HHH000450: Encountered request for Service by non-primary service role
+//https://hibernate.atlassian.net/browse/HSEARCH-3075[HSEARCH-3075]: Search 6 groundwork - Release WorkPlan resources when a transaction is rolled back
+//https://hibernate.atlassian.net/browse/HSEARCH-3658[HSEARCH-3658]: Upgrade to AWS Elasticsearch Service 6.7 in the Jenkinsfile
+//https://hibernate.atlassian.net/browse/HSEARCH-3656[HSEARCH-3656]: Update mapper ORM documentation chapter: writeplan API process is no longer necessary
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31787[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
