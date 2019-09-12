@@ -1,0 +1,43 @@
+= Hibernate Search 5.10.7.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published a bugfix release for Hibernate Search:
+5.10.7.Final.
+This release mainly upgrade Hibernate Search to the latest compatible Hibernate ORM and WilFly versions,
+and introduces compatibility with JDK11+.
+
++++<!-- more -->+++
+
+== What's new
+
+* Hibernate Search 5.10.7 is compatible with JDK11 and -- if you're into non-LTS JDKs -- JDK13.
+* Hibernate Search no longer relies on `javax.xml.bind` APIs.
+This is important because these APIs were removed between JDK8 and JDK11.
+Hibernate ORM does still depend on these APIs, however:
+it introduced new, explicit dependencies to `javax.xml.bind:jaxb-api:2.3.1`
+and `org.glassfish.jaxb:jaxb-runtime:2.3.1`.
+* Hibernate Search's WildFly feature packs now target WildFly 17.0.1.
+Note that these feature packs are not necessary if you simply use
+the version of Hibernate Search bundled with WildFly.
+
+The other changes are mainly related to our build process.
+
+For a full list of changes since the previous releases, please see the
+https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31781[release notes].
+
+== How to get these releases
+
+All details are available and up to date on the
+http://hibernate.org/search/releases/5.10/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
