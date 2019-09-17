@@ -1,0 +1,156 @@
+= "Improved performance and JDK 13 - new release of Hibernate ORM!"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:release-id: 31779
+---
+
+== An exciting micro update !?
+
+Version `5.4.5.Final` might look like "just another micro update" but it's packed with great improvements.
+
+The reason we only bump the "micro" version is because we managed to maintain strict backward compatibility in this iteration,
+even though the number of improvements was unusually high.
+
+So what's so great of this release?
+
+ - tested with http://jdk.java.net/13/[OpenJDK 13]
+ - several strong performance improvements
+ - usual round of bugfixes
+
+=== Java 13 compatibility
+
+Java 13 is here today, and all our integration tests pass.
+
+Of course JDK8 compatibility is still available, and JDK11 compatibility as well.
+
+N.B. we no longer test on JDK9 and JDK10, and we will probably be stopping to run tests on JDK12 soon as well.
+
+=== Great performance improvements for the simple cases
+
+It used to be the case that opening a new `Session` (or a new `EntityManager`) was a relatively not-so-cheap operation, as Hibernate needs creating several internal Maps to represent its context.
+
+We never considered this a priority to optimise for: we'd recommend to reuse them, and expect most people would use Hibernate for non trivial operations, offsetting the allocation overhead.
+
+Another reason to not focus on such optimisations for corner cases was that to achieve peak performance for more complex cases, in particular real world workloads, focusing on the simple case would have been a limitation for the real case - it turns out this assumption was unfounded, as we now figured that a lot could be done without a negative impact on the general purpose scenario.
+
+Several fixes in this version address the memory allocation aspect of opening such a new `Session`/`EntityManager`, and dodge some computational overhead as well; I won't be sharing the exact figures as so much will depend on your specific configuration and needs, but I wouldn't be surprised if people would report benefiting an 400% throughput improvement on simple one-shot operations: I have "lab evidence" that this is possible, and even beyond, but since much of such metrics are only possible in specifically crafted microbenchmarks one must concede that real world applications will not highlight the same level of improvements.
+
+If you happen to be interested in performance and could try it out, please share your findings! At very least it motivates us to keep aiming for more :-)
+
+In fact, Hibernate ORM at this point is not that much heavier than using JDBC directly - there's still some work to do to achieve parity but I'm surprised to find myself thinking that it's actually not unrealistic to aim for full parity with plain JDBC in the near future. Considering also that the ORM has a better overall overview on the execution plan, this can help unlocking more optimisations than an imperative approach when combined with technologies such as https://quarkus.io/[Quarkus]. My over-optimistic guess is that we might even beat plain JDBC in some specific contexts.
+
+Exciting times!
+
+== What's next
+
+We're still working hard on Hibernate ORM 6. This version will of course include the optimisations mentioned above, but will also have significant improvements on the quality and adaptability of the generated SQL.
+
+We will of course also keep maintaining `5.4.x` for quite some time: as usual expect more bugfixes and more improvements at the next round.
+
+Little spoiler: the team is finally able to carve some spare time to explore Reactive database access; we're investigating the possibilities of a next-gen data access layer, with some guidance from the experts from the https://vertx.io/[Eclipse VertX] team and those from Pivotal working on https://r2dbc.io/[R2DBC] - but still have a lot to learn.
+
+Timelines and adoption across database vendors are quite unclear yet though, so I won't say more for the time being. Stay tuned!
+
+== How to get this release
+
+Detailed instructions and links to the documentation are available, as usual, on the
+http://hibernate.org/orm/releases/5.4/[dedicated page] on hibernate.org.
+
+Or https://bintray.com/hibernate/artifacts/hibernate-orm[jump directly to bintray].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
+
+== Full changelog
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/projects/HHH/versions/{release-id}/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here]).
+
+** Bugfixes
+* [HHH-13259] - StackOverflowError from StringHelper
+* [HHH-13466] - ClassCastException when changing a Collection association to a Set if @PreUpdate listener exists
+* [HHH-13544] - Restore logged warning on jdbc code mapping issue in NationalizedTypeMappings
+* [HHH-13550] - Fix Oracle failure for test added by HHH-13424
+* [HHH-13551] - StrategyRegistrationProvider does not properly handle implementations from different classloader
+* [HHH-13554] - QueryAndSQLTest.testNativeQueryWithFormulaAttributeWithoutAlias() fails on Oracle, MSSQL, Sybase, DB2, MariaDB
+* [HHH-13555] - FetchGraphTest, MergeProxyTest and ProxyDeletionTest fail due to ConstraintViolationException
+* [HHH-13556] - Tests doing dynamic fetch scrolling a collection fail on DB2
+* [HHH-13557] - LocalTimeTest#writeThenNativeRead and OffsetTimeTest#writeThenNativeRead tests are failing on SQL Server
+* [HHH-13558] - InstantTest, LocalDateTimeTest, OffsetDateTimeTest, ZonedDateTimeTest failing on Sybase for year 1600
+* [HHH-13564] - Envers - Getting NPE while reading revisions of entity with @EmbeddedId composite key located in parent @MappedSuperclass
+* [HHH-13569] - org.hibernate.test.annotations.embedded.EmbeddedTest failures on Sybase
+* [HHH-13570] - Test failures due to Sybase not supporting UPDATE statement with WITH(NOWAIT)
+* [HHH-13571] - Test failures due to cross joined table out of scope of a subsequent JOIN on Sybase
+* [HHH-13573] - Test failure due to Sybase not supporting cascade delete on foreign key definitions
+* [HHH-13574] - SybaseASE does not support PARTITION BY
+* [HHH-13577] - LockTest.testContendedPessimisticLock and StatementIsClosedAfterALockExceptionTest.testStatementIsClosed  tests fail on Sybase
+* [HHH-13580] - LocalTimeTest#writeThenNativeRead* and OffsetTimeTest#writeThenNativeRead* failing on MySQL
+* [HHH-13581] - LocalTimeTest#writeThenRead* and OffsetTimeTest#writeThenRead* failing on MariaDB
+* [HHH-13582] - LocalDateTest failures on MySQL
+* [HHH-13586] - ClassCastException when using a single region name for both entity and query results
+* [HHH-13590] - TransientObjectException merging a non-proxy association to a HibernateProxy
+* [HHH-13592] - AutoFlushEvent#isFlushRequired is always false
+* [HHH-13607] - Exception thrown while flushing uninitialized enhanced proxy with immutable natural ID
+* [HHH-13611] - Restore EntityMetamodel constructor to take SessionFactoryImplementor argument instead of PersisterCreationContext.
+* [HHH-13616] - Enable the hibernate-orm-modules test for JDK 11
+* [HHH-13621] - Exception if spaces after value of  javax.persistence.schema-generation.scripts.action in hibernate.properties
+
+
+** New Feature
+* [HHH-13249] - Introduce an option to Log slow queries instead of all queries
+
+
+** Task
+* [HHH-13525] - Make test SessionDelegatorBaseImplTest more resilient to previously existing alias definition
+* [HHH-13526] - Optimise ResourceRegistryStandardImpl#release
+* [HHH-13527] - Performance regression in org.hibernate.stat.internal.StatisticsImpl
+* [HHH-13528] - Invoke afterStatements only at the end of releasing all statements for a batch
+* [HHH-13529] - Performance regression in org.hibernate.engine.spi.SessionFactoryImplementor#getDialect
+* [HHH-13531] - Some more opportunities to reuse the constants pool in AliasConstantsHelper
+* [HHH-13534] - AbstractLoadPlanBasedLoader never needs a List of AfterLoadAction
+* [HHH-13546] - Make the sessionFactory field in StatisticsImpl required
+* [HHH-13549] - Cleanup dead code in StringHelper
+* [HHH-13552] - CollectionType needs a direct reference to its Persister
+* [HHH-13553] - Fix test failures on SAP HANA
+* [HHH-13561] - Do not retrieve the same ActionQueue multiple times
+* [HHH-13562] - List of TransactionObserver for  JdbcResourceLocalTransactionCoordinatorImpl should be lazily initialized
+* [HHH-13563] - ResultSetReturnImpl is looking up JdbcServices on each construction
+* [HHH-13565] - Improve Session opening efficiency
+* [HHH-13568] - Instances of NaturalIdXrefDelegate should be lazily initialized if possible
+* [HHH-13605] - InstantTest, OffsetDateTimeTest, ZonedDateTimeTest fail for MariaDB on CI
+* [HHH-13606] - LocalDateTimeTest fails for HANA on CI
+* [HHH-13622] - Upgrade the WildFly Transaction Client to 1.1.7.Final
+
+** Improvement
+* [HHH-13133] - Print message about 'successfully enhanced class' as debug in Maven enhancement plugin
+* [HHH-13412] - Move hibernate.connection description out of c3p0 section
+* [HHH-13512] - Avoid allocating an array in org.hibernate.internal.util.StringHelper#unquote(String[], Dialect) if there are no changes to be applied
+* [HHH-13521] - Avoid excessive validation of enabled filters
+* [HHH-13522] - Optimise LoadQueryInfluencers by making maps lazily initialized
+* [HHH-13523] - StatementPreparerImpl should not need to retrieve the JDBCService as often
+* [HHH-13524] - Remove unused fields xref,unassociatedResultSets from JdbcCoordinatorImpl
+* [HHH-13541] - ExceptionConverter instance in AbstractSharedSessionContract should be lazily initialized
+* [HHH-13548] - Since SessionOwner is deprecated several fields in SessionImpl can be removed
+* [HHH-13576] - Invoking tracef() or debugf() w/o an array of parameters actually allocates an empty Object[]
+* [HHH-13579] - Cleanup of resources in ResourceRegistryStandardImpl allocates many Iterators
+* [HHH-13584] - Reduce ServiceRegistry lookups in LocalConnectionAccess in SessionFactory
+* [HHH-13585] - Duplicate resource release in PessimisticReadSelectLockingStrategy
+* [HHH-13587] - Initialize selected collections of StatefulPersistenceContext lazily
+* [HHH-13588] - MySQL Dialect: missed functions: weight_string, to_base64, from_base64, regexp_replace, regexp_instr, regexp_substr
+* [HHH-13589] - Minor memory allocation improvements in ActionQueue
+* [HHH-13591] - Replaces simple uses of array iteration with a corresponding for-each loop
+* [HHH-13594] - ResourceRegistryStandardImpl#release could avoid allocating a capturing lambda
+* [HHH-13599] - Avoid ArrayList allocation in JtaTransactionCoordinatorImp in common scenario
+* [HHH-13600] - Avoid allocation of capturing lambdas in ParameterTranslationsImpl and AbstractDomainDataRegion
+
+
+** Deprecation
+* [HHH-13595] - Deprecate ConnectionObserver
+
