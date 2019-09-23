@@ -1,0 +1,271 @@
+= Hibernate Search 6.0.0.Beta1 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate Search 6 just reached Beta status with the release of version 6.0.0.Beta1.
+This release clears the last remaining major hurdles:
+it fixes the few remaining inconsistencies in APIs,
+and completes the documentation of the major features.
+This release also introduces aggregations,
+similar to Search 5's faceting feature.
+
++++<!-- more -->+++
+
+== What the Beta status means
+
+Essentially, reaching Beta status means Hibernate Search 6 will be more stable from now on:
+
+* The most commonly used APIs are not expected to change anymore.
+* The implementations are well-tested and work as expected.
+* The reference documentation covers all common use cases and most advanced use cases,
+and shouldn't change much before the final release.
+
+It's still a Beta, not a Candidate Release,
+because a significant amount of work still remains before the final release:
+
+* Some of the less commonly used features such as scrolling or error handlers are still missing.
+* Some improvements over Search 5 such as search analyzers or zero-downtime mass indexing are still missing.
+* Performance is satisfying (no obvious bottlenecks),
+but needs more thorough testing.
+* Depending on the changes needed to solve the above,
+we may still change the index format in later Betas,
+which will require reindexing.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Search 5.
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== Aggregation DSL
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3649[HSEARCH-3649],
+Hibernate Search 6 now offers a DSL to build aggregations,
+i.e. aggregated results based on *all* hits for a given search query.
+
+Supported aggregations are rather simple for now, but more will be added later:
+
+* Terms aggregations produce a count of the number of hits
+for each value of a given field:
++
+[source, JAVA]
+----
+AggregationKey<Map<Genre, Long>> countsByGenreKey =
+        AggregationKey.of( "countsByGenre" );
+SearchResult<Book> result = searchSession.search( Book.class )
+        .predicate( f -> f.matchAll() )
+        .aggregation( countsByGenreKey, f -> f.terms()
+                .field( "genre", Genre.class ) )
+        .fetch( 20 );
+Map<Genre, Long> countsByGenre = result.getAggregation( countsByGenreKey );
+----
+
+* Given a set of ranges, range aggregations produce a count of the number of hits
+for each range of values of a given field:
++
+[source, JAVA]
+----
+AggregationKey<Map<Range<Double>, Long>> countsByPriceKey =
+        AggregationKey.of( "countsByPrice" );
+SearchResult<Book> result = searchSession.search( Book.class )
+        .predicate( f -> f.matchAll() )
+        .aggregation( countsByPriceKey, f -> f.range()
+                .field( "price", Double.class )
+                .range( 0.0, 10.0 )
+                .range( 10.0, 20.0 )
+                .range( 20.0, null )
+        )
+        .fetch( 20 );
+Map<Range<Double>, Long> countsByPrice = result.getAggregation( countsByPriceKey );
+----
+
+This provides all the features that were provided by Hibernate Search 5's  "faceting" feature,
+with the exception of https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/#_restricting_query_results["drill-down"],
+which is straightforward to reproduce using the predicate DSL.
+In addition, the new aggregation feature solves several long-standing issues of faceting in Search 5:
+
+* https://hibernate.atlassian.net/browse/HSEARCH-1372[HSEARCH-1372]/link:https://hibernate.atlassian.net/browse/HSEARCH-2111[HSEARCH-2111]:
+The aggregation API uses clear, consistent naming.
+* https://hibernate.atlassian.net/browse/HSEARCH-2472[HSEARCH-2472]/link:https://hibernate.atlassian.net/browse/HSEARCH-2954[HSEARCH-2954]:
+Encoding is no longer limited to just numeric fields or text:
+fields with Java 8 date/time types can be aggregated too,
+for example `LocalDate`,
+and they use the dedicated `date` datatype in the Elasticsearch backend.
+* https://hibernate.atlassian.net/browse/HSEARCH-1748[HSEARCH-1748]:
+Attempts to create aggregations on unsupported fields
+will now trigger an exception during query building,
+instead of just returning empty results.
+* https://hibernate.atlassian.net/browse/HSEARCH-2446[HSEARCH-2446]:
+Aggregations (faceting) can now be used on fields declared by bridges.
+* Discrete aggregations no longer require to index numbers as text.
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3706[HSEARCH-3706]:
+Upgrade to Hibernate ORM 5.4.5.Final
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will not work correctly.
+====
+
+=== Documentation
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3270[HSEARCH-3270],
+all major features of Hibernate Search 6 are documented.
+
+Here are the sections we added or completed since the previous release:
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3674[HSEARCH-3674]/link:https://hibernate.atlassian.net/browse/HSEARCH-3675[HSEARCH-3675]:
+Core concepts:
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#concepts-full-text[full-text search],
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#concepts-mapping[mapping]
+and
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#concepts-analysis[analysis]
+* https://hibernate.atlassian.net/browse/HSEARCH-3676[HSEARCH-3676],
+https://hibernate.atlassian.net/browse/HSEARCH-3673[HSEARCH-3673],
+https://hibernate.atlassian.net/browse/HSEARCH-2224[HSEARCH-2224],
+https://hibernate.atlassian.net/browse/HSEARCH-3679[HSEARCH-3679]:
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-bridge#mapper-orm-mapping[Mapping Hibernate ORM entities to indexes],
+especially https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexedembedded[`@IndexedEmbedded`],
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-containerextractor[container extraction]
+and https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-reindexing[tuning automatic reindexing].
+* https://hibernate.atlassian.net/browse/HSEARCH-3692[HSEARCH-3692]:
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-bridge[Custom bridges]
+* https://hibernate.atlassian.net/browse/HSEARCH-3615[HSEARCH-3615]:
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-query[Query DSL]
+* https://hibernate.atlassian.net/browse/HSEARCH-3681[HSEARCH-3681]:
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[MassIndexer]
+
+=== Backward-incompatible API changes
+
+There are quite a few backward-incompatible changes this time,
+as this was the last set of changes before the Betas.
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3705[HSEARCH-3705]:
+The default index name for indexed entity types
+is now **the entity name instead of the fully qualified class name**.
+* https://hibernate.atlassian.net/browse/HSEARCH-3707[HSEARCH-3707]:
+The limit and offset parameters in `SearchQuery.fetch(Integer, Integer)` **have been swapped**.
+* https://hibernate.atlassian.net/browse/HSEARCH-3669[HSEARCH-3669]:
+The `fetch()`/`fetchHits()` methods are now deprecated:
+use  `fetchAll`/`fetchAllHits` instead.
+* https://hibernate.atlassian.net/browse/HSEARCH-3606[HSEARCH-3606]:
+The `SearchWriter` was renamed to `SearchWorkspace`,
+and `SearchSessionWritePlan` was renamed to `SearchIndexingPlan`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3623[HSEARCH-3623]:
+The syntax of analysis definition DSLs was updated:
+** It is no longer possible to chain analyzer/normalizer definition with the Lucene analysis definition DSL.
+** The methods prefixed with `with` in the Elasticsearch analysis definition DSL were deprecated
+in favor of new methods without this prefix (`withTokenizer()` => `tokenizer()`).
+* https://hibernate.atlassian.net/browse/HSEARCH-3671[HSEARCH-3671]:
+`SearchScope` is now session-independent.
+The main implication is you can no longer write `scope.search()`:
+use `searchSession.search(scope)` instead.
+* https://hibernate.atlassian.net/browse/HSEARCH-3691[HSEARCH-3691]:
+`@GeoPointBinding` can no longer be used on properties of type `GeoPoint`:
+use `@GenericField` instead.
+* https://hibernate.atlassian.net/browse/HSEARCH-3687[HSEARCH-3687]:
+Generic type parameters of DSL step interfaces have changed.
+This will only affect you if you store DSL steps in variables,
+which is not recommended (you should just chain calls).
+* https://hibernate.atlassian.net/browse/HSEARCH-3708[HSEARCH-3708]:
+The range predicate DSL now exposes a new syntax to define the range to match,
+leveraging the new `Range` class.
+The old syntax still works but it is deprecated.
+* https://hibernate.atlassian.net/browse/HSEARCH-1347[HSEARCH-1347]:
+** `org.hibernate.search.mapper.pojo.dirtiness.ReindexOnUpdate` was moved to `org.hibernate.search.mapper.pojo.automaticindexing.ReindexOnUpdate`
+** Package `org.hibernate.search.engine.search.dsl.predicate` was moved to `org.hibernate.search.engine.search.predicate.dsl`
+** Package `org.hibernate.search.engine.search.dsl.sort` was moved to `org.hibernate.search.engine.search.sort.dsl`
+** Package `org.hibernate.search.engine.search.dsl.projection` was moved to `org.hibernate.search.engine.search.projection.dsl`
+** Package `org.hibernate.search.engine.search.dsl.aggregation` was moved to `org.hibernate.search.engine.search.aggregation.dsl`
+** Package `org.hibernate.search.backend.elasticsearch.search.dsl.predicate` was moved to `org.hibernate.search.backend.elasticsearch.search.predicate.dsl`
+** Package `org.hibernate.search.backend.elasticsearch.search.dsl.sort` was moved to `org.hibernate.search.backend.elasticsearch.search.sort.dsl`
+** Package `org.hibernate.search.backend.elasticsearch.search.dsl.projection` was moved to `org.hibernate.search.backend.elasticsearch.search.projection.dsl`
+** Package `org.hibernate.search.backend.elasticsearch.search.dsl.aggregation` was moved to `org.hibernate.search.backend.elasticsearch.search.aggregation.dsl`
+** Package `org.hibernate.search.backend.lucene.search.dsl.predicate` was moved to `org.hibernate.search.backend.lucene.search.predicate.dsl`
+** Package `org.hibernate.search.backend.lucene.search.dsl.sort` was moved to `org.hibernate.search.backend.lucene.search.sort.dsl`
+** Package `org.hibernate.search.backend.lucene.search.dsl.projection` was moved to `org.hibernate.search.backend.lucene.search.projection.dsl`
+** Package `org.hibernate.search.backend.lucene.search.dsl.aggregation` was moved to `org.hibernate.search.backend.lucene.search.aggregation.dsl`
+** `org.hibernate.search.engine.search.SearchPredicate` was moved to `org.hibernate.search.engine.search.predicate.SearchPredicate`
+** `org.hibernate.search.engine.search.SearchSort` was moved to `org.hibernate.search.engine.search.sort.SearchSort`
+** `org.hibernate.search.engine.search.SearchProjection` was moved to `org.hibernate.search.engine.search.projection.SearchProjection`
+** `org.hibernate.search.engine.search.DocumentReference` was moved to `org.hibernate.search.engine.backend.common.DocumentReference`
+* https://hibernate.atlassian.net/browse/HSEARCH-3441[HSEARCH-3441]:
+DSL methods now use consistent wording.
+** In the programmatic mapping API:
+*** `withExtractor()` was renamed to `extractor()`
+*** `withExtractors()` was renamed to `extractors()`
+*** `withoutExtractors()` was renamed to `noExtractors()`
+** In the predicate DSL:
+*** `onField()`/`orField()`/`onFields()`/`orFields()` are now deprecated.
+Use the prefix-less versions instead (e.g. `onField()` => `field()`).
+*** `withConstantScore()` is now deprecated: use `constantScore()` instead.
+*** `boostedTo()` is now deprecated: use `boost()` instead.
+*** `withAndAsDefaultOperator()` is now deprecated: use `defaultOperator(BooleanOperator)` instead.
+*** `withSlop()` is now deprecated: use `slop()` instead.
+** In the sort DSL:
+*** Methods prefixed with `by` are now deprecated.
+Use the prefix-less versions instead (e.g. `byField()` => `field()`).
+*** `onMissingValue()` is now deprecated: use `missing()` instead.
+*** `sortLast()` is now deprecated: use `last()` instead.
+*** `sortFirst()` is now deprecated: use `first()` instead.
+* https://hibernate.atlassian.net/browse/HSEARCH-859[HSEARCH-859]:
+Some configuration properties were changed for better consistency.
+** Configuration properties that were simply renamed:
+*** `hibernate.search.backends.myBackend.analysis_configurer` -> `hibernate.search.backends.myBackend.analysis.configurer`
+*** `hibernate.search.backends.myBackend.multi_tenancy_strategy` -> `hibernate.search.backends.myBackend.multi_tenancy.strategy`
+*** `hibernate.search.mapping_configurer` -> `hibernate.search.mapping.configurer`
+*** `hibernate.search.enable_annotation_mapping` -> `hibernate.search.mapping.process_annotations`
+*** `hibernate.search.autoregister_listeners` -> `hibernate.search.enable`
+** `hibernate.search.enable_configuration_property_tracking` was renamed to `hibernate.search.configuration_property_checking.strategy`
+and expected values also changed: default is `warn`, use `ignore` to disable checks.
+** Enums for configuration properties were relocated to appropriate packages.
+** Property keys listed in `*Settings` classes
+now include the `hibernate.search.` prefix where relevant.
+Use `*Settings.Radicals` for property keys without any prefix.
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3667[HSEARCH-3667]:
+Hibernate Search 6 now works correctly when Hibernate Envers is enabled:
+it boots correctly and is able to index the latest version of versioned entities.
+Thanks to Damien Clement d'Huart for reporting this and providing a fix.
+* https://hibernate.atlassian.net/browse/HSEARCH-2254[HSEARCH-2254]:
+Single-valued sorts on fields within nested fields now work correctly.
+* https://hibernate.atlassian.net/browse/HSEARCH-3715[HSEARCH-3715]:
+It is once again possible to set a custom monitor when mass indexing.
+* https://hibernate.atlassian.net/browse/HSEARCH-3670[HSEARCH-3670]:
+`java.util.Date` properties holding a `java.sql.Date` value will now be correctly indexed.
+* https://hibernate.atlassian.net/browse/HSEARCH-3690[HSEARCH-3690]:
+Entity identifiers of type string are now correctly supported.
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31791[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
