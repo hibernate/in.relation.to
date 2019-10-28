@@ -1,0 +1,213 @@
+= Hibernate Search 6.0.0.Beta2 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Beta2.
+This release mainly
+introduces search analyzers,
+improves background failure handling
+and upgrades to Elasticsearch 7.4 and Hibernate ORM 5.4.7.Final.
+
++++<!-- more -->+++
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Search 5.
+
+For more information about migration and what we intend to do to help you, see
+http://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== Search analyzer
+
+Since https://hibernate.atlassian.net/browse/HSEARCH-3042[HSEARCH-3042],
+it is now possible to define a "search analyzer" for each field,
+so that one analyzer is used when indexing, and another one when querying.
+This is particularly useful when implementing autocomplete ("search-as-you-type")
+with an edge-ngram token filter.
+
+For example:
+
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+@Entity
+@Indexed
+public class Book {
+
+	@Id
+	private Long id;
+
+	@FullTextField(
+			name = "title_autocomplete",
+			analyzer = "autocomplete", // <1>
+			searchAnalyzer = "autocomplete_query" // <2>
+	)
+	private String title;
+
+	// ... getters and setters ...
+}
+----
+<1> Apply the `autocomplete` analyzer (defined elsewhere) when indexing,
+which will normalize text, then generate edge n-grams.
+<2> Apply the `autocomplete-query` analyzer (defined elsewhere) when querying,
+which will normalize text but will *not* generate edge n-grams.
+====
+
+In the example above:
+
+* when indexing,
+the indexed text `QuicK FOX`
+will generate the tokens `q`, `qu`, `qui`, `quic`, `quick`, `f`, `fo`, `fox`,
+and the indexed text `quid pro quo`
+will generate the tokens `q`, `qu`, `qui`, `quid`, `p`, `pr`, `pro`, `q`, `qu`, `quo`.
+* when querying,
+the query string `quic` will only generate the token `quic`.
+
+As a result, the query string `quic` will match a document containing `QuicK FOX`,
+but not a document containing only `quid pro quo`.
+
+Without the search analyzer,
+the query string `quic` would have been analyzed using the `autocomplete` analyzer,
+which would have generated the tokens `q`, `qu`, `qui`, `quic`.
+Thus the query would have matched `quid pro quo` (it has the tokens `q`, `qu` and `qui` in common with the query),
+which is obviously not the intended behavior.
+
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#configuration-background-failure-handling[this paragraph]
+of the documentation for more information about search analyzers,
+and https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#concepts-analysis[the "analysis" section]
+for more information about analysis in general.
+
+[[background-failure-handling]]
+=== Background failure handling
+
+Support for background failure handling similar to Hibernate Search 5 has been restored
+with significant improvements.
+
+Like in Hibernate Search 5:
+
+* Failures happening in background threads that cannot propagate the exception to a user thread
+(e.g. )
+will be logged.
+* You can plug in a custom component to report the exceptions differently: the `FailureHandler`,
+similar to Search 5's `ErrorHandler`.
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#configuration-background-failure-handling[the dedicated section in the documentation]
+for more information.
+
+However, compared to Hibernate Search 5, a lot more failures will be propagated to the user thread
+(Hibernate Search will throw an exception with details about the failure).
+In particular:
+
+* indexing failures during automatic indexing when using the `committed` or `searchable`
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-automatic-synchronization[synchronization strategy]
+(see that section of the documentation for details).
+* failures of https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual[explicit indexing operations].
+* failure of a purge, optimize or flush operation during mass indexing.
+In this case, failures will *also* be reported to the failure handler.
+* entity indexing failure during mass indexing.
+In this case, failures will *also* be reported to the failure handler.
+
+[NOTE]
+====
+In Hibernate Search 5,
+mass indexing didn't stop just because indexing one entity failed.
+
+Likewise, in the even of an entity indexing failure during mass indexing,
+Hibernate Search 6 will still attempt to reindex every relevant entity.
+The difference is that it will throw an exception when mass indexing finishes,
+with a count of failed entities
+and details about the very first failure.
+Details about other failures are still pushed to the failure handler.
+====
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3742[HSEARCH-3742]:
+Upgrade to Hibernate ORM 5.4.7.Final
+* https://hibernate.atlassian.net/browse/HSEARCH-3723[HSEARCH-3723]:
+Upgrade to Elasticsearch 7.4.0
+* https://hibernate.atlassian.net/browse/HSEARCH-3724[HSEARCH-3724]:
+Upgrade to Jackson 2.9.10.
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will not work correctly.
+====
+
+=== Backward-incompatible API changes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3720[HSEARCH-3720]:
+The `hibernate-search-mapper-pojo` module has a new artifact ID: `hibernate-search-mapper-pojo-base`.
+This should affect very few applications, since this module is generally pulled as a transitive dependency.
+* https://hibernate.atlassian.net/browse/HSEARCH-3721[HSEARCH-3721]:
+All deprecated methods that were already present in 6.0.0.Beta1 were removed.
+** Search session:
+*** `Search.getSearchSession(...)`: use `Search.session(...)` instead.
+*** `createIndexer(...)`: use `massIndexer(...)` instead.
+** When fetching query results:
+*** `fetch()` (without any parameter): consider passing a limit (e.g. `fetch(20)`).
+If you really want to fetch all hits, use `fetchAll()`.
+*** `fetchHits()` (without any parameter): consider passing a limit (e.g. `fetchHits(20)`).
+If you really want to fetch all hits, use `fetchAllHits()`.
+** In the predicate DSL:
+*** `onField(String)`/`onFields(String...)`/`orField(String)`/`orFields(String...)`/`onObjectField(String)`/:
+use `field(String)`/`fields(String...)`/`objectField(String)` instead.
+*** `boostedTo(float)`: use `boost(float)` instead.
+*** `withConstantScore()`: use `constantScore()` instead.
+*** `withSlop(int)`: use `slop(int)` instead.
+*** `from(...)`/`above(...)`/`below(...)` for the range predicate:
+use `between(...)`/`atLeast(...)`/`atMost(...)`/`greaterThan(...)`/`lessThan(...)` instead,
+or `range(...)` for the more complex use cases.
+*** `withAndAsDefaultOperator()`: use `defaultOperator(BooleanOperator.AND)` instead.
+** In the sort DSL:
+*** `by*()` methods, e.g. `byField(...)`, `byDistance(...)`, etc.:
+use the version without a `by` prefix instead, e.g. `field(...)`, `distance(...)`.
+*** `onMissingValue()`/`sortLast()`/`sortFirst()`: use `missing()`/`last()`/`first()` instead.
+** In the Elasticsearch analysis definition DSL: `withTokenizer`, `withTokenFilters`, `withCharFilters`.
+Use the methods without the `with` prefix instead.
+* `AutomaticIndexingSynchronizationStrategy`, which could theoretically be implemented by users for advanced use cases,
+was overhauled to allow for improvements related to <<background-failure-handling,background failure handling>>.
+See the javadoc for more information about this interface and how to implement it.
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-1108[HSEARCH-1108]:
+programmatic API doesn't work correctly for entities with @MappedSuperclass parent
+* https://hibernate.atlassian.net/browse/HSEARCH-3084[HSEARCH-3084]:
+Initialize and close index managers / backends in parallel
+* https://hibernate.atlassian.net/browse/HSEARCH-3684[HSEARCH-3684]:
+@IndexedEmbedded.includePaths includes fields one level too deep in some cases
+* https://hibernate.atlassian.net/browse/HSEARCH-3694[HSEARCH-3694]:
+Single-valued distance sorts on fields within nested fields now work correctly.
+* https://hibernate.atlassian.net/browse/HSEARCH-3193[HSEARCH-3193]:
+Descending distance sorts now work correctly with the Lucene backend.
+* https://hibernate.atlassian.net/browse/HSEARCH-3640[HSEARCH-3640]:
+Expose backends/indexes through the ORM mapper APIs
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31798[release notes].
+
+== How to get this release
+
+All details are available and up to date on the http://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
