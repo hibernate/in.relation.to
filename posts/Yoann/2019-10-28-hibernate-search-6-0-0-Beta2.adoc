@@ -98,7 +98,7 @@ with significant improvements.
 Like in Hibernate Search 5:
 
 * Failures happening in background threads that cannot propagate the exception to a user thread
-(e.g. )
+(e.g. failures in a Lucene merge thread).
 will be logged.
 * You can plug in a custom component to report the exceptions differently: the `FailureHandler`,
 similar to Search 5's `ErrorHandler`.
@@ -123,7 +123,7 @@ In this case, failures will *also* be reported to the failure handler.
 In Hibernate Search 5,
 mass indexing didn't stop just because indexing one entity failed.
 
-Likewise, in the even of an entity indexing failure during mass indexing,
+Likewise, in the event of an entity indexing failure during mass indexing,
 Hibernate Search 6 will still attempt to reindex every relevant entity.
 The difference is that it will throw an exception when mass indexing finishes,
 with a count of failed entities
