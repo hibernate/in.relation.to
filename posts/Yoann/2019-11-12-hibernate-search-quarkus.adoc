@@ -1,0 +1,1464 @@
+= Hibernate Search in Quarkus
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Elasticsearch", "Quarkus" ]
+:awestruct-layout: blog-post
+:hsearchDocUrl: https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/
+:demoRepoUrl: https://github.com/hibernate/hibernate-demos/tree/master/hibernate-search/hsearch-quarkus
+---
+
+Hibernate libraries can be used with many frameworks,
+and we're striving to make sure that everyone gets their fair share of Hibernate goodness.
+So with the recent announce of https://quarkus.io/blog/announcing-quarkus-1-0/[the first release candidate of Quarkus],
+the "supersonic, subatomic" Java stack,
+it's worth mentioning that Hibernate ORM, Search and Validator are already included in Quarkus.
+
+Hibernate Search in particular, the library adding the power of full-text search to your ORM-based application,
+is included in its most recent version (6.0.0.Beta2), which adds first-class compatibility with Elasticsearch.
+
+Let's take this Quarkus release as an opportunity to have a closer look at Hibernate Search 6,
+and how it can be used in Quarkus.
+
++++<!-- more -->+++
+
+== Context
+
+=== What's Quarkus?
+
+https://quarkus.io/[Quarkus] is a Java stack for application development.
+It integrates many Java libraries and provides tooling to ease development,
+in particular for live coding.
+Quarkus-based applications can run in a traditional HotSpot setup,
+but also (via https://www.graalvm.org/[GraalVM]) as native binaries.
+
+Whether running on HotSpot or as a native binary,
+what really sets Quarkus-based applications apart
+is their small memory footprint and impressively fast boot time.
+It means that Quarkus-based applications are especially well-suited
+for running in a container.
+
+=== What's Hibernate Search?
+
+http://hibernate.org/search/[Hibernate Search] is a Java library that augments traditional ORM-based applications
+with advanced search features, including in particular full-text search.
+It integrates into http://hibernate.org/orm/[Hibernate ORM]
+to automatically index entities into https://www.elastic.co/products/elasticsearch[Elasticsearch],
+and provides a Java API to seamlessly search for entities based on Elasticsearch indexes.
+
+== Goal
+
+In this blog post, we will explore how to write a REST service responsible for managing a list of clients
+and their assigned business manager.
+
+We will use the https://quarkus.io/[Quarkus] framework to quickly and easily write a container-ready application,
+http://hibernate.org/orm/[Hibernate ORM] to handle persistence to a database,
+and http://hibernate.org/search/[Hibernate Search] to add full-text search features to the application.
+
+The application will be backed by https://www.postgresql.org/[PostgreSQL] to store normalized, relational data,
+and https://www.elastic.co/products/elasticsearch[Elasticsearch] to index part of this data in a de-normalized,
+easy-to-search fashion.
+
+== Code
+
+You can find the code of the resulting REST application
+in the `hibernate/hibernate-demos` repository on GitHub:
+link:{demoRepoUrl}[].
+
+== Prerequisites
+
+The application described in the following sections was built using the following tools:
+
+* A shell
+* OpenJDK 8 (OpenJDK 13 works just as well).
+You can get binaries from https://www.oracle.com/technetwork/java/javase/downloads/index.html[Oracle],
+or from the https://adoptopenjdk.net/[AdoptOpenJDK project], among others.
+* https://maven.apache.org/download.cgi[Apache Maven] 3.6.2.
+* https://www.docker.com/[Docker] and in particular https://docs.docker.com/compose/[Docker-compose]
+to run PostgreSQL and Elasticsearch.
+
+https://www.graalvm.org/[GraalVM] is necessary in order to build a native image of the application,
+but we will not need to install it: when going native, we will simply build the application in a container
+(which is simpler than it looks!).
+
+== Initial CRUD application
+
+Before we add full-text search to our application,
+we need some data to work with.
+This section will explain how to create a basic CRUD application with Quarkus.
+
+If you are already familiar with this, just skip through this section and go right to <<adding-hibernate-search>>.
+
+=== Initializing the project
+
+Quarkus provides a Maven plugin to initialize the layout of a new project.
+Just run this:
+
+[source]
+----
+$ mvn io.quarkus:quarkus-maven-plugin:1.0.0.CR1:create \
+    -DprojectGroupId=org.hibernate.demos \
+    -DprojectArtifactId=hsearch-quarkus \
+    -DclassName="org.hibernate.demos.quarkus.ClientResource" \
+    -Dpath="/client" \
+    -Dextensions="hibernate-orm-panache, resteasy-jsonb, jdbc-postgresql"
+----
+
+Then move to the created directory:
+
+[source]
+----
+$ cd hsearch-quarkus
+----
+
+The directory will contain everything you need to start coding right away:
+
+[source]
+----
+$ tree .
+hsearch-quarkus
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+└── src
+    ├── main
+    │   ├── docker
+    │   │   ├── Dockerfile.jvm
+    │   │   └── Dockerfile.native
+    │   ├── java
+    │   │   └── org
+    │   │       └── hibernate
+    │   │           └── demos
+    │   │               └── quarkus
+    │   │                   └── ClientResource.java
+    │   └── resources
+    │       ├── application.properties
+    │       └── META-INF
+    │           └── resources
+    │               └── index.html
+    └── test
+        └── java
+            └── org
+                └── hibernate
+                    └── demos
+                        └── quarkus
+                            ├── ClientResourceTest.java
+                            └── NativeClientResourceIT.java
+
+17 directories, 10 files
+----
+
+=== Tests
+
+The tests created by Quarkus are fine,
+and in a real-world application we should update them as we add more features to our applications.
+
+However, for the sake of brevity, we will not tackle tests here.
+Let's just delete them:
+
+[source]
+----
+$ rm -rf src/test
+----
+
+=== Environment
+
+The easiest way to reliably run PostgreSQL and Elasticsearch in your development environment is probably to use docker.
+
+A docker-compose configuration file is available
+link:{demoRepoUrl}/environment-stack.yml[here].
+It includes a cluster of two Elasticsearch nodes and a PostgreSQL instance.
+
+We can start it like this:
+
+[source]
+----
+$ docker-compose -f environment-stack.yml -p hsearch-quarkus-env up
+----
+
+And stop it, removing all docker volumes, like this:
+
+[source]
+----
+$ docker-compose -f environment-stack.yml -p hsearch-quarkus-env down -v
+----
+
+=== Configuration properties
+
+The configuration of database access will go into Quarkus' main configuration file:
+`src/main/resources/application.properties`:
+
+[source]
+----
+quarkus.ssl.native=false <1>
+
+quarkus.datasource.url=jdbc:postgresql://${POSTGRES_HOST}/${POSTGRES_DB} <2>
+quarkus.datasource.driver=org.postgresql.Driver
+quarkus.datasource.username=${POSTGRES_USER}
+quarkus.datasource.password=${POSTGRES_PASSWORD}
+%dev.quarkus.datasource.url=jdbc:postgresql:hsearch_demo <3>
+%dev.quarkus.datasource.username=hsearch_demo
+%dev.quarkus.datasource.password=hsearch_demo
+
+quarkus.hibernate-orm.database.generation=create <4>
+%dev.quarkus.hibernate-orm.database.generation=drop-and-create <5>
+%dev.quarkus.hibernate-orm.sql-load-script=test-dataset.sql <6>
+----
+<1> We're not going to use SSL, so let's disable it so that containers are more compact.
+<2> The datasource is hardwired to PostgreSQL, but connection info is extracted from environment variables.
+This allows for easier deployment in cloud environments.
+<3> In our development environment, we will always use the same connection info,
+hard-coded in this file.
+<4> By default, we will let Hibernate ORM create or update the database schema on startup.
+In a real-world scenario we should use https://quarkus.io/guides/flyway[Flyway] instead.
+<5> In our development environment, we will drop and re-create the database schema on each startup (or on hot reload).
+<6> In our development environment, we will populate the newly created database with a simple test dataset.
+You can find the referenced SQL file
+link:{demoRepoUrl}/src/main/resources/test-dataset.sql[here].
+
+=== Domain model
+
+Our domain is simple: a `Client` entity and a `BusinessManager` entity.
+Each client is assigned at most one business manager
+who will handle all business with this client.
+
+We are using Quarkus, so we will take advantage of https://quarkus.io/guides/hibernate-orm-panache[Panache]
+to avoid some boilerplate code when writing Hibernate ORM entities:
+
+* No need to define an ID: it is defined in the `PanacheEntity` superclass.
+* No need to define straightforward getters/setters: public fields are enough.
+Quarkus will take care of everything so that it "just works".
+
+[source,JAVA]
+----
+package org.hibernate.demos.quarkus.domain;
+
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class Client extends PanacheEntity {
+
+	public String name;
+
+	@ManyToOne
+	public BusinessManager assignedManager;
+
+}
+----
+
+[source,JAVA]
+----
+package org.hibernate.demos.quarkus.domain;
+
+import java.util.ArrayList;
+import java.util.List;
+import javax.persistence.Entity;
+import javax.persistence.OneToMany;
+
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+@Entity
+public class BusinessManager extends PanacheEntity {
+
+	@OneToMany(mappedBy = "assignedManager")
+	public List<Client> assignedClients = new ArrayList<>();
+
+	public String name;
+
+	public String email;
+
+	public String phone;
+
+}
+----
+
+=== DTO
+
+The REST service will use DTO to cleanly define the expected input and output.
+You can find the detail of DTO classes
+link:{demoRepoUrl}/src/main/java/org/hibernate/demos/quarkus/dto[here]
+if you are interested.
+
+Note that we leverage https://mapstruct.org/[MapStruct] to convert back and forth between entities and DTO,
+and this requires the following addition to the POM file:
+
+[source,XML]
+----
+<?xml version="1.0"?>
+<project xsi:schemaLocation="..." xmlns="..." xmlns:xsi="...">
+  ...
+  <properties>
+    ...
+    <org.mapstruct.version>1.3.1.Final</org.mapstruct.version>
+  </properties>
+  ...
+  <dependencies>
+    ...
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${org.mapstruct.version}</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      ...
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${compiler-plugin.version}</version>
+        <configuration>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${org.mapstruct.version}</version>
+            </path>
+          </annotationProcessorPaths>
+          <compilerArgs>
+            <compilerArg>
+              -Amapstruct.suppressGeneratorTimestamp=true
+            </compilerArg>
+            <compilerArg>
+              -Amapstruct.suppressGeneratorVersionInfoComment=true
+            </compilerArg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  ...
+</project>
+----
+
+=== CRUD
+
+We're now ready to implement our REST service.
+Let's update the `ClientResource` class generated by Quarkus:
+
+[source,JAVA]
+----
+package org.hibernate.demos.quarkus;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import org.hibernate.demos.quarkus.domain.Client;
+import org.hibernate.demos.quarkus.domain.BusinessManager;
+import org.hibernate.demos.quarkus.dto.BusinessManagerCreateUpdateDto;
+import org.hibernate.demos.quarkus.dto.ClientCreateUpdateDto;
+import org.hibernate.demos.quarkus.dto.ClientMapper;
+import org.hibernate.demos.quarkus.dto.ClientRetrieveDto;
+import org.hibernate.demos.quarkus.dto.BusinessManagerRetrieveDto;
+
+@Path("/")
+@Transactional
+@Consumes(MediaType.APPLICATION_JSON)
+@Produces(MediaType.APPLICATION_JSON)
+public class ClientResource {
+
+	@Inject
+	ClientMapper mapper;
+
+	@PUT
+	@Path("/client")
+	public ClientRetrieveDto createClient(ClientCreateUpdateDto dto) {
+		Client client = new Client();
+		mapper.fromDto( client, dto );
+		client.persist();
+		return mapper.toDto( client );
+	}
+
+	@GET
+	@Path("/client/{id}")
+	public ClientRetrieveDto retrieveClient(@PathParam("id") Long id) {
+		Client client = findClient( id );
+		return mapper.toDto( client );
+	}
+
+	@POST
+	@Path("/client/{id}")
+	public void updateClient(@PathParam("id") Long id, ClientCreateUpdateDto dto) {
+		Client client = findClient( id );
+		mapper.fromDto( client, dto );
+	}
+
+	@DELETE
+	@Path("/client/{id}")
+	public void deleteClient(@PathParam("id") Long id) {
+		findClient( id ).delete();
+	}
+
+	@PUT
+	@Path("/manager")
+	public BusinessManagerRetrieveDto createBusinessManager(BusinessManagerCreateUpdateDto dto) {
+		BusinessManager businessManager = new BusinessManager();
+		mapper.fromDto( businessManager, dto );
+		businessManager.persist();
+		return mapper.toDto( businessManager );
+	}
+
+	@POST
+	@Path("/manager/{id}")
+	public void updateBusinessManager(@PathParam("id") Long id, BusinessManagerCreateUpdateDto dto) {
+		BusinessManager businessManager = findBusinessManager( id );
+		mapper.fromDto( businessManager, dto );
+	}
+
+	@DELETE
+	@Path("/manager/{id}")
+	public void deleteBusinessManager(@PathParam("id") Long id) {
+		findBusinessManager( id ).delete();
+	}
+
+	@POST
+	@Path("/client/{clientId}/manager/{managerId}")
+	public void assignBusinessManager(@PathParam("clientId") Long clientId, @PathParam("managerId") Long managerId) {
+		unAssignBusinessManager( clientId );
+		Client client = findClient( clientId );
+		BusinessManager manager = findBusinessManager( managerId );
+		manager.assignedClients.add( client );
+		client.assignedManager = manager;
+	}
+
+	@DELETE
+	@Path("/client/{clientId}/manager")
+	public void unAssignBusinessManager(@PathParam("clientId") Long clientId) {
+		Client client = findClient( clientId );
+		BusinessManager previousManager = client.assignedManager;
+		if ( previousManager != null ) {
+			previousManager.assignedClients.remove( client );
+			client.assignedManager = null;
+		}
+	}
+
+	private Client findClient(Long id) {
+		Client found = Client.findById( id );
+		if ( found == null ) {
+			throw new NotFoundException();
+		}
+		return found;
+	}
+
+	private BusinessManager findBusinessManager(Long id) {
+		BusinessManager found = BusinessManager.findById( id );
+		if ( found == null ) {
+			throw new NotFoundException();
+		}
+		return found;
+	}
+}
+----
+
+You may have noticed a few unusual methods in the implementation above:
+
+* `entity.persist()` and `entity.delete()` methods are used to create and delete an entity in the database.
+* `Client.findById( id )` or `BusinessManager.findById( id )` is used to retrieve an entity from the database.
+
+These are idioms specific to Panache. You can find more information https://quarkus.io/guides/hibernate-orm-panache[here].
+
+=== Running the application
+
+We can now start the application.
+
+If it's not already done, let's start PostgreSQL:
+
+[source]
+----
+$ docker-compose -f environment-stack.yml -p hsearch-quarkus-env up
+----
+
+Then let's compile and run the application in development mode:
+
+[source]
+----
+$ ./mvnw clean compile quarkus:dev
+[INFO] Scanning for projects...
+[INFO]
+[INFO] ----------------< org.hibernate.demos:hsearch-quarkus >-----------------
+[INFO] Building hsearch-quarkus 1.0-SNAPSHOT
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO]
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ hsearch-quarkus ---
+[INFO] Deleting /home/yrodiere/workspaces/contributor-support/hibernate-demos/hibernate-search/hsearch-quarkus/target
+[INFO]
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ hsearch-quarkus ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 3 resources
+[INFO]
+[INFO] --- maven-compiler-plugin:3.8.1:compile (default-compile) @ hsearch-quarkus ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 9 source files to /home/yrodiere/workspaces/contributor-support/hibernate-demos/hibernate-search/hsearch-quarkus/target/classes
+[INFO]
+[INFO] --- quarkus-maven-plugin:1.0.0.CR1:dev (default-cli) @ hsearch-quarkus ---
+Listening for transport dt_socket at address: 5005
+2019-11-06 16:01:06,961 INFO  [io.qua.dep.QuarkusAugmentor] (main) Beginning quarkus augmentation
+2019-11-06 16:01:08,703 INFO  [io.qua.dep.QuarkusAugmentor] (main) Quarkus augmentation completed in 1742ms
+2019-11-06 16:01:11,270 WARN  [org.hib.eng.jdb.spi.SqlExceptionHelper] (main) SQL Warning Code: 0, SQLState: 00000
+2019-11-06 16:01:11,270 WARN  [org.hib.eng.jdb.spi.SqlExceptionHelper] (main) relation "client" does not exist, skipping
+2019-11-06 16:01:11,271 WARN  [org.hib.eng.jdb.spi.SqlExceptionHelper] (main) SQL Warning Code: 0, SQLState: 00000
+2019-11-06 16:01:11,271 WARN  [org.hib.eng.jdb.spi.SqlExceptionHelper] (main) table "businessmanager" does not exist, skipping
+2019-11-06 16:01:11,272 WARN  [org.hib.eng.jdb.spi.SqlExceptionHelper] (main) SQL Warning Code: 0, SQLState: 00000
+2019-11-06 16:01:11,272 WARN  [org.hib.eng.jdb.spi.SqlExceptionHelper] (main) table "client" does not exist, skipping
+2019-11-06 16:01:11,272 WARN  [org.hib.eng.jdb.spi.SqlExceptionHelper] (main) SQL Warning Code: 0, SQLState: 00000
+2019-11-06 16:01:11,273 WARN  [org.hib.eng.jdb.spi.SqlExceptionHelper] (main) sequence "hibernate_sequence" does not exist, skipping
+2019-11-06 16:01:11,273 WARN  [io.agr.pool] (main) Datasource '<default>': JDBC resources leaked: 0 ResultSet(s) and 1 Statement(s)
+2019-11-06 16:01:11,346 WARN  [io.agr.pool] (main) Datasource '<default>': JDBC resources leaked: 0 ResultSet(s) and 1 Statement(s)
+2019-11-06 16:01:11,809 INFO  [io.quarkus] (main) Quarkus 1.0.0.CR1 started in 5.259s. Listening on: http://0.0.0.0:8080
+2019-11-06 16:01:11,812 INFO  [io.quarkus] (main) Profile dev activated. Live Coding activated.
+2019-11-06 16:01:11,813 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, hibernate-orm-panache, hibernate-search-elasticsearch, jdbc-postgresql, narayana-jta, resteasy, resteasy-jsonb]
+----
+
+We can call the REST service and check that the data is already there:
+
+[source]
+----
+$ curl -X GET http://localhost:8080/client/2
+
+{
+    "assignedManager": {
+        "email": "dschrute@dundermifflin.net",
+        "id": 1,
+        "name": "Dwight Schrute",
+        "phone": "+1-202-555-0151"
+    },
+    "id": 2,
+    "name": "Aperture Science Laboratories"
+}
+----
+
+[[adding-hibernate-search]]
+== Adding Hibernate Search
+
+=== Dependencies
+
+When we generated the project using Quarkus, we added several extensions,
+but not the Hibernate Search extension.
+Let's add it now:
+
+[source]
+----
+$ mvn io.quarkus:quarkus-maven-plugin:1.0.0.CR1:add-extension \
+    -Dextensions="hibernate-search-elasticsearch"
+----
+
+It will automatically add the necessary dependency to the POM:
+
+[source,XML]
+----
+<dependency>
+  <groupId>io.quarkus</groupId>
+  <artifactId>quarkus-hibernate-search-elasticsearch</artifactId>
+</dependency>
+----
+
+=== Configuration properties
+
+Since we're going to connect to an Elasticsearch cluster,
+we need to add a few configuration properties to `application.properties`:
+
+[source]
+----
+quarkus.hibernate-search.elasticsearch.version=7.4 <1>
+quarkus.hibernate-search.elasticsearch.hosts=${ES_HOSTS} <2>
+%dev.quarkus.hibernate-search.elasticsearch.hosts=http://localhost:9200 <3>
+
+quarkus.hibernate-search.elasticsearch.index-defaults.lifecycle.strategy=create <4>
+%dev.quarkus.hibernate-search.elasticsearch.index-defaults.lifecycle.strategy=drop-and-create <5>
+%dev.quarkus.hibernate-search.elasticsearch.index-defaults.lifecycle.required-status=yellow <6>
+----
+<1> Hibernate Search needs to know the version of Elasticsearch it's going to connect to,
+because different versions of Elasticsearch have different capabilities.
+<2> Connection info is extracted from an environment variable.
+This allows for easier deployment in cloud environments.
+<3> In our development environment, we will always use the same connection info,
+hard-coded in this file.
+<4> By default, we will let Hibernate Search create the Elasticsearch schema on startup if it doesn't exist.
+<5> In our development environment, we will drop and re-create the indexes on each startup (or on hot reload).
+<6> In our development environment, we will allow the application to start
+even if the indexes are in yellow status (not replicated).
+
+=== Mapping
+
+Hibernate Search is now aware of where to send indexed data,
+but it does not know what to send yet.
+
+The definition of which parts of the entities needs to be indexed in Elasticsearch is called the _mapping_.
+The easiest way to map entities in Hibernate Search is using annotations:
+
+[source,JAVA]
+----
+@Entity
+@Indexed // <1>
+public class Client extends PanacheEntity {
+
+	@FullTextField(analyzer = "standard") // <2>
+	public String name;
+
+	@ManyToOne
+	public BusinessManager assignedManager;
+
+}
+----
+<1> Every entity we want to see mapped to an index needs to be annotated with `@Indexed`.
+The index name, by default, will be the entity name (in this case `client`),
+but that can be overridden using `@Indexed(index = "myindexname")`.
+<2> By default, the document sent to the index for each entity is empty, which is not very useful.
+New content is added by defining _fields_.
+Here we define a field whose content will be extracted from the `name` property.
+It is a full-text field, i.e. a text field which will be split into words upon indexing.
+Other types of fields exist, with link:{hsearchDocUrl}#mapper-orm-directfieldmapping-annotations[different annotations].
+For now we're using the "standard" analyzer; we'll discuss this in more depth <<leveraging-full-text-search,further down>>.
+
+=== Live coding
+
+We're now ready to start the application with Hibernate Search.
+
+Thanks to Quarkus' live coding feature,
+if the application was already started with `quarkus:dev` when we performed the changes,
+we will only need to make a call to our REST service to trigger reloading:
+
+[source]
+----
+$ curl -X GET 'http://localhost:8080/client/2'
+----
+
+And the following logs will appear as the application restarts:
+
+[source]
+----
+2019-11-06 16:03:37,804 INFO  [io.qua.dev] (vert.x-worker-thread-2) Changed source files detected, recompiling [/home/yrodiere/workspaces/contributor-support/hibernate-demos/hibernate-search/hsearch-quarkus/src/main/java/org/hibernate/demos/quarkus/domain/Client.java]
+2019-11-06 16:03:38,179 INFO  [io.qua.dev] (vert.x-worker-thread-2) File change detected: /home/yrodiere/workspaces/contributor-support/hibernate-demos/hibernate-search/hsearch-quarkus/src/main/resources/application.properties
+2019-11-06 16:03:38,203 INFO  [io.quarkus] (vert.x-worker-thread-2) Quarkus stopped in 0.025s
+2019-11-06 16:03:38,206 INFO  [io.qua.dep.QuarkusAugmentor] (vert.x-worker-thread-2) Beginning quarkus augmentation
+2019-11-06 16:03:38,433 INFO  [io.qua.dep.QuarkusAugmentor] (vert.x-worker-thread-2) Quarkus augmentation completed in 227ms
+2019-11-06 16:03:38,806 WARN  [io.agr.pool] (vert.x-worker-thread-2) Datasource '<default>': JDBC resources leaked: 0 ResultSet(s) and 1 Statement(s)
+2019-11-06 16:03:38,857 WARN  [io.agr.pool] (vert.x-worker-thread-2) Datasource '<default>': JDBC resources leaked: 0 ResultSet(s) and 1 Statement(s)
+2019-11-06 16:03:40,260 INFO  [io.quarkus] (vert.x-worker-thread-2) Quarkus 1.0.0.CR1 started in 2.056s. Listening on: http://0.0.0.0:8080
+2019-11-06 16:03:40,260 INFO  [io.quarkus] (vert.x-worker-thread-2) Profile dev activated. Live Coding activated.
+2019-11-06 16:03:40,260 INFO  [io.quarkus] (vert.x-worker-thread-2) Installed features: [agroal, cdi, hibernate-orm, hibernate-orm-panache, hibernate-search-elasticsearch, jdbc-postgresql, narayana-jta, resteasy, resteasy-jsonb]
+2019-11-06 16:03:40,260 INFO  [io.qua.dev] (vert.x-worker-thread-2) Hot replace total time: 2.457s
+----
+
+=== Index creation
+
+As per our configuration, Hibernate Search will automatically create Elasticsearch indexes on startup,
+be it a normal startup or a hot reload.
+
+Before Hibernate Search starts for the first time, there is nothing in the Elasticsearch cluster:
+
+[source]
+----
+$ curl -X GET 'http://localhost:9200/_mappings?pretty'
+{ }
+----
+
+After Hibernate Search started, we can see a new `client` index
+whose mapping is consistent with our Hibernate Search mapping:
+
+[source]
+----
+$ curl -X GET 'http://localhost:9200/_mappings?pretty'
+{
+  "client" : {
+    "mappings" : {
+      "dynamic" : "strict",
+      "properties" : {
+        "name" : {
+          "type" : "text",
+          "analyzer" : "standard"
+        }
+      }
+    }
+  }
+}
+----
+
+=== Initial indexing
+
+The index is there, however it is still empty: we cannot find our favorite client, "Aperture Science Laboratories".
+
+[source]
+----
+$ curl -X GET 'http://localhost:9200/_search?pretty&q=aperture'
+{
+  "took" : 4,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 0,
+      "relation" : "eq"
+    },
+    "max_score" : null,
+    "hits" : [ ]
+  }
+}
+----
+
+As we will see, Hibernate Search generally indexes data automatically as it is persisted through Hibernate ORM.
+However, indexing data that is already present in an existing database is different:
+as there may be lot of data to index, and the operation is quite resource-intensive,
+Hibernate Search will only do it upon explicit request.
+
+Let's change our service to add a "reindex" method:
+
+[source,JAVA]
+----
+// ...
+@Transactional
+// ...
+public class ClientResource {
+	// ...
+
+	@Inject
+	EntityManagerFactory entityManagerFactory; // <1>
+
+	// ...
+
+	@POST
+	@Path("/client/reindex")
+	@Transactional(TxType.NEVER) // <2>
+	public void reindex() throws InterruptedException {
+		Search.mapping( entityManagerFactory ) // <3>
+				.scope( Client.class ) // <4>
+				.massIndexer() // <5>
+				.startAndWait(); // <6>
+	}
+
+	// ...
+}
+----
+<1> We will need the `EntityManagerFactory` to get access to Hibernate Search APIs.
+<2> While methods in this class are transactional by default,
+mass indexing may take a long time and will create its own short-lived ORM sessions and transactions.
+Thus we disable automatic transaction wrapping for this method.
+<3> Get the Hibernate Search mapping, the entry point for index operations that are not tied to a specific ORM session.
+<4> Target the `Client` entity type.
+<5> Create a "mass indexer" responsible for re-indexing `Client` entities.
+<6> Start reindexing and block the thread until it's finished.
+
+Then let's trigger reindexing:
+
+[source]
+----
+$ curl -X POST http://localhost:8080/client/reindex
+----
+
+We will see a few lines appear in the application logs:
+
+[source]
+----
+2019-11-06 16:05:01,007 INFO  [org.hib.sea.map.orm.mas.mon.imp.SimpleIndexingProgressMonitor] (Hibernate Search: Mass indexing - Client - ID loading - 1) HSEARCH000027: Going to reindex 5 entities
+2019-11-06 16:05:01,138 INFO  [org.hib.sea.map.orm.mas.mon.imp.SimpleIndexingProgressMonitor] (vert.x-worker-thread-5) HSEARCH000028: Reindexed 5 entities
+----
+
+And we can now see that entities have been indexed into Elasticsearch:
+
+[source]
+----
+$ curl -X GET 'http://localhost:9200/_search?pretty&q=aperture'
+{
+  "took" : 38,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 1.2300112,
+    "hits" : [
+      {
+        "_index" : "client",
+        "_type" : "_doc",
+        "_id" : "2",
+        "_score" : 1.2300112,
+        "_source" : {
+          "name" : "Aperture Science Laboratories"
+        }
+      }
+    ]
+  }
+}
+----
+
+For a better development experience,
+if the test dataset is small,
+it is possible to trigger reindexing automatically on startup by adding this method to `ClientResource`:
+
+[source,JAVA]
+----
+// ...
+@Transactional
+// ...
+public class ClientResource {
+	// ...
+
+	@Transactional(TxType.NEVER)
+	void reindexOnStart(@Observes StartupEvent event) throws InterruptedException {
+		if ( "dev".equals( ProfileManager.getActiveProfile() ) ) {
+			reindex();
+		}
+	}
+
+	// ...
+}
+----
+
+=== Automatic indexing
+
+While mass indexing is convenient in some cases,
+what's even more convenient is not having to care about indexing at all.
+Hibernate Search provides what is called _automatic indexing_:
+each time an entity is created, updated or deleted through a Hibernate ORM entity manager/session,
+Hibernate Search will detect these changes and reindex the relevant entities as appropriate.
+
+Automatic indexing is enabled by default, is completely transparent and requires no configuration.
+We can simply use pre-existing methods of our REST service.
+
+Let's consider the client "Wayne Enterprises",
+which is missing from our database:
+
+[source]
+----
+$ curl -X GET 'http://localhost:9200/_search?pretty&q=wayne'
+{
+  "took" : 4,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 0,
+      "relation" : "eq"
+    },
+    "max_score" : null,
+    "hits" : [ ]
+  }
+}
+----
+
+If we create this new client through our existing API:
+
+[source]
+----
+$ curl -X PUT http://localhost:8080/client/ -H "Content-Type: application/json" -d '{"name":"Wayne Enterprises"}'
+
+{
+    "id": 9,
+    "name": "Wayne Enterprises"
+}
+----
+
+\... then a new document is automatically added to the index:
+
+[source]
+----
+$ curl -X GET 'http://localhost:9200/_search?pretty&q=wayne'
+{
+  "took" : 384,
+  "timed_out" : false,
+  "_shards" : {
+    "total" : 1,
+    "successful" : 1,
+    "skipped" : 0,
+    "failed" : 0
+  },
+  "hits" : {
+    "total" : {
+      "value" : 1,
+      "relation" : "eq"
+    },
+    "max_score" : 1.5404451,
+    "hits" : [
+      {
+        "_index" : "client",
+        "_type" : "_doc",
+        "_id" : "9",
+        "_score" : 1.5404451,
+        "_source" : {
+          "name" : "Wayne Enterprises"
+        }
+      }
+    ]
+  }
+}
+----
+
+[NOTE]
+====
+There may be a small delay (less than one second) before the index is updated, due to the near-real-time nature of Elasticsearch.
+See link:{hsearchDocUrl}#mapper-orm-indexing-automatic-synchronization[this section of the documentation] for more information.
+====
+
+[NOTE]
+====
+There are a few things to keep in mind when it comes to automatic indexing. Most notably:
+
+1. When changing associations between entities, you need to correctly update *both* sides of the association
+in order for Hibernate Search to handle the update correctly.
+2. Hibernate Search is not aware of changes to entities through JPQL or SQL INSERT/UPDATE/DELETE queries:
+only changes performed on entity objects are detected.
+When using these queries, you should take care of reindexing the relevant entities manually afterwards.
+
+See link:{hsearchDocUrl}#mapper-orm-indexing-automatic-concepts[this section of the documentation] for more information.
+====
+
+=== Searching
+
+As we saw above, Hibernate Search indexes data into Elasticsearch,
+and thus it's completely possible to use Elasticsearch APIs directly, or through Java wrappers,
+to search these indexes.
+
+Another option is to use Hibernate Search's own Search APIs,
+which involves no additional dependency.
+Its main advantage is that it will handle most of the conversion work for you:
+you use a Java API, pass Java objects as parameters (`String`, `Integer`, `LocalDate`, ...),
+and get Java objects as results, without ever needing to manipulate JSON.
+
+One particularly interesting feature is the ability to return managed Hibernate ORM entities when searching.
+Hits will not just be represented by an index name, a document identifier and the document source
+like they would be with direct calls to Elasticsearch APIs (though Hibernate Search can do that too):
+Hibernate Search will automatically convert these to entity references and load the corresponding entities from the database,
+so that the REST service can return additional data that wasn't indexed in Elasticsearch.
+
+Below is a simple example of a search method we will add to our REST API.
+It takes advantage of the entity loading to display the assigned business manager,
+with its name, phone and email in the response,
+even though this information is not pushed to Elasticsearch:
+
+[source,JAVA]
+----
+// ...
+public class ClientResource {
+	// ...
+
+	@GET
+	@Path("/client/search")
+	public List<ClientRetrieveDto> search(@QueryParam("terms") String terms) {
+		List<Client> result = Search.session( Panache.getEntityManager() ) // <1>
+				.search( Client.class ) // <2>
+				.predicate( f -> f.simpleQueryString() // <3>
+						.field( "name" ) // <4>
+						.matching( terms ) // <5>
+						.defaultOperator( BooleanOperator.AND ) // <6>
+				)
+				.fetchHits( 20 ); // <7>
+
+		return result.stream().map( mapper::toDto ).collect( Collectors.toList() ); // <8>
+	}
+
+	// ...
+}
+----
+<1> Get the Search session, the entry point for index operations that require a Hibernate ORM session.
+<2> Start a search targeting the `Client` entity type.
+<3> Define the predicate that all search hits are required to match.
+Here it will be a "simple query string", i.e. essentially a list of terms,
+but many more predicates are available.
+<4> Require that the words are present in the `name` field.
+<5> Pass the terms to match.
+<6> Only match when *all* terms are found, as opposed to the default of matching when at least one term is found.
+<7> Fetch the search hits. The result is a list of `Client`, which is a managed entity.
+<8> Convert the managed entities to DTOs.
+
+Below is the result of calling this API: all the data was loaded from the database.
+
+[source]
+----
+$ curl -X GET 'http://localhost:8080/client/search/?terms=aperture%20science'
+
+[
+    {
+        "assignedManager": {
+            "email": "dschrute@dundermifflin.net",
+            "id": 1,
+            "name": "Dwight Schrute",
+            "phone": "+1-202-555-0151"
+        },
+        "id": 2,
+        "name": "Aperture Science Laboratories"
+    }
+]
+----
+
+[[leveraging-full-text-search]]
+== Leveraging full-text search
+
+While the search queries above work nicely,
+we could have achieved a similar result simply by running an SQL query with an `ILIKE` predicate.
+Performance would probably not have been great, but it would have worked.
+
+To understand the benefits of a dedicated full-text search engine such as Elasticsearch,
+let's look for clients whose name contain the word "laboratory":
+
+[source]
+----
+curl -X GET 'http://localhost:8080/client/search/?terms=laboratory'
+
+[
+]
+----
+
+We didn't find any match. That's annoying, because one of our clients is called "Aperture Science Laboratories".
+It's not an exact match, but still, users of our application
+would expect that client to turn up when they type "laboratory" (singular).
+
+Full-text search allows us to tackle that kind of "non-exact" matches thanks to what is called
+link:{hsearchDocUrl}#concepts-analysis[analysis].
+Simply put, analysis is the process of transforming text, both during indexing (transforming the indexed text)
+and searching (transforming the terms of the search query).
+It is used to extract tokens (words) from text, but also to normalize these words.
+For example, a correctly configured analyzer will transform "Laboratories" into "laboratory",
+so that when we search for the word "laboratory", the name "Aperture Science Laboratories" will match.
+
+In order to take advantage of analysis, we need to configure analyzers.
+Hibernate Search provides APIs to easily configure analyzers,
+and will automatically push the analyzer definitions to Elasticsearch when it creates the indexes.
+
+We just need to implement an analyzer configurer:
+
+[source,JAVA]
+----
+package org.hibernate.demos.quarkus.search;
+
+import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurationContext;
+import org.hibernate.search.backend.elasticsearch.analysis.ElasticsearchAnalysisConfigurer;
+
+public class ClientElasticsearchAnalysisConfigurer implements ElasticsearchAnalysisConfigurer {
+	@Override
+	public void configure(ElasticsearchAnalysisConfigurationContext context) {
+		context.analyzer( "english" ).custom() // <1>
+				.tokenizer( "standard" ) // <2>
+				.tokenFilters( "lowercase", "stemmer_english", "asciifolding" ); // <3>
+		context.tokenFilter( "stemmer_english" ) // <4>
+				.type( "stemmer" )
+				.param( "language", "english" );
+	}
+}
+----
+<1> Declare a custom analyzer named `english`.
+<2> Set the tokenizer to `standard`, i.e. require that the analyzer generates words by splitting text on spaces, tabs, punctuation, etc.
+<3> Apply three token filters to transform the extracted words: `lowercase` which turns the words to lowercase,
+`stemmer_english` which is a custom filter (see below), `asciifolding` which replaces accented characters with their ascii counterpart
+(`déjà-vu` => `deja-vu`).
+<4> Declare a custom token filter named `stemmer_english`.
+This token filter is a stemmer, meaning it will normalize the end of words (`laboratories` => `laboratory`),
+and we configure it to handle the English language.
+
+Then, we need to tell Hibernate Search to use our configurer by setting a configuration property in `application.properties`:
+
+[source]
+----
+quarkus.hibernate-search.elasticsearch.analysis.configurer=org.hibernate.demos.quarkus.search.ClientElasticsearchAnalysisConfigurer
+----
+
+And finally, we need to set the correct analyzer on our full-text field:
+
+
+[source,JAVA]
+----
+@Entity
+@Indexed
+public class Client extends PanacheEntity {
+
+	@FullTextField(analyzer = "english") // <1>
+	public String name;
+
+	@ManyToOne
+	public BusinessManager assignedManager;
+
+}
+----
+<1> Change the analyzer from `standard` to `english`.
+
+After these changes, we need to restart the application and reindex the data.
+Quarkus will do it automatically, so we can test the result of our changes right away:
+
+[source]
+----
+$ curl -X GET 'http://localhost:8080/client/search/?terms=laboratory'
+
+[
+    {
+        "assignedManager": {
+            "email": "dschrute@dundermifflin.net",
+            "id": 1,
+            "name": "Dwight Schrute",
+            "phone": "+1-202-555-0151"
+        },
+        "id": 2,
+        "name": "Aperture Science Laboratories"
+    }
+]
+----
+
+It worked: the text "laboratory" now matches the name "Aperture Science Laboratories".
+
+Analyzers are very powerful tools with tons of configuration options.
+To know more about analyzers in Elasticsearch,
+check out link:{hsearchDocUrl}#backend-elasticsearch-analysis[this section of the documentation],
+which includes a few links to lists of available analyzers, tokenizers and token filters in particular.
+
+== Indexing entity graphs
+
+Indexing an entity automatically is nice,
+but we can argue that it would have been reasonably simple to do it without Hibernate Search,
+simply by converting our entity to JSON and sending it to Elasticsearch manually,
+every time we create/update/delete a client.
+This will involve additional boilerplate code, but it can be an option.
+
+However, most of the time, we will not want to index data from just one entity, but from an entity graph.
+For example, let's assume we want to index the business manager's name as part of the client,
+so that we can search for "lapin" to easily get a list of all the clients managed by the business manager Phyllis Lapin.
+
+This is where things start getting complex:
+
+1. When the name of a business manager changes,
+we will need to load and reindex the assigned clients.
+2. When other properties of the business manager change (for example the phone number),
+we do not need to reindex the assigned clients,
+since these other properties are not indexed.
+
+These two requirements would make manually reindexing entities significantly harder to implement efficiently:
+the code would need to be aware of which of the business manager's properties are used when indexing a client,
+it would need to keep track of which properties of the business manager's are actually changed,
+and based on that would need to decide whether to load clients for reindexing or not.
+
+Add a couple more associations like this to the `Client` entity or (worse) add a few levels of nesting,
+and the simple boilerplate code will soon turn into a time sink.
+
+Fortunately, Hibernate Search handles all this transparently.
+In order to index the business manager's name as part of the client,
+only two steps are necessary.
+
+First, we will declare a field in the business manager:
+
+[source,JAVA]
+----
+@Entity
+public class BusinessManager extends PanacheEntity {
+
+	@OneToMany(mappedBy = "assignedManager")
+	public List<Client> assignedClients = new ArrayList<>();
+
+	@FullTextField(analyzer = "english") // <1>
+	public String name;
+
+	public String email;
+
+	public String phone;
+
+}
+----
+<1> Define a full-text field whose content will be extracted from the `name` property.
+
+[source,JAVA]
+----
+@Entity
+@Indexed
+public class Client extends PanacheEntity {
+
+	@FullTextField(analyzer = "english")
+	public String name;
+
+	@ManyToOne
+	@IndexedEmbedded // <1>
+	public BusinessManager assignedManager;
+
+}
+----
+<1> Define the assigned manager as "indexed-embedded" into the client,
+meaning all the indexed fields defined in the business manager will be embedded into the client upon indexing.
+Simply put, a new field will appear in index documents generated for clients: `assignedManager.name`.
+
+That's all for the mapping: Hibernate Search will know that whenever a business manager's name changes,
+it must reindex the assigned clients.
+
+To take advantage of this new `assignedManager.name` field, let's change our search method:
+
+[source,JAVA]
+----
+// ...
+public class ClientResource {
+	// ...
+
+	@GET
+	@Path("/client/search")
+	public List<ClientRetrieveDto> search(@QueryParam("terms") String terms) {
+		List<Client> result = Search.session( Panache.getEntityManager() )
+				.search( Client.class )
+				.predicate( f -> f.simpleQueryString()
+						.fields( "name", "assignedManager.name" ) // <1>
+						.matching( terms )
+						.defaultOperator( BooleanOperator.AND )
+				)
+				.fetchHits( 20 );
+
+		return result.stream().map( mapper::toDto ).collect( Collectors.toList() );
+	}
+
+	// ...
+}
+----
+<1> Look for matches not only in the `name` field, but also in the `assignedManager.name` field.
+
+We're now ready to test the changes.
+Reindexing is necessary because of the mapping change,
+but once again Quarkus' hot reload should take care of it,
+so we can send a request to our service immediately:
+
+[source]
+----
+$ curl -X GET 'http://localhost:8080/client/search/?terms=lapin'
+
+[
+    {
+        "assignedManager": {
+            "email": "plapin@dundermifflin.net",
+            "id": 6,
+            "name": "Phyllis Lapin",
+            "phone": "+1-202-555-0153"
+        },
+        "id": 7,
+        "name": "Stark Industries"
+    },
+    {
+        "assignedManager": {
+            "email": "plapin@dundermifflin.net",
+            "id": 6,
+            "name": "Phyllis Lapin",
+            "phone": "+1-202-555-0153"
+        },
+        "id": 8,
+        "name": "Parker Industries"
+    }
+]
+----
+
+Upon Phyllis Lapin's wedding with Bob Vance,
+we can now update her name and email:
+
+[source]
+----
+$ curl -X POST http://localhost:8080/manager/6 -H "Content-Type: application/json" -d '{"name": "Phyllis Vance", "email": "pvance@dundermifflin.net"}'
+----
+
+Since Hibernate Search updates the index, "lapin" will no longer match:
+
+[source]
+----
+$ curl -X GET 'http://localhost:8080/client/search/?terms=lapin'
+
+[
+]
+----
+
+\... but "vance" will match:
+
+[source]
+----
+$ curl -X GET 'http://localhost:8080/client/search/?terms=vance'
+
+[
+    {
+        "assignedManager": {
+            "email": "pvance@dundermifflin.net",
+            "id": 6,
+            "name": "Phyllis Vance"
+        },
+        "id": 7,
+        "name": "Stark Industries"
+    },
+    {
+        "assignedManager": {
+            "email": "pvance@dundermifflin.net",
+            "id": 6,
+            "name": "Phyllis Vance"
+        },
+        "id": 8,
+        "name": "Parker Industries"
+    }
+]
+----
+
+== Running in a container
+
+When the project was created, Quarkus added Dockerfiles to containerize the application
+either in JVM mode or as a native binary.
+
+However, in order to spare ourselves the download and installation of GraalVM,
+we will simply use a https://quarkus.io/guides/building-native-image.html#creating-a-container-with-a-multi-stage-docker-build[multi-stage Docker build]
+that will build our application in a container, then generate a container for our application.
+
+Let's add a Dockerfile at `src/main/docker/Dockerfile.multistage`:
+
+[source]
+----
+## Stage 1 : build with maven builder image with native capabilities
+FROM quay.io/quarkus/centos-quarkus-maven:19.2.1 AS build
+COPY src /usr/src/app/src
+COPY pom.xml /usr/src/app
+USER root
+RUN chown -R quarkus /usr/src/app
+USER quarkus
+RUN mvn -f /usr/src/app/pom.xml -Pnative clean package
+
+## Stage 2 : create the docker final image
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+WORKDIR /work/
+COPY --from=build /usr/src/app/target/*-runner /work/application
+RUN chmod 775 /work
+EXPOSE 8080
+CMD ["./application", "-Dquarkus.http.host=0.0.0.0"]
+----
+
+Then let's build it (it will take some time, we're compiling a native binary here):
+
+[source]
+----
+$ docker build -f src/main/docker/Dockerfile.multistage -t quarkus/hsearch-quarkus .
+[... lots of logs ...]
+Successfully tagged quarkus/hsearch-quarkus:latest
+----
+
+The container image is now ready to be used.
+Let's start an environment if it's not already done:
+
+[source]
+----
+$ docker-compose -f environment-stack.yml -p hsearch-quarkus-env up
+----
+
+And once everything is ready, let's start our application:
+
+[source]
+----
+$ docker run --rm -it --network=host \
+        -e POSTGRES_HOST=localhost \
+        -e POSTGRES_DB=hsearch_demo \
+        -e POSTGRES_USER=hsearch_demo \
+        -e POSTGRES_PASSWORD=hsearch_demo \
+        -e ES_HOSTS=http://localhost:9200 \
+        quarkus/hsearch-quarkus
+2019-11-07 16:13:50,806 INFO  [io.quarkus] (main) hsearch-quarkus 1.0-SNAPSHOT (running on Quarkus 1.0.0.CR1) started in 1.320s. Listening on: http://0.0.0.0:8080
+2019-11-07 16:13:50,807 INFO  [io.quarkus] (main) Profile prod activated.
+2019-11-07 16:13:50,807 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, hibernate-orm-panache, hibernate-search-elasticsearch, jdbc-postgresql, narayana-jta, resteasy, resteasy-jsonb]
+----
+
+[NOTE]
+====
+Ok, that was slow. But it's only because the application initialized the database and Elasticsearch schema.
+Let's try again:
+
+[source]
+----
+docker run --rm -it --network=host \
+        -e POSTGRES_HOST=localhost \
+        -e POSTGRES_DB=hsearch_demo \
+        -e POSTGRES_USER=hsearch_demo \
+        -e POSTGRES_PASSWORD=hsearch_demo \
+        -e ES_HOSTS=http://localhost:9200 \
+        quarkus/hsearch-quarkus
+2019-11-07 16:14:00,332 INFO  [io.quarkus] (main) hsearch-quarkus 1.0-SNAPSHOT (running on Quarkus 1.0.0.CR1) started in 0.090s. Listening on: http://0.0.0.0:8080
+2019-11-07 16:14:00,332 INFO  [io.quarkus] (main) Profile prod activated.
+2019-11-07 16:14:00,332 INFO  [io.quarkus] (main) Installed features: [agroal, cdi, hibernate-orm, hibernate-orm-panache, hibernate-search-elasticsearch, jdbc-postgresql, narayana-jta, resteasy, resteasy-jsonb]
+----
+
+About `100ms`, which is quite nice for an REST + CRUD application
+that opens connections to a database and an Elasticsearch cluster on startup.
+====
+
+The application is now ready to accept commands:
+
+[source]
+----
+$ curl -X PUT http://localhost:8080/client/ -H "Content-Type: application/json" -d '{"name":"Wayne Enterprises"}'
+
+{
+    "id": 1,
+    "name": "Wayne Enterprises"
+}
+----
+
+[source]
+----
+$ curl -X GET 'http://localhost:8080/client/search/?terms=enterprise'
+
+[
+    {
+        "id": 1,
+        "name": "Wayne Enterprises"
+    }
+]
+----
+
+== Beyond...
+
+We now are the happy owners of a REST application
+providing both CRUD operations
+and more advanced full-text search operations,
+packaged as a container image.
+
+Because software development is a never-ending task,
+there are still things we could improve:
+
+* improving robustness by taking advantage of https://quarkus.io/guides/flyway[Flyway]
+to handle database schema upgrade.
+* adding https://quarkus.io/guides/native-and-ssl[support for SSL]
+to our native binary if necessary.
+* taking advantage of the many https://quarkus.io/guides/[Quarkus extensions]
+to add a security layer, tracing, fault tolerance, ...
+* adding more search features to our application:
+** we can link:{hsearchDocUrl}#backend-elasticsearch-analysis[tune our analyzer more finely]
+to get better search hits
+(see https://en.wikipedia.org/wiki/Precision_and_recall[precision and recall]).
+The `english` analyzer is not a very good fit for the business manager's name, in particular,
+because stemming on people names will just lead to more false positives.
+** we can link:{hsearchDocUrl}#mapper-orm-directfieldmapping[index more than just text],
+including enums, numbers, date/time values, or even spatial coordinates (points).
+** even custom types can be indexed thanks to link:{hsearchDocUrl}#mapper-orm-bridge[custom bridges]
+** link:{hsearchDocUrl}#search-dsl-predicate[other predicates] are available,
+such as `range` ("between"/"greater than"/...), spatial predicates and many more.
+** we can explicitly link:{hsearchDocUrl}#search-dsl-sort[sort]
+search hits instead of relying on the default sort (by relevance).
+** when loading data from the database is not an options,
+we can load search hits directly from Elasticsearch
+using link:{hsearchDocUrl}#search-dsl-projection[projections].
+** we can implement faceted search (listing the number of hits for each category of clients)
+using link:{hsearchDocUrl}#search-dsl-aggregation[aggregations].
+* and whatever you can think of!
+
+== Feedback, issues, ideas?
+
+To get in touch with the Hibernate team, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
