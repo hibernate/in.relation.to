@@ -15,6 +15,8 @@ This means two essential things:
 
 - It's the full Hibernate ORM, not anything less
 - But it look different to what you're used to
+- You can fallback at any time and even mix vanilla JPA and Panache
+
 
 == Let's start with a typical entity example
 
@@ -179,7 +181,7 @@ public class PersonEndpoint {
 ----
 
 
-== A few observations on the traditionnal JPA way
+== A few observations on the traditional JPA way
 
 We've all seen hundreds of entities and DAOs written this way. They don't have anything surprising.
 
@@ -197,7 +199,7 @@ https://projectlombok.org/features/GetterSetter[Lombok].
 Let's jump forward to https://quarkus.io/[Quarkus] and in particular, what 
 https://quarkus.io/guides/hibernate-orm-panache[Hibernate ORM with Panache] can do for us. It turns out to be quite a lot.
 
-Quarkus allows us to do a lot of bytecode modification at build-time, which (among many benefits) allows us to side-step
+Quarkus allows us to do a lot of bytecode modification at build-time, which (among many benefits) lets us side-step
 Java's lack of support for first-class properties by:
 
 - Writing public fields instead of private+getter+setter
@@ -241,7 +243,7 @@ public class PersonDao implements PanacheRepository<Person>{
 }
 ----
 
-Note that the `find` convenience method allows HQL, but also _simplified_ HQL:
+Note that the `find` convenience method allows HQL, but also _simplified_ HQL (think of it as contextualized HQL):
 
 - If your query is empty, it expands to `FROM <entityType>`
 - If your query starts with `FROM` or `SELECT`, it is left alone as HQL
@@ -336,9 +338,10 @@ Data Access Objects are mostly useful when you have one or more of the following
 - You need to mock your DAOs in tests.
 - Your entity type is crammed so full of getters and setters that adding any model method will exceed the maximum method count.
 
-While the last reason is a joke, the first reasons are entirely reasonable.
+While the last reason started as a joke, we humans have the tendency to split things up when they are getting too big. 
+A Class with tons of getters/setters makes us reluctant to add more methods.
 
-If you are not in one of those situations, DAOs come with drawbacks:
+If you don't absolutely need DAOs, they come with drawbacks:
 
 - You need to have one extra class per entity.
 - You need to inject DAOs everywhere you use them.
