@@ -4,7 +4,7 @@ Stephane Epardaud
 :awestruct-layout: blog-post
 ---
 
-We have talked about this link:https://quarkus.io/[Quarkus] “Panache” thing in  
+We have talked about this link:https://quarkus.io/[Quarkus] “Panache” thing
 link:/2019/11/12/hibernate-search-quarkus/[recently in this blog],
 but we should probably get into a little more detail about what it is, and why it matters.
 
@@ -14,7 +14,7 @@ https://en.wikipedia.org/wiki/Panache[flamboyant and reckless] flavour of Hibern
 This means two essential things:
 
 - It's the full Hibernate ORM, not anything less
-- But it look different to what you're used to
+- But it looks different to what you're used to
 - You can fallback at any time and even mix vanilla JPA and Panache
 
 
@@ -92,15 +92,15 @@ public class PersonDao {
         return entityManager.find(Person.class, id);
     }
     
-    public List<Person> findAll(){
+    public List<Person> findAll() {
         return entityManager.createQuery("FROM Person", Person.class).getResultList();
     }
 
-    public List<Person> findByName(String lastName){
+    public List<Person> findByName(String lastName) {
         return entityManager.createQuery("FROM Person WHERE lastName = :lastName", Person.class).setParameter("lastName", lastName).getResultList();
     }
     
-    public List<Person> findBornAfter(Date date){
+    public List<Person> findBornAfter(Date date) {
         return entityManager.createQuery("FROM Person WHERE birth > :date", Person.class).setParameter("date", date).getResultList();
     }
 }
@@ -117,25 +117,25 @@ public class PersonEndpoint {
     
     @GET
     @Path("people")
-    public List<Person> all(){
+    public List<Person> all() {
         return personDao.findAll();
     }
 
     @GET
     @Path("people/by-name")
-    public List<Person> findByName(@PathParam String name){
+    public List<Person> findByName(@PathParam String name) {
         return personDao.findByName(name);
     }
 
     @GET
     @Path("people/born-after")
-    public List<Person> findBornAfter(@PathParam Date date){
+    public List<Person> findBornAfter(@PathParam Date date) {
         return personDao.findBornAfter(date);
     }
 
     @GET
     @Path("person/{id}")
-    public Person findById(@PathParam Long id){
+    public Person findById(@PathParam Long id) {
         Person p = personDao.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -144,7 +144,7 @@ public class PersonEndpoint {
 
     @PUT
     @Path("person/{id}")
-    public void updatePerson(@PathParam Long id, Person newPerson){
+    public void updatePerson(@PathParam Long id, Person newPerson) {
         Person p = personDao.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -155,7 +155,7 @@ public class PersonEndpoint {
 
     @DELETE
     @Path("person/{id}")
-    public void deletePerson(@PathParam Long id){
+    public void deletePerson(@PathParam Long id) {
         Person p = personDao.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -164,7 +164,7 @@ public class PersonEndpoint {
     
     @POST
     @Path("people")
-    public Response newPerson(@Context UriInfo uriInfo, Person newPerson){
+    public Response newPerson(@Context UriInfo uriInfo, Person newPerson) {
         Person p = new Person();
         p.setBirth(newPerson.getBirth());
         p.setFirstName(newPerson.getFirstName());
@@ -180,6 +180,8 @@ public class PersonEndpoint {
 }
 ----
 
+NOTE: We did not use any https://en.wikipedia.org/wiki/Data_transfer_object[Data Transfer Object] in our REST service,
+simply to keep the example short and to the point. We dot not advise that you use your entities as DTOs for real code.
 
 == A few observations on the traditional JPA way
 
@@ -187,7 +189,7 @@ We've all seen hundreds of entities and DAOs written this way. They don't have a
 
 What they do have plenty of, on the other hand is boilerplate:
 
-- The generated ID field. Very often, all your entities will use the same auto-generate ID type.
+- The generated ID field. Very often, all your entities will use the same auto-generated ID type.
 - All those property accessors that do nothing in the entity. They are required for encapsulation, and because Java
 does not support first-class properties in the language. Most people either generate them from their IDE, or using
 https://projectlombok.org/features/GetterSetter[Lombok].
@@ -203,7 +205,7 @@ Quarkus allows us to do a lot of bytecode modification at build-time, which (amo
 Java's lack of support for first-class properties by:
 
 - Writing public fields instead of private+getter+setter
-- Hibernate ORM with Panache will actually generate any getter+setter that you did not write, and
+- Hibernate ORM with Panache will actually generate any missing getter+setter for public fields, and
 - It will replace all field accesses with accesses to the getters and setters.
 
 This system allows us to write code as if we were using public fields, but behind the scenes, we still get encapsulation
@@ -231,19 +233,22 @@ And we can rewrite our DAO by extending `PanacheRepository` to get all the commo
 [source%nowrap,java]
 ----
 @Singleton
-public class PersonDao implements PanacheRepository<Person>{
+public class PersonDao implements PanacheRepository<Person> {
     
-    public List<Person> findByName(String lastName){
+    public List<Person> findByName(String lastName) {
         return find("lastName", lastName).list();
     }
     
-    public List<Person> findBornAfter(Date date){
+    public List<Person> findBornAfter(Date date) {
         return find("birth > :date", Parameters.with("birth", date)).list();
     }
 }
 ----
 
-Note that the `find` convenience method allows HQL, but also _simplified_ HQL (think of it as contextualized HQL):
+This is already a long way towards reducing boilerplate, don't you think?
+
+Note that the `find` convenience method allows HQL, but also https://quarkus.io/guides/hibernate-orm-panache#simplified-queries[_simplified_ HQL]
+(think of it as contextualized HQL):
 
 - If your query is empty, it expands to `FROM <entityType>`
 - If your query starts with `FROM` or `SELECT`, it is left alone as HQL
@@ -264,25 +269,25 @@ public class PersonEndpoint {
     
     @GET
     @Path("people")
-    public List<Person> all(){
+    public List<Person> all() {
         return personDao.findAll().list();
     }
 
     @GET
     @Path("people/by-name")
-    public List<Person> findByName(@PathParam String name){
+    public List<Person> findByName(@PathParam String name) {
         return personDao.findByName(name);
     }
 
     @GET
     @Path("people/born-after")
-    public List<Person> findBornAfter(@PathParam Date date){
+    public List<Person> findBornAfter(@PathParam Date date) {
         return personDao.findBornAfter(date);
     }
 
     @GET
     @Path("person/{id}")
-    public Person findById(@PathParam Long id){
+    public Person findById(@PathParam Long id) {
         Person p = personDao.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -291,7 +296,7 @@ public class PersonEndpoint {
 
     @PUT
     @Path("person/{id}")
-    public void updatePerson(@PathParam Long id, Person newPerson){
+    public void updatePerson(@PathParam Long id, Person newPerson) {
         Person p = personDao.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -302,7 +307,7 @@ public class PersonEndpoint {
 
     @DELETE
     @Path("person/{id}")
-    public void deletePerson(@PathParam Long id){
+    public void deletePerson(@PathParam Long id) {
         Person p = personDao.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -311,7 +316,7 @@ public class PersonEndpoint {
     
     @POST
     @Path("people")
-    public Response newPerson(@Context UriInfo uriInfo, Person newPerson){
+    public Response newPerson(@Context UriInfo uriInfo, Person newPerson) {
         Person p = new Person();
         p.birth = newPerson.birth;
         p.firstName = newPerson.firstName;
@@ -326,8 +331,6 @@ public class PersonEndpoint {
     }
 }
 ----
-
-This is already a long way towards reducing boilerplate, don't you think?
 
 == Going the extra mile and getting rid of the DAO
 
@@ -374,11 +377,11 @@ public class Person extends PanacheEntity {
     public String lastName;
     public Date birth;
     
-    public static List<Person> findByName(String lastName){
+    public static List<Person> findByName(String lastName) {
         return find("lastName", lastName).list();
     }
     
-    public static List<Person> findBornAfter(Date date){
+    public static List<Person> findBornAfter(Date date) {
         return find("birth > :date", Parameters.with("birth", date)).list();
     }
 }
@@ -393,25 +396,25 @@ public class PersonEndpoint {
     
     @GET
     @Path("people")
-    public List<Person> all(){
+    public List<Person> all() {
         return Person.findAll().list();
     }
 
     @GET
     @Path("people/by-name")
-    public List<Person> findByName(@PathParam String name){
+    public List<Person> findByName(@PathParam String name) {
         return Person.findByName(name);
     }
 
     @GET
     @Path("people/born-after")
-    public List<Person> findBornAfter(@PathParam Date date){
+    public List<Person> findBornAfter(@PathParam Date date) {
         return Person.findBornAfter(date);
     }
 
     @GET
     @Path("person/{id}")
-    public Person findById(@PathParam Long id){
+    public Person findById(@PathParam Long id) {
         Person p = Person.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -420,7 +423,7 @@ public class PersonEndpoint {
 
     @PUT
     @Path("person/{id}")
-    public void updatePerson(@PathParam Long id, Person newPerson){
+    public void updatePerson(@PathParam Long id, Person newPerson) {
         Person p = Person.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -431,7 +434,7 @@ public class PersonEndpoint {
 
     @DELETE
     @Path("person/{id}")
-    public void deletePerson(@PathParam Long id){
+    public void deletePerson(@PathParam Long id) {
         Person p = Person.findById(id);
         if(p == null)
             throw new WebApplicationException(Status.NOT_FOUND);
@@ -440,7 +443,7 @@ public class PersonEndpoint {
     
     @POST
     @Path("people")
-    public Response newPerson(@Context UriInfo uriInfo, Person newPerson){
+    public Response newPerson(@Context UriInfo uriInfo, Person newPerson) {
         Person p = new Person();
         p.birth = newPerson.birth;
         p.firstName = newPerson.firstName;
@@ -461,5 +464,10 @@ How does this look?
 This is the Hibernate ORM we've come to love with its solid core and tons of features, with just enough varnish to make it simpler
 to write your data layer. That's what we call “with Panache”.
 
-Go and start building your https://code.quarkus.io/[first Quarkus application today] with
-https://quarkus.io/guides/hibernate-orm-panache[Hibernate ORM with Panache].
+Go and start building your https://code.quarkus.io/[first Quarkus application today] by picking the following extensions:
+
+- Hibernate ORM with Panache
+- JDBC Driver - PostgreSQL
+- JSON-B
+
+And create your project to get coding with https://quarkus.io/guides/hibernate-orm-panache[Hibernate ORM with Panache].
