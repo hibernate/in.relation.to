@@ -464,6 +464,10 @@ How does this look?
 This is the Hibernate ORM we've come to love with its solid core and tons of features, with just enough varnish to make it simpler
 to write your data layer. That's what we call “with Panache”.
 
+## Create your first Quarkus application using Hibernate ORM with Panache
+
+### Using the online project generator
+
 Go and start building your https://code.quarkus.io/[first Quarkus application today] by picking the following extensions:
 
 - Hibernate ORM with Panache
@@ -471,3 +475,26 @@ Go and start building your https://code.quarkus.io/[first Quarkus application to
 - JSON-B
 
 And create your project to get coding with https://quarkus.io/guides/hibernate-orm-panache[Hibernate ORM with Panache].
+
+### By copying our quickstart
+
+Clone the Git repository: `git clone https://github.com/quarkusio/quarkus-quickstarts.git`, or 
+https://github.com/quarkusio/quarkus-quickstarts/archive/master.zip[download an archive].
+
+The quickstart is located in the
+https://github.com/quarkusio/quarkus-quickstarts/tree/master/hibernate-orm-panache-quickstart[hibernate-orm-panache-quickstart] directory.
+
+### Using our command-line tool
+
+Alternately, you can generate a skeleton project with the following command:
+
+[source%nowrap,bash]
+----
+mvn io.quarkus:quarkus-maven-plugin:1.0.0.CR1:create \
+    -DprojectGroupId=org.acme \
+    -DprojectArtifactId=hibernate-orm-panache-quickstart \
+    -DclassName="org.acme.rest.json.PersonEndpoint" \
+    -Dpath="/" \
+    -Dextensions="resteasy-jsonb, hibernate-orm-panache, jdbc-postgresql"
+cd hibernate-orm-panache-quickstart
+----
