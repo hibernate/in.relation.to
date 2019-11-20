@@ -1,0 +1,114 @@
+= "Hibernate Validator 6.1.0.Final and 6.0.18.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.1.0.Final
+---
+
+This blog post is long overdue but here comes the proper announcement of Hibernate Validator 6.1.0.Final and 6.0.18.Final.
+
+Hibernate Validator 6.0.18.Final includes only bugfixes. It is a recommended upgrade for everyone using Hibernate Validator and it is a drop-in replacement for 6.0.17.Final.
+
+6.1.0.Final is our latest and greatest. It is based on Jakarta Bean Validation. More on that one in a bit.
+
+== CVE-2019-10219 and status of @SafeHtml
+
+We have been made aware of a CVE-2019-10219 related to the `@SafeHtml` constraint and it was fixed in both 6.0.18.Final and 6.1.0.Final.
+
+The gist of the issue is that the constraint could potentially accept processing instructions (think `<?php`) or code embedded in comments (think IE conditional Javascript execution or SSI - yeah that one is old) as a valid input. This particular issue was fixed and our implementation should be safe enough now.
+
+However, we came to the conclusion that the `@SafeHtml` constraint was fragile, highly security-sensitive and depending on an external library that wasn't designed for this purpose. Having it included in core Hibernate Validator was not a very good idea. That's why we deprecated it and marked it for removal.
+
+There is no magic plan here so our users will have to maintain this constraint themselves, either in their own projects or why not in a centralized Open Source project. We have a very nice article about how to declare your own constraints to Hibernate Validator https://in.relation.to/2017/03/02/adding-custom-constraint-definitions-via-the-java-service-loader/[here].
+
+This was not an easy decision and we already had quite some feedback about it. But we think it's for the best in the long run.
+
+== Hibernate Validator 6.1.0.Final
+
+=== Move to Jakarta Bean Validation
+
+Hibernate Validator 6.1.0.Final is now using the https://projects.eclipse.org/projects/ee4j.bean-validation[Jakarta Bean Validation] artifacts as the Bean Validation specification and API have been moved to Eclipse Jakarta.
+
+The new API artifact is `jakarta.validation:jakarta.validation-api`. Be careful about potential conflicts if you are using other dependencies that depend on the older `javax.validation` artifact.
+
+There are no API changes, just a change of Maven coordinates.
+
+=== PropertyNodeNameProvider SPI
+
+We now provide a way to customize the property names that are used in the ``ConstraintViolation``s. For instance, you can now extract the property names from your Jackson annotations by leveraging this new feature.
+
+The new contract is called `PropertyNodeNameProvider` and you can find out more about it in https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-property-node-name-provider[our documentation].
+
+=== Paving the way for the future
+
+We made a number of structural changes to:
+
+ * Further reduce our memory usage and improve our performances;
+ * Pave the way for what we call free form validation e.g. JSON validation. We are not there yet but part of the infrastructure work has been done.
+
+=== Quarkus
+
+To be honest, Quarkus users are using 6.1 for a while as it contains a lot of bootstrap changes necessary to optimize Hibernate Validator for Quarkus.
+
+The old bootstrap is still there for all the other Hibernate Validator consumers but, if you are curious, have a look at the https://github.com/quarkusio/quarkus/tree/master/extensions/hibernate-validator[Quarkus Hibernate Validator extension] and at the new `PredefinedScopeValidatorFactory`.
+
+=== Minor changes
+
+ * We now support `@Digits` on `MonetaryAmount`.
+ * We now have Chinese (both traditional and simplified), Danish, Italian, Polish and Romanian translations.
+ * The `propertyPath` is now available in `HibernateMessageInterpolatorContext`.
+ * Our JPMS and OSGI module names are now identical: `org.hibernate.validator` and `org.hibernate.validator.cdi`: that means that the OSGi bundle names have changed. 
+
+=== Changelog
+
+The complete list of fixed issues can be found on our JIRA:
+
+ * https://hibernate.atlassian.net/browse/HV-1743?jql=project%20%3D%20HV%20AND%20fixVersion%20in%20(6.1.0.Alpha1%2C%206.1.0.Alpha2%2C%206.1.0.Alpha3%2C%206.1.0.Alpha4%2C%206.1.0.Alpha5%2C%206.1.0.Alpha6%2C%206.1.0.Final)%20order%20by%20created%20DESC[The whole 6.1 cycle]
+ * https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%206.1.0.Final%20order%20by%20created%20DESC[6.1.0.Final specifically]
+
+=== Getting 6.1.0.Final
+
+To get the release with Maven, Gradle etc. use the following GAV coordinates:
+
+ * _org.hibernate.validator:hibernate-validator:6.1.0.Final_
+ * _org.hibernate.validator:hibernate-validator-cdi:6.1.0.Final_
+ * _org.hibernate.validator:hibernate-validator-annotation-processor:6.1.0.Final_
+
+Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (https://sourceforge.net/projects/hibernate/files/hibernate-validator/6.1.0.Final/hibernate-validator-6.1.0.Final-dist.tar.gz/download[TAR.GZ], https://sourceforge.net/projects/hibernate/files/hibernate-validator/6.1.0.Final/hibernate-validator-6.1.0.Final-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for https://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/6.1.0.Final/hibernate-validator-modules-6.1.0.Final-wildfly-17.0.1.Final-patch.zip[WildFly 17.0.1] and https://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/6.1.0.Final/hibernate-validator-modules-6.1.0.Final-wildfly-18.0.0.Final-patch.zip[WildFly 18]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== Hibernate Validator 6.0.18.Final
+
+=== Changelog
+
+This version only contains bugfixes.
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%206.0.18.Final%20order%20by%20created%20DESC[on our JIRA].
+
+=== Getting 6.0.18.Final
+
+To get the release with Maven, Gradle etc. use the following GAV coordinates:
+ 
+ * _org.hibernate.validator:hibernate-validator:6.0.18.Final_
+ * _org.hibernate.validator:hibernate-validator-cdi:6.0.18.Final_
+ * _org.hibernate.validator:hibernate-validator-annotation-processor:6.0.18.Final_
+
+Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (https://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.18.Final/hibernate-validator-6.0.18.Final-dist.tar.gz/download[TAR.GZ], https://sourceforge.net/projects/hibernate/files/hibernate-validator/6.0.18.Final/hibernate-validator-6.0.18.Final-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for https://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/6.0.18.Final/hibernate-validator-modules-6.0.18.Final-wildfly-17.0.1.Final-patch.zip[WildFly 17.0.1] and https://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/6.0.18.Final/hibernate-validator-modules-6.0.18.Final-wildfly-16.0.0.Final-patch.zip[WildFly 16]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
