@@ -240,7 +240,7 @@ public class PersonDao implements PanacheRepository<Person> {
     }
     
     public List<Person> findBornAfter(Date date) {
-        return find("birth > :date", Parameters.with("birth", date)).list();
+        return find("birth > :date", Parameters.with("date", date)).list();
     }
 }
 ----
@@ -382,7 +382,7 @@ public class Person extends PanacheEntity {
     }
     
     public static List<Person> findBornAfter(Date date) {
-        return find("birth > :date", Parameters.with("birth", date)).list();
+        return find("birth > :date", Parameters.with("date", date)).list();
     }
 }
 ----
