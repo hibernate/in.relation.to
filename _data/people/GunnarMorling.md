@@ -10,9 +10,9 @@ active: true
 twitter: https://twitter.com/gunnarmorling
 ---
 I am member of the Hibernate Team at Red Hat, primarily working on
-[Hibernate OGM](http://hibernate.org/ogm/),
-[Hibernate Validator](http://hibernate.org/validator/) and
-[Hibernate Search](http://hibernate.org/search/). I'm also serving in the
+[Hibernate OGM](https://hibernate.org/ogm/),
+[Hibernate Validator](https://hibernate.org/validator/) and
+[Hibernate Search](https://hibernate.org/search/). I'm also serving in the
 [JSR 349](http://beanvalidation.org/) expert group (Bean Validation).
 
 In my spare time I lead the [MapStruct](http://mapstruct.org/) project, a

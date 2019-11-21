@@ -10,4 +10,4 @@ active: true
 ---
 Hibernate Team member.
 
-At Red Hat, my focus is to develop and maintain both Hibernate [ORM](http://hibernate.org/orm) and [Envers](http://hibernate.org/orm/envers) community projects.
+At Red Hat, my focus is to develop and maintain both Hibernate [ORM](https://hibernate.org/orm) and [Envers](https://hibernate.org/orm/envers) community projects.

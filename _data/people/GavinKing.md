@@ -5,7 +5,7 @@ level: 0
 gravatar_hash: 77987db6d7dd75abd4a14651641b3d46
 ---
 Gavin King leads the Ceylon project at Red Hat. Gavin is the creator of 
-[Hibernate](http://hibernate.org), a popular object/relational persistence 
+[Hibernate](https://hibernate.org), a popular object/relational persistence 
 solution for Java, and the [Seam Framework](http://seamframework.org), an 
 application framework for enterprise Java. He's contributed to the Java 
 Community Process as JBoss and then Red Hat representative for the EJB and 

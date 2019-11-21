@@ -10,8 +10,8 @@ active: true
 ---
 I work in the Hibernate NoORM team at Red Hat.
 I'm currently focusing on
-[Hibernate Search](http://hibernate.org/search/),
+[Hibernate Search](https://hibernate.org/search/),
 but I also work on 
-[Hibernate OGM](http://hibernate.org/ogm/) and
-[Hibernate Validator](http://hibernate.org/validator/).
+[Hibernate OGM](https://hibernate.org/ogm/) and
+[Hibernate Validator](https://hibernate.org/validator/).
 
