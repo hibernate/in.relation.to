@@ -1,0 +1,64 @@
+= Hibernate ORM 6.0.0.Alpha3 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Alpha3
+:release-id: 31768
+---
+
+We are excited to announce the release of 6.0 Alpha3.
+
+The main design goal for 6.0 is to improve even more Hibernate's through-put performance.  High-load performance
+testing showed that Hibernate's approach of reading values from `ResultSet` by name to be its most limiting factor in
+scaling through-put.  At its most basic, 6.0 is all about changing from its old strategy of read-by-name to
+read-by-position.  But that simple goal has a lot of ramifications.
+
+We have come really far, but still it is an Alpha, so there is still plenty more to do.
+
+
+== Type system
+
+Alpha3 took a major detour to address some type system changes to help support use-cases for integrations - namely Quarkus.  
+Specifically, Quarkus wanted the ability to perform the first phase of translation of HQL queries converting it into a 
+semantic query AST (Semantic Query Model - SQM) without a SessionFactory available.
+
+To achieve this, the SQM tree is based on Hibernate's extension of the JPA domain metamodel 
+(`javax.persistence.metamodel.EntityType`, etc) which is far easier to build then Hibernate's complete runtime "mapping model".
+
+We also introduced a new container for the JPA metamodel objects : `org.hibernate.metamodel.model.domain.JpaMetamodel`
+
+This had a lot of very beneficial outcomes which will be discussed over the next few sections.
+
+
+== SQM-as-Criteria 
+
+First, this SQM is not only the outcome of translating an HQL/JPQL query - it is also now the Hibernate implementation 
+of the JPA Criteria tree.  This is beneficial because previously Hibernate would perform a (very "hacky") conversion from Criteria 
+into HQL and from HQL into its legacy HQL translation tree.
+
+This SQM-as-Criteria means that the Criteria tree is ready to translated directly into SQL AST yeilding far better performance for 
+Criteria query execution.
+
+
+== Lessen dependence on SessionFactory
+
+As mentioned, one of the main changes in Alpha3 was to remove the need for having a SessionFactory to perform HQL translation.
+That was extended to many contracts as well that did not need the SessionFactory per-se.  This allows easier re-use of those 
+components by integrations.  
+
+This will be an on-going effort during the remaining 6.0 Alpha cycle.  So far `QueryEngine` has been adjusted.  Still a few others planned.
+
+
+== Support for UPDATE/DELETE HQL/Criteria queries
+
+Support for these mutation queries using SQM -> SQL AST is done, including the multi-table entitiy variations
+
+
+== More information
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Alpha1/migration-guide.adoc[migration guide].
+
+Also check out the https://hibernate.org/orm/releases/6.0/[release page].
+
+To get in touch, use the usual channels as discussed on https://hibernate.org/community/
