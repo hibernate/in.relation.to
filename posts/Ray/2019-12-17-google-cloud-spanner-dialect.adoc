@@ -1,0 +1,336 @@
+= Google Cloud Spanner Dialect for Hibernate released
+Ray Tsang
+:awestruct-tags: [ "Hibernate ORM", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Google Cloud Platform released an https://cloud.google.com/blog/products/databases/bringing-hibernate-orm-cloud-spanner-database-adoption[Hibernate dialect for the Cloud Spanner database]! You can now use Google Cloud's fully-managed multi-regional, horizontally scalable, relational database with Hibernate ORM and any Hibernate-backed JPA applications.
+
+== What is Cloud Spanner?
+
+https://cloud.google.com/spanner/[Cloud Spanner] is horizontally scalable - so that if your business data grows or transaction load increases, you can easily add a new Cloud Spanner node to accommodate the growth. Cloud Spanner will automatically shard your data and increase capacity without any manual operations or system downtime.
+
+Most horizontally scalable databases are NoSQL and eventually consistent. Cloud Spanner is strongly consistent and relational. That means Cloud Spanner is good for transaction data whether it's banking, e-commerce, or any other workload that is best represented with strongly consistent relational data.
+
+For data locality, you can use a regional Cloud Spanner instance, where data gets automatically distributed and replicated across multiple availability zones within the region for high availability. Or, you can easily create a multi-regional instance that has the highest 99.999% availability and having data distributed across multiple regions.
+
+Cloud Spanner can achieve such feats by leveraging Google's internal infrastructure, network, and https://cloud.google.com/spanner/docs/true-time-external-consistency[use of GPS synchronized atomic clocks]!  With the new Cloud Spanner Dialect for Hibernate, you can leverage Cloud Spanner easily with Hibernate ORM.
+
+== Cloud Spanner with Hibernate ORM and Quarkus
+
+This blog will show how to use Cloud Spanner, with Hibernate ORM, and Quarkus (in JVM mode). The https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate/tree/master/google-cloud-spanner-hibernate-samples/quarkus-jpa-sample[complete example is on GitHub].
+
+If you don't already have a Google Cloud Platform account, you can https://cloud.google.com/free/[sign up for free and receive $300 credit].
+
+=== Create a Cloud Spanner Instance
+
+Currently, there is no official Cloud Spanner emulator for local development. In order to try out Cloud Spanner, you'll need to create a server instance.  To complete this tutorial, you'll need:
+* Google Cloud Platform account
+* Google Cloud Platform project
+* https://cloud.google.com/sdk/gcloud/[gcloud CLI installed]
+
+Make sure Cloud Spanner API is enabled:
+
+[source,bash]
+----
+gcloud services enable spanner.googleapis.com
+----
+
+Create a new single-node Cloud Spanner instance in the US Central1 region. (You can https://cloud.google.com/spanner/docs/instances#regional_configurations[find other regions to use]):
+
+[source,bash]
+----
+gcloud spanner instances create sample --nodes=1 --config=regional-us-central1 \
+  --description="Sample Database"
+----
+
+If you already have a database schema, you can import it via the command line too. In this example, we'll let Hibernate create the schema instead.
+
+A Cloud Spanner instance can host multiple databases. Create a database to store the tables that we'll generate through Hibernate.  Create a database called `people`:
+
+[source,bash]
+----
+gcloud spanner databases create people --instance=sample
+----
+
+=== Create a new Quarkus application
+Use Maven to create a new Quarkus application:
+
+[source,bash]
+----
+mvn io.quarkus:quarkus-maven-plugin:1.0.1.Final:create \
+    -DprojectGroupId=com.example \
+    -DprojectArtifactId=spanner-example \
+    -DclassName="com.example.PersonResource"
+    -Dpath="/person"
+----
+
+Build the application:
+
+[source,bash]
+----
+cd spanner-example
+./mvnw package
+----
+
+Add Hibernate ORM extension to the project:
+
+[source,bash]
+----
+./mvnw quarkus:add-extension -Dextension=quarkus-hibernate-orm
+----
+
+This will add the `quarkus-hibernate-orm` dependency in the `pom.xml`:
+
+[source,xml]
+----
+<dependency>
+  <groupId>io.quarkus</groupId>
+  <artifactId>quarkus-hibernate-orm</artifactId>
+</dependency>
+----
+
+Add both the https://github.com/googleapis/google-cloud-java/tree/master/google-cloud-clients/google-cloud-contrib/google-cloud-spanner-jdbc[Cloud Spanner JDBC driver] and the https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate[Cloud Spanner Dialect] dependencies to the `pom.xml:
+
+[source,xml]
+----
+<!-- The Hibernate dialect for Spanner dependency -->
+<dependency>
+  <groupId>com.google.cloud</groupId>
+  <artifactId>google-cloud-spanner-hibernate-dialect</artifactId>
+  <version>1.0.0</version>
+</dependency>
+
+<!-- The Spanner JDBC driver dependency -->
+<dependency>
+  <groupId>com.google.cloud</groupId>
+  <artifactId>google-cloud-spanner-jdbc</artifactId>
+  <version>1.11.0</version>
+</dependency>
+----
+
+Configure Quarkus to use the JDBC driver, and also the Cloud Spanner Hibernate Dialect:
+
+.src/main/resources/application.properties
+[source,properties]
+----
+quarkus.datasource.driver=com.google.cloud.spanner.jdbc.JdbcDriver
+quarkus.datasource.url=jdbc:cloudspanner:/projects/${PROJECT_ID}/instances/sample/databases/people
+quarkus.hibernate-orm.dialect=com.google.cloud.spanner.hibernate.SpannerDialect
+quarkus.hibernate-orm.database.generation=create-update
+----
+[NOTE]
+====
+Replace the `${PROJECT_ID}` with your Google Cloud project ID.
+====
+
+You can now create new JPA entities. Typically an entity uses an auto-increment numeric ID as a surrogate key. However, this is not the best choice when using Cloud Spanner. Cloud Spanner automatically organizes and distributes data across nodes based on the primary key in alphanumeric order, so you should not use any monotonically increasing/decreasing key (most commonly the auto-increment IDs).  Such a key would create hotspots in Cloud Spanner, and introduce unnecessary bottlenecks during both data writes and ID generation, which ultimately will slow down performance and limit scalability.  Cloud Spanner recommends the use of UUIDv4 as a primary key, so we'll use that for the entity too.
+
+Let's create a Person entity:
+
+.src/main/java/com/example/Person.java
+[source,java]
+----
+package com.example;
+
+import java.util.UUID;
+import javax.persistence.*;
+import org.hibernate.annotations.Type;
+
+@Entity
+public class Person {
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  @Type(type = "uuid-char")
+  @Id
+  private UUID id;
+
+  private String name;
+
+  public UUID getId() {
+    return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
+  }
+}
+----
+
+Once the entity is created, then the rest is easy! Simply use a JPA Entity Manager perform CRUD operations with Cloud Spanner!  Create a JAX-RS REST Resource to use JPA Entity Manager to save a new entry:
+
+.src/main/java/com/example/PersonResource.java
+[source,java]
+----
+package com.example;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import javax.persistence.EntityManager;
+
+@Path("/person")
+public class PersonResource {
+    @Inject EntityManager entityManager;
+
+    @POST
+    @Transactional
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Person create(Person person) {
+      Person p = new Person();
+      p.setName(person.getName());
+      entityManager.persist(p);
+      return p;
+    }
+}
+----
+
+Notice that the `create` method is annotated with `@Transactional`. This is because there is no auto-commit and writes must participate in a transaction. Cloud Spanner is fully transactional, and the Cloud Spanner JDBC driver exposes JTA semantics. Transaction annotations will work as JPA users would expect.
+
+The `create` method also expects to receive a Person object as a JSON payload. You need to add RestEasy JSONB extension so Quarkus can convert JSON payloads to POJO:
+
+[source,bash]
+----
+./mvnw quarkus:add-extension -Dextension=quarkus-resteasy-jsonb
+----
+
+Run this application in development mode:
+----
+./mvnw quarkus:dev
+----
+
+Once the application is up and running (at Quarkus' supersonic atomic speed!), use curl to post a JSON payload to the application:
+
+[source,bash]
+----
+curl -XPOST -H"Content-type: application/json" -d'{"name": "Ray"}' \
+  http://localhost:8080/person
+----
+
+To validate that the data was written into Cloud Spanner, you can navigate to the Google Cloud Platform console, and browse to the Cloud Spanner database instance, and view the rows in table.
+
+= Using Hibernate ORM Panache
+
+https://quarkus.io/guides/hibernate-orm-panache[Hibernate ORM Panache] is a really easy way to create DAO (Data Access Object) to encapsulate more complex queries and operations beyond what EntityManager provides.  You can use Panache with Cloud Spanner since it simply constructs the same Hibernate queries behind the scenes. So, whatever Cloud Spanner Dialect supports for Hibernate ORM, you can also use it with Panache.
+
+First, add Hibernate ORM Panache extension to your Quarkus application:
+
+[source,bash]
+-----
+./mvnw quarkus:add-extension -Dextension=quarkus-hibernate-orm-panache
+-----
+
+Then, create the DAO repository, named `PersonRepository`:
+
+.src/main/java/com/example/PersonRepository.java
+[source,java]
+----
+package com.example;
+
+import io.quarkus.hibernate.orm.panache.PanacheRepositoryBase;
+import java.util.UUID;
+import javax.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
+public class PersonRepository implements PanacheRepositoryBase<Person, UUID> {
+  public Person findByName(String name){
+       return find("name", name).firstResult();
+   }
+}
+----
+
+The `PanacheRepositoryBase` expects 2 generic type parameters. The first parameter is the entity type, which is `Person`. The second parameter is the primary key type, which we are using `UUID`.
+
+Now you can inject the repository for CRUD operations, plus you can implement additional operations (such as findByName) in the repository class too.
+
+In the `PersonResource` class, add a new REST API to find by name:
+
+.src/main/java/com/example/PersonResource.java
+[source,java]
+----
+package com.example;
+
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+
+import javax.inject.Inject;
+import javax.transaction.Transactional;
+import javax.persistence.EntityManager;
+
+import java.util.UUID;
+
+@Path("/person")
+public class PersonResource {
+    @Inject EntityManager entityManager;
+
+    @Inject PersonRepository personRepository;
+
+    @GET
+    @Path("/")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Person getByName(@QueryParam("name") String name) {
+      return personRepository.findByName(name);
+    }
+
+    @GET
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Person getById(@PathParam("id") String id) {
+      return personRepository.findById(UUID.fromString(id));
+    }
+
+    @POST
+    @Transactional
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public Person create(Person person) {
+      Person p = new Person();
+      p.setName(person.getName());
+      entityManager.persist(p);
+      return p;
+    }
+}
+----
+
+= Bonus - Deploy to Google App Engine!
+You can use Cloud Spanner from anywhere - whether your application is on-premise, on Google Cloud Platform, or on another cloud. If you do want to run this in Google Cloud Platform, you can try it in the https://cloud.google.com/blog/products/application-development/app-engine-java-11-is-ga-deploy-a-jar-scale-it-all-fully-managed[new App Engine Standard for Java 11 runtime].  This App Engine runtime allows you to run any JAR-based services without any proprietary API but in a fully-managed serverless platform. You can deploy a Quarkus application (in JVM mode) easily with few commands.
+
+First, build the Quarkus JAR:
+
+[source,bash]
+----
+./mvnw package
+----
+
+And simply deploy it!
+
+[source,bash]
+----
+gcloud app deploy target/spanner-example-1.0-SNAPSHOT-runner.jar
+----
+
+= Clean Up
+Cloud Spanner is billed based on provisioned nodes and data stored. If you followed along to try the above instructions in your own Google Cloud Platform account, please clean up and remove the Cloud Spanner instance when you are done to avoid unintended charges!
+
+[source,bash]
+----
+gcloud spanner instances delete sample
+----
+
+But don't worry, creating a new instance is super fast, so if you need to test this again in the future, just create another instance.
+
+If you deployed to App Engine, follow the https://cloud.google.com/appengine/docs/standard/java11/console/#disabling_an_application[App Engine Disabling an Application] documentation to fully stop your App Engine application.
+
+= What's Next?
+You can find the official documentation on https://cloud.google.com/spanner/docs/use-hibernate[Google Cloud Platform documentation site]. The Cloud Spanner Hibernate Dialect engineering team would love to get your feedback. If you have any comments, ideas, or discovered a bug, please reach out using https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate[GitHub issues].
+
