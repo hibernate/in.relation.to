@@ -118,12 +118,20 @@ Configure Quarkus to use the JDBC driver, and also the Cloud Spanner Hibernate D
 quarkus.datasource.driver=com.google.cloud.spanner.jdbc.JdbcDriver
 quarkus.datasource.url=jdbc:cloudspanner:/projects/${PROJECT_ID}/instances/sample/databases/people
 quarkus.hibernate-orm.dialect=com.google.cloud.spanner.hibernate.SpannerDialect
-quarkus.hibernate-orm.database.generation=create-update
+quarkus.hibernate-orm.database.generation=drop-and-create
 ----
 [NOTE]
 ====
 Replace the `${PROJECT_ID}` with your Google Cloud project ID.
 ====
+
+[NOTE]
+====
+When running the application locally (not running on Google Cloud), to have permissions to connect to your Spanner database you need to set the `GOOGLE_APPLICATION_CREDENTIALS` environment variable.
+
+See also https://cloud.google.com/docs/authentication/production#auth-cloud-implicit-java[Providing credentials to your application].
+====
+
 
 You can now create new JPA entities. Typically an entity uses an auto-increment numeric ID as a surrogate key. However, this is not the best choice when using Cloud Spanner. Cloud Spanner automatically organizes and distributes data across nodes based on the primary key in alphanumeric order, so you should not use any monotonically increasing/decreasing key (most commonly the auto-increment IDs).  Such a key would create hotspots in Cloud Spanner, and introduce unnecessary bottlenecks during both data writes and ID generation, which ultimately will slow down performance and limit scalability.  Cloud Spanner recommends the use of UUIDv4 as a primary key, so we'll use that for the entity too.
 
@@ -135,8 +143,10 @@ Let's create a Person entity:
 package com.example;
 
 import java.util.UUID;
-import javax.persistence.*;
-import org.hibernate.annotations.Type;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 
 @Entity
 public class Person {
@@ -172,12 +182,15 @@ Once the entity is created, then the rest is easy! Simply use a JPA Entity Manag
 ----
 package com.example;
 
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-
 import javax.inject.Inject;
-import javax.transaction.Transactional;
 import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 @Path("/person")
 public class PersonResource {
@@ -188,11 +201,10 @@ public class PersonResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     public Person create(Person person) {
-      Person p = new Person();
-      p.setName(person.getName());
-      entityManager.persist(p);
-      return p;
+        entityManager.persist(person);
+        return person;
     }
+
 }
 ----
 
