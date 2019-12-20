@@ -1,0 +1,62 @@
+= Hibernate ORM 6.0.0.Alpha3 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Alpha4
+:release-id: 3181
+---
+
+We are excited to announce the release of Hibernate ORM 6.0 Alpha4.
+
+The main design goal for 6.0 is to improve even more Hibernate's through-put performance.  High-load performance
+testing showed that Hibernate's approach of reading values from `ResultSet` by name to be its most limiting factor in
+scaling through-put.  At its most basic, 6.0 is all about changing from its old strategy of read-by-name to
+read-by-position.  But that simple goal has a lot of ramifications.
+
+We have come really far, but still it is an Alpha, so there is still plenty more to do.
+
+
+== Load-by-key
+
+All load-by-key operations are now executed using the new SQL AST and JdbcOperation approach.  This includes:
+
+* Load an entity by id (`Session#byId`, `Session#get`, `Session#load`, `Session#lock`, etc)
+* Load an entity by multiple-ids (`Session#byMultipleIds`)
+* Load an entity by natural-id
+* Load an entity by unique-key
+* Fetching a collection
+* Initializing a collection
+
+Along with Query support, all loading operations are now done using this SQL AST approach.  This covers all fetching
+strategies, as well, including SELECT (N+1), JOIN, BATCH, SUBSELECT.
+
+
+== Avoid rendering unnecessary joins
+
+When Hibernate knows it needs to reference an entity in the from-clause it renders joins for all of the tables related to 
+that entity including any joined-subclass tables and secondary tables.  However, sometimes not all of these tables need to be
+rendered into the SQL.
+
+Addressing this in versions prior to 6.x are very difficult and different in specific cases.  Regardless work has been done on
+top of 5.x under https://hibernate.atlassian.net/browse/HHH-12895[HHH-12895], https://hibernate.atlassian.net/browse/HHH-12993[HHH-12993],
+and others.
+
+6.0 and its SQL AST however makes this much easier to apply in a generalized way.  Alpha4 offers the inital work on this support.
+
+
+== `@OrderBy` support
+
+Maps and Sets that provide a custom `@OrderBy` SQL fragment are now supported.
+
+This is accomplished through an Antlr v4 based grammar to parse the ordering SQL fragment and applying the indicated
+sort specifications into the SQL AST being built.
+
+
+== More information
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Alpha1/migration-guide.adoc[migration guide].
+
+Also check out the https://hibernate.org/orm/releases/6.0/[release page].
+
+To get in touch, use the usual channels as discussed on https://hibernate.org/community/
