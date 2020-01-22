@@ -232,7 +232,7 @@ curl -XPOST -H"Content-type: application/json" -d'{"name": "Ray"}' \
 
 To validate that the data was written into Cloud Spanner, you can navigate to the Google Cloud Platform console, and browse to the Cloud Spanner database instance, and view the rows in table.
 
-= Using Hibernate ORM Panache
+=== Using Hibernate ORM Panache
 
 https://quarkus.io/guides/hibernate-orm-panache[Hibernate ORM Panache] is a really easy way to create DAO (Data Access Object) to encapsulate more complex queries and operations beyond what EntityManager provides.  You can use Panache with Cloud Spanner since it simply constructs the same Hibernate queries behind the scenes. So, whatever Cloud Spanner Dialect supports for Hibernate ORM, you can also use it with Panache.
 
@@ -315,7 +315,7 @@ public class PersonResource {
 }
 ----
 
-= Bonus - Deploy to Google App Engine!
+=== Bonus - Deploy to Google App Engine!
 You can use Cloud Spanner from anywhere - whether your application is on-premise, on Google Cloud Platform, or on another cloud. If you do want to run this in Google Cloud Platform, you can try it in the https://cloud.google.com/blog/products/application-development/app-engine-java-11-is-ga-deploy-a-jar-scale-it-all-fully-managed[new App Engine Standard for Java 11 runtime].  This App Engine runtime allows you to run any JAR-based services without any proprietary API but in a fully-managed serverless platform. You can deploy a Quarkus application (in JVM mode) easily with few commands.
 
 First, build the Quarkus JAR:
@@ -332,7 +332,7 @@ And simply deploy it!
 gcloud app deploy target/spanner-example-1.0-SNAPSHOT-runner.jar
 ----
 
-= Clean Up
+=== Clean Up
 Cloud Spanner is billed based on provisioned nodes and data stored. If you followed along to try the above instructions in your own Google Cloud Platform account, please clean up and remove the Cloud Spanner instance when you are done to avoid unintended charges!
 
 [source,bash]
@@ -344,6 +344,6 @@ But don't worry, creating a new instance is super fast, so if you need to test t
 
 If you deployed to App Engine, follow the https://cloud.google.com/appengine/docs/standard/java11/console/#disabling_an_application[App Engine Disabling an Application] documentation to fully stop your App Engine application.
 
-= What's Next?
+== What's Next?
 You can find the official documentation on https://cloud.google.com/spanner/docs/use-hibernate[Google Cloud Platform documentation site]. The Cloud Spanner Hibernate Dialect engineering team would love to get your feedback. If you have any comments, ideas, or discovered a bug, please reach out using https://github.com/GoogleCloudPlatform/google-cloud-spanner-hibernate[GitHub issues].
 
