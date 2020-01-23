@@ -1,0 +1,105 @@
+= "Hibernate Validator 6.1.1.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.1.1.Final
+---
+
+Earlier this month, we released Hibernate Validator 6.1.1.Final which includes some nice improvement to our localization support. 
+
+This is a recommended upgrade for everyone using Hibernate Validator and it is a drop-in replacement for 6.1.0.Final.
+
+== What's new
+
+=== Localization support improvement
+
+Hibernate Validator has always been built with localization in mind but,
+if we had translations of our constraint violation messages in several languages,
+supporting validation in your applications required to use a custom `MessageInterpolator` resolving the locale you wanted to use and delegating to the default one.
+Otherwise, Hibernate Validator would simply use the default locale of the system.
+
+This wasn't very practical and 6.1.1.Final introduces a specific SPI to handle localization with more flexibility: `LocaleResolver`.
+
+A good example of a `LocaleResolver` is the one we now have in https://quarkus.io/[Quarkus].
+It uses the `ResteasyContext` to extract the `Accept-Language` header from the request and use the best locale available.
+
+[source,java]
+----
+public class ResteasyContextLocaleResolver implements LocaleResolver {
+
+    @Override
+    public Locale resolve(LocaleResolverContext context) {
+        Optional<List<LanguageRange>> localePriorities = getAcceptableLanguages();
+        if (!localePriorities.isPresent()) {
+            return context.getDefaultLocale();
+        }
+
+        List<Locale> resolvedLocales = Locale.filter(localePriorities.get(), context.getSupportedLocales());
+        if (resolvedLocales.size() > 0) {
+            return resolvedLocales.get(0);
+        }
+
+        return context.getDefaultLocale();
+    }
+
+    private Optional<List<LanguageRange>> getAcceptableLanguages() {
+        HttpHeaders httpHeaders = ResteasyContext.getContextData(HttpHeaders.class);
+        if (httpHeaders != null) {
+            List<String> acceptLanguageList = httpHeaders.getRequestHeader("Accept-Language");
+            if (acceptLanguageList != null && !acceptLanguageList.isEmpty()) {
+                return Optional.of(LanguageRange.parse(acceptLanguageList.get(0)));
+            }
+        }
+
+        return Optional.empty();
+    }
+}
+----
+
+To make use of this `LocaleResolver`, initialize your `ValidatorFactory` as follows:
+
+[source,java]
+----
+ValidatorFactory validatorFactory = Validation.byProvider(HibernateValidator.class)
+    .configure()
+    .localeResolver(yourLocaleResolver)
+    .locales(Locale.ENGLISH, Locale.GERMAN, Locale.FRENCH, Locale.ITALIAN)
+    .defaultLocale(Locale.FRENCH)
+    .buildValidatorFactory();
+----
+
+There are a couple of noticeable things:
+
+ * You will need to pass the list of locales you want to support i.e. the ones for which you have proper translations for your constraint messages;
+ * You can define a default locale different from the system default locale.
+
+This new SPI is still incubating so give it a try and give us your feedback!
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the following GAV coordinates:
+
+ * _org.hibernate.validator:hibernate-validator:{released-version}_
+ * _org.hibernate.validator:hibernate-validator-cdi:{released-version}_
+ * _org.hibernate.validator:hibernate-validator-annotation-processor:{released-version}_
+
+Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-18.0.0.Final-patch.zip[WildFly 18] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-17.0.1.Final-patch.zip[WildFly 17.0.1]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
