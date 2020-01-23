@@ -1,16 +1,18 @@
-
+# Copied from https://github.com/awestruct/awestruct/blob/82548472d5351cf4f839e52e51664559bc9711b7/lib/awestruct/extensions/posts.rb
+# and adapted to our needs
 module Awestruct
   module Extensions
     class Posts
 
-      attr_accessor :path_prefix, :assign_to, :archive_template, :archive_path
+      attr_accessor :path_prefix, :assign_to, :archive_template, :archive_path, :default_layout, :wp_compat
 
-      def initialize(path_prefix='', assign_to=:posts, archive_template=nil, archive_path=nil)
+      def initialize(path_prefix='', assign_to=:posts, archive_template=nil, archive_path=nil, opts={})
         @archive_template = archive_template
         @archive_path     = archive_path
         @path_prefix      = path_prefix
         @assign_to        = assign_to
-        @handle_subdirs    = true
+        @default_layout   = opts[:default_layout] || 'post'
+        @wp_compat        = opts.has_key?(:wp_compat) ? opts[:wp_compat] : false
       end
 
       def execute(site)
@@ -21,44 +23,47 @@ module Awestruct
           year, month, day, slug = nil
 
           if ( page.relative_source_path =~ /^#{@path_prefix}\// )
-            if (@handle_subdirs)
-              regexp_date = /^#{@path_prefix}(\/.*)*\/(20[01][0-9])-([01][0-9])-([0123][0-9])-([^.]+)\..*$/
-              regexp_general = /^#{@path_prefix}(\/.*)*\/(.*)\..*$/
-              offset = 1
-            else
-              regexp_date = /^#{@path_prefix}\/(20[01][0-9])-([01][0-9])-([0123][0-9])-([^.]+)\..*$/
-              regexp_general = /^#{@path_prefix}\/(.*)\..*$/
-              offset = 0
-            end
+            # We added one capture to the regexp compared to the original code
+            regexp_capture_offset = 1
             # check for a date inside the page first
             if (page.date?)
-              page.relative_source_path =~ regexp_general
-              date = page.date;
-              if date.kind_of? String
-                date = Time.parse page.date
+              page.relative_source_path =~ /^#{@path_prefix}(\/.*)*\/(.*)\..*$/
+              date = page.date
+              unless date.kind_of? DateTime
+                if date.kind_of? String
+                  date = DateTime.parse date
+                elsif date.kind_of? Date
+                  date = DateTime.new(date.year, date.month, date.day)
+                elsif date.kind_of? Time
+                  date = date.to_datetime
+                end
               end
               year = date.year
               month = sprintf( "%02d", date.month )
               day = sprintf( "%02d", date.day )
               page.date = date
-              slug = $~[1 + offset]
-              if ( page.relative_source_path =~ regexp_date )
-                slug = $~[4 + offset]
+              slug = $~[1 + regexp_capture_offset]
+              if ( page.relative_source_path =~ /^#{@path_prefix}(\/.*)*\/(2[0-9]{3})-([01][0-9])-([0123][0-9])-([^.]+)\..*$/ )
+                slug = $~[4 + regexp_capture_offset]
               end
-            elsif ( page.relative_source_path =~ regexp_date )
-              year  = $~[1 + offset]
-              month = $~[2 + offset]
-              day   = $~[3 + offset]
-              slug  = $~[4 + offset]
-              page.date = Time.utc( year.to_i, month.to_i, day.to_i )
+            elsif ( page.relative_source_path =~ /^#{@path_prefix}(\/.*)*\/(2[0-9]{3})-([01][0-9])-([0123][0-9])-([^.]+)\..*$/ )
+              year  = $~[1 + regexp_capture_offset]
+              month = $~[2 + regexp_capture_offset]
+              day   = $~[3 + regexp_capture_offset]
+              slug  = $~[4 + regexp_capture_offset]
+              page.date = DateTime.new( year.to_i, month.to_i, day.to_i )
             end
 
             # if a date was found create a post
             if( year and month and day)
+              page.layout ||= @default_layout if @default_layout
               page.slug ||= slug
               context = page.create_context
-              page.output_path = "#{@path_prefix}/#{year}/#{month}/#{day}/#{page.slug}/index.html"
-
+              if (@wp_compat)
+                page.output_path = "#{@path_prefix}/#{year}/#{month}/#{page.slug}.html"
+              else
+                page.output_path = "#{@path_prefix}/#{year}/#{month}/#{day}/#{page.slug}/index.html"
+              end
               posts << page
             end
           end
@@ -81,6 +86,7 @@ module Awestruct
 #        site.send( "#{@assign_to}_archive = ", archive )
 
       end
+
 
       class Archive
         attr_accessor :posts

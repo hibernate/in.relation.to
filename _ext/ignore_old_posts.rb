@@ -21,7 +21,7 @@ module InRelationTo
 
         posts_to_remove = []
         posts.each do |post|
-          if !post.date.nil? && post.date < ignore_older_than
+          if !post.date.nil? && post.date.to_time() < ignore_older_than
             posts_to_remove << post
           end
         end
