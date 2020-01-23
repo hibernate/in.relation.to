@@ -18,6 +18,7 @@ require 'split_atomizer'
 require 'paginator'
 require 'posts'
 require 'summary'
+require 'ignore_old_posts'
 require 'date'
 require 'i18n'
 require 'json_feed_generator'
@@ -60,12 +61,7 @@ Awestruct::Extensions::Pipeline.new do
 
   # blog
 
-  ignore_older_than=nil
-  if !Engine.instance.site.ignore_older_than_days.nil? && Engine.instance.site.ignore_older_than_days.to_i > 0
-    ignore_older_than = Time.now - Engine.instance.site.ignore_older_than_days.to_i * 24 * 60 * 60
-  end
-
-  extension Awestruct::Extensions::Posts.new( '', :posts, nil, nil, ignore_older_than )
+  extension Awestruct::Extensions::Posts.new
   extension Awestruct::Extensions::SplitFilterer.new( :posts,
                                                      'tags',
                                                      :sanitize=>true,
@@ -73,6 +69,7 @@ Awestruct::Extensions::Pipeline.new do
                                                       'page', 'javascripts', 'images', 'readme', 'templates']
                                                     )
 
+  extension InRelationTo::Extensions::IgnoreOldPosts.new :posts
   extension InRelationTo::Extensions::Summary.new :posts
 
   if Engine.instance.site.profile != 'editor'
