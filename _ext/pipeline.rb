@@ -17,6 +17,7 @@ require 'split_filterer'
 require 'split_atomizer'
 require 'paginator'
 require 'posts'
+require 'summary'
 require 'date'
 require 'i18n'
 require 'json_feed_generator'
@@ -71,6 +72,8 @@ Awestruct::Extensions::Pipeline.new do
                                                      :blacklist=>['author', 'authors', 'tags', 'tag',
                                                       'page', 'javascripts', 'images', 'readme', 'templates']
                                                     )
+
+  extension InRelationTo::Extensions::Summary.new :posts
 
   if Engine.instance.site.profile != 'editor'
     extension InRelationTo::Extensions::Splitter.new( :posts,
