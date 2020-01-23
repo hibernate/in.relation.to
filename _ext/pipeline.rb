@@ -1,4 +1,3 @@
-require 'wget_wrapper'
 require 'js_minifier'
 require 'css_minifier'
 require 'html_minifier'
@@ -109,7 +108,6 @@ Awestruct::Extensions::Pipeline.new do
   transformer Awestruct::Extensions::HtmlMinifier.new
   transformer InRelationTo::Extensions::LegacyPostCodeHighlightingTransformer.new
 
-  extension   Awestruct::Extensions::WgetWrapper.new
   extension   Awestruct::Extensions::Indexifier.new
 
 end
