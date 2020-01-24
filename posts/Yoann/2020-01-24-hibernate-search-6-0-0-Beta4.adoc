@@ -1,0 +1,102 @@
+= Hibernate Search 6.0.0.Beta4 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Beta4.
+
+This release mainly fixes a performance regression in the Lucene backend
+and introduces an API for plugging in custom behavior on failures during mass indexing.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Search 5.
+
+For more information about migration and what we intend to do to help you, see
+https://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== Fixed a performance regression in the Lucene backend
+
+A performance regression was introduced in version 6.0.0.Beta3 that would slow down search queries
+performed on large indexes.
+This was fixed in https://hibernate.atlassian.net/browse/HSEARCH-3797[HSEARCH-3797].
+
+Performance for projections on nested fields was also improved as part of
+https://hibernate.atlassian.net/browse/HSEARCH-3786[HSEARCH-3786].
+
+=== Custom behavior on mass indexing failure
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3729[HSEARCH-3729],
+the mass indexer allows customizing the behavior on failure through
+the new `MassIndexingFailureHandler` interface.
+
+See the `failureHandler` parameter
+in the link:https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer-parameters[MassIndexer documentation].
+
+=== Version upgrades
+
+No version upgrades this time.
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will not work correctly.
+====
+
+=== Backward-incompatible API changes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3629[HSEARCH-3629]:
+Search query loading options (cache lookup, fetch size, ...)
+are now passed through a dedicated `loading(...)` method accepting a lambda expression.
+See link:https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-query-entity-loading-options[this section of the documentation]
+for more information.
+The previous syntax still works, but has been deprecated and will be removed soon.
+* https://hibernate.atlassian.net/browse/HSEARCH-3461[HSEARCH-3461]:
+The `optimize` index operation has been renamed to `mergeSegments` throughout the API.
+Also, by default, index segments will no longer be merged after mass indexing.
+This can still be enabled explicitly through massIndexer.mergeSegments
+For more information about this operation,
+see link:https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-merge-segments[this section of the documentation].
+
+=== Documentation
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3418[HSEARCH-3418]:
+The limitations in terms of range and resolution for date/time field types is now clearly documented.
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-elasticsearch-field-types-available[here for Elasticsearch]
+and https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-field-types-available[here for Lucene].
+* https://hibernate.atlassian.net/browse/HSEARCH-3793[HSEARCH-3793]:
+The section of the documentation about the link:https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-predicate-exists[`exists` predicate]
+now mentions that it can be used against object fields.
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3802[HSEARCH-3802]:
+Elasticsearch backend: `query.fetchTotalHitCounts()` used to always fail when a timeout was set,
+even when the fetch did not time out. This was fixed.
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31820[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
