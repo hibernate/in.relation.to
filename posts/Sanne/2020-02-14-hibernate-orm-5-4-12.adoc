@@ -63,18 +63,23 @@ You might expect this to be a small price, but you'd be surprised: consider that
 If we decided to not include support for UUID identity generators in such a list, then any users would still have the option to explicitly add it to their own json file;
 that's certainly better from a point of view of efficiency and optimisations, but is less convenient.
 
-And that's just a single identity generator! It's easy to see that the wrong approach can lead to a huge overhead.
+And that's just a single identity generator! It's easy to see that the wrong approach can lead to a huge overhead, when the problem is scaled to the choice and permutations of all internal components.
 
 What's the optimal solution? Clearly this could be automated: takes the inconvience away from the end users, and also an application could deal with a far larger set of possibilities, and combinations. Hibernate ORM is complex enough, but it gets worse: in practice when you compile the application you will need to craft
 a single set of compiler flags which will satisfy all of your code and all of its dependencies.
 
-In https://quarkus.io/[Quarkus], the https://quarkus.io/guides/hibernate-orm[Hibernate ORM extension] will simply analyse the application code and figure out which of the many internal components that Hibernate ORM offers are actually going to be necessary; it goes even further, by optimising for the specific configuration that these will be used in; the architecture based on extensions makes sure that each module has deep, specialized expertise in each library it supports, and yet it's all coordinated by a central core which helps produce a coherent set of metadata.
+The amount and complexity of this, also makes it hard for a human to actually manage it all correctly, even when given precise instructions.
+
+In https://quarkus.io/[Quarkus], the https://quarkus.io/guides/hibernate-orm[Hibernate ORM extension] will simply analyse the application code and figure out which of the many internal components that Hibernate ORM offers are actually going to be necessary; it goes even further, by optimising for the specific configuration that these will be used in; the architecture based on extensions makes sure that each module has deep, specialized expertise in each library it supports, and yet it's all coordinated by a central core which helps produce a coherent set of metadata and compiler flags.
+
 This automated, custom build metadata is then fed to GraalVM's `native-image` compiler to produce the perfect image: lean, fast and functional.
 
 Still, while that solution is very elegant, its applicability is limited to applications based on Quarkus. What if you want to build your own native image from
 command line, so to experiment with the various options that GraalVM provides?
 
-The main problem is that Hibernate ORM will likely also need to generate proxies at runtime (depending on configuration), and very likely will need to run
+To be fair that's not easy, but we can try making it less complex.
+
+One problem is that Hibernate ORM will likely also need to generate proxies at runtime (depending on configuration), and very likely will need to run
 some reflective operations on your own code: at very leat it needs to use reflection on the mapped classes to know what properties they have, what annotations
 they have.
 I don't have the solution for that, but it's certainly possible to plug in a custom metadata source, if someone wanted to do so, or just manually list
@@ -82,9 +87,7 @@ the domain model as additional types to be registered for reflective access in t
 
 Adding the user domain model to the list, making a choice of some internal components are things I consider "dynamic metadata" needs: as they vary from application to application. There's also a "static list": independently from your configuration and from your model, you will always need to register some key internal classes from Hibernate.
 
-To be clear, I was on the initial R&D team who created Quarkus: much of its design stems from the need to solve these issues; so don't be surprised that
-my opinion is that if you need this all to "just work" at minimal fuss my recommendation would be to use Quarkus, as I don't know how else you could solve the need, for example, of needing proxies generated at runtime. Happy to discuss such aspects in more detail, as we'd love such solutions evolve further, but please
-remembed that this is definitely material for advanced users, researchers and framework developers.
+To be clear, I was on the initial R&D team who created Quarkus: much of its design stems from the need to solve these issues while keeping it all simple to use; so don't be surprised that my opinion is that if you need this all to "just work" at minimal fuss my recommendation would be to use Quarkus, as I don't know how else you could solve the need, for example, of needing proxies generated at runtime. Happy to discuss such aspects in more detail, as we'd love such solutions evolve further, but please remembed that this is definitely material for advanced users, researchers and framework developers.
 
 == Introducing `hibernate-graalvm`
 
