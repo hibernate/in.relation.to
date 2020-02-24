@@ -1,0 +1,154 @@
+= Hibernate Search 6.0.0.Beta5 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Beta5.
+
+This release mainly changes the way the Elasticsearch backend accesses indexes,
+introduces delayed commits and near-real-time queries for the Lucene backend,
+and renames a few methods in the Search DSL.
+It also includes upgrades to Lucene 8.4, Elasticsearch 7.6 and Hibernate ORM 5.4.12.Final.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Search 5.
+
+For more information about migration and what we intend to do to help you, see
+https://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+[[aliases-elasticsearch]]
+=== Aliases for Elasticsearch indexes
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3791[HSEARCH-3791],
+Elasticsearch indexes are now accessed through aliases only.
+Hibernate Search relies on two aliases for each index: one for writes (`<myindex>-write`) and one for reads (`<myindex>-read`).
+
+This setup is a first step towards introducing, in a future version of Hibernate Search,
+a "zero-downtime" reindexing where search queries still return results while reindexing.
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-elasticsearch-indexlayout[this section of the reference documentation]
+for more information, in particular regarding how to change the name of the aliases.
+
+As a result of this change, you will need to either:
+
+* manually create the two aliases for each index;
+* or drop your indexes and have Hibernate Search re-create empty indexes on startup: it will create the aliases.
+In this case, you will also need to
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[reindex].
+
+=== Delayed commits and near-real-time for the Lucene backend
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3775[HSEARCH-3775],
+the Lucene backend can now be configured to commit the writer or refresh the reader periodically (e.g. every second),
+instead of doing it as soon as possible.
+
+This feature, which was already available but exposed differently in Search 5, can lead to substantial performance improvements.
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-io[this section of the documentation]
+for details.
+
+[[nested-documents-lucene]]
+=== Fixed an indexing bug for nested documents in the Lucene backend
+
+https://hibernate.atlassian.net/browse/HSEARCH-3834[HSEARCH-3834]
+fixed a bug that caused nested documents to be left in the index indefinitely
+after their root document was deleted.
+This bug did not affect the results of search queries:
+the nested documents were not visible after deletion of the root document.
+However, this could lead to indexes taking more space than necessary.
+
+In order to clean up your index,
+you should https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[reindex].
+
+=== More generic wording in the Search DSL
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3807[HSEARCH-3807],
+a few methods in the Search DSL have been renamed:
+
+* `searchSession.search(...).predicate(...)` becomes `searchSession.search(...).where(...)`.
+* `searchSession.search(...).asProjection(...)` becomes `searchSession.search(...).select(...)`.
+* `searchSession.search(...).asProjections(...)` becomes `searchSession.search(...).select(...)`.
+* `searchSession.search(...).asEntity(...)` becomes `searchSession.search(...).selectEntity()`.
+* `searchSession.search(...).asEntityReference(...)` becomes `searchSession.search(...).selectEntityReference()`.
+
+The methods with the old name are still present, though deprecated.
+They will be removed before Hibernate Search 6.0.0.Final is released.
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3799[HSEARCH-3799]: Upgrade to Lucene 8.4.1
+* https://hibernate.atlassian.net/browse/HSEARCH-3829[HSEARCH-3829]: Upgrade to Elasticsearch 7.6
+* https://hibernate.atlassian.net/browse/HSEARCH-3830[HSEARCH-3830]: Upgrade to Hibernate ORM 5.4.12.Final
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will not work correctly.
+====
+
+=== Backward-incompatible changes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3808[HSEARCH-3808]:
+The names of synchronization strategies for automatic indexing have changed:
++
+ ** `queued` => `async`.
+ ** `committed` (the default) => `write-sync` (still the default).
+ ** `searchable` (commonly used for tests) => `sync` (still recommended for tests only).
++
+You will need to update the value of the property `hibernate.search.automatic_indexing.synchronization.strategy`
+in your configuration.
+* https://hibernate.atlassian.net/browse/HSEARCH-3460[HSEARCH-3460]:
+an explicit https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual-flush[`flush()`] no longer implicitly refreshes the index;
+you will need to use the new
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual-refresh[`refresh()`] operation.
+* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[Full reindexing] is necessary if you use the Lucene backend and take advantage
+of nested documents (`@IndexedEmbedded(storage = NESTED)`).
+See <<nested-documents-lucene,above>> for details.
+* Dropping and re-creating your indexes is necessary if you use the Elasticsearch backend.
+See <<aliases-elasticsearch,above>> for details or workarounds.
+
+=== Documentation
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3808[HSEARCH-3808]:
+The https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-automatic-synchronization[documentation of automatic indexing synchronization strategies]
+was improved and should now be clearer.
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3833[HSEARCH-3833]: Writing on different local-heap indexes will provoke LockObtainFailedException
+* https://hibernate.atlassian.net/browse/HSEARCH-3801[HSEARCH-3801]: Hibernate Search blocks loading of non hibernate batch jobs
+* https://hibernate.atlassian.net/browse/HSEARCH-3815[HSEARCH-3815]: Stop publishing the mapper-javabean module
+* https://hibernate.atlassian.net/browse/HSEARCH-3819[HSEARCH-3819]: JsonSyntaxException when validating or migrating an Elasticsearch schema with a geo_point field with null_value
+* https://hibernate.atlassian.net/browse/HSEARCH-3824[HSEARCH-3824]: Automatically filter search results based on provided routing keys
+* https://hibernate.atlassian.net/browse/HSEARCH-3825[HSEARCH-3825]: Purging a document from the POJO mapper will lead to NPE
+* https://hibernate.atlassian.net/browse/HSEARCH-3836[HSEARCH-3836]: Allow explicit routing for purges
+* https://hibernate.atlassian.net/browse/HSEARCH-3778[HSEARCH-3778]: Remove "index_metadata_complete" configuration property
+* https://hibernate.atlassian.net/browse/HSEARCH-3779[HSEARCH-3779]: Remove automatic index optimization
+* https://hibernate.atlassian.net/browse/HSEARCH-3826[HSEARCH-3826]: Drop support for non-exclusive index use
+* https://hibernate.atlassian.net/browse/HSEARCH-3831[HSEARCH-3831]: Allow setting the automatic indexing sync strategy to a custom bean in configuration
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31825[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
