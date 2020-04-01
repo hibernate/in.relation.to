@@ -212,14 +212,15 @@ Earlier 5.4.x versions will not work correctly.
 
 === Backward-incompatible changes
 
-Configuration properties relative to Elasticsearch index lifecycle management have changed:
-
-* The configuration property `lifecycle.strategy` was removed and will trigger an exception on startup if used.
+* The internal docvalues format for sortable fields in the Lucene backend has changed.
+Re-indexing will be necessary if your index contains sortable fields.
+* Configuration properties relative to Elasticsearch index lifecycle management have changed:
+** The configuration property `lifecycle.strategy` was removed and will trigger an exception on startup if used.
 For automatic schema management on startup, see
 https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-strategy[the new `schema_management` options]
 at the mapper level.
-* The configuration property `lifecycle.minimal_required_status` was renamed to `schema_management.minimal_required_status`.
-* The configuration property `lifecycle.minimal_required_status_wait_timeout` was renamed to `schema_management.minimal_required_status_wait_timeout`.
+** The configuration property `lifecycle.minimal_required_status` was renamed to `schema_management.minimal_required_status`.
+** The configuration property `lifecycle.minimal_required_status_wait_timeout` was renamed to `schema_management.minimal_required_status_wait_timeout`.
 
 === Documentation
 
