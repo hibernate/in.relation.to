@@ -1,0 +1,53 @@
+= "Hibernate Validator 6.1.3.Final and 6.0.19.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.1.3.Final
+---
+
+We just released Hibernate Validator 6.1.3.Final which contains some fixes for our translations and a performance improvement for validation of executables (i.e. methods and constructors).
+
+This is a recommended upgrade for everyone using Hibernate Validator and it is a drop-in replacement for 6.1.2.Final.
+
+We also released 6.0.19.Final.
+
+== What's new
+
+=== Performance improvements
+
+When validating an executable (i.e. a constructor or a method), we use its signature to retrieve the metadata of the executable in the metadata registry of Hibernate Validator.
+
+The generation of this signature was far from optimal especially in terms of memory allocations and got greatly improved in 6.1.3.Final.
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the following GAV coordinates:
+
+ * _org.hibernate.validator:hibernate-validator:{released-version}_
+ * _org.hibernate.validator:hibernate-validator-cdi:{released-version}_
+ * _org.hibernate.validator:hibernate-validator-annotation-processor:{released-version}_
+
+Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-18.0.0.Final-patch.zip[WildFly 18] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-17.0.1.Final-patch.zip[WildFly 17.0.1]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== 6.0.19.Final
+
+We also released 6.0.19.Final with several translation fixes and the backport of the `BeanMetaDataClassNormalizer` introduced in 6.1 for https://quarkus.io/[Quarkus].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
