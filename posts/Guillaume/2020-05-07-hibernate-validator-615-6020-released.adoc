@@ -1,0 +1,139 @@
+= "Hibernate Validator 6.1.5.Final and 6.0.20.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.1.5.Final
+---
+
+We just released Hibernate Validator 6.1.5.Final which contains a fix for CVE-2020-10693 and a few other minor fixes.
+
+This is a recommended upgrade for everyone using Hibernate Validator and it is a drop-in replacement for 6.1.4.Final.
+
+We also released 6.0.20.Final that includes the fix for CVE-2020-10693.
+
+== What's new
+
+=== CVE-2020-10693
+
+First some context:
+to allow some flexibility in the constraint violation message generation, Hibernate Validator enables by default an Expression Language (based on Jakarta EL).
+
+That means that when creating a constraint violation message, the string is passed to the Expression Language before being returned to the user.
+Expression Languages are very flexible and they allow to execute arbitrary Java code.
+We made things a bit more restricted in Hibernate Validator by tuning the EL configuration but there's no doubt you can find convoluted ways to execute code.
+
+It is definitely not an issue when using the built-in constraints.
+It is not an issue either when using your own custom constraints... as long as you don't include user input in a constraint violation message.
+By including user input, you end up passing arbitrary strings to the EL and these arbitrary strings might contain carefully crafted content to either expose sensitive data (a password hash present in a `User` bean for instance) or execute code.
+
+Now that you read that, you are probably thinking that it is a serious security issue and you're totally right.
+That's why we always recommended to NOT include user input as is in constraint violation messages but rather use expression variables which prevent EL injection.
+It is the exact same issue as SQL injection: better use the parameter handling provided by your driver rather than concatenating strings.
+
+CVE-2020-10693 is about applications being vulnerable to EL injection if they are not carefully escaping the user input (i.e. just escaping `${` as `\${` instead of `\$\{` as it should be) due to a bug in our parser.
+The severity is moderate because, well, as stated above, you shouldn't handle escaping yourself and should really rely on expression variables.
+If you do, you are not affected by this CVE.
+
+In short, what you should **NEVER** do when implementing your own ``ConstraintValidator``s:
+
+[source,java]
+----
+public class UnsafeValidator implements ConstraintValidator<ZipCode, String> {
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if ( value == null ) {
+            return true;
+        }
+
+        context.disableDefaultConstraintViolation();
+
+        if ( isInvalid( value ) ) {
+            context
+                    .buildConstraintViolationWithTemplate( value + " is not a valid ZIP code" )
+                    .addConstraintViolation();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isInvalid(String value) {
+        // ...
+        return false;
+    }
+}
+----
+
+And what you should do instead:
+
+[source,java]
+----
+public class SafeValidator implements ConstraintValidator<ZipCode, String> {
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if ( value == null ) {
+            return true;
+        }
+
+        HibernateConstraintValidatorContext hibernateContext = context.unwrap(
+                HibernateConstraintValidatorContext.class );
+        hibernateContext.disableDefaultConstraintViolation();
+
+        if ( isInvalid( value ) ) {
+            hibernateContext
+                    .addExpressionVariable( "validatedValue", value )
+                    .buildConstraintViolationWithTemplate( "${validatedValue} is not a valid ZIP code" )
+                    .addConstraintViolation();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isInvalid(String value) {
+        // ...
+        return false;
+    }
+}
+----
+
+You can read more about it in https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#el-injection-caution[our reference documentation].
+
+Thanks to the GitHub Security Team and in particular Alvaro Munoz for contacting us about this issue and also contacting affected projects so that they could adapt their code to follow our recommendations.
+
+=== Full changelog
+
+The complete list of fixed issues can be found https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HV%20AND%20fixVersion%20%3D%20{released-version}%20order%20by%20created%20DESC[on our JIRA].
+
+== Getting {released-version}
+
+To get the release with Maven, Gradle etc. use the following GAV coordinates:
+
+ * _org.hibernate.validator:hibernate-validator:{released-version}_
+ * _org.hibernate.validator:hibernate-validator-cdi:{released-version}_
+ * _org.hibernate.validator:hibernate-validator-annotation-processor:{released-version}_
+
+Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/{released-version}/hibernate-validator-{released-version}-dist.zip/download[ZIP]).
+
+If you want to benefit from the new features of this version on WildFly, we also provide WildFly patches for http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-19.0.0.Final-patch.zip[WildFly 19] and http://search.maven.org/remotecontent?filepath=org/hibernate/validator/hibernate-validator-modules/{released-version}/hibernate-validator-modules-{released-version}-wildfly-18.0.1.Final-patch.zip[WildFly 18.0.1]. You can read about how to apply such patches https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#_updating_hibernate_validator_in_wildfly[here].
+
+== 6.0.20.Final
+
+We also released 6.0.20.Final containing the same fixes as 6.1.5.Final.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* http://lists.jboss.org/pipermail/beanvalidation-dev/[Bean Validation development mailing list] (discussions about the Bean Validation specification)
+
