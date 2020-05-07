@@ -1,0 +1,144 @@
+= Hibernate Search 6.0.0.Beta7 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We just published Hibernate Search 6.0.0.Beta7.
+
+This release mainly improves sorts and aggregations on multi-valued or nested fields,
+introduces dynamic index fields through field templates,
+restores the index metamodel,
+and restores low-level Lucene settings.
+It also includes an upgrade to Hibernate ORM 5.4.15.Final.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Hibernate Search 5.
+
+For more information about migration and what we intend to do to help you, see
+https://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== Better sorts and aggregations on multi-valued/nested fields
+
+As of Hibernate Search 6.0.0.Beta7,
+aggregations in the Lucene backend now work correctly on multi-valued fields
+(https://hibernate.atlassian.net/browse/HSEARCH-1927[HSEARCH-1927], https://hibernate.atlassian.net/browse/HSEARCH-1929[HSEARCH-1929])
+and on fields in nested documents (https://hibernate.atlassian.net/browse/HSEARCH-3892[HSEARCH-3892]).
+
+What's more, both sorts and aggregations now support filtering when the field being sorted/aggregated on
+is located in a nested document (https://hibernate.atlassian.net/browse/HSEARCH-3846[HSEARCH-3846],
+https://hibernate.atlassian.net/browse/HSEARCH-3881[HSEARCH-3881]).
+This is particularly useful to sort on a field that is usually multi-valued,
+but becomes single-valued after you apply the criteria of your query.
+Think of a search on t-shirts, sorting by price, where each t-shirt has multiple sizes with its own price;
+when searching for a specific t-shirt size, you'll want to sort on the price of each t-shirt for that size only.
+See the reference documentation for details and examples:
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-sort-common-filter[here for sorts]
+and
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-aggregation-common-filter[here for aggregations].
+
+Many thanks to Waldemar Kłaczyński for providing the groundwork that made this possible.
+
+=== Dynamic index fields through field templates
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3273[HSEARCH-3273],
+it is now possible to add fields to documents even if they weren't declared beforehand,
+provided you declared matching _field templates_.
+
+This means you can implement a bridge that will index a schema-less JSON object, for example,
+provided the properties of JSON objects are named following specific conventions that you can set yourself
+(such as `*_int` for integers, `*_txt` for text, etc.).
+
+You can declare field templates by defining custom bridges;
+see https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-bridge-index-field-dsl-dynamic[this section of the reference documentation]
+for more information.
+
+=== Index metamodel
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3589[HSEARCH-3589],
+Hibernate Search exposes a metamodel for its indexes,
+effectively allowing to look up fields of a specific index and their characteristics.
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-mapping-inspect[this section of the reference documentation]
+for more information.
+
+=== Low-level configuration for the Lucene backends
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3776[HSEARCH-3776],
+several low-level configuration options relating to the Lucene `IndexWriter` have been restored.
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-io-writer[here for index writer settings]
+and https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-io-merge[here for merge settings].
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3777[HSEARCH-3777],
+the `Similarity` used when indexing and searching in the Lucene backend
+can be
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-analysis-similarity[configured through the `LuceneAnalysisConfigurer`].
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3907[HSEARCH-3907]: Upgrade to Hibernate ORM 5.4.15.Final
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will not work correctly.
+====
+
+=== Backward-incompatible changes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3898[HSEARCH-3898]:
+`SearchQuery.explain(String, String)` now expects to be passed the name of a mapped type,
+instead of the name of an index.
+
+=== Documentation
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3887[HSEARCH-3887]:
+The documentation no longer incorrectly states that routing keys don't trigger filtering.
+* https://hibernate.atlassian.net/browse/HSEARCH-3879[HSEARCH-3879]:
+Configuration options related to thread pools and indexing are now explained more clearly.
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3886[HSEARCH-3886]:
+Documents with missing values are now sorted last by default in sorts by field value,
+instead of being inserted next to "zero" values.
+* https://hibernate.atlassian.net/browse/HSEARCH-3896[HSEARCH-3896]:
+Calling `.fetch` on the same `SearchQuery` multiple times now works correctly.
+* https://hibernate.atlassian.net/browse/HSEARCH-3897[HSEARCH-3897]
+and https://hibernate.atlassian.net/browse/HSEARCH-3898[HSEARCH-3898]:
+`explain()` now works correctly for indexes with a custom name;
+when the query targets multiple types, you should pass the JPA type name
+instead of the index name.
+* https://hibernate.atlassian.net/browse/HSEARCH-3901[HSEARCH-3901]:
+The context passed to `PropertyMappingAnnotationProcessor`/`TypeMappingAnnotationProcessor`
+now exposes an `annotatedElement()` method to inspect the annotated element (type, name and annotations).
+* https://hibernate.atlassian.net/browse/HSEARCH-3911[HSEARCH-3911]:
+`LuceneSearchResult` now exposes a `getTopDocs()` method.
+* https://hibernate.atlassian.net/browse/HSEARCH-3914[HSEARCH-3914]:
+`LuceneSearchQuery` now exposes a `getLuceneSort()` method.
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31839[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
