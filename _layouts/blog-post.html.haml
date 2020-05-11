@@ -19,6 +19,11 @@ layout: base
   .ui.container
     = partial( 'blog/post-title.html.haml', {"post" => page} )
 
+- if page.project
+  .project-reminder
+    .ui.container
+      = partial( "project/#{page.project}/project-reminder.html.haml" )
+
 .ui.container.blog-article
   .content#content
     = partial( 'blog/post-content.html.haml', {"post" => page} )
