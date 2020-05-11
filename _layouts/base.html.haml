@@ -2,13 +2,10 @@
 -# The base layout for the in.relation.to blog
 %html(lang="en")
   %head
-    -# display page title - project name if under a project section or page title - site name otherwise
-    - project_id = page.project ? page.project : site.project
-    - project_name = page.project ? site.projects[page.project].name : site.title
-    - if page.title == project_name
-      - page_title = "#{page.subtitle ? page.subtitle + ' - ' : ''}#{project_name}"
+    - if page.title == site.title
+      - page_title = "#{page.subtitle ? page.subtitle + ' - ' : ''}#{site.title}"
     - else
-      - page_title = "#{page.subtitle ? page.subtitle + ' - ' : ''}#{page.title ? page.title : page.simple_name.capitalize} - #{project_name}"
+      - page_title = "#{page.subtitle ? page.subtitle + ' - ' : ''}#{page.title ? page.title : page.simple_name.capitalize} - #{site.title}"
     %title= page_title
     = partial( page.head_partial.nil? ? 'head.html.haml' : page.head_partial, { "real_page" => page } )
 
