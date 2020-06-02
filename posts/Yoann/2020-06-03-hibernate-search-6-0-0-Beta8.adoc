@@ -1,0 +1,137 @@
+= Hibernate Search 6.0.0.Beta8 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+---
+
+We just published Hibernate Search 6.0.0.Beta8.
+
+This release mainly adds support for entity graphs in search queries
+and changes `@Indexed` so that it's inherited.
+It also includes an upgrade to Lucene 8.5.2, Elasticsearch 7.7.0 and Hibernate ORM 5.4.17.Final.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Hibernate Search 5.
+
+For more information about migration and what we intend to do to help you, see
+https://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+=== Finer loading options in search queries
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-3628[HSEARCH-3628],
+entity graphs can be passed to search queries to control the associations that will be loaded eagerly.
+
+[source,java]
+----
+List<Manager> hits = Search.session( entityManager ).search( Manager.class )
+        .where( f -> f.match()
+                .field( "name" )
+                .matching( "james" ) )
+        .loading( o -> o.graph( "preload-associates", GraphSemantic.FETCH ) )
+        .fetchHits( 20 );
+
+for ( Manager manager : hits ) {
+    // This does not trigger a SELECT: the association was eagerly loaded.
+    List<Associate> associates = manager.getManager();
+    // ...
+}
+----
+
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#_entity_graph[this section of the documentation]
+for more information.
+
+=== `@Indexed` is now inherited by default
+
+As of https://hibernate.atlassian.net/browse/HSEARCH-1231[HSEARCH-1231],
+as soon as an entity is `@Indexed`,
+all of its extending entities will be indexed too, by default.
+This behavior should be less surprising to new users.
+
+If you really need an entity to be indexed and *not* one of its extending entities,
+you can disable indexing for the extending entity manually
+using `@Indexed(enabled = false)`.
+
+See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-entityindexmapping[this section of the documentation]
+for more information.
+
+=== Version upgrades
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3930[HSEARCH-3930]:
+Upgrade to Lucene Lucene 8.5.2
+* https://hibernate.atlassian.net/browse/HSEARCH-3918[HSEARCH-3918]:
+Upgrade to Elasticsearch 7.7.0
+* https://hibernate.atlassian.net/browse/HSEARCH-3932[HSEARCH-3932]:
+Upgrade to Hibernate ORM 5.4.17.Final
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will not work correctly.
+====
+
+=== Backward-incompatible changes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3922[HSEARCH-3922]:
+API methods no longer use a "get"/"set" prefix.
+For example `SearchResult.getHits()` is now simply `SearchResult.hits()`.
+Older versions of methods with the "get"/"set" prefix are still available for now,
+but have been deprecated and will be removed before Hibernate Search 6.0.0.Final is released.
+* https://hibernate.atlassian.net/browse/HSEARCH-3097[HSEARCH-3097]:
+`@IndexedEmbedded.name` should be used instead of `@IndexedEmbedded.prefix`.
+The main difference is that `name` does not accept dot-separated paths, a prefix or an empty path:
+it just defines the name of an object field.
+`@IndexedEmbedded.prefix` is still available for now,
+but has been deprecated and will be removed in a future major version.
+* https://hibernate.atlassian.net/browse/HSEARCH-3913[HSEARCH-3913]:
+`@FullTextField.aggregable` has been removed because it didn't do anything.
+If you need both full-text search and sorts/aggregations on a given property,
+create two fields: one with `@FullTextField(analyzer = ...)`
+and the other with `@KeywordField(sortable = Sortable.YES, aggregable = Aggregable.YES)`.
+* https://hibernate.atlassian.net/browse/HSEARCH-3928[HSEARCH-3928]:
+`PropertyMappingIndexedEmbeddedStep#extractors()` (no parameters) has been renamed to `noExtractors()`.
+
+=== Documentation
+
+No significant documentation changes apart from those related to new features.
+
+=== Other improvements and bug fixes
+
+* https://hibernate.atlassian.net/browse/HSEARCH-3072[HSEARCH-3072]:
+`@IndexedEmbedded.targetType` is now available,
+with similar functionality to `targetElement` in Hibernate Search 5.
+* https://hibernate.atlassian.net/browse/HSEARCH-962[HSEARCH-962]:
+Entity loading will now execute multiple queries to respect the configured fetch size,
+even when the document ID is mapped to a property that is not the entity ID.
+This will allow working around limitations of some databases
+which put limits on the total amount of query parameters.
+* https://hibernate.atlassian.net/browse/HSEARCH-3584[HSEARCH-3584]:
+Hibernate Search will now correctly retrieve data from properties defined in mapped superclasses or entity superclasses
+when "extended" bytecode enhancement (replacing access to public fields) is enabled.
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31856[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
