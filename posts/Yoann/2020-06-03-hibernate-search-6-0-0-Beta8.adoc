@@ -35,6 +35,30 @@ entity graphs can be passed to search queries to control the associations that w
 
 [source,java]
 ----
+@Entity
+@Indexed
+@NamedEntityGraph(
+		name = "preload-associates",
+		attributeNodes = @NamedAttributeNode("associates")
+)
+public class Manager {
+
+	@Id
+	private Integer id;
+
+	@FullTextField(analyzer = "name", projectable = Projectable.YES)
+	private String name;
+
+	@OneToMany // The association's fetch type is lazy by default.
+	@OrderColumn
+	private List<Associate> associates = new ArrayList<>();
+
+	// ...
+}
+----
+
+[source,java]
+----
 List<Manager> hits = Search.session( entityManager ).search( Manager.class )
         .where( f -> f.match()
                 .field( "name" )
@@ -44,7 +68,7 @@ List<Manager> hits = Search.session( entityManager ).search( Manager.class )
 
 for ( Manager manager : hits ) {
     // This does not trigger a SELECT: the association was eagerly loaded.
-    List<Associate> associates = manager.getManager();
+    List<Associate> associates = manager.getAssociates();
     // ...
 }
 ----
