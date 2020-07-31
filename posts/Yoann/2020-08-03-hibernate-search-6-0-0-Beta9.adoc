@@ -1,0 +1,226 @@
+= Hibernate Search 6.0.0.Beta9 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+---
+
+We just published Hibernate Search 6.0.0.Beta9.
+
+This release mainly brings a simpler scheme for configuration properties,
+a new scrolling API, support for projections on multi-valued fields,
+and a complete documentation for all currently implemented features.
+
+It also includes an upgrade to Lucene 8.6.0, Elasticsearch 7.8.0 and Hibernate ORM 5.4.19.Final.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+link:{hsearch-doc-url-prefix}#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Hibernate Search 5.
+
+For more information about migration and what we intend to do to help you, see
+https://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+[[simpler-configuration-scheme]]
+=== Simpler configuration scheme
+
+Several improvements to how Hibernate Search handles configuration properties
+should simplify how your configuration files look like.
+
+In particular:
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3950[HSEARCH-3950]:
+The default backend now has a dedicated prefix (`hibernate.search.backend`),
+meaning single-backend applications no longer need to use the cumbersome named backend scheme
+(`hibernate.search.backends.myBackend.[...] = [...]` + `hibernate.search.default_backend = myBackend`).
+* link:{hsearch-jira-url-prefix}/HSEARCH-3102[HSEARCH-3102]:
+The backend type is no longer necessary if there's only one backend technology in the classpath.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3967[HSEARCH-3967]:
+Defaults for index-level configuration properties can now be given at the backend level
+and no longer require the `index_defaults.` prefix.
+
+For example, this:
+
+[source]
+----
+hibernate.search.default_backend myBackend
+hibernate.search.backends.myBackend.type elasticsearch
+hibernate.search.backends.myBackend.hosts es.mycompany.com:9200
+hibernate.search.backends.myBackend.index_defaults.indexing.queue_count 4
+----
+
+Can now be written more simply, like this:
+
+[source]
+----
+hibernate.search.backend.hosts es.mycompany.com:9200
+hibernate.search.backend.indexing.queue_count 4
+----
+
+[[scrolling]]
+=== Scrolling API
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3323[HSEARCH-3323],
+a new scrolling API is available.
+
+Scrolling guarantees that all returned hits are consistent (no duplicates),
+making it ideal to process large result sets as small chunks:
+
+[source,java]
+----
+try ( SearchScroll<Book> scroll = searchSession.search( Book.class )
+        .where( f -> f.matchAll() )
+        .scroll( 20 ) ) {
+    for ( SearchScrollResult<Book> chunk = scroll.next();
+            chunk.hasHits(); chunk = scroll.next() ) {
+        for ( Book hit : chunk.hits() ) {
+            // ... do something with the hits ...
+        }
+        entityManager.flush();
+        entityManager.clear();
+    }
+}
+----
+
+See link:{hsearch-doc-url-prefix}#search-dsl-query-fetching-results-scrolling[this section of the documentation]
+for more information.
+
+[[projections-multi-valued]]
+=== Projections on multi-valued fields
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3391[HSEARCH-3391]/link:{hsearch-jira-url-prefix}/HSEARCH-3944[HSEARCH-3944],
+link:{hsearch-doc-url-prefix}#search-dsl-projection[projections] can now target multi-valued fields.
+
+Just call `.multi()` on your projection, and it will auto-magically turn into a projection returning a `List<T>`,
+where `T` is the type of your field:
+
+[source,java]
+----
+List<List<String>> hits = searchSession.search( Book.class )
+        .select( f -> f.field( "authors.lastName", String.class ).multi() )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
+
+[[version_upgrades]]
+=== Version upgrades
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3965[HSEARCH-3965]:
+Upgrade to Lucene 8.6.0
+* link:{hsearch-jira-url-prefix}/HSEARCH-3956[HSEARCH-3956]:
+Upgrade to Elasticsearch 7.8
+* link:{hsearch-jira-url-prefix}/HSEARCH-3957[HSEARCH-3957]/link:{hsearch-jira-url-prefix}/HSEARCH-3972[HSEARCH-3972]:
+Upgrade to ORM 5.4.19.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-3964[HSEARCH-3964]:
+Hibernate Search is now routinely tested against JDK8, JDK11, JDK15 and JDK16.
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will not work correctly.
+====
+
+[[breaking_changes]]
+=== Breaking changes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3899[HSEARCH-3899]:
+`query.explain()` now expects to be passed an entity ID instead of a document ID.
+In short, if your entity has an ID of type Long, you need to pass a Long (previously you had to pass a String).
+* link:{hsearch-jira-url-prefix}/HSEARCH-3939[HSEARCH-3939]:
+The internal format used to store `GeoPoint` fields in the Lucene backend has changed.
+Applications relying on the Lucene backend and declaring `GeoPoint` fields should fully reindex their data.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3948[HSEARCH-3948]:
+`@IndexedEmbedded.storage`/`ObjectFieldStorage` have been renamed to `@IndexedEmbedded.structure`/`ObjectStructure`.
+The older syntax is deprecated and will be removed before the `6.0.0.Final` release.
+
+=== Documentation
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3962[HSEARCH-3962]:
+The documentation now includes a section describing
+link:{hsearch-doc-url-prefix}#architecture-hsearch-components[the high-level architecture of Hibernate Search]
+and giving link:{hsearch-doc-url-prefix}#architecture-examples[examples of common application architectures].
+* link:{hsearch-jira-url-prefix}/HSEARCH-3954[HSEARCH-3954]:
+Documentation of Hibernate Search's internals (for contributors)
+has moved to https://docs.jboss.org/hibernate/search/6.0/internals/html_single/.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3262[HSEARCH-3262]:
+The documentation now includes more information and links relative to the compatibility policy,
+link:{hsearch-doc-url-prefix}#backend-elasticsearch-compatibility[especially for the Elasticsearch backend].
+* link:{hsearch-jira-url-prefix}/HSEARCH-3677[HSEARCH-3677]:
+The documentation is now considered complete for all currently implemented features.
+We've completed the following sections in particular:
+** link:{hsearch-jira-url-prefix}/HSEARCH-3598[HSEARCH-3598]: link:{hsearch-doc-url-prefix}#search-dsl-predicate[search predicates]
+** link:{hsearch-jira-url-prefix}/HSEARCH-3599[HSEARCH-3599]: link:{hsearch-doc-url-prefix}#search-dsl-sort[search sorts]
+** link:{hsearch-jira-url-prefix}/HSEARCH-3600[HSEARCH-3600]: link:{hsearch-doc-url-prefix}#search-dsl-projection[search projections]
+** link:{hsearch-jira-url-prefix}/HSEARCH-3668[HSEARCH-3668]: link:{hsearch-doc-url-prefix}#search-dsl-aggregation[search aggregations]
+** link:{hsearch-jira-url-prefix}/HSEARCH-3680[HSEARCH-3680]: link:{hsearch-doc-url-prefix}#mapper-orm-programmatic-mapping[programmatic mapping]
+** link:{hsearch-jira-url-prefix}/HSEARCH-3709[HSEARCH-3709]: link:{hsearch-doc-url-prefix}#mapper-orm-bridge-routingkeybridge[routing key bridges]
+** link:{hsearch-jira-url-prefix}/HSEARCH-3710[HSEARCH-3710]: link:{hsearch-doc-url-prefix}#mapper-orm-bridge-bridgedelement-dependencies[declaring dependencies of bridges]
+* link:{hsearch-jira-url-prefix}/HSEARCH-3953[HSEARCH-3953]:
+The part of the documentation suggesting
+link:{hsearch-doc-url-prefix}#backend-elasticsearch-indexlayout[how to implement zero-downtime reindexing]
+with manual calls to the Elasticsearch REST API
+now mentions it's only possible if the schema did not change (for now).
+
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3636[HSEARCH-3636]:
+link:{hsearch-doc-url-prefix}#backend-lucene-configuration-directory[Lucene directories]
+can now be defined on a per-index basis,
+making it easier to put indexes on completely separate filesystems.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3311[HSEARCH-3311]:
+Analyzer discriminators from Hibernate Search 5 are no longer available,
+but a different solution to the same problem is now documented:
+link:{hsearch-doc-url-prefix}#mapper-orm-alternatives[the alternative binder].
+* link:{hsearch-jira-url-prefix}/HSEARCH-3929[HSEARCH-3929]:
+Hibernate Search is now built with JDK11.
+Binaries are still compatible with JDK8, and there are no plans to remove that compatibility at the moment.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3307[HSEARCH-3307]:
+When targeting multiple indexes in a single search query,
+detection of field compatibility is now smarter and will no longer yield false negatives.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3941[HSEARCH-3941]:
+Distance sorts will no longer throw a `ClassCastException` when targeting multiple indexes in a single search query.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3266[HSEARCH-3266]:
+Using configuration properties from Hibernate Search 5
+will now lead to a bootstrap failure,
+to avoid situations where part of the configuration was incorrectly migrated.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3936[HSEARCH-3936]:
+Projectable fields in with the Elasticsearch backend are no longer marked as `stored = true` in the generated mapping.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3938[HSEARCH-3938]:
+Hibernate Search 6 will now correctly boot and shut down when using an `EnvironmentSynchronizer`
+(typically in JavaEE application servers).
+* link:{hsearch-jira-url-prefix}/HSEARCH-3937[HSEARCH-3937]:
+Error messages on boot/shutdown are now correctly displayed when using an `EnvironmentSynchronizer`
+(typically in JavaEE application servers).
+* link:{hsearch-jira-url-prefix}/HSEARCH-3506[HSEARCH-3506]:
+`.boost(float)` can now be used on the `matchAll`, `matchId`, `bool` and `nested` predicates.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3960[HSEARCH-3960]:
+Failures of Elasticsearch schema validation
+now more clearly mention they are about validation of an existing schema
+in an existing index of an existing Elasticsearch cluster.
+
+And more. For a full list of changes since the previous releases,
+please see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10061&version=31862[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* link:{hsearch-jira-url-prefix}/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
