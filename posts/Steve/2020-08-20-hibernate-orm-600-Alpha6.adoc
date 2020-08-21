@@ -1,0 +1,39 @@
+= Hibernate ORM 6.0.0.Alpha6 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Alpha6
+:release-id: 31848
+---
+
+Hibernate ORM 6.0 Alpha6 has just been released.
+
+The main design goal for 6.0 is to improve even more Hibernate's through-put performance.  High-load performance
+testing showed Hibernate's approach of reading values from `ResultSet` by name to be its most limiting factor in
+scaling throughput.  At its most basic, 6.0 is all about changing from its old strategy of read-by-name to
+read-by-position.  But that simple goal has a lot of ramifications.
+
+
+This Alpha6 release includes:
+
+* Support for https://hibernate.atlassian.net/browse/HHH-14161[named queries]
+* Support for https://hibernate.atlassian.net/browse/HHH-14162[native queries] (and named native queries)
+* Support for https://hibernate.atlassian.net/browse/HHH-14163[named ResultSet mappings]
+* Support for https://hibernate.atlassian.net/browse/HHH-14164[query result caching], including the much requested support for rebuilding fetch graphs from cached query data (https://hibernate.atlassian.net/browse/HHH-1523)
+* Support for `@Parent`, `@RowId` and `@Formula`
+* Completely https://hibernate.atlassian.net/browse/HHH-14172[dropped] Javassist as dependency and as a maintained `BytecodeProvider`
+
+See the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=31848[release notes] for additional information
+
+We have come really far, but still it is an Alpha, so there is still plenty more to do.
+
+
+== More information
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Alpha5/migration-guide.adoc[migration guide].
+
+Also check out the https://hibernate.org/orm/releases/6.0/[release page].  Join BinTray and watch the
+https://bintray.com/hibernate/artifacts/hibernate-orm[release repository] for notifications of releases
+
+To get in touch, use the usual channels as discussed on https://hibernate.org/community/
