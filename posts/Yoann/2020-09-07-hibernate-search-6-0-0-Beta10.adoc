@@ -1,0 +1,196 @@
+= Hibernate Search 6.0.0.Beta10 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 31873
+---
+
+We just published Hibernate Search 6.0.0.Beta10.
+
+This release mainly brings a total hit count threshold,
+conditional indexing, better timeouts,
+and per-index analyzer definitions for Elasticsearch.
+
+It also includes an upgrade to Lucene 8.6.1, Elasticsearch 7.9.0 and Hibernate ORM 5.4.21.Final.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+link:{hsearch-doc-url-prefix}#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Hibernate Search 5.
+
+For more information about migration and what we intend to do to help you, see
+https://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+[[total-hit-count-threshold]]
+=== Total hit count threshold
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3517[HSEARCH-3517],
+Hibernate Search is now able to take advantage of Lucene's total hit count threshold.
+
+This optimization is often seen in web search engines as the total amount of hits being displayed as
+"more than 1,000,000 hits", or some other large number, rather than the exact count.
+
+If your application works on large indexes and can accept a lower-bound estimate of the total hit count
+for queries with lots of hits in order to shave off a few milliseconds from the query execution time,
+then go ahead and try it: you will find more information in
+link:{hsearch-doc-url-prefix}#search-dsl-query-total-hits-threshold[this section of the documentation].
+
+NOTE: This optimization is only relevant when executing a search query that sorts on the score (the default).
+Any other custom sort will likely prevent this optimization from being applied.
+
+[[conditional-indexing]]
+=== Conditional indexing
+
+Hibernate Search 5 used to allow conditional indexing through the definition of
+https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/#search-mapping-indexinginterceptor[entity indexing interceptors].
+This was particularly useful when only a subset of entities needs to be indexed,
+for example only entities with the status `PUBLISHED`,
+while the others should be ignored.
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3108[HSEARCH-3108],
+this feature is coming back to Hibernate Search 6, though in a slightly different form.
+Instead of indexing interceptors, you will need to define a `RoutingBridge`,
+and instead of overriding the indexing operation (add/update/delete/...)
+you will define the routes that a document should follow when indexed
+(potentially no route, when not indexed).
+
+For more information, see
+link:{hsearch-doc-url-prefix}#mapper-orm-entityindexmapping-conditional-and-routing[this section of the documentation].
+
+[[elasticsearch-per-index-analyzer-definitions]]
+=== Per-index analyzer definitions for Elasticsearch
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3309[HSEARCH-3309], with the Elasticsearch backend,
+analyzers and normalizers can now be defined on a specific index instead of globally for all indexes.
+
+This is especially useful when adding a very specific analyzer to an existing application,
+and when this analyzer is only relevant to a few indexes:
+you will now be able to add the analyzer only on these indexes,
+and you won't have to re-create the unaffected indexes if their mapping didn't change in any other way.
+
+Configuring analyzers for a specific index is as easy as setting the configuration property
+`hibernate.search.backend.indexes.<index name>.analysis.configurer` to the name/class of your analysis configurer.
+This will override the backend-level analysis configurer,
+allowing you to configure analyzers and normalizers for this index (and this index only) as you see fit.
+
+For more information, see link:{hsearch-doc-url-prefix}#backend-elasticsearch-analysis[this section of the documentation].
+
+[[improved-timeouts]]
+=== Improved timeouts
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3787[HSEARCH-3787],
+search query timeouts will now be properly forwarded to Hibernate ORM when loading entities.
+
+Previously, when a timeout of 500ms was set on a search query,
+if the Lucene or Elasticsearch execution took 200ms and then the database queries to load entities took 5 seconds,
+the timeout wasn't triggered. This is no longer the case.
+
+NOTE: The Hibernate ORM timeout is only precise down to the second,
+because of a limitation of the underlying layer, JDBC.
+So in the example above, Hibernate ORM will only abort after 1 second
+(which is still arguably better than 5 seconds).
+
+Additionally, as of link:{hsearch-jira-url-prefix}/HSEARCH-2505[HSEARCH-2505],
+timeouts of the Elasticsearch backend work a bit differently:
+
+* The default connection timeout, which aborts a connection if it takes to long to establish, is down from 3 seconds to 1 second.
+* The default read timeout, which cancel a request if Elasticsearch takes too long to respond, is down from 60 seconds to 30 seconds.
+* The request timeout, which sets a hard deadline for Hibernate Search to process, send and receive a response to a request,
+is now unlimited by default.
++
+This means in particular that by default, sending many indexing requests simultaneously,
+then waiting for them all to be processed over a long period of time,
+should no longer lead to internal timeouts because a lot of requests are waiting in queues.
+* Requests that require a higher timeout (search queries with an explicitly defined timeout, in particular)
+will automatically raise the request timeout and read timeout as necessary on a per-request basis.
++
+This means you will no longer get a low-level timeout when executing a search query and explicitly specifying a very large timeout.
+* The timeout of search queries will now properly take into account the time spent in internal queues.
++
+This means if a search query has a timeout of 500ms and it spends 600ms in internal queues without being sent,
+it will now abort as expected.
+
+[[version_upgrades]]
+=== Version upgrades
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3989[HSEARCH-3989]:
+Upgrade to Hibernate ORM 5.4.21.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-3983[HSEARCH-3983]:
+Upgrade to Lucene 8.6.1
+* link:{hsearch-jira-url-prefix}/HSEARCH-3984[HSEARCH-3984]:
+Upgrade to Elasticsearch 7.9.0
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will lead to potentially cryptic runtime exceptions.
+====
+
+[[breaking_changes]]
+=== Breaking changes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3979[HSEARCH-3979]:
+`@IndexedEmbedded(maxDepth = ...)` has been renamed to `includeDepth`.
+The older syntax is deprecated and will be removed before the `6.0.0.Final` release.
+* `SearchResult#totalHitCount()` is now deprecated in favor of `total().hitCount()`.
+The older syntax will be removed before the `6.0.0.Final` release.
+* `RoutingKeyBridge` and `RoutingKeyBinder` are now deprecated.
+You should use `RoutingBridge` and `RoutingBinder` instead;
+see link:{hsearch-doc-url-prefix}#mapper-orm-bridge-routingbridge[this section of the documentation].
+The older interfaces will be removed before the `6.0.0.Final` release.
+* link:{hsearch-jira-url-prefix}/HSEARCH-2505[HSEARCH-2505]:
+Default timeouts of the Elasticsearch backend have changed (see <<improved-timeouts>>):
+** The default connection timeout is down from 3 seconds to 1 second.
+** The default read timeout is down from 60 seconds to 30 seconds.
+** The request timeout is now unlimited by default.
+** Requests that require a higher timeout will automatically raise the approriate timeouts on a per-request basis.
+* Some interfaces of the Search DSL now have different generic parameters;
+this should only affect applications that store DSL steps into variables,
+which is generally not recommended (use the fluent syntax instead).
+
+=== Documentation
+
+No significant changes to the documentation apart from those related to new features.
+
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3975[HSEARCH-3975]:
+The query returned by `Search.toOrmQuery(...)` now supports `scroll()` and `scroll(ScrollMode.FORWARD_ONLY)`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3980[HSEARCH-3980]:
+It is now possible to determine if a given field is multi-valued in the root document by
+link:{hsearch-doc-url-prefix}#mapper-orm-mapping-inspect[getting its descriptor from the metamodel]
+and then calling `IndexFieldDescriptor#multiValuedInRoot`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3988[HSEARCH-3988]:
+Calling `search(...).select(...)` no longer drops the type of loading options, preventing their definition.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3993[HSEARCH-3993]:
+Types `char`, `boolean`, `byte`, `float`, `double` and their respective boxed types
+can now be used as document identifiers out-of-the-box.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* link:{hsearch-jira-url-prefix}/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
