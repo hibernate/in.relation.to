@@ -1,0 +1,233 @@
+= Hibernate Search 6.0.0.Beta11 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 31875
+---
+
+We just published Hibernate Search 6.0.0.Beta11.
+
+This release mainly brings a default analyzer,
+a way to limit automatic reindexing to same-entity updates only,
+a new implementation for AWS IAM authentication,
+and a migration helper for applications moving from Search 5 to Search 6.
+
+It also includes an upgrade to Lucene 8.6.2, and Hibernate ORM 5.4.22.Final.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+link:{hsearch-doc-url-prefix}#getting-started[getting started guide]
+included in the reference documentation.
+
+[NOTE]
+====
+Hibernate Search 6 APIs differ significantly from Hibernate Search 5.
+
+For more information about migration and what we intend to do to help you, see
+https://hibernate.org/search/documentation/migrate/6.0/[the migration guide].
+====
+
+== What's new
+
+[[default-analyzer]]
+=== Default analyzer
+
+Both the Lucene backend and the Elasticsearch backend now have a default analyzer definition,
+which can be used even if you didn't configure link:{hsearch-doc-url-prefix}#concepts-analysis[analysis].
+
+Thanks to this new default analyzer, the `analyzer` attribute in `@FullTextField(analyzer = ...)` no longer needs to be set:
+for simple use cases, you can just use `@FullTextField` without any argument,
+which will create an index field using the default analyzer.
+
+This should make experimenting with Hibernate Search easier,
+even if it's unlikely that a single default analyzer will be enough for real-world applications.
+
+For more information about the default analyzer,
+see link:{hsearch-doc-url-prefix}#backend-lucene-analysis-builtin[here for Lucene]
+and link:{hsearch-doc-url-prefix}#backend-elasticsearch-analysis-builtin[here for Elasticsearch].
+
+[[reindexonupdate-shallow]]
+=== `ReindexOnUpdate.SHALLOW`: limiting automatic reindexing to same-entity updates only
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4001[HSEARCH-4001],
+it is now possible to apply `@IndexingDependency(reindexOnUpdate = ReindexOnUpdate.SHALLOW)` to an association.
+If that association also has an `@IndexedEmbedded`, then:
+
+* When the `@Indexed` entity is indexed,
+the entities targeted by the association will be index-embedded as usual (no change here).
+* When the association changes (associated entities are added or removed),
+then the `@Indexed` entity will be automatically reindexed as usual (no change here.)
+* When the associated entities are modified (e.g. their `name` property change),
+the `@Indexed` entity *will not be automatically reindexed*.
+
+This is especially useful for associations to "reference" entities (e.g. categories, types, cities, countries, ...)
+which are not expected to change and cannot possibly expose the inverse side of the association (e.g. city => address),
+which would be necessary for automatic reindexing.
+
+For more information, head to
+link:{hsearch-doc-url-prefix}#mapper-orm-reindexing-reindexonupdate[this section of the documentation].
+
+[[aws-sdk]]
+=== New implementation for AWS IAM authentication
+
+The module `org.hibernate.search:hibernate-search-backend-elasticsearch-aws` provides AWS IAM authentication,
+so that applications can use https://docs.aws.amazon.com/elasticsearch-service/[AWS Elasticsearch Service] as a backend,
+which is an alternative to an on-premises cluster or https://www.elastic.co/elasticsearch/service[Elastic's own cloud offering].
+
+This module was re-implemented to rely on the AWS SDK instead of a third-party library.
+This fixed a known bug of request signing (link:{hsearch-jira-url-prefix}/HSEARCH-3655[HSEARCH-3655]),
+and opened the way to other ways of providing credentials.
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3560[HSEARCH-3560],
+you can use all types of credentials supported by the AWS SDK,
+in particular EC2 instance roles.
+See link:{hsearch-doc-url-prefix}#backend-elasticsearch-configuration-aws[this section of the documentation] for more information.
+
+NOTE: As a result of re-implementing this module, configuration properties related to AWS authentication have changed.
+See <<breaking_changes>> for more details.
+
+[[migration-helper]]
+=== Migration helper for applications moving from Search 5 to Search 6
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3282[HSEARCH-3282],
+we publish two modules that provide *partial* compatibility with Hibernate Search 5 APIs
+backed by the Hibernate Search 6 implementations.
+
+These modules should make migration easier
+by making sure that code relying on the most-used APIs (search DSL, ...) continues to compile and run.
+The idea is to use the migration helper temporarily to make most of the application code (search queries, ...) work,
+making it easier to focus on migrating configuration and to assess the effort required to migrate the remaining code.
+
+IMPORTANT: These modules should not be used in production environments.
+They have limitations preventing full compatibility with Hibernate Search 5,
+and these limitations will never be addressed.
+All code in these modules is deprecated and will be removed in the next major version.
+
+More information will come in the following weeks about how to use these modules when migrating,
+and what their limitations are.
+In particular, expect some updates to https://hibernate.org/search/documentation/migrate/6.0/[the migration guide] soon.
+
+[[version_upgrades]]
+=== Version upgrades
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3991[HSEARCH-3991]:
+Upgrade to Lucene 8.6.2
+* link:{hsearch-jira-url-prefix}/HSEARCH-4030[HSEARCH-4030]:
+Upgrade to Hibernate ORM 5.4.22.Final
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will lead to potentially cryptic runtime exceptions.
+====
+
+[[breaking_changes]]
+=== Breaking changes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3560[HSEARCH-3560]:
+  the properties to configure AWS authentication have changed:
+** `hibernate.search.backend.aws.signing.region` is now `hibernate.search.backend.aws.region`.
+** In order to specify credentials statically in configuration properties,
+   you must set `hibernate.search.backend.aws.credentials.type` to `static` and also set the following two properties.
+** `hibernate.search.backend.aws.signing.access_key` is now `hibernate.search.backend.aws.credentials.access_key_id`.
+** `hibernate.search.backend.aws.signing.secret_key` is now `hibernate.search.backend.aws.credentials.secret_access_key`.
+** `hibernate.search.backend.aws.signing.enabled` didn't change.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3994[HSEARCH-3994]:
+  `org.hibernate.search.mapper.orm.mapping.SearchIndexedEntity` is now deprecated
+  and will be removed before the release of Hibernate Search 6.0.0.CR1.
+  Use `org.hibernate.search.mapper.orm.entity.SearchIndexedEntity` instead.
+* The incubating interface `org.hibernate.search.mapper.pojo.extractor.ContainerExtractor` changed;
+  see its javadoc for defails of the new interface.
+* The `array` container extractor was renamed to `array-object`.
+  Variants were introduced for arrays of each primitive type (`array-char`, `array-int`, `array-byte`, ...).
+  See `org.hibernate.search.mapper.pojo.extractor.builtin.BuiltinContainerExtractors` for a list
+  of all available container extractors.
+
+=== Documentation
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3995[HSEARCH-3995]:
+Required Lucene/Elasticsearch versions are now mentioned in the link:{hsearch-doc-url-prefix}#getting-started-compatibility["Compatibility" section] of the documentation.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4013[HSEARCH-4013]:
+The getting started guide now includes a
+link:{hsearch-doc-url-prefix}#gettingstarted-framework[section related to specifics of some frameworks].
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3071[HSEARCH-3071]:
+Support for `@IndexedEmbedded.includeEmbeddedObjectId` has been restored.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4025[HSEARCH-4025]:
+Partial support for indexing entities with `@IdClass` if they have an explicit `@DocumentId`.
+Mass indexing doesn't work at the moment (link:{hsearch-jira-url-prefix}/HSEARCH-4033[HSEARCH-4033]).
+* link:{hsearch-jira-url-prefix}/HSEARCH-4002[HSEARCH-4002]:
+`MappingAnnotatedProperty` (used in annotation processors) now exposes the type of the property
+for any given `ContainerExtractorPath`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4003[HSEARCH-4003]:
+Repeatable annotations are now automatically expended when retrieved from  `MappingAnnotatedElement`
+(used in annotation processors).
+* link:{hsearch-jira-url-prefix}/HSEARCH-3994[HSEARCH-3994]:
+`SearchScope` now exposes metadata about the targeted types through `SearchScope#includedTypes`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3122[HSEARCH-3122]:
+It is now possible to configure the default value of the `dynamic` attribute of Elasticsearch mappings.
+See link:{hsearch-doc-url-prefix}#backend-elasticsearch-mapping-dynamic[this section of the documentation].
+* link:{hsearch-jira-url-prefix}/HSEARCH-3243[HSEARCH-3243]:
+Hibernate Search will now reject identifier/value bridges whose compatibility
+with the bound property cannot be validated.
+As a rule of thumb, when implementing identifier/value bridges,
+the generic type parameter `I` or `T` should always be set to a raw class.
+For more advanced implementations, you should rely on an `IdentifierBinder` or `ValueBinder`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3864[HSEARCH-3864]:
+A `java.lang.Error` thrown during mass indexing is no longer swallowed and are propagated to the caller.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3997[HSEARCH-3997]:
+Mapping arrays of primitive types (int[]/float[]/etc.) now works as expected:
+it no longer leads to a `ClassCastException` upon indexing.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3998[HSEARCH-3998]:
+Mass indexing a (non-abstract) parent class in a type hierarchy
+with a subclass annotated with `@Indexed(enabled = false)` will now correctly ignore that subclass.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3999[HSEARCH-3999]:
+Deleting an entity whose `@ElementCollection` is indexed-embedded in another entity
+no longer leads to `LazyInitializationException`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4009[HSEARCH-4009]:
+Fixed a corner case where `@IndexingDependency(derivedFrom = ...)` would lead to bootstrap failure.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4011[HSEARCH-4011]:
+Hibernate Search `ScrollableResults` now throw a JPA `QueryTimeoutException` on timeout instead of `SearchTimeoutException`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4027[HSEARCH-4027]:
+`ScrollResult.timedOut()` sometimes used to return false even though a timeout occurred with Lucene;
+this was fixed.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4028[HSEARCH-4028]:
+Elasticsearch's `SearchResultTotal` now correctly reports an approximate total hit count after a timeout.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3917[HSEARCH-3917]:
+Performance improvement: Hibernate Search now uses `TopScoreDocCollector` instead of `TopFieldDocCollector`
+when a descending score sort is requested explicitly
+(not just when it's the implicit default).
+* link:{hsearch-jira-url-prefix}/HSEARCH-3947[HSEARCH-3947]:
+Performance improvement: Hibernate Search no longer creates huge arrays for collectors
+when a query does not set a limit to the amount of retrieved hits and there are fewer than 10,000 hits.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4017[HSEARCH-4017]:
+Performance improvement: the Lucene backend no longer scans index segments that don't contain any returned hit when extracting projections.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4018[HSEARCH-4018]:
+Performance improvement: the Lucene backend now skips some filters when an index doesn't have any nested documents.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4019[HSEARCH-4019]:
+Performance improvement: the Lucene backend now only uses a `TotalHitCountCollector` when absolutely necessary.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* link:{hsearch-jira-url-prefix}/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
