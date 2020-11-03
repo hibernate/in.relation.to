@@ -1,0 +1,248 @@
+= First candidate release for Hibernate Search 6.0!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/
+:hsearch-migration-url-prefix: https://docs.jboss.org/hibernate/search/6.0/migration/html_single/
+:hsearch-javadoc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/api/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 31889
+---
+
+We just published the first candidate release for Hibernate Search 6.0: version 6.0.0.CR1.
+
+Compared to Hibernate Search 5, changes are extensive,
+due to the API overhaul, but with plenty of improvements:
+upgrades to Lucene 8 and Elasticsearch 7 of course,
+but also a more concise Search DSL with typed result types,
+full control on field declaration in Bridges,
+easier to configure and more efficient automatic indexing,
+runtime joins with nested documents, ...
+
+No more changes are planned before the final release,
+so *this is the perfect time to test your applications based on Hibernate Search*,
+and report problems as soon as possible
+so that everything works perfectly as soon as 6.0.0.Final is released.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+link:{hsearch-doc-url-prefix}#getting-started[getting started guide]
+included in the reference documentation.
+
+If you want to migrate an application based on Hibernate Search 5,
+be aware that Hibernate Search 6 APIs differ significantly from Hibernate Search 5.
+We recommend you have a look at
+see link:{hsearch-migration-url-prefix}[the migration guide].
+
+[NOTE]
+.Attention Spring users
+====
+Be aware that https://github.com/spring-projects/spring-framework/issues/25111[a bug in Spring]
+may cause your application to hang on bootstrap, unless you add specific configuration.
+This affects Spring Boot 2.3.5.RELEASE and probably earlier 2.3.x versions as well.
+
+Until the Spring project resolves this deadlock, the best workaround is to set the property
+`spring.data.jpa.repositories.bootstrap-mode` to `deferred`
+in your `application.properties`/`application.yaml`.
+
+We are also trying to implement a workaround within Hibernate Search,
+at least for applications that do not use custom beans in Hibernate Search.
+To track progress on this issue, see link:{hsearch-jira-url-prefix}/HSEARCH-4096[HSEARCH-4096].
+====
+
+== Reporting bugs
+
+While this version has been tested extensively, and we don't anticipate any particular problem,
+the goal of this candidate release is to catch as many bugs as possible before the final release.
+
+If you happen to encounter problems, please contact us:
+
+* When you're unsure whether it's a usage issue or a bug,
+ask questions on https://stackoverflow.com/questions/tagged/hibernate-search[Stack Overflow]
+with the `hibernate-search` tag
+or on https://discourse.hibernate.org/c/hibernate-search[our forums] in the "Hibernate Search" category.
+* When you're clearly facing a bug,
+report it https://hibernate.atlassian.net/browse/HSEARCH[on JIRA].
+* For more communication channels, see https://hibernate.org/community/[here].
+
+== What's new compared to Hibernate Search 5
+
+For an overview of new features and improvements in Hibernate Search 6,
+see https://hibernate.org/search/releases/6.0/#whats-new[here].
+
+== What's new compared to Hibernate Search 6.0.0.Beta11
+
+Compared to the last beta,
+this version includes the batch for Java (JSR-352) integration to the ORM mapper,
+and an upgrade to Hibernate ORM 5.4.23.Final.
+
+[[jsr-352]]
+=== Batch for Java (JSR-352) mass indexing job
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3269[HSEARCH-3269],
+Hibernate Search 6 once again includes a JSR-352 mass indexing job,
+through a dedicated module.
+
+See link:{hsearch-doc-url-prefix}#mapper-orm-indexing-jsr352[this section of the documentation]
+for more information.
+
+[[built-in-analyzers]]
+=== Built-in analyzer definitions for Lucene
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-2584[HSEARCH-2584],
+the Lucene backend now provides a few built-in analyzer definitions, for convenience.
+
+See link:{hsearch-doc-url-prefix}#backend-lucene-analysis-builtin[this section of the documentation]
+for more information.
+
+[[scroll-total-hit-count]]
+=== Scrolls now provide a total hit count
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4023[HSEARCH-4023],
+`SearchScrollResult` now provides a total hit count:
+
+[source, JAVA]
+----
+try ( SearchScroll<Book> scroll = searchSession.search( Book.class )
+        .where( f -> f.matchAll() )
+        .scroll( 20 ) ) {
+    for ( SearchScrollResult<Book> chunk = scroll.next();
+            chunk.hasHits(); chunk = scroll.next() ) {
+        for ( Book hit : chunk.hits() ) {
+            // ... do something with the hits ...
+        }
+
+        long totalHitCount = chunk.total().hitCount();
+
+        entityManager.flush();
+        entityManager.clear();
+    }
+}
+----
+
+[[es-path-prefix]]
+=== Configurable path prefix for the Elasticsearch backend
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4051[HSEARCH-4051],
+for non-standard setups where the REST API endpoint is not the root (`/`),
+a path prefix can now be configured.
+
+See link:{hsearch-doc-url-prefix}#backend-elasticsearch-configuration-path-prefix[this section of the documentation]
+for more information.
+
+[[version_upgrades]]
+=== Version upgrades
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4040[HSEARCH-4040]:
+Upgrade to Elasticsearch 7.9.2.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4087[HSEARCH-4087]:
+Upgrade to Hibernate ORM 5.4.23.Final.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4087[HSEARCH-4085]:
+Upgrade to Hibernate Commons Annotations 5.1.2.Final.
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will lead to potentially cryptic runtime exceptions.
+====
+
+[[breaking_changes]]
+=== Breaking changes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4041[HSEARCH-4041]:
+Deprecated classes, interfaces and methods that were introduced during the Alphas/Betas
+of Hibernate Search 6 were removed. This includes in particular:
+** `RoutingKeyBridge` => Use `RoutingBridge` instead.
+** API methods starting with `get`/`set`/`is` =>
+   Use the corresponding method without the `get`/`set`/`is` prefix instead.
+** `ObjectFieldStorage` => Use `ObjectStructure` instead.
+** `SearchResult#totalHitCount()` => Use `.total().hitCount()` instead.
+** `org.hibernate.search.mapper.orm.mapping.SearchIndexedEntity` =>
+   Use `org.hibernate.search.mapper.orm.entity.SearchIndexedEntity` instead.
+** `BuiltinContainerExtractors.ARRAY` => Use `BuiltinContainerExtractors.ARRAY_OBJECT` instead.
+** `@IndexedEmbedded(maxDepth = ...)` => Use `@IndexedEmbedded(includeDepth = ...)` instead.
+** `@IndexedEmbedded(storage = ...)` => Use `@IndexedEmbedded(structure = ...)` instead.
+** Search DSL:
+*** `asEntity()`/`asEntityReference()`/`asProjection(...)`/`asProjections(...)` =>
+    Use `selectEntity()`/`selectEntityReference()`/`select(...)` instead.
+*** `.predicate( f -> ...)` => Use `.where( f -> ... )` instead.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4071[HSEARCH-4071]:
+Deprecated configuration properties that were introduced during the Alphas/Betas
+of Hibernate Search 6 were removed. This includes:
+** `hibernate.search.default_backend` => No equivalent.
+   Configure the default backend with the prefix `hibernate.search.backend.`,
+   or named backends with the prefix `hibernate.search.backends.<backend name>.`.
+** Prefix `+hibernate.search.backend.index_defaults.+` => Configure index defaults directly at the backend level instead,
+   using `+hibernate.search.backend.+`.
+** Prefix `+hibernate.search.backends.<backend name>.index_defaults.+` =>
+   Configure index defaults directly at the backend level instead,
+   using the prefix `+hibernate.search.backends.<backend name>.+`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3402[HSEARCH-3402]:
+Async/reactive methods now return `CompletionStage` instead of `CompletableFuture`.
+To convert a `CompletionStage` to a `Future`, call `.toCompletableFuture()`.
+
+=== Documentation
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3283[HSEARCH-3283]:
+An extensive guide is now available for migrating from Hibernate Search 5 to Hibernate Search 6:
+see link:{hsearch-migration-url-prefix}[here].
+* link:{hsearch-jira-url-prefix}/HSEARCH-4055[HSEARCH-4055]:
+Base POJO-related API such as mapping annotations (`@Indexed`, `@GenericField`) are now included
+in the link:{hsearch-javadoc-url-prefix}[javadoc].
+* link:{hsearch-jira-url-prefix}/HSEARCH-4064[HSEARCH-4064]:
+The reference documentation now includes a
+link:{hsearch-doc-url-prefix}#limitations["Limitations" section].
+* link:{hsearch-jira-url-prefix}/HSEARCH-4076[HSEARCH-4076]:
+The reference documentation now includes a
+link:{hsearch-doc-url-prefix}#troubleshooting["Troubleshooting" section].
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3308[HSEARCH-3308], link:{hsearch-jira-url-prefix}/HSEARCH-3356[HSEARCH-3356],
+link:{hsearch-jira-url-prefix}/HSEARCH-3996[HSEARCH-3996], link:{hsearch-jira-url-prefix}/HSEARCH-4006[HSEARCH-4006],
+link:{hsearch-jira-url-prefix}/HSEARCH-4047[HSEARCH-4047]:
+Log messages and exception messages are now clearer and more consistent.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3402[HSEARCH-3402]:
+Async/reactive methods now return `CompletionStage` instead of `CompletableFuture`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3905[HSEARCH-3905]:
+The `exists` predicate now correctly takes into account dynamic fields
+when targeting an object field with the Lucene backend.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4000[HSEARCH-4000]:
+`@IndexingDependency`, `@AssociationInverseSide` are now repeatable.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3990[HSEARCH-3990], link:{hsearch-jira-url-prefix}/HSEARCH-4068[HSEARCH-4068]:
+Various optimizations for Lucene search queries.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4046[HSEARCH-4046]:
+Expose a map of static children by name in the metamodel of object fields.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4048[HSEARCH-4048]:
+Precedence of field templates now works correctly,
+even between an object field template and a value field template.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4056[HSEARCH-4056]:
+`LuceneIndexManager` now allows computing the index size (in bytes).
+* link:{hsearch-jira-url-prefix}/HSEARCH-4070[HSEARCH-4070]:
+Lucene scrolls no longer ignore `totalHitCountThreshold`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4079[HSEARCH-4079]:
+Search query no longer systematically time out when the timeout is lower than 1ms.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4080[HSEARCH-4080]:
+The total hit count is now correctly considered as a lower bound
+when Lucene search queries time out.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* link:{hsearch-jira-url-prefix}/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
