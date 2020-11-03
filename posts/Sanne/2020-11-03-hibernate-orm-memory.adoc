@@ -1,0 +1,61 @@
+= "Save some memory: upgrade to Hibernate ORM 5.4.23.Final"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:release-id: 31887
+---
+
+Version `5.4.23.Final` of Hibernate ORM is available now: allow me to highlight some fixes and enhancements.
+
+== Memory improvements
+
+Thanks to Barthel Steckemetz for having analyzed the retained heap consumption of a SessionFactory in https://hibernate.atlassian.net/browse/HHH-14271[HHH-14271].
+
+This allowed to identify some low hanging fruits to make it possible to lose some of the weight an Hibernate ORM instance brings to your applications.
+
+Motivated by these findings we made additional improvements, including in the cost of metadata being allocated during the introspection on entities during early bootstrap.
+
+We ended up improving also Hibernate Commons Annotations, which you will find has been upgraded to version `5.1.2.Final`.
+
+I'd love to get more data about the impact it has on your applications.
+In some syntethic benchmarks using code generation, this has shown to reduce memory consumption up to 50%, but we have to consider that our tests are definitely biased, as we meant to exacerbate problems with the model so to easily spot them using heap analysis tools.
+One the other hand Barthel reported improvements in the same ballpark for his real application, and only had a preliminary version of these patches.
+
+If you're inclined to share more data and hint at possible solutions, we'd be happy to help improve even further.
+
+== Quarkus and Hibernate Reactive
+
+This version and all its improvements have already been integrated in both our prototype of https://github.com/hibernate/hibernate-reactive[Hibernate Reactive]
+and within Quarkus, which will feature them in the next release.
+
+This update is particularly exciting in the context of https://quarkus.io/[Quarkus]: since it already runs Hibernate ORM with very minimal overhead,
+having Hibernate itself become lighter produces a very efficient combination.
+
+== Oracle cursors
+
+A https://hibernate.atlassian.net/browse/HHH-14289[bug] in our integration code made us mistakenly disable the use of `RefCursors` on all Oracle JDBC drivers,
+including the versions which were reporting to support this.
+
+Essentially the mistake in our code was reporting that the driver didn't support this feature, even on recent versions which actually support it.
+
+This fix should now allow to use `RefCursor` automatically on all drivers which report supporting the feature.
+
+N.B. older versions of the Oracle JDBC driver didn't support this at all, so if you want to benefit from this it's also a good idea to check if you need upgrading drivers.
+
+== Detailed changelog
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here].
+
+== Getting Hibernate ORM 5.4.23.Final
+
+All details are available and up to date on https://hibernate.org/orm/releases/5.4/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
