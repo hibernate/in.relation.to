@@ -1,0 +1,45 @@
+= "Hibernate ORM {released-version} released"
+Andrea Boriero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.3.20.Final
+:release-id: 31894
+---
+
+Today, we published a new maintenance release of Hibernate ORM 5.3: {released-version}.
+
+== Security Update
+
+This release introduces a security fix relating to https://access.redhat.com/security/cve/CVE-2020-25638 .
+
+The flaw has been present in Hibernate ORM since many years, so many older versions are affected.
+
+An upgrade is recommended, but if you are using a very old version which makes it difficult to upgrade to the latest supported versions (series 5.4 and 5.3 at time of writing this), you can disable SQL comments by setting:
+
+`hibernate.use_sql_comments=false`
+
+This also is the default, so if you did not set the use_sql_comments at all you are not affected.
+
+=== Bugfixes and Improvements
+
+In addition to the security fix the release introduces :
+
+ * A fix for the NPE thrown when an Entity `A` has a map collection having an Embeddable with an association to `A` as index (https://hibernate.atlassian.net/browse/HHH-14257[HHH-14257])
+ * An improvement that permits to use a query hint to specify the table names to which a native query refers. During the auto flush, Hibernate will check whether there are pending operation affected by those tables, and if so automatically flush those changes.
+ When the native query performs an update or delete operation, the table names are also used to determine if any second level cache region is affected and then need to be invalidated (https://hibernate.atlassian.net/browse/HHH-14325[HHH-14325])
+
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/projects/HHH/versions/{release-id}/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here]).
+
+== Getting {released-version}
+
+All details are available and up to date on https://hibernate.org/orm/releases/5.3/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
