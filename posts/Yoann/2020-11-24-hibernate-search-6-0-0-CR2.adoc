@@ -1,0 +1,186 @@
+= Second candidate release for Hibernate Search 6.0
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/
+:hsearch-migration-url-prefix: https://docs.jboss.org/hibernate/search/6.0/migration/html_single/
+:hsearch-javadoc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/api/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 31886
+---
+
+We just published a second candidate release for Hibernate Search 6.0: version 6.0.0.CR2.
+
+This release mainly brings a workaround for application hanging on startup with Spring Boot 2.3+,
+type parameters for type bridges and property bridges,
+and an alternative, URI-based configuration for target Elasticsearch hosts.
+
+It also includes an upgrade to Lucene 8.7.0, Elasticsearch 7.10.0 and Hibernate ORM 5.4.24.Final.
+
+== Getting started with Hibernate Search 6
+
+If you want to dive right into the new, shiny Hibernate Search 6,
+a good starting point is the
+link:{hsearch-doc-url-prefix}#getting-started[getting started guide]
+included in the reference documentation.
+
+If you want to migrate an application based on Hibernate Search 5,
+be aware that Hibernate Search 6 APIs differ significantly from Hibernate Search 5.
+We recommend you have a look at
+see link:{hsearch-migration-url-prefix}[the migration guide].
+
+== Reporting bugs
+
+While this version has been tested extensively, and we don't anticipate any particular problem,
+the goal of this candidate release is to catch as many bugs as possible before the final release.
+
+If you happen to encounter problems, please contact us:
+
+* When you're unsure whether it's a usage issue or a bug,
+ask questions on https://stackoverflow.com/questions/tagged/hibernate-search[Stack Overflow]
+with the `hibernate-search` tag
+or on https://discourse.hibernate.org/c/hibernate-search[our forums] in the "Hibernate Search" category.
+* When you're clearly facing a bug,
+report it https://hibernate.atlassian.net/browse/HSEARCH[on JIRA].
+* For more communication channels, see https://hibernate.org/community/[here].
+
+== What's new compared to Hibernate Search 5
+
+For an overview of new features and improvements in Hibernate Search 6,
+see https://hibernate.org/search/releases/6.0/#whats-new[here].
+
+== What's new compared to Hibernate Search 6.0.0.CR1
+
+[[spring-hanging]]
+=== Workaround for Spring's hang-on-startup bug
+
+https://github.com/spring-projects/spring-framework/issues/25111[A bug in Spring]
+may cause your application to hang on bootstrap if it relies on custom beans,
+unless you add specific configuration.
+This affects Spring Boot 2.3.0 and above.
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4096[HSEARCH-4096],
+Hibernate Search will only look for Spring beans when it cannot resolve a bean reference to a built-in bean.
+This means that an application that does not rely on custom beans will not be affected by Spring's hang-on-startup bug.
+
+Additionally, bean references in configuration properties
+can now use a prefix in order to specify how the bean is to be retrieved.
+A bean reference such as `constructor:com.mycompany.MyBean`, for example,
+will always bypass Spring and use reflection to instantiate the bean,
+thereby avoiding Spring's hang-on-startup bug.
+The bean won't be able to rely on `@Autowired` or other Spring features, however.
+
+If you really need to use Spring beans in Hibernate Search components,
+until the Spring project resolves this deadlock, the best workaround is to set the property
+`spring.data.jpa.repositories.bootstrap-mode` to `deferred`
+in your `application.properties`/`application.yaml`.
+
+[[bridges-type-param]]
+=== Type parameters for `TypeBridge`/`PropertyBridge`
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4088[HSEARCH-4088],
+`TypeBridge` is now `TypeBridge<T>` and `PropertyBridge` is now `PropertyBridge<P>`.
+The new type parameter represents the expected type of bridged elements.
+It allows for easier detection of incorrectly applied bridges.
+
+See the link:{hsearch-doc-url-prefix}#mapper-orm-bridge[updated documentation] for more information.
+
+Existing bridges implementing the raw `TypeBridge`/`PropertyBridge` types will continue to work without any change.
+
+[[uris]]
+=== Configuring URIs instead of hosts
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4099[HSEARCH-4099],
+the target Elasticsearch cluster can alternatively be configured using URIs,
+for example:
+
+[source]
+----
+hibernate.search.backend.uris = https://es1.mycompany.com:9200,https://es2.mycompany.com:9200
+----
+
+The host-based configuration can still be used, but not at the same time as URI-based configuration:
+
+[source]
+----
+hibernate.search.backend.hosts = es1.mycompany.com:9200,es2.mycompany.com:9200
+hibernate.search.backend.protocol = https
+----
+
+[[version_upgrades]]
+=== Version upgrades
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4098[HSEARCH-4098]: Upgrade to Lucene 8.7.0
+* link:{hsearch-jira-url-prefix}/HSEARCH-4104[HSEARCH-4104]: Upgrade to Elasticsearch 7.10.0
+* link:{hsearch-jira-url-prefix}/HSEARCH-4111[HSEARCH-4111]: Upgrade to Hibernate ORM 5.4.24.Final
+
+[WARNING]
+====
+Hibernate Search 6 requires ORM 5.4.4.Final or later to work correctly.
+Earlier 5.4.x versions will lead to potentially cryptic runtime exceptions.
+====
+
+[[breaking_changes]]
+=== Breaking changes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4096[HSEARCH-4096]:
+Bean references in configuration properties (e.g. for an analysis configurer) are now parsed.
+Attempting to reference a bean whose name contains a colon (e.g. `my.company:analysis:configurer`)
+will lead to an exception on bootstrap.
+To work around that, prefix the bean name with the bean resolution mode,
+for example `bean:my.company:analysis:configurer`.
+See link:{hsearch-doc-url-prefix}#configuration-bean-reference-parsing[here] for more information.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4100[HSEARCH-4100]:
+Queries and requests are now logged at  the `TRACE` level.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4101[HSEARCH-4101]:
+The default required status for Elasticsearch indexes is now `yellow`.
+
+=== Documentation
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4067[HSEARCH-4067]:
+Configuration examples no longer include confusing comments (such as `(default)`).
+* link:{hsearch-jira-url-prefix}/HSEARCH-4074[HSEARCH-4074]:
+It should be clearer which type of bridge to chose, depending on the use case.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4094[HSEARCH-4094]:
+The documentation of the JSR-352 integration now clearly mentions that an additional dependency is necessary.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4113[HSEARCH-4113]:
+Documented a limitation regarding the serialization of an ORM `Session`.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4102[HSEARCH-4102]:
+When using Elasticsearch, the link:{hsearch-doc-url-prefix}#backend-elasticsearch-indexlayout-strategy-no-alias[`no-alias` layout strategy]
+can now be selected in order to avoid index aliases altogether.
+This is mainly useful on legacy applications.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4069[HSEARCH-4069]:
+`SearchResult.took()` is now more accurate with the Lucene backend.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4107[HSEARCH-4107]:
+With Spring Boot 2.4+, the methods `Search.getFullTextEntityManager(...)`/`Search.getFullTextSession(...)`
+of the Search 5 migration helper will no longer throw a `ClassCastException`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4108[HSEARCH-4108]:
+The `SearchSession` returned by `Search.session(...)` can now be used from multiple threads
+if the `EntityManager`/`Session` is thread-safe.
+Typically, that's the case for an `EntityManager`/`Session` injected by CDI or Spring into a transactional bean.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4112[HSEARCH-4112]:
+Hibernate Search will no longer fail to index entities when using Spring with JTA enabled.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4116[HSEARCH-4116]:
+Empty, blank or null configuration properties will now be ignored when detecting unused properties.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the https://hibernate.org/search/releases/6.0/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* link:{hsearch-jira-url-prefix}/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
