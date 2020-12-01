@@ -1,0 +1,76 @@
+= "Introducing Hibernate Reactive"
+Gavin King
+:awestruct-tags: [ "Hibernate Reactive" ]
+:awestruct-layout: blog-post
+---
+
+:HR: https://github.com/hibernate/hibernate-reactive
+:vertx: https://vertx.io/docs/#data_access
+:Mutiny: https://smallrye.io/smallrye-mutiny/
+:docs: https://github.com/hibernate/hibernate-reactive/blob/master/documentation/src/main/asciidoc/reference/introduction.adoc
+
+Reactive programming lets us take advantage of non-blocking IO to reduce resource
+usage in our programs. For a long time, non-blocking IO was something that just
+wasn't an option for programs which interact with relational databases, since data
+access APIs like JDBC and ODBC were designed around a fundamentally synchronous,
+blocking paradigm.
+
+That's changed quite recently, with initiatives like the {vertx}[Vert.x client APIs]
+for PostgreSQL, MySQL, Db2, and SQL Server, along with other similar projects. Thus,
+it's now possible for a Java program to interact with a relational database in a
+completely asynchronous, non-blocking fashion.
+
+Furthermore, APIs like {Mutiny}[Mutiny] simplify reactive programming using streams
+instead of nested callbacks, alleviating at least some of the pain of asynchronous
+programming in Java.
+
+But of course back in 2006, when we designed the Java Persistence API to simplify
+ORM in Java and unify the ORM implementations that existed at the time, "reactive
+programming" wasn't on anyone's radar. So JPA offers an API that is fundamentally
+blocking in nature. "Reactive ORM" is something that simply hasn't existed.
+
+So today we're introducing the community to {HR}[Hibernate Reactive], a reactive
+API for Hibernate ORM, which supports non-blocking database clients and reactive
+programming as a paradigm for interacting with the relational database.
+
+Hibernate Reactive reuses most of the implementation of Hibernate ORM, but replaces
+the code which interacts with JDBC with a new layer designed around reactive streams,
+and exposes a new reactive `Session` API to the programmer.
+
+In fact, there's _two_ reactive `Session` APIs, one for programs using Mutiny, and
+one for programs using Java's `CompletionStage`.
+
+If you've used Hibernate before, and if you've also done some programming with
+reactive streams, you should be immediately right at home with Hibernate Reactive.
+If you've never used Hibernate, or if you've never done reactive programming, well,
+here's an opportunity to learn something new, and we're here to help!
+
+Whichever situation applies to you, the best starting point is our
+{docs}[Introduction to Hibernate Reactive].
+
+Hibernate Reactive works in both Vert.x and Quarkus, and we'll have more to say
+about reactive data access in Quarkus in a future post. It's been tested with
+PostgreSQL, MySQL, and Db2.
+
+I would like to finish by requesting caution. As you can imagine, the goal of this
+project is performance. However, one shouldn't expect Hibernate Reactive to be faster
+than regular Hibernate ORM in all or even most situations.
+
+In particular, if you test data access performance on your laptop with a program
+accessing a local database with a teensy amount of data that fits completely in the
+database's cache, then there's _no reason at all_ for you to expect to see a
+performance improvement with Hibernate Reactive. We don't magically make it faster
+to read bytes from memory!
+
+But even in many much more realistic situations, reactive code isn't automatically
+faster than regular code using blocking IO. To see a difference, you would need a
+situation where many server threads would block waiting for a response from a remote
+database server.
+
+In our testing, we _have_ seen evidence that the performance of code using Hibernate
+Reactive degrades more slowly than code using regular Hibernate in a test environment
+designed to emulate this situation, but I must add the strong caveat that these are
+very preliminary results, from which I hesitate to draw any sort of hard conclusion.
+
+As usual, I strongly urge you to do your own performance testing, of your own program,
+in your own production runtime environment, with your own typical workloads.
