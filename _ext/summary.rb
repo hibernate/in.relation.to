@@ -12,6 +12,11 @@ module InRelationTo
         posts = site.send( @post_items_property )
         posts.each do |post|
           post.summary = extract_summary(post.content.force_encoding("UTF-8"))
+          if !post.description
+            description_html = Nokogiri::HTML::fragment(post.summary)
+            description_html.search('p,div,br').each{ |e| e.after "\n" }
+            post.description = description_html.content
+          end
         end
       end
 
