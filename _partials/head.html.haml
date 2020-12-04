@@ -1,4 +1,7 @@
 - real_page = page["real_page"]
+- post = page["post"]
+- # Author is a String in editor mode only
+- member = real_page.author ? site.people.values.detect{|member| member.name == (real_page.author.is_a?(String) ? real_page.author : real_page.author[0].to_s)} : nil
 
 %meta(charset="utf-8")
 %meta(name="viewport" content="width=device-width, initial-scale=1.0")
@@ -6,13 +9,24 @@
 %meta(HTTP-EQUIV="X-XSS-Protection" content="1; mode=block")
 %meta(HTTP-EQUIV="X-Content-Type-Options" content="nosniff")
 
+%meta(property="og:site_name" content="#{site.title}")
+- # For some reason the root page path is returned as '/./' - fix that.
+%meta(property="og:url" content="#{site.base_url}#{(real_page.url == '/./') ? '/' : real_page.url}")
+%meta(property="og:title" content="#{real_page.title}#{real_page.subtitle ? ' - ' + real_page.subtitle : ''}")
+- if real_page.description
+  %meta(property="og:description" content="#{real_page.description}")
+- if member && member.gravatar_hash
+  %meta(property="og:image" content="https://www.gravatar.com/avatar/#{member.gravatar_hash}?s=240")
+- else
+  %meta(property="og:image" content="#{site.base_url}/images/hibernate_icon_whitebkg.svg")
+
 - if real_page.description
   %meta(name="description" content="#{real_page.description}")
 
 - if real_page.author
   - # It's a String in editor mode only
   - if real_page.author.is_a? String
-    %meta(name="author" content="#{author}")
+    %meta(name="author" content="#{real_page.author}")
   - else
     %meta(name="author" content="#{real_page.author[0]}")
 
