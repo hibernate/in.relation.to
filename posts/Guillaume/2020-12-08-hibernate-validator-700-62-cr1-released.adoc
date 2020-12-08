@@ -1,0 +1,190 @@
+= "Hibernate Validator 6.2.0.CR1 and 7.0.0.CR1 released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+As of now, you are probably aware of the Jakarta EE 9 effort that aims to provide new foundations for EE innovation.
+
+Jakarta EE 9 is an iterative release on top of EE 8 with the main purpose of renaming all the `javax.*` packages to the `jakarta.*` packages.
+
+For a while, we will provide equivalent Hibernate Validator versions for both EE 8 and EE 9:
+Hibernate Validator 6.x will keep the `javax.*` packages while Hibernate Validator 7.x moved to the `jakarta.*` packages.
+
+Full transition in the Java ecosystem will take months if not years given how many libraries depend on the `javax.*` packages,
+that's why we will maintain both in parallel and why we are releasing two new versions today.
+
+To sum it up:
+
+* if you are using the `javax.*` packages, the 6.2 part of this announcement is for you,
+* if you are transitioning to Jakarta EE 9 and `jakarta.*` packages, 7.0 is the version you should use.
+
+Being consistent about either using the `javax.\*` packages or the `jakarta.*` is important,
+so only upgrade to Hibernate Validator 7 if you can migrate your entire stack to Jakarta EE 9.
+
+If you can't, you should keep using Hibernate Validator 6.x.
+
+[TIP]
+====
+These are candidate releases so please test them with your application and link:#feedback-issues-ideas[report back].
+
+Final releases should come very soon.
+====
+
+== 7 specific changes
+
+Hibernate Validator 7 is the Reference Implementation of Jakarta Bean Validation 3,
+which is part of Jakarta EE 9.
+
+This means that it makes use of the `jakarta.validation` package.
+
+Also the namespaces for XML configuration files have changed:
+
+* `https://jakarta.ee/xml/ns/validation/configuration` is the new namespace for configuration (i.e. `validation.xml`).
+* `https://jakarta.ee/xml/ns/validation/mapping` is the new namespace for mappings.
+
+Again, only upgrade to 7 if you want to migrate your entire stack to Jakarta EE 9.
+
+== What's new in both 7 and 6.2
+
+=== Expression Language
+
+In Hibernate Validator, for all the built-in constraint messages to be properly interpolated,
+you need an Expression Language implementation in your classpath,
+as some of the default messages use Expression Language features.
+
+These messages are part of your code so having Expression Language interpolate
+these messages is not an issue.
+
+The thing is that when creating custom violations with message templates via a `ConstraintValidatorContext`,
+these messages are also interpolated by the Expression Language engine.
+
+In most cases, it is safe.
+But if you are including user input in your message template,
+you need to be extra careful as you need to escape the user input using `addExpressionVariable()`.
+
+We already discussed a CVE related to that here: https://in.relation.to/2020/05/07/hibernate-validator-615-6020-released/ .
+At the time, we decided that it was a normal behavior, very similar to SQL injection:
+you need to escape your parameters in a similar way than when writing SQL.
+We also made the existing documentation clearer and the warning more prominent.
+
+We recently had a new report of a commonly used library not being careful about that.
+And this raised another issue that we missed before:
+there is no spec-compliant way to be safe.
+The only way to be safe is to use a Hibernate Validator-specific API.
+Which means that it is not implementation-agnostic
+and might be an issue if you plan to support both Hibernate Validator and Apache BVal.
+
+This made reconsider the situation and we decided to deeply change the way Expression Language is handled in Hibernate Validator,
+with the main changes being:
+
+* Expression Language is disabled by default for custom violations i.e. the ones you create from a `ConstraintValidatorContext`.
+* You can enable it on a case per case basis, meaning you can enable EL for one specific custom violation while staying safe.
+* Even for constraint messages, it is not allowed anymore to call bean methods in your expressions by default.
+  You can access bean properties but not call bean methods.
+* You can fine-tune the EL features you want to enable for constraints and for custom violations separately.
+
+We introduced the notion of Expression Language feature level which defines which features of the Expression Language engine are enabled.
+
+We currently accept four values for this feature level:
+
+* `NONE`: Expression Language interpolation is fully disabled.
+* `VARIABLES`: Allow interpolation of the variables injected via `addExpressionVariable()`, resources bundles and usage of the `formatter` object.
+* `BEAN_PROPERTIES`: Allow everything `VARIABLES` allows plus the interpolation of bean properties.
+* `BEAN_METHODS`: Also allow execution of bean methods. Can be considered safe for hardcoded constraint messages but not for custom violations where extra care is required.
+
+`BEAN_PROPERTIES` is the default value for constraints.
+
+`NONE` is the default value for custom violations.
+If enabled locally without specifying a feature level, it will use the `VARIABLES` feature level.
+
+The example below shows how to enable Expression Language for a custom violation:
+
+[source,java]
+----
+public class SafeValidator implements ConstraintValidator<ZipCode, String> {
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        if ( value == null ) {
+            return true;
+        }
+
+        HibernateConstraintValidatorContext hibernateContext = context.unwrap(
+                HibernateConstraintValidatorContext.class );
+        hibernateContext.disableDefaultConstraintViolation();
+
+        if ( isInvalid( value ) ) {
+            hibernateContext
+                    .addExpressionVariable( "validatedValue", value )
+                    .buildConstraintViolationWithTemplate( "${validatedValue} is not a valid ZIP code" )
+                    .enableExpressionLanguage() <1>
+                    .addConstraintViolation();
+
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isInvalid(String value) {
+        // ...
+        return false;
+    }
+}
+----
+<1> Enable Expression Language support with the default feature level for custom violations: `VARIABLES`.
+
+Note that you can define a more permissive feature level if required.
+But be very cautious and use `addExpressionVariable()` if you include user input into your message template.
+
+You can learn more about all of this in the documentation:
+
+* https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/#section-interpolation-with-message-expressions[General overview]
+* https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/#el-features[Bootstrapping a `ValidatorFactory` with a specific Expression Language feature level]
+* https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/#section-hibernateconstraintvalidatorcontext[Creating custom violations supporting EL with `HibernateConstraintValidatorContext`]
+
+While absolutely not recommended, you can go back to the previous behavior without changing your code by using https://docs.jboss.org/hibernate/validator/6.2/reference/en-US/html_single/#el-features[the two properties described at the end of this paragraph of our documentation].
+
+=== @SafeHtml removal
+
+The `@SafeHtml` constraint was planned for removal for a while.
+
+It has been dropped from both 6.2 and 7 with https://in.relation.to/2019/11/20/hibernate-validator-610-6018-released/[no replacement].
+
+=== Built-in ValueExtractors set up without reflection
+
+We had a report that a method of the reflection API we use to set up ``ValueExtractor``s
+(which are used to support container element constraints e.g. `List<@NotNull String>`)
+are not supported by the Android Java flavor.
+
+To mitigate this situation, the built-in ``ValueExtractor``s are now set up without
+using reflection.
+
+Custom ``ValueExtractor``s' setup still requires reflection
+so there is a good chance they won't work on Android.
+
+== Getting 6.2.0.CR1
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.2.0.CR1_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.2.0.CR1/hibernate-validator-6.2.0.CR1-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.2.0.CR1/hibernate-validator-6.2.0.CR1-dist.zip/download[ZIP]).
+
+== Getting 7.0.0.CR1
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:7.0.0.CR1_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/7.0.0.CR1/hibernate-validator-7.0.0.CR1-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/7.0.0.CR1/hibernate-validator-7.0.0.CR1-dist.zip/download[ZIP]).
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Bean Validation development mailing list] (discussions about the Jakarta Bean Validation specification)
+
+== What's next?
+
+Depending on the feedback we get on these two Candidate Releases, we will release both Finals in the coming weeks.
