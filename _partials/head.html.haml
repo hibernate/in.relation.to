@@ -2,6 +2,12 @@
 - post = page["post"]
 - # Author is a String in editor mode only
 - member = real_page.author ? site.people.values.detect{|member| member.name == (real_page.author.is_a?(String) ? real_page.author : real_page.author[0].to_s)} : nil
+- if real_page.title == site.title
+  - page_title = "#{real_page.subtitle ? real_page.subtitle + ' - ' : ''}#{site.title}"
+- else
+  - page_title = "#{real_page.subtitle ? real_page.subtitle + ' - ' : ''}#{real_page.title ? real_page.title : page.simple_name.capitalize} - #{site.title}"
+
+%title= page_title
 
 %meta(charset="utf-8")
 %meta(name="viewport" content="width=device-width, initial-scale=1.0")
@@ -12,7 +18,7 @@
 %meta(property="og:site_name" content="#{site.title}")
 - # For some reason the root page path is returned as '/./' - fix that.
 %meta(property="og:url" content="#{site.base_url}#{(real_page.url == '/./') ? '/' : real_page.url}")
-%meta(property="og:title" content="#{real_page.title}#{real_page.subtitle ? ' - ' + real_page.subtitle : ''}")
+%meta(property="og:title" content="#{page_title}")
 - if real_page.description
   %meta(property="og:description" content="#{real_page.description}")
 - if member && member.gravatar_hash

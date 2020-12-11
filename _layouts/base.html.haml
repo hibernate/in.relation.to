@@ -2,12 +2,7 @@
 -# The base layout for the in.relation.to blog
 %html(lang="en")
   %head
-    - if page.title == site.title
-      - page_title = "#{page.subtitle ? page.subtitle + ' - ' : ''}#{site.title}"
-    - else
-      - page_title = "#{page.subtitle ? page.subtitle + ' - ' : ''}#{page.title ? page.title : page.simple_name.capitalize} - #{site.title}"
-    %title= page_title
-    = partial( page.head_partial.nil? ? 'head.html.haml' : page.head_partial, { "real_page" => page } )
+    = partial('head.html.haml', { "real_page" => page } )
 
   %body.pushable
     = partial( 'mobile-menu.html.haml', {"real_page" => page} )
