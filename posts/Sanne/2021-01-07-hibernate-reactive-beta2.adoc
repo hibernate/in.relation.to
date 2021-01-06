@@ -1,0 +1,113 @@
+= "Hibernate Reactive: Beta 2"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Reactive", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 1.0.0.Beta2
+---
+
+This exciting new project was announced by Gavin King just a month ago; if you've missed it please check https://in.relation.to/2020/12/03/hibernate-reactive/[
+Introducing Hibernate Reactive].
+
+= Hibernate Reactive
+
+I'll reiterate the basics, and hopefully clarify some points based on feedback we've seen on Twitter.
+
+As you might have guessed, it provides a new API and implementation to connect with Relational Databases,
+without blocking or using threadpools.
+
+Yet this API will be familiar to all Hibernate and JPA users, so assuming Reactive programming is your cup of tea it
+should be fairly straight forward to http://hibernate.org/reactive/[get started].
+
+It's relying on the modern, highly performant and reactive https://vertx.io/[Eclipse Vert.x] SQL drivers; the "classic" JDBC drivers
+aren't a good fit for this solution, as any delegation to a worker pool would void our goal to achieve top efficiency.
+
+R2DBC also seems rather good, but we had to start somewhere! But don't worry, while our team is small and could use
+some help to integrate with more drivers, the internal design doesn't preclude an evolution towards supporting more
+flavours of non-blocking drivers.
+
+The Vert.x drivers have proven themselves in production via the Vert.x community for years, and regularly position themselves
+very competitively in https://www.techempower.com/benchmarks/#section=data-r19&hw=ph&test=db[independent benchmarks].
+
+Since _all interactions_ with the database now have to run asynchronously, this also includes lazy loading; the solution is
+rather simple: remove auomatic (transparent) lazy loading, and introduce http://hibernate.org/reactive/documentation/1.0/reference/html_single/#_fetching_lazy_associations[APIs to explicitly fetch] whatever data you're after.
+
+Which is great because it makes any loading operation explicit rather than possibly happen unexpectedly, eradicating any chance of
+accidentally hitting the "N+1 problem" from your application. Personally I see this as a welcome, and rather significant, evolution.
+
+Version *1.0.0.Beta2* is now available; it includes several important improvements focused on the integration with the Vert.x drivers.
+
+This Hibernate Reactive release is also included in https://quarkus.io/[Quarkus v. 1.11.0.CR1], also available from today.
+
+== Threads, Context and event loops
+
+We improved the resiliency against mistakes in integration with the high-performance Ver.x reactive database drivers.
+
+These drivers are, obviously, designed to be used by Vert.x users, which implies they are meant to be used from the event loop;
+so as long as you were using Hibernate Reactive from a Vert.x application, everything would work as designed.
+
+But if you were to use Hibernate Reactive from a different thread, such as those traditionally used by other containers
+to handle blocking operations, you would have your own application and the Hibernate Session running on the blocking thread,
+but the downstream operations processing the result of the query (statement) would run on the event loop,
+as the responses from the database are being processed asynchronously on the event loop.
+
+This get tricky to handle correctly, as it implies data races and concurrent access to the persistence context;
+the Hibernate persistence context is complex and not easily adapted to become thread-safe.
+
+Not only it would be a lot of work to make such structures thread-safe, it's also unnecessary when used
+correctly and would lead to less efficient and harder to maintain code, so that's not what we did.
+
+In the latest version `1.0.0.Beta2` the Hibernate Reactive APIs will effectively delegate the work onto the right
+thread, should it be the wrong one, so that you no longer have to worry about this; but I would still highly
+recommended to run your whole reactive application on the event loop, as this is the assumption under which
+these components were designed, and the most effective way to write high performance, efficient reactive applications.
+
+So technically, this is a safeguard to _allow_ also occasional use from the wrong thread, as this is possibly
+hard to prevent in more complex applications which have to mix blocking and reactive code.
+
+But it doesn't mean that you _should_ do this regularly; if your application has significant portions of blocking
+code it might be better to use the traditional Hibernate ORM API with traditional JDBC drivers.
+
+Maybe project Loom is more suited in such cases to improve the efficiency of your applications, while
+Hibernate Reactive is more suited for use in combination with other reactive stacks.
+
+== Limitations and safeguards
+
+We couldn't apply the same techniques to Panache Reactive yet; if you're using Quarkus and experimenting with
+Hibernate Reactive with Panache, you really should ensure you're running your code on the event loop.
+
+If you're in doubt, we can check for you. Set the following system property on the JVM:
+
+    org.hibernate.reactive.common.InternalStateAssertions.ENFORCE=true
+
+This will enable additional internal assertions, and throw a runtime exception when an operation is
+being executed on the SQL client from the wrong thread.
+
+This will most likely throw exceptions if you're attempting to use Hibernate Reactive with Panache from
+a blocking (classic) RESTEasy endpoint; the solution is simple: migrate your endpoint to use RESTEasy Reactive.
+
+I am considering to enable some of such checks by default in the future; it's currently too disruptive,
+especially as we didn't fully adapt Panache Reactive yet, but we're considering enforcing such checks in the future
+so please let me know if you get in trouble with this flag enabled.
+
+== GraalVM native images
+
+Since Hibernate Reactive is integrated in Quarkus, don't forget that this implies that your fully reactive
+application can be compiled into native code thanks to GraalVM!
+
+You could head to the https://github.com/quarkusio/quarkus-quickstarts/tree/master/hibernate-reactive-quickstart[Hibernate Reactive / Quarkus quickstart] to try it out;
+however I'd recommend either waiting for the final release of Quarkus 1.11 or adapt the quickstart to use RESTEasy Reactive; easiest way is to check out the "development" branch and set the Quarkus version (property `quarkus.platform.version` to `1.11.0.CR1`), as it was already converted.
+
+We haven't worked on optimising neither speed nor memory for running as a native image yet; any help or feedback would be great.
+
+== Feedback, issues, ideas?
+
+Please try it out and let us know what you think of it and what you'd like to see improved.
+Patches are very welcome as well.
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests, propose patches)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[Chat] (usage and development-related discussions)
