@@ -1,0 +1,50 @@
+= Hibernate Search 6.0.2.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.0
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 31921
+---
+
+We just published a bugfix release for Hibernate Search: 6.0.2.Final.
+
+== What's new
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4154[HSEARCH-4154]:
+  Upgrade to Hibernate ORM 5.4.28.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4117[HSEARCH-4117]:
+  Hibernate Search no longer throws "AssertionFailure: Unexpected duplicate key" during bootstrap
+  when an entity has two getters for the same property (e.g. `boolean isEnabled()` and `Boolean getEnabled()`).
+* link:{hsearch-jira-url-prefix}/HSEARCH-4152[HSEARCH-4152]:
+  The configuration property `hibernate.search.backend.dynamic_mapping` is no longer ignored.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4155[HSEARCH-4155]:
+  Deleting then re-inserting the same entity in a transaction now correctly results in an index update.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4156[HSEARCH-4156]:
+  Hibernate Search no longer fails on bootstrap when a Hibernate ORM association
+  uses a non-identifier column as foreign key.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4159[HSEARCH-4159]:
+  Hibernate Search now properly executes the backend's `preStop()` operation on shutdown.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4161[HSEARCH-4161]:
+  `LuceneIndexManager.computeSizeInBytes()` no longer fails if an index file is deleted while computing the index size.
+
+For a full list of changes since the previous release,
+please see the
+link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get these releases
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
