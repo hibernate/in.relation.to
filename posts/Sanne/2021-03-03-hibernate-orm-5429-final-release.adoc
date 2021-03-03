@@ -1,0 +1,39 @@
+= "Hibernate ORM {released-version} released"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.4.29.Final
+:release-id: 31922
+---
+
+Today we released yet another maintenance release: Hibernate ORM `5.4.29.Final` is now available for download from your favourite Maven Central mirror.
+
+There's nothing particularly exciting beyond the usual small bugfixes - I hope you'll agree that this is a good thing.
+
+== Java 17
+
+All tests are green when running previews of JDK 17, and since this version also includes an update to latest ByteBuddy this version of Hibernate should work well on Java 17, and without needing any special flags.
+
+Of course since JDK 17 is in early preview phase things might change, but if you happen to test it and find any issues please report them so we'll investigage them swiftly.
+
+Goes without saying, we're also ready for JDK 16, which is about to be released this month. If you find issues with JDK 16 it might be a bit late, but let us know anyway.
+
+== Fixes
+
+Some other minor defects have been fixed, for a full list see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[Release Notes].
+
+Issue https://hibernate.atlassian.net/browse/HHH-14471[HHH-14471] deserves a particular highlight: if you use batch loading with dynamic sizes for the batch, this
+bugfix is very important for you to prevent runtime exceptions under load.
+
+== Getting {released-version}
+
+All details are available and up to date on https://hibernate.org/orm/releases/5.4/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
