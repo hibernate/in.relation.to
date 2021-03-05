@@ -1,0 +1,61 @@
+= Hibernate Reactive goes 1.0
+Gavin King
+:awestruct-tags: [ "Hibernate Reactive" ]
+:awestruct-layout: blog-post
+---
+
+:HR: http://hibernate.org/reactive/
+:vertx: https://vertx.io/
+:Mutiny: https://smallrye.io/smallrye-mutiny/
+:Quarkus: https://quarkus.io
+:docs: http://hibernate.org/reactive/documentation/1.0/reference/html_single/
+:announcement: https://in.relation.to/2020/12/03/hibernate-reactive/
+:sanne: https://in.relation.to/2021/01/07/hibernate-reactive-beta2/
+:stateless: https://github.com/hibernate/hibernate-reactive/blob/master/documentation/src/main/asciidoc/reference/introduction.adoc#stateless-sessions
+:cache: https://github.com/hibernate/hibernate-reactive/blob/master/documentation/src/main/asciidoc/reference/introduction.adoc#enabling-the-second-level-cache
+:batch: https://github.com/hibernate/hibernate-reactive/blob/master/documentation/src/main/asciidoc/reference/introduction.adoc#enabling-statement-batching
+:fetch: https://github.com/hibernate/hibernate-reactive/blob/master/documentation/src/main/asciidoc/reference/introduction.adoc#association-fetching
+:annotations: https://github.com/hibernate/hibernate-reactive/blob/master/documentation/src/main/asciidoc/reference/introduction.adoc#useful-hibernate-annotations
+:rer: https://quarkus.io/blog/resteasy-reactive/
+:client: https://vertx.io/docs/#databases
+
+Three months have passed since the first {announcement}[announcement], and we're
+finally ready to release Hibernate Reactive 1.0.
+
+Hibernate Reactive is a reactive API for Hibernate ORM, which supports non-blocking
+database clients and reactive programming as a paradigm for interacting with the
+relational database. This release supports the full feature set of JPA, along with
+almost the whole feature set of Hibernate ORM core, including an impressive array of
+features for achieving high performance data access.
+
+Hibernate Reactive 1.0 supports the following databases:
+
+- PostgreSQL 13
+- MySQL 8
+- MariaDB 10
+- Db2 11.5
+- CockroachDB 20.2
+
+Communication with these databases is implemented using non-blocking IO thanks to the
+Vert.x {client}[reactive client libraries].
+
+Hibernate Reactive works well in {vertx}[Vert.x] and {Quarkus}[Quarkus]. In
+particular, it's a perfect partner for {rer}[RESTEasy Reactive]. In these reactive
+environments, our performance tests show Hibernate Reactive matching and sometimes
+outperforming more traditional data access layers which use blocking IO to interact
+with the database.
+
+Like Hibernate ORM, Hibernate Reactive gives you the choice of writing your data
+access layer using machine-generated SQL, handwritten SQL, or a mix of both. For
+users who dislike JPA's model of stateful persistence contexts, or when this model
+is an imperfect match to the performance requirements of a particular transaction,
+Hibernate provides an alternative programming model based on
+{stateless}[stateless sessions]. When it comes time to tune performance, Hibernate
+Reactive lets you easily take advantage of {cache}[caching] and {batch}[batching],
+and provides flexible strategies for tuning {fetch}[association fetching].
+
+Hibernate ORM provides a wealth of features which go beyond the JPA specification,
+and almost all of these are now supported in Hibernate Reactive. For convenience,
+we've listed some of the {annotations}[most commonly-used mapping annotations].
+
+You can find more information on the {HR}[Hibernate website].
