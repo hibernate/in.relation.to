@@ -1,0 +1,64 @@
+= Hibernate Reactive 1.0.0.CR4 released
+Davide D'Alto
+:awestruct-tags: [ "Hibernate Reactive" ]
+:awestruct-layout: blog-post
+---
+
+:getting-started: http://hibernate.org/reactive/documentation/1.0/reference/html_single/#getting-started
+
+Hibernate Reactive 1.0.0.CR4 is out now!
+
+It contains several important changes:
+
+* https://github.com/hibernate/hibernate-reactive/issues/716[#716] `Stage.Session#close()` and `Mutiny.Session#close()` are now reactive
+* https://github.com/hibernate/hibernate-reactive/issues/730[#730] Upgrade to Mutiny 0.16.0
+* https://github.com/hibernate/hibernate-reactive/issues/646[#646] Upgrade to Hibernate ORM 5.4.31.Final, compatibility with Hibernate ORM 5.5
+* https://github.com/hibernate/hibernate-reactive/issues/709[#709] Bug fix for orphan removal with one-to-one associations
+
+Thank you!
+
+== Upgrade to Hibernate ORM 5.4.31.Final
+
+It's now possible to use Hibernate Reactive
+with both Hibernate ORM 5.4 and Hibernate ORM 5.5.
+
+The only drawback is that Hibernate Reactive
+won't work with versions of Hibernate ORM
+older than 5.4.31.Final.
+
+== Reactive close
+
+Nothing changes for applications using `withSession`
+(http://hibernate.org/reactive/documentation/1.0/reference/html_single/#_obtaining_a_reactive_session[our reccomended approach]).
+
+For everyone else, it's important to update the code
+and to chain correctly operations following a `Session#close`.
+
+The signature of `Mutiny.Session#close` is now:
+```
+Uni<Void> close();
+```
+
+and for `Stage.Session#close`:
+```
+CompletionStage<Void> close();
+```
+
+Because of this, the reactive session doesn't implement the
+interface `Autoclosable` anymore.
+
+== How can I get it?
+
+All details are available on the 
+link:https://hibernate.org/reactive/releases/1.0/#get-it[Hibernate Reactive website releases page].
+
+If you are new to Hibernate Reactive, the {getting-started}[the official documentation] is a good place to start.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
