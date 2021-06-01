@@ -1,0 +1,147 @@
+= "Hibernate ORM 5.5.0.Final released"
+Christian Beikov
+:awestruct-tags: [ "Hibernate ORM", "Discussions", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.5.0.Final
+:release-id: 31946
+---
+
+We are happy to announce the new Hibernate ORM 5.5.0.Final release!
+
+== Getting started with the Jakarta JPA API
+
+As of version 5.5, Hibernate releases artifacts with a "-jakarta" artifact id suffix that implement the Jakarta JPA API.
+
+At the time of writing, the following Jakarta artifacts are released:
+
+* `hibernate-core-jakarta`
+* `hibernate-envers-jakarta`
+* `hibernate-jpamodelgen-jakarta`
+* `hibernate-testing-jakarta`
+
+Since Jakarta JPA 3.0 didn't introduce any new features, the only change needed is to switch the namespace from `javax.persistence` to `jakarta.persistence`.
+
+To get started, you need a project with at least a dependency on `org.hibernate:hibernate-core-jakarta` like this:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.hibernate</groupId>
+    <artifactId>hibernate-core-jakarta</artifactId>
+    <version>5.5.0.Final</version>
+</dependency>
+----
+
+The Jakarta versions also use the Jakarta XML Binding API, so you also need a Jakarta XML Binding implementation:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>3.0.0</version>
+</dependency>
+----
+
+If you are using Java 8 and encounter a `NullPointerException` in JAXB related code, ensure you are using the version `3.0.1` of `jakarta.xml.bind:jakarta.xml.bind-api` which includes a fix for the problem.
+Since everyone should be at least on Java 11+ now anyway, you might not run into this issue at all :)
+
+If you don't want to switch to the Jakarta JPA APIs yet, you can of course keep using the usual artifacts `hibernate-core` etc.
+At the time of writing, we did not yet decide when we will change the main artifacts (`hibernate-core` etc.) to use the Jakarata JPA APIs,
+but be assured that at least for Hibernate ORM 6.0, we will stick to using the JPA APIs. Even if we do the switch,
+we are considering to create separate artifacts with a `-jpa` artifact id suffix that implement the JPA 2.2 APIs so you can keep using the latest Hibernate without having to switch to Jakarta JPA APIs.
+
+Let's consider a simple entity for a person:
+
+[source,java]
+----
+import jakarta.persistence.*;
+import java.io.Serializable;
+
+@Entity(name = "Person")
+@Table(name = "PERSON")
+public class Person implements Serializable {
+
+    @Id
+    @GeneratedValue
+    @Column(name = "ID")
+    protected Long id;
+
+    @Column(name = "FIRST_NAME")
+    private String firstName;
+
+    @Column(name = "LAST_NAME")
+    private String lastName;
+    @Column(name = "BODY_WEIGHT")
+    private Float bodyWeight;
+    
+    // Getters and Setters
+}
+----
+
+We can easily save and query that entity with the Jakarta JPA 3.0 API just like it was possible with the JPA 2.2 API:
+
+[source,java]
+----
+import org.junit.*;
+import jakarta.persistence.*;
+
+public class JPAUnitTestCase {
+
+    private EntityManagerFactory entityManagerFactory;
+
+    @Before
+    public void init() {
+        entityManagerFactory = Persistence.createEntityManagerFactory( "templatePU" );
+    }
+
+    @After
+    public void destroy() {
+        entityManagerFactory.close();
+    }
+
+    @Test
+    public void testJakarta() throws Exception {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        entityManager.getTransaction().begin();
+
+        Person person = new Person();
+        person.setFirstName( "John" );
+        person.setLastName( "Smith" );
+        entityManager.persist( person );
+
+        Person p = entityManager.createQuery( "select p from Person p", Person.class )
+                .getSingleResult();
+        Assert.assertNotNull( p );
+
+        entityManager.getTransaction().commit();
+        entityManager.close();
+    }
+
+}
+----
+
+If you just want to checkout a pre-built example and play around with that, checkout this https://github.com/beikov/hibernate-jakarta-example[example repository]!
+
+That's it, enjoy the Jakarata goodness!
+
+=== Bugfixes
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/projects/HHH/versions/{release-id}/tab/release-report-all-issues[here] (or, for people without a Hibernate Jira account, https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here]).
+
+== Thank you
+
+Specials thanks to Karel Maesen for implementing Spatial support for CockroachDB and PostgisPG10Dialect.
+
+== Getting {released-version}
+
+All details are available and up to date on https://hibernate.org/orm/releases/5.5/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
