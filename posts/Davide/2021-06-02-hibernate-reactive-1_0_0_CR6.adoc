@@ -1,0 +1,63 @@
+= Hibernate Reactive 1.0.0.CR6 released
+Davide D'Alto
+:awestruct-tags: [ "Hibernate Reactive" ]
+:awestruct-layout: blog-post
+---
+
+:getting-started: http://hibernate.org/reactive/documentation/1.0/reference/html_single/#getting-started
+
+Hello everyone,
+we have released Hibernate Reactive 1.0.0.CR6! 
+
+Here's a summary of the most important changes:
+
+* https://github.com/hibernate/hibernate-reactive/issues/829[#829] Upgrade to Hibernate ORM 5.5.0.Final (but still compatible with the latest 5.4)
+* https://github.com/hibernate/hibernate-reactive/issues/799[#799] Upgrade to Vert.x 4.1.0
+* https://github.com/hibernate/hibernate-reactive/issues/811[#811] A bugfix about the session not getting closed in case of exception in some cases
+
+You can find a complete list of changes on https://github.com/hibernate/hibernate-reactive/milestone/7?closed=1[the Hibernate Reactive issue tracker].
+
+Thank you!
+
+== Upgrade to Vert.x 4.1.0
+
+Because of the new version, there are some changes to the configuration properties.
+A description of all (http://hibernate.org/reactive/documentation/1.0/reference/html_single/#_tuning_the_vert_x_pool)[the properties for tuning the Vert.x pool]
+are available in the documentation.
+
+But here's a list of the ones that have changed from 4.0:
+
+* `hibernate.vertx.pool.connect_timeout`: the maximum time to wait when requesting a pooled connection, in milliseconds
+* `hibernate.vertx.pool.idle_timeout`: the maximum time a connection may sit idle, in milliseconds
+* `hibernate.vertx.pool.cleaner_period`: a new property, set the Vert.x connection pool cleaner period, in milliseconds
+
+Because of this upgrade, Hibernate Reactive is not compatible with Vert.x 4.0 anymore.
+
+== How can I get it?
+
+All details are available on the 
+link:https://hibernate.org/reactive/releases/1.0/#get-it[Hibernate Reactive website releases page].
+
+If you are new to Hibernate Reactive, the {getting-started}[the official documentation] is a good place to start.
+
+== JBang
+
+If you are familiar with https://www.jbang.dev/[JBang], you can now see a list of Hibernate Reactive examples with:
+
+```
+jbang alias list hibernate/hibernate-reactive
+```
+
+if you have Docker installed on your machine, you can try:
+```
+jbang testcase@hibernate/hibernate-reactive
+```
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
