@@ -1,0 +1,67 @@
+= "Hibernate is Jakarta JPA 2.2 and JPA 3.0 certified"
+Christian Beikov
+:awestruct-tags: [ "Hibernate ORM", "Discussions", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We are pleased to announce that Hibernate 5.5.0.Final is now officially Jakarta JPA 2.2 and 3.0 certified.
+
+== Test results for JPA 2.2
+
+```
+[javatest.batch] ********************************************************************************
+[javatest.batch] Number of tests completed:  2055 (2055 passed, 0 failed, 0 with errors)
+[javatest.batch] Number of tests remaining:  3
+[javatest.batch] ********************************************************************************
+[javatest.batch] Completed running 2055 tests.
+[javatest.batch] Number of Tests Passed      = 2055
+[javatest.batch] Number of Tests Failed      = 0
+[javatest.batch] Number of Tests with Errors = 0
+[javatest.batch] ********************************************************************************
+```
+
+== Test results for JPA 3.0
+
+```
+[javatest.batch] ********************************************************************************
+[javatest.batch] Number of tests completed:  2055 (2055 passed, 0 failed, 0 with errors)
+[javatest.batch] Number of tests remaining:  3
+[javatest.batch] ********************************************************************************
+[javatest.batch] Completed running 2055 tests.
+[javatest.batch] Number of Tests Passed      = 2055
+[javatest.batch] Number of Tests Failed      = 0
+[javatest.batch] Number of Tests with Errors = 0
+[javatest.batch] ********************************************************************************
+```
+
+== Get it
+
+Switch to the Jakarta JPA 3.0 API by using one of the following Jakarta artifacts:
+
+* `hibernate-core-jakarta`
+* `hibernate-envers-jakarta`
+* `hibernate-jpamodelgen-jakarta`
+* `hibernate-testing-jakarta`
+
+Or if you want to keep using JPA 2.2 APIs, use the usual artifacts `hibernate-core` etc.
+
+== Switch to Jakarta JPA
+
+Since Jakarta JPA 3.0 didn't introduce any new features, the only change you needed is to switch the namespace from `javax.persistence` to `jakarta.persistence`.
+
+The Jakarta versions also use the Jakarta XML Binding API, so you also need a Jakarta XML Binding implementation:
+
+[source,xml]
+----
+<dependency>
+    <groupId>org.glassfish.jaxb</groupId>
+    <artifactId>jaxb-runtime</artifactId>
+    <version>3.0.0</version>
+</dependency>
+----
+
+For more details about getting started with Jakarta JPA 3.0 with Hibernate, checkout our link:2021/06/02/hibernate-orm-550-final-release/[getting started with Jakarata JPA guide].
+
+Please note that the Jakarta artifacts are still considered experimental.
+
+That's it, enjoy the Jakarata goodness!
