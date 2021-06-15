@@ -1,0 +1,65 @@
+= "Hibernate ORM {released-version} released"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.5.2.Final
+:release-id: 31951
+---
+
+While we meant to release `5.5.1.Final`, I made a mistake - so this version number will be skipped.
+
+Happy now to announce a successful release of Hibernate ORM `5.5.2.Final`! It is already available for download from your favourite Maven Central mirror.
+
+
+== Faster boot times
+
+It seems there are popular answers on StackOverflow which suggest to disable loading of Database metadata during bootstrap of Hibernate ORM,
+so to have it boot faster.
+
+In these forums an internal flag is being suggested which was meant to be used exclusively for tooling, and which we would not suggest you use for your regular application
+as some metadata we fetch from the database can have strong impact on internal strategies and workarounds, so making your favourite ORM smarter, more efficient, and sometimes
+even able to workaround bugs in specific DB versions. In some cases, disabling this metadata can also lead to tricky to diagnose bugs.
+
+But some users reported very slow boot times, mostly in relation with very large databases, and to workaround this really prefer to skip this phase.
+This was not expected so we investigated more.
+We could remove some operations which are currently unnecessary, and automatically skip some others depending on actual need.
+
+The end result is that it will now boot even faster, much faster if you had such issues, and without needing to set any flag or have to make tradeoffs with important safety features.
+
+
+=== One new configuration option
+
+There's one single new tuning know: if the automatic optimisations still don't quite get you the same quick boot as when fully disabling metadata loading, this is most likely due to
+validations we need to run for sequence optimisers which use a pooled strategy; such operations are controlled by configuration property `hibernate.id.sequence.increment_size_mismatch_strategy`
+and can now be disabled - if you really want - by setting this property to `NONE`.
+
+Note that if you are not using any such sequence optimiser (or indeed don't use sequences at all), then we automatically skip this validation as well.
+
+If you run schema validation, you can safely set this to `NONE` as the schema validation performs a similar check. If you're not running the schema validation, make sure you know what you're doing: I would suggest this is fine during development but don't keep this options enabled on your staging and production environments.
+
+
+== DDL scripts generation
+
+We now use the very commonly needed `;` separator as default when generating DDL scripts. You can still use `hibernate.hbm2ddl.delimiter` to override this, as in earlier versions.
+
+== Fixes
+
+Some other defects have been fixed, for a full list see the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[Release Notes].
+
+== Performance
+
+As often the case, some more performance related improvements have been integrated. This one change isn't mind blowing, but if you're not updating regularly you're certainly missing out the
+benefits from all the accumulated improvements we've been doing again this year (and the previous one..).
+
+== Getting {released-version}
+
+All details are available and up to date on https://hibernate.org/orm/releases/5.5/#get-it[the dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
