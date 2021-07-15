@@ -1,0 +1,64 @@
+= Hibernate Reactive 1.0.0.CR8 released
+Davide D'Alto
+:awestruct-tags: [ "Hibernate Reactive" ]
+:awestruct-layout: blog-post
+---
+
+:getting-started: http://hibernate.org/reactive/documentation/1.0/reference/html_single/#getting-started
+
+This version contains upgrades to Vert.x SQL client 4.1.1 and Hibernate ORM 5.5.3.Final.
+We've also added some sanity checks to help prevent issues caused by using the session in the wrong thread.
+
+You can find a complete list of changes on https://github.com/hibernate/hibernate-reactive/milestone/10?closed=1[the Hibernate Reactive issue tracker].
+
+Thank you!
+
+== How can I get it?
+
+All details are available on the 
+link:https://hibernate.org/reactive/releases/1.0/#get-it[Hibernate Reactive website releases page].
+
+If you are new to Hibernate Reactive, {getting-started}[the official documentation] is a good place to start.
+
+== Sessions, threads and sanity checks
+
+The Hibernate Reactive session is _NOT_ thread-safe.
+
+Using the session in different threads may cause issues that are hard to debug.
+Also, a newly created session is bound to a Vert.x context and needs to be used in the same context after that.
+
+This is normally taken care of by Hibernate Reactive when using http://hibernate.org/reactive/documentation/1.0/reference/html_single/#_transactions[`withTransaction`] or http://hibernate.org/reactive/documentation/1.0/reference/html_single/#_obtaining_a_reactive_session[`withSession`].
+
+The new sanity checks should help prevent these type of problems. In particular, you might see two types of error after the upgrade:
+
+1. `HR000068: This method should exclusively be invoked from a Vert.x EventLoop thread; ...`: this means the code is not running in the event loop thread. Depending on your code, a way to fix this is to use `Context#runOnContext` as explained in the https://vertx.io/docs/vertx-core/java/#_the_context_object[Vert.x documentation]
+
+2. `HR000069: Detected use of the reactive Session from a different Thread than the one which was used to open the reactive Session ...`: in this case the session is shared by two different threads and you need to change your code so that it doesn't happen.
+
+We don't reccomend it but it's also possible to disable the sanity checks setting the system property `org.hibernate.reactive.common.InternalStateAssertions.ENFORCE` to `true`.
+
+== The VertxInstance service
+
+Hibernate Reactive will create a new Vert.x instance if one is not available. If your application already have one, you can tell Hibernate Reactive to use it via the `VertxInstance` service.
+
+You can register your implementation using the https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader mechanism of the JDK]:
+
+1. Add a text file named `org.hibernate.reactive.vertx.VertxInstance` under:
+   ```
+   /MEATA-INF/services/
+   ```
+2. The text file will contain the path to the class implementing the `VertxInstance` interface. For example:
+   ```
+   org.myproject.MyVertxProvider
+   ```
+
+Now Hibernate Reactive will call an instance of `MyVertxProvider` every time it needs a Vert.x instance.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
