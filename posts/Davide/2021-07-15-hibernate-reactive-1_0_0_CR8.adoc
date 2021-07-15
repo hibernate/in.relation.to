@@ -44,13 +44,12 @@ Hibernate Reactive will create a new Vert.x instance if one is not available. If
 You can register your implementation using the https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html[ServiceLoader mechanism of the JDK]:
 
 1. Add a text file named `org.hibernate.reactive.vertx.VertxInstance` under:
-   ```
-   /MEATA-INF/services/
-   ```
+
+   /META-INF/services/
+
 2. The text file will contain the path to the class implementing the `VertxInstance` interface. For example:
-   ```
+
    org.myproject.MyVertxProvider
-   ```
 
 Now Hibernate Reactive will call an instance of `MyVertxProvider` every time it needs a Vert.x instance.
 
