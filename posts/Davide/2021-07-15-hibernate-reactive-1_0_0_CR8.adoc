@@ -35,7 +35,7 @@ The new sanity checks should help prevent these type of problems. In particular,
 
 2. `HR000069: Detected use of the reactive Session from a different Thread than the one which was used to open the reactive Session ...`: in this case the session is shared by two different threads and you need to change your code so that it doesn't happen.
 
-We don't reccomend it but it's also possible to disable the sanity checks setting the system property `org.hibernate.reactive.common.InternalStateAssertions.ENFORCE` to `true`.
+We don't recommend it but it's also possible to disable the sanity checks setting the system property `org.hibernate.reactive.common.InternalStateAssertions.ENFORCE` to `true`.
 
 == The VertxInstance service
 
