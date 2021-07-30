@@ -1,0 +1,47 @@
+= Hibernate Reactive 1.0.0.CR9 released
+Davide D'Alto
+:awestruct-tags: [ "Hibernate Reactive" ]
+:awestruct-layout: blog-post
+---
+
+:getting-started: http://hibernate.org/reactive/documentation/1.0/reference/html_single/#getting-started
+
+Hibernate Reactive 1.0.0.CR9 is now available!
+
+This version includes the intregration with [Miscrosoft SQL Server](https://www.microsoft.com/en-gb/sql-server?rtc=1).
+You can find a complete list of changes on https://github.com/hibernate/hibernate-reactive/milestone/?closed=1[the Hibernate Reactive issue tracker].
+
+Thank you!
+
+== How can I get it?
+
+All details are available on the 
+link:https://hibernate.org/reactive/releases/1.0/#get-it[Hibernate Reactive website releases page].
+
+If you are new to Hibernate Reactive, {getting-started}[the official documentation] is a good place to start.
+
+== Microsfot SQL Server
+
+You can use now Hibernate Reactive with Microsoft SQL Server. Like for the other databases, you will have
+to add the following dependencies to your project (using GAV coordinates):
+
+```
+org.hibernate.reactive:hibernate-reactive-core:1.0.0.CR9
+io.vertx:vertx-mssql-client:4.1.2
+```
+
+And here an example of a URL to use in the configuration:
+```
+hibernate.connection.url = sqlserver://localhost:1433
+```
+
+Check the documentation for a http://hibernate.org/reactive/documentation/1.0/reference/html_single/#_basic_configuration[list of available configuration properties].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
