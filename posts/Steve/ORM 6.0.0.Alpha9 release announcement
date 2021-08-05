@@ -1,0 +1,88 @@
+= Hibernate ORM 6.0.0.Alpha9 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Alpha9
+:release-id: 31944
+---
+
+Hibernate ORM 6.0 Alpha9 has just been released.
+
+The main design goal for 6.0 is to improve even more Hibernate's through-put performance.  High-load performance
+testing showed Hibernate's approach of reading values from `ResultSet` by name to be its most limiting factor in
+scaling throughput.  At its most basic, 6.0 is all about changing from its old strategy of read-by-name to
+read-by-position.  But that simple goal has a lot of ramifications.
+
+With Alpha9, the APIs are really starting to stabilize which is great.  
+
+A lot of work has been done in the Alpha8 and Alpha9 releases to focus on fixing test failures related to all the changes 
+and getting the full testsuite back up and running.  We are currently down to 17% failure rate, though at least some of those
+failures will be simple, small things we have not implemented yet.  For example, we recently fixed a bunch of errors related to support for
+non-id generated attributes (`@CreationTimestamp`, etc) because the code that reads back the generated values had not yet been converted
+to use read-by-position.  So long story, we are progressing nicely toward full test coverage.
+
+
+Most of the work done was simply "tasks" to integrate the read-by-position changes, so the work goes well beyond 
+the https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=31944[Jira changelog].  This Alpha9 release includes:
+
+
+* [HHH-1615] - Support for entity alias in the group by clause
+* [HHH-14495] - Use table name, rather than entity name, as base for per-entity implicit sequence naming
+* [HHH-14745] - Add FunctionContributor contract
+* Support for (non-id) value generation + documentation improvements
+* Support for composite-valued query parameters
+* Support for lock handling
+* Support for indexed collection element access through array subscript syntax
+* Support usage of boolean expression in predicate context e.g. where contains(e.field, 'token')
+* Introduction of the FILTER clause for aggregate functions
+* Fix joined subclass hql wrong join type for associations
+* Fix issue with join type for subclass tables
+* Fix issue with sql rendering of null discriminators
+* Fix wrong creation of inner join
+* Fix throw exception when more than one row with the given identifiers
+* Fix SmqBagJoin, SqmSetJoin and SqmListJoin throwing NotYetImplementedException
+* Fix collection batch loading
+* Fix many to many Order column using wrong table
+* Fix AbstractEntityPersister#findSubpart returning the wrong ModelPart when the Entity has an attribute named id that it is not the identifier
+* Fix create a new instance while a corresponding one is loading
+* Fix multi value parameters expansion for SelfRenderingSqmFunction
+* Fix ManyToOneType#isModified() causing unnecessary update execution
+* Fix java.sql.Date attribute assigned wrong BasicType
+* Fix close connection when a transaction is not active and connection handling mode is not equal to AFTER_STATEMENT
+* Fix StatelessSession#uniqueResult() not clearing the temporary PersistenceContext
+* Fix ScrollableResultsImpl not initializing non lazy collections
+
+
+
+== hibernate-community-dialects artifact
+
+One change in particular that is worth a https://github.com/hibernate/hibernate-orm/discussions/3783[discussion] is the decision to
+move certain Dialects out of the main `hibernate-core` artifact into a separate `hibernate-community-dialects` artifact.  These Dialects
+are ones that are not routinely tested and so are moved to this new artifact in order to set proper expectations with regard to using them.
+
+This follows our established guidelines about what it means for a Dialect to be considered supported.  All supported Dialects
+exist in the `hibernate-core` artifact.  The process to add a new supported Dialect essentially means someone taking responsibility
+for setting up CI runs and agreeing to fix any reported issues.  Contact us on https://hibernate.zulipchat.com/#narrow/stream/132094-hibernate-orm-dev[chat]
+or the https://lists.jboss.org/mailman/listinfo/hibernate-dev[hibernate-dev] mailing list if you wish to champion a Dialect for support.
+
+
+
+== Gradle Enterprise
+
+I want to give a huge thanks to the Gradle team for getting Hibernate set up on https://ge.hibernate.org[Gradle Enterprise] hosting and giving us lots of
+help to make huge improvements to the build.  Especially Nelson Osacky and Etienne Studer - without you guys we never would have figured all of this out.
+
+I highly recommend having a look at the Gradle Enterprise offering for organizations wanting to get the most productivity, performance and reproducibility 
+out of their builds.  See https://gradle.com/ for details
+
+
+
+== More information
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Alpha5/migration-guide.adoc[migration guide].
+
+Also check out the https://hibernate.org/orm/releases/6.0/[release page].  Join BinTray and watch the
+https://bintray.com/hibernate/artifacts/hibernate-orm[release repository] for notifications of releases
+
+To get in touch, use the usual channels as discussed on https://hibernate.org/community/
