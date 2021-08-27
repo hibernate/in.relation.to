@@ -1,0 +1,54 @@
+= "Hibernate ORM {released-version} released"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.6.0.Beta1
+:release-id: 31968
+---
+
+We just released Hibernate ORM `5.6.0.Beta1`; the `5.6.x` series will be rather light on features as all stronger improvements are now reserved for versions `6+`, but we're starting a cleanup so to help you get prepared with the migration to six.
+ 
+This is also a strategy to allow us to be more conservative with the patches we apply to `5.5` series, which we will maintain for longer like we do already with `5.3` and `5.4` but somewhat delaying backports of fixes to these branches, to give us all that extra level of confidence.
+
+== So what can you expect in 5.6 ?
+
+Those of us who are not focusing exclusively on 6 are working on two main areas:
+
+ * Hibernate Reactive, and the supporting changes needed in Hibernate ORM core.
+ * Benchmarking and runtime performance improvements.
+ 
+Such changes will regularly appear first in `5.6`, then applied to `6` as well.
+
+As always, bugfixes will appear in `5.6` first and taken in consideration for backporting as necessary.
+
+== Bye bye Javassist
+
+To help people prepare the move to 6, and honestly also help us to start reducing the amount of maintained code, we'll start already removing some long deprecated functionality.
+
+The ability to use Javassist to perform bytecode enhancement was the first to bite the dust and is now removed.
+
+The use of *Byte Buddy* has been the default since version 5.3, we then deprecated the use of Javassist as enhancer, and in this 5.6
+release it was finally removed: just use Byte Buddy and you'll be fine.
+
+For those of you who aren't fine with Byte Buddy... well I wish you had spoken up earlier, but even so open an issue and we'll see what can be done.
+
+== Getting {released-version}
+
+All details are available and up to date on https://hibernate.org/orm/releases/5.6/#get-it[the dedicated page on hibernate.org].
+
+Full changelog: https://hibernate.atlassian.net/issues/?jql=project%20%3D%20%22HHH%22%20AND%20fixVersion%20%3D%20%225.6.0.Beta1%22[changelog for 5.6.0.Beta1]
+
+== Hibernate ORM 5.5.7.Final
+
+We also released Hibernate ORM 5.5.7.Final, which offers some minor bugfixes and performance improvements when compared to `5.5.6.Final`.
+
+Detailed changelog on https://hibernate.atlassian.net/issues/?jql=project%20%3D%20%22HHH%22%20AND%20fixVersion%20%3D%20%225.5.7%22[changelog for 5.5.7.Final]
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
