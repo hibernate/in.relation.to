@@ -1,0 +1,80 @@
+= "Hibernate: all systems go for Java 17"
+Sanne Grinovero
+:awestruct-tags: [ "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Today https://mail.openjdk.java.net/pipermail/jdk-dev/2021-September/006037.html[OpenJDK 17 was released], and we're very excited about it!
+Congratulations to Mark Reinhold and all fantastic OpenJDK contributors for the very promising milestone.
+
+If you are using any Hibernate libraries in your project, we made sure that this is no excuse holding you back from upgrading:
+all our maintained branches have been regularly tested with early releases of OpenJDK 17, any patches we needed to apply have long been included in maintenance releases.
+
+By now our projects are already preparing for OpenJDK 18 - technically for our QA, Java 17 is old news: I hope that's reassuring for you all.
+
+== OpenJDK Quality Outreach
+
+The OpenJDK team has setup a fantastic process to solicit early feedback from popular OSS projects;
+the Hibernate team is proud to have helped with this initiative for some years now, hopefully this will ensure that the amount of issues people will encounter is indeed very minimal, and quite possibly none at all.
+
+If you want to learn more about Quality Outreach, see the https://wiki.openjdk.java.net/display/quality/Quality+Outreach[OpenJDK Wiki for Quality Outreach].
+
+== Hibernate ORM
+
+The actively maintained branches of Hibernate ORM are
+
+* 5.3.x : first released on May 14, 2018: our oldest maintaned branch also works fine with Java 17 provided you upgrade to version `5.3.22.Final`
+* 5.4.x : It's best to use `5.4.32.Final` (current latest), so to get the ByteBuddy update having best support for JDK17
+* 5.5.x : Any version should work on JDK17, but use `5.5.7.Final` to get the latest ByteBuddy to match
+* 5.6   : It's not released yet (ignoring previews) but does of course support Java 17
+* 6     : Also not available yet in Final form, but all previews being published from this summer onwards support Java 17
+
+All of these, and future maintenance releases of these branches, are expected to work fine with Java 17.
+
+==== What if I'm running an older version?
+
+We're not maintaining older versions than what we've listed here - so if you're using an older library you really should update, or risk facing maintenance problems in the long term.
+
+And for those people that don't update... well I suppose you'll ignore the OpenJDK 17 release as well.
+
+== Hibernate Search
+
+All of Hibernate Search versions 5.11, 6.0 and 6.1(Alpha preview) are also regularly tested with JDK17.
+
+== Hibernate Validator
+
+Hibernate Validator versions 7.0 6.2 are also compatible with Java 17.
+
+== Hibernate Reactive
+
+We don't have a `Final` version of Hibernate Reactive yet, but be assured that the latest previews have been successfully tested with Java 17,
+and compatibility with Java 17 is a requirement going forward.
+
+== What if we're using Java 8?
+
+If you really didn't upgrade yet to another LTS, there's no need to panic as all these versions I've listed today are still also compatible with Java 8, Java 11, and Java 16.
+
+We hope though that this makes it easy for you to upgrade either the JDK or the Hibernate libraries with the luxury of
+improved confidence from being able to upgrade one component at a time,
+and don't take it as a reason to not work on upgrades at all: both our libraries and the JDK offer substantial benefits to upgrade,
+and we will soon start considering to release libraries that no longer support JDK 8.
+
+So please, don't let your platforms rot, as it will be harder to upgrade once you have less flexibility.
+
+== Java 11 users?
+
+Java 11 users will be fine for a long time still as we don't have plans to drop support for the previous LTS anytime soon.
+
+That said, you might also want to [have a look at Java 17 as it brings many improvements]https://twitter.com/gunnarmorling/status/1434443970411704324 ,
+as it should be a straight forward upgrade for those already on 11.
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
