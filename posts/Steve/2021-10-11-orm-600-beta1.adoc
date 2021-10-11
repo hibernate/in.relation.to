@@ -1,0 +1,129 @@
+= Hibernate ORM 6.0.0.Beta1 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Beta1
+:release-id: 27100
+---
+
+The first Beta of Hibernate ORM 6.0 has just been released.
+
+We had a few main focuses for this Beta:
+
+
+== Migrate to Jakarta Persistence 
+
+Jakarta Persistence is replacing Java Persistence as Java EE transitions to Jakarta EE.  See 
+https://developers.redhat.com/blog/2019/09/12/jakarta-ee-8-the-new-era-of-java-ee-explained?ts=1633716426925[this blog] 
+for details.
+
+For users, this means transitioning from the `javax.persistence` namespace to `jakarta.persistence`.  This affects both
+package/class names as well as setting/hint names.  There are tools which help with this migration.
+
+For the short-term at least, Hibernate strives to support both sets of setting and hint names.
+
+
+== Type system
+
+The type system in 6.0 has been evolving to account for the new read-by-position approach to reading JDBC results.
+Since these contracts are changing anyway and because this is a major release, we took the opportunity to improve
+the type system and part of that has implication for users.  The main change here is the removal of the ability
+to write custom types using the `BasicType` contract.  All custom types are now based on the `UserType` contract.
+
+In a future 6.0 Beta, we will also be dropping the various `BasicType` implementations.  Applications relying on
+those specific classes should begin migrating to the alternatives.
+
+In this Beta, only custom basic types are supported.  
+
+The new custom composite type contracts are still being discussed.
+
+The new custom collection type contract will be based on the `CollectionSemantics` contract, though the best way
+to expose that is still in discussion
+
+The plan is to add support for both custom composite types and custom collection types in the next Beta.
+
+
+== Type annotations
+
+There are new annotations for applying these new contracts.  In general, all String-based type specification through
+annotations have been removed.  This was a poor original choice when Hibernate first added annotation support - it
+simply exposed XML as annotations.  The specific alterations include removal of:
+
+* `@Type`
+* `@TypeDef` / `@TypeDefs`
+* `@MapKeyType`
+* `@AnyMetaDef` / `@AnyMetaDefs`
+* `@CollectionId#type`
+
+Additionally, `@ParamDef#type` will be replaced for the next Beta.
+
+The new annotations are very well covered in the User Guide.  See specifically the _Basic Type_ and
+_@Any mapping_ sections of the `Domain Model` chapter.
+
+One important thing of note is the ability to use these new annotations as meta-annotations.  See the 
+_@Any mapping_ section for a nice example as a replacement for `@AnyMetaDef`
+
+
+== Timezone support
+
+Previous versions of Hibernate used a "normalization" scheme for storing timezone information; timezone-based
+values were normalized to UTC before writing to the database.  While this is generally the best strategy, 
+some users might prefer using another strategy such as using `WITH TIMEZONE` SQL data-type variants.  To this
+end, Hibernate has added the `TimeZoneStorageType` enum to specify how to handle timezone details.  This
+strategy can be specified per-SessionFactory using the `hibernate.timezone.default_storage` setting or
+per-attribute using the `@TimeZoneStorage` annotation.  `TimeZoneStorageType` defines the following strategies:
+
+NORMALIZE:: (default) Hibernate's legacy behavior of normalizing to UTC prior to writing
+NATIVE:: Rely on the underlying database's `WITH TIMEZONE` support.  Throws an exception if 
+    the database does not natively support `WITH TIMEZONE` *as intended by the SQL spec*.  This 
+    last part is important as it precludes databases (PostgreSQL, e.g.) which define a `WITH TIMEZONE`
+    but do not actually store the timezone.
+COLUMN:: Use a separate column to store the timezone.  This splits the value into 2 columns which we
+    anticipate having various limitations.  _Note that this strategy is not yet implemented._
+
+
+== Procedure calls
+
+Support for procedure calls, through both Jakarta Persistence and Hibernate native APIs, are implemented.
+
+One outstanding issue, which is actually an improvement, is related to https://hibernate.atlassian.net/browse/HHH-13983[result-set mapping].
+
+
+== Solidify APIs
+
+It is a Beta, so while we will minimize API changes from this point forward (aside from not-yet implemented
+features, see below) there may still be some minor changes as we move forward.  But generally speaking users
+can consider the APIs as stable.
+
+
+== Still to do
+
+There are still a few things we need to implement or fix.  This is not a comprehensive list, but a good
+start on things we know are not working:
+
+1. Custom composite types (see above)
+2. Custom collection types (see above)
+3. Cache providers - starting in 5.x, Hibernate moved to only support pluggable cache implementations through the
+    JCache specification.  The `hibernate-jcache` module uses Ehcache (as a JCache implementation) for testing.
+    Unfortunately, Ehcache defines a dependency on Java EE which conflicts with Hibernate's migration to 
+    Jakarta EE.  Since we cannot test the module, we did not feel comfortable releasing it as part of this
+    Beta.  We will monitor the https://github.com/ehcache/ehcache3/issues/2946[situation] and hopefully 
+    re-enable this module soon.
+4. Statistics - not all statistics have been re-wired yet.
+5. Gradle plugin.  Gradle's plugin publishing plugin has been giving us problems trying to release this Beta.
+    So in the interest of getting Beta1 published, we will temporarily disable publishing this plugin until
+    that can get sorted out
+
+We know these are not working, so no need to create Jira issues for these.
+
+
+
+== More information
+
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Beta1/migration-guide.adoc[migration guide].
+
+Also check out the https://hibernate.org/orm/releases/6.0/[release page]. 
+
+To get in touch, use the usual channels as discussed on https://hibernate.org/community/
