@@ -1,0 +1,75 @@
+= Hibernate Reactive 1.0.0.CR10 released
+Davide D'Alto
+:awestruct-tags: [ "Hibernate Reactive" ]
+:awestruct-layout: blog-post
+---
+
+:getting-started: http://hibernate.org/reactive/documentation/1.0/reference/html_single/#getting-started
+
+Hibernate Reactive 1.0.0.CR10 is now available!
+
+This release adds support to https://hibernate.org/reactive/documentation/1.0/reference/html_single/#_automatic_schema_export[automatic schema validation and schema update]
+for MySQL, Db2 and MS SQL Server.
+We've also changed the `openSession` and `openStateless` methods for the creation of a new session, so you might see
+some compilation errors after the upgrade.
+
+A complete list of changes is available on https://github.com/hibernate/hibernate-reactive/milestone/12?closed=1[the Hibernate Reactive issue tracker].
+
+Thanks a lot!
+
+== How can I get it?
+
+All details are available on the 
+link:https://hibernate.org/reactive/releases/1.0/#get-it[Hibernate Reactive website releases page].
+
+If you are new to Hibernate Reactive, {getting-started}[the official documentation] is a good place to start.
+
+== Changes to openSession and openStatelessSession
+
+These are the methods we changed to open a new `Mutiny.Session` or `Mutiny.StatelessSession`:
+
+* `Uni<Session> openSession();`
+* `Uni<Session> openSession(String tenantId);`
+* `Uni<StatelessSession> openStatelessSession()`;
+* `Uni<StatelessSession> openStatelessSession(String tenantId);`
+
+The difference is that they used to return a `Mutiny.Session` or `Mutiny.StatelessSession`
+(we applied similar changes to `Stage.Session` and `Stage.StatelessSession`).
+
+This is an example of the code you could write before this release:
+
+====
+[source,java]
+----
+Mutiny.Session session = sessionFactory.openSession();
+session.find(Book.class, id)
+       .invoke(book -> ... /* do something with the book */)
+       .eventually(session::close);
+----
+====
+
+And this is how the same code looks like now:
+
+====
+[source,java]
+----
+Uni<Mutiny.Session> sessionUni = sessionFactory.openSession();
+sessionUni.chain(session -> session.find(Book.class, id)
+                .invoke(book -> ... /* do something with the book */)
+                .eventually(session::close));
+----
+====
+
+The same apply for `openSession` in `Stage.SessionFactory`.
+
+If you are interested to the whole discussion we had about this change,
+you can check https://github.com/hibernate/hibernate-reactive/issues/950[the relative issue on GitHub].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
