@@ -1,0 +1,252 @@
+= Hibernate Search 6.0.7.Final, 5.11.10.Final and 5.10.12.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.0
+:hsearch-version-family-5-11: 5.11
+:hsearch-version-family-5-10: 5.10
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 31964
+:hsearch-jira-version-id-5-11: 31941
+:hsearch-jira-version-id-5-10: 31945
+---
+
+We just published three maintenance releases for Hibernate Search:
+6.0.7.Final, 5.11.10.Final and 5.10.12.Final.
+
+These releases mainly upgrade Hibernate Search to the latest compatible Hibernate ORM versions,
+add deprecations in the 5.x versions for features that are no longer present in 6.0,
+and fix a few bugs.
+
+== What's new
+
+For a full list of changes since the previous release,
+see the release notes:
+
+* link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[6.0.7.Final]
+* link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id-5-11}[5.11.10.Final]
+* link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id-5-10}[5.10.12.Final]
+
+=== 6.0.7.Final
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4303[HSEARCH-4303]:
+Inserting/deleting a contained entity without performing the corresponding update
+on the other side of the association in the containing entity
+will now trigger reindexing just as it used to in Hibernate Search 5.
++
+This comes with the same limitations as in Hibernate Search 5:
+if the other side of the association is already loaded, the new entity will be ignored.
+So if you can, don't rely on this fix and instead
+https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/#mapper-orm-indexing-automatic-concepts-session-consistency[make sure you always update both sides of associations].
+* link:{hsearch-jira-url-prefix}/HSEARCH-4307[HSEARCH-4307]:
+Hibernate Search's detection of its own version (for logging on startup) should now work even on native images.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4331[HSEARCH-4331]:
+We added a few default identifier bridges.
++
+All types that used to be supported for document identifiers in Hibernate Search 5
+should now be supported in Hibernate Search 6 as well
+(though https://docs.jboss.org/hibernate/search/6.0/migration/html_single/#data-format[possibly with a different format]),
+https://docs.jboss.org/hibernate/search/6.0/migration/html_single/#behavior-default-bridge-java-util-class[with the exception of `java.util.Class`].
+
+=== 5.11.10.Final
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4225[HSEARCH-4225]:
+Fixed a Memory leak (SessionImpl) when updating indexes outside of a transaction.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4241[HSEARCH-4241]:
+Upgrade to Hibernate ORM 5.4.32.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4336[HSEARCH-4336]:
+In order to ease migration to Hibernate Search 6,
+a few features that don't have a direct equivalent in Hibernate Search 6.0 have been deprecated.
+You may see compilation warnings pop up in your code or warnings being logged on startup.
++
+For a full list of these new deprecations, see <<deprecations,below>>.
+
+=== 5.10.12.Final
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4333[HSEARCH-4333]: Upgrade to Hibernate ORM 5.3.23.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4336[HSEARCH-4336]:
+In order to ease migration to Hibernate Search 6,
+a few features that don't have a direct equivalent in Hibernate Search 6.0 have been deprecated.
+You may see compilation warnings pop up in your code or warnings being logged on startup.
++
+For a full list of these new deprecations, see <<deprecations,below>>.
+
+[[deprecations]]
+=== Full list of new deprecations in Hibernate Search 5.11.10.Final / 5.10.12.Final
+
+* Support for `@Analyzer` on entity types and properties is deprecated and is going to be removed in Hibernate Search 6.
++
+Assign an analyzer to each index field separately using `@Field(analyzer = @Analyzer(...))` instead.
+* Support for defining analyzers or normalizers through annotations is deprecated, and will be removed in Hibernate Search 6.
++
+Use an https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/#section-programmatic-analyzer-definition[analysis definition provider] instead.
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.annotations.AnalyzerDef`
+** `org.hibernate.search.annotations.AnalyzerDefs`
+** `org.hibernate.search.annotations.NormalizerDef`
+** `org.hibernate.search.annotations.NormalizerDefs`
+** `org.hibernate.search.annotations.CharFilterDef`
+** `org.hibernate.search.annotations.TokenizerDef`
+** `org.hibernate.search.annotations.TokenFilterDef`
+** `org.hibernate.search.cfg.AnalyzerDefMapping`
+** `org.hibernate.search.cfg.CharFilterDefMapping`
+** `org.hibernate.search.cfg.TokenFilterDefMapping`
+** `org.hibernate.search.cfg.NormalizerDefMapping`
+** `org.hibernate.search.cfg.CalendarBridgeMapping#analyzerDef`
+** `org.hibernate.search.cfg.CalendarBridgeMapping#normalizerDef`
+** `org.hibernate.search.cfg.ClassBridgeMapping#analyzerDef`
+** `org.hibernate.search.cfg.ClassBridgeMapping#normalizerDef`
+** `org.hibernate.search.cfg.ContainedInMapping#analyzerDef`
+** `org.hibernate.search.cfg.ContainedInMapping#normalizerDef`
+** `org.hibernate.search.cfg.DateBridgeMapping#analyzerDef`
+** `org.hibernate.search.cfg.DateBridgeMapping#normalizerDef`
+** `org.hibernate.search.cfg.DocumentIdMapping#analyzerDef`
+** `org.hibernate.search.cfg.DocumentIdMapping#analyzerDef`
+** `org.hibernate.search.cfg.EntityMapping#analyzerDef`
+** `org.hibernate.search.cfg.EntityMapping#normalizerDef`
+** `org.hibernate.search.cfg.EntitySpatialMapping#analyzerDef`
+** `org.hibernate.search.cfg.EntitySpatialMapping#normalizerDef`
+** `org.hibernate.search.cfg.FieldBridgeMapping#analyzerDef`
+** `org.hibernate.search.cfg.FieldBridgeMapping#normalizerDef`
+** `org.hibernate.search.cfg.FieldMapping#analyzerDef`
+** `org.hibernate.search.cfg.FieldMapping#normalizerDef`
+** `org.hibernate.search.cfg.FullTextFilterDefMapping#analyzerDef`
+** `org.hibernate.search.cfg.FullTextFilterDefMapping#normalizerDef`
+** `org.hibernate.search.cfg.IndexedClassBridgeMapping#analyzerDef`
+** `org.hibernate.search.cfg.IndexedClassBridgeMapping#normalizerDef`
+** `org.hibernate.search.cfg.IndexedMapping#analyzerDef`
+** `org.hibernate.search.cfg.IndexedMapping#normalizerDef`
+** `org.hibernate.search.cfg.IndexEmbeddedMapping#analyzerDef`
+** `org.hibernate.search.cfg.IndexEmbeddedMapping#normalizerDef`
+** `org.hibernate.search.cfg.PropertyLatitudeMapping#analyzerDef`
+** `org.hibernate.search.cfg.PropertyLatitudeMapping#normalizerDef`
+** `org.hibernate.search.cfg.PropertyLongitudeMapping#analyzerDef`
+** `org.hibernate.search.cfg.PropertyLongitudeMapping#normalizerDef`
+** `org.hibernate.search.cfg.PropertyMapping#analyzerDef`
+** `org.hibernate.search.cfg.PropertyMapping#normalizerDef`
+** `org.hibernate.search.cfg.PropertySpatialMapping#analyzerDef`
+** `org.hibernate.search.cfg.PropertySpatialMapping#normalizerDef`
+** `org.hibernate.search.cfg.ProvidedIdMapping#analyzerDef`
+** `org.hibernate.search.cfg.ProvidedIdMapping#normalizerDef`
+** `org.hibernate.search.cfg.SearchMapping#analyzerDef`
+** `org.hibernate.search.cfg.SearchMapping#normalizerDef`
+* Support for `@Analyzer.impl`/`@Normalizer.impl` is deprecated, and will be removed in Hibernate Search 6.
++
+Use `@Analyzer.definition` and an
+https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/#section-programmatic-analyzer-definition[analysis definition provider] instead.
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.annotations.Analyzer#impl`
+** `org.hibernate.search.annotations.Normalizer#impl`
+** `org.hibernate.search.cfg.FieldMapping#analyzer(java.lang.Class<?>)`
+** `org.hibernate.search.cfg.FieldBridgeMapping#analyzer(java.lang.Class<?>)`
+** `org.hibernate.search.cfg.ClassBridgeMapping#analyzer(java.lang.Class<?>)`
+** `org.hibernate.search.cfg.FieldBridgeMapping#analyzer(java.lang.Class<?>)`
+** `org.hibernate.search.cfg.FieldMapping#normalizer(java.lang.Class<?>)`
+* Support for Tika bridges is deprecated, and will be removed in Hibernate Search 6.
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.annotations.TikaBridge`
+** `org.hibernate.search.bridge.TikaMetadataProcessor`
+** `org.hibernate.search.bridge.TikaParseContextProvider`
+** `org.hibernate.search.bridge.TikaParserProvider`
+** `org.hibernate.search.bridge.builtin.TikaBridge`
+* Support for retrieving information about indexed properties will be removed in Hibernate Search 6.
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.metadata.IndexedTypeDescriptor.getIndexedProperties`
+** `org.hibernate.search.metadata.IndexedTypeDescriptor.getProperty`
+** `org.hibernate.search.metadata.IndexedTypeDescriptor.getFieldsForProperty`
+** `org.hibernate.search.metadata.IndexedTypeDescriptor.isSharded`
+* Support for using the Sort DSL (`org.hibernate.search.query.dsl.QueryBuilder#sort`)
+to sort on index fields whose type is unknown to Hibernate Search
+(not declared through `MetadataProvidingFieldBridge`)
+is deprecated and will be removed in Hibernate Search 6.
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.query.dsl.sort.SortAdditionalSortFieldContext.andByField(java.lang.String, org.apache.lucene.search.SortField.Type)`
+** `org.hibernate.search.query.dsl.sort.SortContext.byField(java.lang.String, org.apache.lucene.search.SortField.Type)`
+* Support for more-like-this queries is deprecated and will be removed in Hibernate Search 6.
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.query.dsl.QueryBuilder#moreLikeThis`
+** `org.hibernate.search.query.dsl.MoreLikeThisContext`
+** `org.hibernate.search.query.dsl.MoreLikeThisMatchingContext`
+** `org.hibernate.search.query.dsl.MoreLikeThisOpenedMatchingContext`
+** `org.hibernate.search.query.dsl.MoreLikeThisTerminalMatchingContext`
+** `org.hibernate.search.query.dsl.MoreLikeThisTermination`
+** `org.hibernate.search.query.dsl.MoreLikeThisToEntityContentAndTermination`
+* Support for facet selection ("drill-down") will be removed in Hibernate Search 6.
++
+In order to drill-down and have your query return only specific facets,
+wrap it in a boolean query (`QueryBuilder#bool()`) and
+add a filter clause (`BooleanJunction#filteredBy(Query)`)
+to constraint values of the facet field with either a keyword query (`QueryBuilder#keyword()`)
+or a range query (`QueryBuilder#range()`).
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.query.facet.FacetSelection`
+* Statistics are deprecated and will be removed in Hibernate Search 6.
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.SearchFactory#getStatistics`
+** `org.hibernate.search.stat.Statistics`
+** `org.hibernate.search.stat.spi.StatisticsImplementor`
+* Support for https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/#advanced-features-dynamic-sharding[dynamic sharding]
+is deprecated and will be removed in Hibernate Search 6.
++
+The following classes and methods are deprecated as a result:
+
+** `org.hibernate.search.store.ShardIdentifierProvider.getShardIdentifiersForQuery`
+** `org.hibernate.search.store.ShardIdentifierProvider.getShardIdentifiersForDeletion`
+** `org.hibernate.search.store.ShardIdentifierProviderTemplate.addShard`
+** `org.hibernate.search.store.ShardIdentifierProviderTemplate.getShardIdentifiersForQuery`
+** `org.hibernate.search.store.ShardIdentifierProviderTemplate.getShardIdentifiersForDeletion`
+* Support for indexing multiple entity types in the same index is deprecated and will be removed in Hibernate Search 6.
++
+Do not assign the same index to multiple entity types using `@Index(index = ...)`.
+* Support for non-exclusive index use is deprecated and will be removed in Hibernate Search 6.
++
+The following configuration properties are deprecated as a result:
+
+** `hibernate.search.[default|<indexname>].exclusive_index_use`
+* Support for index name override through configuration properties is deprecated and will be removed in Hibernate Search 6.
++
+The following configuration properties are deprecated as a result:
+
+** `hibernate.search.[fully qualified entity name].indexName`
+* Support for statistics retrieved through JMX and indexing triggered through JMX is deprecated and will be removed in Hibernate Search 6.
++
+The following configuration properties are deprecated as a result:
+
+** `hibernate.search.jmx_enabled`
+** `hibernate.search.jmx_bean_suffix`
+
+== How to get these releases
+
+All details are available and up to date on the dedicated page on hibernate.org:
+
+* link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[6.0]
+* link:https://hibernate.org/search/releases/{hsearch-version-family-5-11}/#get-it[5.11]
+* link:https://hibernate.org/search/releases/{hsearch-version-family-5-10}/#get-it[5.10]
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
