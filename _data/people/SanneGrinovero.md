@@ -2,18 +2,16 @@
 name: Sanne Grinovero
 photo:
 level: 1
-website: http://codingobsession.blogspot.com
+website: https://twitter.com/SanneGrinovero
 location: London, UK
-occupation: Doing stuff at JBoss, a Division of Red Hat Inc
+occupation: Middleware Architect at Red Hat, Hibernate technical lead
 gravatar_hash: 57637a2eb871b34eba14e700c78c6a5d
 active: true
 ---
-I'm working in the Hibernate and Infinispan teams at Red Hat, caring about Lucene
-integration in products we support, striving to make it easier to use and to
-integrate in well known APIs and patterns, and finally to make it scale better;
-I love clean and well performing code.
-I've been an early adopter of cloud deployments scaling Lucene to a large number
-of requests on Amazon EC2 using Hibernate Search, and after that I worked with
-JIRA to make it clusterable via Infinispan.
-I've lived in Holland, Italy, the Dominican Republic, Chile, Portugal and the UK;
-love OSS and socializing with other developers to improve all and any OSS project.
+Sanne is the technical lead of the Hibernate team at Red Hat, where he is an Architect in the engineering department.
+He works across all Hibernate projects and Quarkus, helping define team priorities; works on performance and benchmarks,
+tries to mediate the needs of the OSS community and the business requirements which fund the project, while balancing
+innovation with the requirements of established users.
+He also likes to contribute to many other OSS projects, such as Infinispan, Wildfly, Lucene, Elasticsearch, GraalVM and OpenJDK - and many others, depending on the needs of our community and our projects.
+He lived in Holland, Italy, the Dominican Republic, Chile, Portugal; currently resides in the UK;
+loves OSS and socializing with other developers to improve all and any OSS project.
