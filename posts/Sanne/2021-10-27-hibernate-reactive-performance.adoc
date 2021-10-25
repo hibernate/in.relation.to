@@ -1,0 +1,185 @@
+= "Hibernate Reactive: is it worth it?"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate Reactive", "Performance" ]
+:awestruct-layout: blog-post
+---
+
+== Looking at performance and scalability
+
+As we spent the last year preparing for https://in.relation.to/2021/10/27/hibernate-reactive-1/[the first stable release of Hibernate Reactive]
+we have been trying to answer some questions we had.
+
+We were curious to see if we can indeed show when it might be worth switching to Hibernate Reactive when working with relational databases:
+both for our own understanding, and to help all of you make a reasonable decision.
+
+We discovered it's not simple to answer such questions as databases are designed for classic interactions;
+this has implications at various levels - from the low-level protocol design up to higher-level constructs,
+such as the highly desirable need to encapsulate units of work in ACID transactions,
+which are modeled by defining explicit boundaries for the "work" being performed: a transaction begins at a point in time A,
+ends at a point in time B, and all operations enqueued on that same connection within those markers are considered
+as taking part within this scope.
+
+This implies for example that the beginning of such a "span" frequently ties up a physical connection, making it
+not quite as reusable for other purposes as other reactive technologies can do.
+
+Another implication is that such "time-bound markers" make the interactions unsuitable to work with continuous streams:
+yes, you can work with streams and cursors, but you still need to mark your beginning and end of work scopes.
+
+I'm oversimplifying this a little for sake of providing a picture of the difficulties, as of course details of protocols
+and database capabilities vary significantly across implementations (and I'm still learning about such details myself)
+- but that's also part of our problem: we're working now at this lower level, at which such details matter,
+while they did not matter much when working with standard JDBC over established interaction patterns.
+
+So while Hibernate Reactive benefits from the fully reactive design of the Vertx SQL client libraries, some patterns of interaction
+are still constrained by the underlying protocol requirements; this implies not all use cases actually perform better - or even
+differently than using the traditional stack based on Hibernate ORM, JDBC drivers, and JDBC connection pools,
+as there are resource limitations that can affect both the imperative and reactive stacks in equal ways.
+
+
+== So, when is it worth using Hibernate Reactive?
+
+We are of course wondering if our efforts in this area can actually showcase any significant benefit compared to
+using the classic Hibernate ORM.
+
+But before getting into performance considerations, there is a straightforward answer: if your application is
+already reactive to the core, then it is undoubtedly easier to integrate with a reactive framework like Hibernate
+Reactive than trying to integrate with the traditional blocking Hibernate ORM.
+
+So if you're creating a Vert.x application, or using Quarkus with the other reactive components it provides such as RESTEasy Reactive,
+then this question has an easy answer: it's definitely preferable to use Hibernate Reactive.
+
+But let's discuss performance metrics now, as we also want to see if it can be more efficient to use this paradigm.
+
+
+== Techempower tests
+
+In this benchmark from the popular Techempower suite, a web endpoint gets hit repeatedly at a high load, and throughput is measured.
+
+Since we need a webserver, we need to package a full application; we've chosen https://quarkus.io/[Quarkus] to run it as we're
+very familiar with it, and because it features out of the box integration extensions for both Hibernate ORM "classic" and
+Hibernate Reactive, allowing us to compare the variables that matter the most for us in this context.
+
+Quarkus also has the ability to run in a "pure reactive" mode - at least when combined with Hibernate Reactive - so that should allow the
+reactive component to leverage the lack of executor pools and avoid the overhead from thread dispatching.
+
+N.B. while the Techempower suite focuses on throughput - we are more interested in achieving a reasonable response latency
+and exploring how the latency worsens as we increase the load over it.
+
+Please keep this difference in measurement methodology in mind when comparing with other results, including the figures on the Techempower website itself: they summarize the results with a score (the throughput) which is useful as a summary to compare different
+frameworks (which is their goal), but typically we are more interested in the technology being able to be deployed in the real world, where
+what matters most is to estimate what one needs to pay for to reach a certain SLA, expressed in terms of acceptable response times, under the expected load that the system will be subjected to.
+
+== Techempower tests: Multiple Queries
+
+In the "queries" benchmark scenario of Techempower, on each web request we need to load 20 entities; it is not allowed to load the 20
+objects by using a single select statement: we need to perform 20 separate, individual load operations.
+
+This rule is of course questionable when taken out of context, as a real application would perform far better by loading the 20 elements using a
+single round-trip; nevertheless it's interesting to benchmark this scenario as this approach can be likened to model a non-trivial data access pattern while writing trivial benchmarking code (which is questionable as well, but let's be pragmatic): in your real application subsequent load operations may be a consequence of some business logic which depends 
+on the previous loads.
+For example, one might not know which second entity needs to be loaded until the first was processed, and so on.. this leads to a "chain" of IO interactions with the database which needs to be resolved to satisfy a single web request; so while the scenario is artificial it is still able to provide interesting insight and comparison points with other frameworks and approaches.
+
+On the x-axis, we have the load expressed in requests per second; we observe how response times of the two stacks get slower
+as the amount of load increases:
+
+[#img-multiple-queries]
+.Techempower benchmark, Multiple Queries [This graph plots latency: higher numbers are worse]
+image::Techempower_benchmark_Multiple_Queries.svg["Techempower benchmark, Multiple Queries", align="center"]
+
+So assume you have an SLA which requires you to deliver responses within 10ms;
+
+we can conclude that Hibernate ORM "classic" is able to perform within the SLA requirements as long as the load on this single machine doesn't exceed that limit of 20,000 Requests/second - that's pretty decent, but beyond that, the latency of responses starts to deteriorate quickly.
+
+on the other hand, using Hibernate Reactive we seem able to deliver responses within the same SLA of 10ms even when pushing the load
+beyond about 35,000 Requests/second. That is clearly better - and by a significant margin.
+
+This particular result was achieved on one of our desktop machines; specifics of the hardware are irrelevant, as are the absolute figures: let's focus on the comparison between the two stacks, which have been stressed on the same hardware and running within
+same conditions, with the same PostgreSQL database; we got similar results in the Red Hat Performance Lab: of course the absolute numbers will be different on different hardware, but the shape of the graph is comparable and it shows that the approach is beneficial, at least in this specific scenario.
+
+To run these tests we used the recent version of Quarkus: v. `2.4.0.CR1`.
+
+== Techempower tests: Single DB Query
+
+In this other scenario by Techempower, we need to load just one entity from the database, and then proceed to encode the response.
+ +
+ +
+
+[#img-single-queries]
+.Techempower benchmark, Single Queries. This graph plots latency: higher numbers are worse.
+image::Techempower_benchmark_Single_DB_Load.svg["Techempower benchmark, Single Query", align="center"]
+
+As you can see, the benefit for this application to have been written using the Reactive stack of Quarkus is less clear.
+
+We can conclude then that while reactive programming has some strong merits, it is not going to magically make any application perform better.
+
+There are more benefits than performance in reactive programming though; for example, it's easier to configure your system
+as one doesn't need to figure out how to configure executor pools, and the system can _react_ better to situations in which
+the load is excessive: with the traditional blocking model a mistake in such settings or a sudden unexpected load spike
+might result in an unresponsive system.
+
+Also, even if the difference is small today, it does seem to perform slightly better - and we're optimistic that further
+improvements in this young project might make them more visible in the future, as this other metric looks promising:
+ +
+
+[#img-througput]
+.Techempower benchmark, Throughput. This graph plots througput: higher numbers are better.
+image::Traditional_vs_Reactive_stack_Throughput.svg["Throughput seems slightly better", align="center"]
+
+
+== Improvements in a year
+
+Finally, let's have a look at how Hibernate Reactive improved since it was first included in Quarkus and Techempower,
+approximately a year ago:
+
+[#img-improvements-in-year]
+.Techempower benchmark, Improvements since earfly beta. This graph plots througput: higher numbers are better.
+image::Improvements_over_time.svg["Improvements since early beta", align="center"]
+
+As I'm writing this, the Techempower repository is still depending on this rather old version; we will need to update it soon
+for their reports to showcase the actual numbers of Hibernate Reactive 1.0.0.Final.
+
+N.B. we can't take all the credit for the performance improvements: while Database related operations are the main focus
+in this particular benchmark, the improved figures are also a testament to the improvements in Quarkus v2 vs Quarkus v1,
+and the use of Vert.x v4 rather than Vert.x v3. Both of these frameworks have evolved significantly as well and the
+improved figures are a result of the combination of the improvements in the three stacks and their integration.
+
+== Future improvements
+
+We're not done here: Hibernate ORM is performing remarkably, and as an established
+technology it's easy to find multiple integration options to experiment with, and there are plenty of performance diagnostics
+tools available that integrate with it; we also accumulated years of experience in tuning it to its best, and are able to
+optimize it reasonably quickly.
+
+Our experience with Hibernate Reactive, and reactive programming in general, is much more limited as it's a relatively young project;
+we have had some fantastic help and guidance from the Vert.x team but there are many more tests that could be done, and each new benchmark could
+potentially lead us to make even more improvements to the younger Hibernate Reactive project.
+
+But we are satisfied now that there are at least some scenarios in which Hibernate Reactive
+can indeed be a better choice, and the differences do seem strong enough to think it's going to be worth it for you
+to learn about the new stack, and for us to keep going, and improve it even further.
+
+One thing is sure: as technologies mature, their performance and efficiency tends to improve; so with such promising results at
+this stage we're certainly excited to see how much better we will make it in the near future - hopefully with your help
+and your precious feedback.
+
+== Interview on Quarkus Insights
+
+A couple of days ago Gavin King and myself have been interviewed on Quarkus Insights, and are discussing these topics more extensively.
+
+The https://youtu.be/VGAnVX1lCxg[recording is available now on youtube].
+
+
+== Getting Hibernate Reactive 1.0.0.Final
+
+All details and documentation are available and up to date on http://hibernate.org/reactive/[the dedicated page on hibernate.org].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
+
