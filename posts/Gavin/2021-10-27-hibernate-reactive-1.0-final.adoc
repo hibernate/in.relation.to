@@ -1,0 +1,35 @@
+= Hibernate Reactive 1.0.0.Final is now available
+Gavin King
+:awestruct-tags: [ "Hibernate Reactive", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate Reactive 1.0.0.Final is the first production-ready release of
+https://hibernate.org/reactive/[Hibernate Reactive], the only object-relational
+mapping solution that supports non-blocking database drivers and a reactive style
+of interaction with the database.
+
+Hibernate Reactive now supports PostgreSQL, MySQL, MariaDB, Db2, SQL Server, and
+CockroachDB, and features almost all the functionality of the original Hibernate
+ORM. Under the hood, Hibernate Reactive uses the Vert.x non-blocking
+https://vertx.io/docs/#databases[SQL client libraries].
+
+Testing by the Hibernate team shows that use of Hibernate Reactive can, in at
+least some circumstances, significantly improve performance in situations of
+high database server load, compared to the use of traditional ORM over JDBC.
+(However, we must caution that a reactive system isn't faster than a
+non-reactive program all or even most of the time!)
+
+You can read much more about this https://in.relation.to/2021/10/27/hibernate-reactive-performance/[in Sanne's post].
+
+Hibernate Reactive is now fully integrated in Quarkus, and, especially with the
+advent of RESTEasy Reactive as the preferred web layer for Quarkus, it's now easy
+and convenient to mix and match reactive and blocking database access code within
+the same program, making it easy to switch to reactive in those parts of the system
+where its benefits are obtained.
+
+It's now 11 months since we first
+https://in.relation.to/2020/12/03/hibernate-reactive/[announced] this work, and
+we're all very pleased to see how far this project has come!
+
+Huge thanks to everyone involved.
