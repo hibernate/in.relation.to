@@ -20,7 +20,7 @@ ends at a point in time B, and all operations enqueued on that same connection w
 as taking part within this scope.
 
 This implies for example that the beginning of such a "span" frequently ties up a physical connection, making it
-not quite as reusable for other purposes as other reactive technologies can do.
+unavailable for multiplexing with other reactive streams, like reactive technologies can do.
 
 Another implication is that such "time-bound markers" make the interactions unsuitable to work with continuous streams:
 yes, you can work with streams and cursors, but you still need to mark your beginning and end of work scopes.
@@ -75,9 +75,8 @@ In the "queries" benchmark scenario of Techempower, on each web request we need 
 objects by using a single select statement: we need to perform 20 separate, individual load operations.
 
 This rule is of course questionable when taken out of context, as a real application would perform far better by loading the 20 elements using a
-single round-trip; nevertheless it's interesting to benchmark this scenario as this approach can be likened to model a non-trivial data access pattern while writing trivial benchmarking code (which is questionable as well, but let's be pragmatic): in your real application subsequent load operations may be a consequence of some business logic which depends 
-on the previous loads.
-For example, one might not know which second entity needs to be loaded until the first was processed, and so on.. this leads to a "chain" of IO interactions with the database which needs to be resolved to satisfy a single web request; so while the scenario is artificial it is still able to provide interesting insight and comparison points with other frameworks and approaches.
+single round-trip; nevertheless it's interesting to benchmark this scenario as this approach can be used to model a non-trivial data access pattern while writing trivial benchmarking code (which is questionable as well, but let's be pragmatic): in your real application subsequent load operations may be a consequence of some business logic which depends on the previous loads.
+For example, one might not know which second entity needs to be loaded until the first was processed, and so on. This leads to a "chain" of IO interactions with the database which needs to be resolved to satisfy a single web request; so while the scenario is artificial it is still able to provide interesting insight and comparison points with other frameworks and approaches.
 
 On the x-axis, we have the load expressed in requests per second; we observe how response times of the two stacks get slower
 as the amount of load increases:
@@ -86,11 +85,9 @@ as the amount of load increases:
 .Techempower benchmark, Multiple Queries [This graph plots latency: higher numbers are worse]
 image::Techempower_benchmark_Multiple_Queries.svg["Techempower benchmark, Multiple Queries", align="center"]
 
-So assume you have an SLA which requires you to deliver responses within 10ms;
+So assume you have an SLA which requires you to deliver responses within 10ms; we can conclude that Hibernate ORM "classic" is able to perform within the SLA requirements as long as the load on this single machine doesn't exceed that limit of 20,000 Requests/second - that's pretty decent, but beyond that, the latency of responses starts to deteriorate quickly.
 
-we can conclude that Hibernate ORM "classic" is able to perform within the SLA requirements as long as the load on this single machine doesn't exceed that limit of 20,000 Requests/second - that's pretty decent, but beyond that, the latency of responses starts to deteriorate quickly.
-
-on the other hand, using Hibernate Reactive we seem able to deliver responses within the same SLA of 10ms even when pushing the load
+On the other hand, using Hibernate Reactive we seem able to deliver responses within the same SLA of 10ms even when pushing the load
 beyond about 35,000 Requests/second. That is clearly better - and by a significant margin.
 
 This particular result was achieved on one of our desktop machines; specifics of the hardware are irrelevant, as are the absolute figures: let's focus on the comparison between the two stacks, which have been stressed on the same hardware and running within
@@ -110,7 +107,7 @@ image::Techempower_benchmark_Single_DB_Load.svg["Techempower benchmark, Single Q
 
 As you can see, the benefit for this application to have been written using the Reactive stack of Quarkus is less clear.
 
-We can conclude then that while reactive programming has some strong merits, it is not going to magically make any application perform better.
+We can conclude then that while reactive programming has some strong merits, it is not going to magically make every application perform better.
 
 There are more benefits than performance in reactive programming though; for example, it's easier to configure your system
 as one doesn't need to figure out how to configure executor pools, and the system can _react_ better to situations in which
