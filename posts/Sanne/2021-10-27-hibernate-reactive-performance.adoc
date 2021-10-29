@@ -4,10 +4,11 @@ Sanne Grinovero
 :awestruct-layout: blog-post
 ---
 
-== Looking at performance and scalability
-
 As we spent the last year preparing for https://in.relation.to/2021/10/27/hibernate-reactive-1/[the first stable release of Hibernate Reactive]
 we have been trying to answer some questions we had.
+
+== Looking at performance and scalability
+
 
 We were curious to see if we can indeed show when it might be worth switching to Hibernate Reactive when working with relational databases:
 both for our own understanding, and to help all of you make a reasonable decision.
@@ -25,7 +26,7 @@ unavailable for multiplexing with other reactive streams, like reactive technolo
 Another implication is that such "time-bound markers" make the interactions unsuitable to work with continuous streams:
 yes, you can work with streams and cursors, but you still need to mark your beginning and end of work scopes.
 
-I'm oversimplifying this a little for sake of providing a picture of the difficulties, as of course details of protocols
+I'm oversimplifying this for sake of providing a picture of the difficulties, as details of protocols
 and database capabilities vary significantly across implementations (and I'm still learning about such details myself)
 - but that's also part of our problem: we're working now at this lower level, at which such details matter,
 while they did not matter much when working with standard JDBC over established interaction patterns.
@@ -38,7 +39,7 @@ as there are resource limitations that can affect both the imperative and reacti
 
 == So, when is it worth using Hibernate Reactive?
 
-We are of course wondering if our efforts in this area can actually showcase any significant benefit compared to
+We are wondering if our efforts in this area can actually showcase any significant benefit compared to
 using the classic Hibernate ORM.
 
 But before getting into performance considerations, there is a straightforward answer: if your application is
@@ -74,7 +75,7 @@ what matters most is to estimate what one needs to pay for to reach a certain SL
 In the "queries" benchmark scenario of Techempower, on each web request we need to load 20 entities; it is not allowed to load the 20
 objects by using a single select statement: we need to perform 20 separate, individual load operations.
 
-This rule is of course questionable when taken out of context, as a real application would perform far better by loading the 20 elements using a
+This rule is questionable when taken out of context, as a real application would perform far better by loading the 20 elements using a
 single round-trip; nevertheless it's interesting to benchmark this scenario as this approach can be used to model a non-trivial data access pattern while writing trivial benchmarking code (which is questionable as well, but let's be pragmatic): in your real application subsequent load operations may be a consequence of some business logic which depends on the previous loads.
 For example, one might not know which second entity needs to be loaded until the first was processed, and so on. This leads to a "chain" of IO interactions with the database which needs to be resolved to satisfy a single web request; so while the scenario is artificial it is still able to provide interesting insight and comparison points with other frameworks and approaches.
 
@@ -82,7 +83,7 @@ On the x-axis, we have the load expressed in requests per second; we observe how
 as the amount of load increases:
 
 [#img-multiple-queries]
-.Techempower benchmark, Multiple Queries [This graph plots latency: higher numbers are worse]
+.Techempower benchmark, Multiple Queries. This graph plots latency: higher numbers are worse.
 image::Techempower_benchmark_Multiple_Queries.svg["Techempower benchmark, Multiple Queries", align="center"]
 
 So assume you have an SLA which requires you to deliver responses within 10ms; we can conclude that Hibernate ORM "classic" is able to perform within the SLA requirements as long as the load on this single machine doesn't exceed that limit of 20,000 Requests/second - that's pretty decent, but beyond that, the latency of responses starts to deteriorate quickly.
@@ -119,7 +120,7 @@ improvements in this young project might make them more visible in the future, a
  +
 
 [#img-througput]
-.Techempower benchmark, Throughput. This graph plots througput: higher numbers are better.
+.Techempower benchmark, Throughput. This graph plots througput: higher numbers are better. Horizontal axis represents number of clients/threads.
 image::Traditional_vs_Reactive_stack_Throughput.svg["Throughput seems slightly better", align="center"]
 
 
@@ -129,7 +130,7 @@ Finally, let's have a look at how Hibernate Reactive improved since it was first
 approximately a year ago:
 
 [#img-improvements-in-year]
-.Techempower benchmark, Improvements since earfly beta. This graph plots througput: higher numbers are better.
+.Techempower benchmark, Improvements since earfly beta. This graph plots througput: higher numbers are better. Horizontal axis represents number of clients/threads.
 image::Improvements_over_time.svg["Improvements since early beta", align="center"]
 
 As I'm writing this, the Techempower repository is still depending on this rather old version; we will need to update it soon
