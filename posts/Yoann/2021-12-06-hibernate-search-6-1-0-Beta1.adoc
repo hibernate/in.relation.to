@@ -1,0 +1,263 @@
+= Hibernate Search 6.1.0.Beta1 is out, with distributed indexing that scales dynamically & Jakarta EE artifacts!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.1/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.1
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 31983
+---
+
+We just published Hibernate Search 6.1.0.Beta1,
+a beta release of the next minor version of Hibernate Search.
+
+Among the main changes:
+asynchronous, distributed automatic indexing now scales to more or fewer nodes dynamically,
+supports multi-tenancy, and pauses during mass indexing;
+new Jakarta EE artifacts are available alongside the traditional ones for Java EE,
+the Elasticsearch backend accepts JSON to customize the mapping,
+and more.
+
+Hibernate Search 6.1.0.Beta1 also includes upgrades to Hibernate ORM 5.6.1.Final and Lucene 8.11, among others.
+
+== What's new
+
+[NOTE]
+====
+Hibernate Search 6.1 is still in development:
+some features are still incomplete or may change in a backward-incompatible way.
+====
+
+=== Dependency upgrades
+
+[[orm-version]]Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-4379[HSEARCH-4379])::
+Hibernate Search 6.1 now relies on Hibernate ORM 5.6.
+[[lucene-version]]Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-4367[HSEARCH-4367])::
+The Lucene backend now uses Lucene 8.11.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-4382[HSEARCH-4382]: Upgrade to AWS SDK 2.17.94
+* link:{hsearch-jira-url-prefix}/HSEARCH-4383[HSEARCH-4383]: Upgrade to Gson 2.8.9
+* link:{hsearch-jira-url-prefix}/HSEARCH-4384[HSEARCH-4384]: Upgrade to Elasticsearch **client** 7.15.2
+
+[[async-indexing]]
+=== Asynchronous, distributed automatic indexing: improvements
+
+[[async-indexing-dynamic-sharding]]
+==== Dynamic scaling through dynamic sharding of the outbox
+
+In the announcement post for Hibernate Search 6.1.0.Alpha1,
+we https://in.relation.to/2021/09/10/hibernate-search-6-1-0-Alpha1/#async-indexing[introduced coordination between application nodes]
+to implement asynchronous, distributed automatic indexing.
+
+At that time, coordination supported static sharding only: the number of nodes was fixed
+and you had to manually assign a shard to each node participating in automatic indexing.
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4140[HSEARCH-4140], static sharding is still available but optional:
+by default Hibernate Search will use dynamic sharding,
+which means it will dynamically scale up or down,
+adapting the number and assignment of shards automatically according to
+the application nodes currently connected to the database.
+
+For more information, see link:{hsearch-doc-url-prefix}#coordination-outbox-polling-sharding[this section of the documentation],
+but the short version is that starting with 6.1.0.Beta1,
+the only configuration you need to enable asynchronous, distributed automatic indexing is this
+(you will also need to link:{hsearch-doc-url-prefix}#coordination-database-polling-schema[add tables to your database schema]):
+
+[source]
+----
+hibernate.search.coordination.strategy = outbox-polling
+----
+
+NOTE: Since 6.1.0.Alpha1, the strategy was renamed from `database-polling` to `outbox-polling`,
+and most related configuration properties were renamed.
+See <<breaking-changes>>.
+
+Head to link:{hsearch-doc-url-prefix}#coordination-outbox-polling[this section of the documentation]
+for information on how to configure coordination more finely.
+
+[[async-indexing-multi-tenancy]]
+==== Compatible with multi-tenancy
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4316[HSEARCH-4316],
+the `outbox-polling` coordination strategy will now work correctly for applications
+relying on Hibernate ORM's multi-tenancy,
+link:{hsearch-doc-url-prefix}#coordination-outbox-polling-multi-tenancy[provided they list all expected tenant IDs in their configuration].
+
+[[async-indexing-suspend-while-mass-indexing]]
+==== Pausing of automatic indexing while mass indexing
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4358[HSEARCH-4358],
+automatic indexing will be suspended while mass indexing is in progress,
+and resume after mass indexing finishes.
+
+For information about why this is necessary and how to tune the behavior,
+see link:{hsearch-doc-url-prefix}#coordination-outbox-polling-mass-indexer[this section of the documentation].
+
+[[elasticsearch-custom-index-mapping]]
+=== Custom ES index mapping
+
+Since link:{hsearch-jira-url-prefix}/HSEARCH-4253[HSEARCH-4253],
+you can link:{hsearch-doc-url-prefix}#_custom_index_mapping[provide Hibernate Search with JSON files containing part of the desired mapping of your indexes],
+and Hibernate Search will automatically merge this mapping with the one it generated,
+so that it gets pushed to Elasticsearch when it creates/updates the indexes.
+
+[source]
+----
+# To configure the defaults for all indexes:
+hibernate.search.backend.schema_management.mapping_file = custom/index-mapping.json
+# To configure a specific index:
+hibernate.search.backend.indexes.<index name>.schema_management.mapping_file = custom/index-mapping.json
+----
+
+This is especially useful to set top-level mapping attributes,
+for example https://www.elastic.co/guide/en/elasticsearch/reference/current/mapping-source-field.html#disable-source-field[disabling the `_source` field]:
+
+[source,JSON]
+----
+{
+  "_source": {
+    "enabled": false
+  }
+}
+----
+
+[[jakarta]]
+=== Jakarta EE
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4240[HSEARCH-4240],
+beside the traditional artifacts targeting Java EE (JPA, CDI, ...),
+Hibernate Search now provides link:{hsearch-doc-url-prefix}#other-integrations-jakarta[alternative, experimental artifacts that target Jakarta EE 9.1]
+(Jakarta Persistence 3, Jakarta CDI 3).
+
+These artifacts have their artifact ID suffixed with "-jakarta",
+similarly to the https://in.relation.to/2021/06/02/hibernate-orm-550-final-release/#getting-started-with-the-jakarta-jpa-api[equivalent artifacts for Hibernate ORM]
+(which you should use together).
+
+In Hibernate Search 6.1.0.Beta1, this includes the following Jakarta artifacts:
+
+* `org.hibernate.search:hibernate-search-mapper-orm-jakarta:6.1.0.Beta1`
+* `org.hibernate.search:hibernate-search-mapper-orm-coordination-outbox-polling-jakarta:6.1.0.Beta1`
+* `org.hibernate.search:hibernate-search-mapper-orm-batch-jsr352-core-jakarta:6.1.0.Beta1`
+* `org.hibernate.search:hibernate-search-mapper-orm-batch-jsr352-jberet-jakarta:6.1.0.Beta1`
+* `org.hibernate.search:hibernate-search-v5migrationhelper-orm-jakarta:6.1.0.Beta1`
+
+Note that in order to switch to Jakarta EE, you will need to switch to these artifacts, but also:
+
+* Use Jakarta EE-specific artifacts for your other Java EE dependencies,
+such as https://in.relation.to/2021/06/02/hibernate-orm-550-final-release/#getting-started-with-the-jakarta-jpa-api[Hibernate ORM].
+* Convert your code to Jakarta EE APIs. This should be rather straightforward:
+simply replace `import javax.persistence.<something>` with `import jakarta.persistence.<something>` everywhere in your code
+(same with `javax.enterprise`, `javax.transaction`, etc.).
+* Find a new version of your framework or application server that supports Jakarta EE.
+This might be hard to come by, as Jakarta EE is still young,
+but some application servers already provide at least a preview.
+
+[[java-modules]]
+=== Java modules
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3274[HSEARCH-3274],
+where possible,
+Hibernate Search now provides multi-release JARs with a full https://www.oracle.com/corporate/features/understanding-java-9-modules.html[Java module definition]
+that includes all the dependencies.
+
+This excludes the Lucene backend in particular, because https://issues.apache.org/jira/browse/LUCENE-9499[Lucene 8 has split packages].
+
+[[breaking-changes]]
+=== Breaking changes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4368[HSEARCH-4368]:
+The link:{hsearch-doc-url-prefix}#coordination-outbox-polling[`database-polling` coordination strategy]
+was renamed to `outbox-polling`.
+You should update your Maven dependency from `hibernate-search-mapper-orm-coordination-database-polling`
+to `hibernate-search-mapper-orm-coordination-outbox-polling`,
+and the value of the configuration property `hibernate.search.coordination.strategy` from `database-polling`
+`outbox-polling`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4372[HSEARCH-4372]:
+Several configuration properties changed:
+** `hibernate.search.coordination.shards.total_count` is now
+`hibernate.search.coordination.event_processor.shards.total_count`.
+** `hibernate.search.coordination.shards.assigned` is now
+`hibernate.search.coordination.event_processor.shards.assigned`.
+** `hibernate.search.coordination.shards.static` is no longer useful: sharding will automatically be considered static
+if you set either `hibernate.search.coordination.event_processor.shards.total_count`
+or `hibernate.search.coordination.event_processor.shards.assigned`.
+** `hibernate.search.coordination.processors.indexing.enabled` is now
+`hibernate.search.coordination.event_processor.enabled`.
+** `hibernate.search.coordination.processors.indexing.polling_interval` is now
+`hibernate.search.coordination.event_processor.polling_interval`.
+** `hibernate.search.coordination.processors.indexing.batch_size` is now
+`hibernate.search.coordination.event_processor.batch_size`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4209[HSEARCH-4209], link:{hsearch-jira-url-prefix}/HSEARCH-4295[HSEARCH-4295],
+link:{hsearch-jira-url-prefix}/HSEARCH-4347[HSEARCH-4347]:
+The table holding the outbox events has changed both its name and content,
+and a new "agent" table is now necessary.
+You will need to drop your current outbox event table
+and link:{hsearch-doc-url-prefix}#coordination-database-polling-schema[re-create the necessary tables].
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4369[HSEARCH-4369]:
+The outbox event processor will no longer wait the duration of the polling interval (defaults to 100 ms)
+between processing two batches of events.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4194[HSEARCH-4194]:
+If processing an outbox event fails, Hibernate Search will now wait for a bit before trying again.
+Set configuration property `hibernate.search.coordination.event_processor.retry_delay` to control the delay.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4282[HSEARCH-4282]:
+The transaction timeout for event processing can now be raised
+through configuration property `hibernate.search.coordination.event_processor.transaction_timeout`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4307[HSEARCH-4307]:
+Hibernate Search's detection of its own version (for logging on startup) should now work even on native images.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4331[HSEARCH-4331]:
+We added a few default identifier bridges.
++
+All types that used to be supported for document identifiers in Hibernate Search 5
+should now be supported in Hibernate Search 6 as well
+(though https://docs.jboss.org/hibernate/search/6.0/migration/html_single/#data-format[possibly with a different format]),
+https://docs.jboss.org/hibernate/search/6.0/migration/html_single/#behavior-default-bridge-java-util-class[with the exception of `java.util.Class`].
+* link:{hsearch-jira-url-prefix}/HSEARCH-4354[HSEARCH-4354]:
+Hibernate Search will no longer retrieve and try to interpret Hibernate ORM metadata
+for properties that are not involved in indexing.
+This should reduce the impact of metadata parsing bugs in the future.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4033[HSEARCH-4033]:
+Entities with `@IdClass` can now be mapped
+provided they have a unique, immutable property annotated with `@DocumentId`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4273[HSEARCH-4273]:
+`MassIndexer#cacheMode` is now honored. The parameter previously had no impact whatsoever.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4363[HSEARCH-4363]:
+Fixed a `NullPointerException` that occurred from time to time on shutdown.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4365[HSEARCH-4365]:
+When indexing, Hibernate Search will now ignore deleted entities that were erroneously left in the entity graph.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4366[HSEARCH-4366]:
+Exceptions thrown while processing entities for indexing will now include context showing
+on which part of the entity graph the exception occurred.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the link:{hsearch-doc-url-prefix}#getting-started[getting started guide].
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 6.0,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
