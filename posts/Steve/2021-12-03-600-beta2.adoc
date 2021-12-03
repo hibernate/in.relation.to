@@ -1,0 +1,71 @@
+= Hibernate ORM 6.0.0.Beta2 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Beta2
+:release-id: 31969
+---
+
+The second Beta of Hibernate ORM 6.0 has just been released.
+
+Quite a lot has gone into this release, but at a high level -
+
+
+== Java 11
+
+Java 11 is now the minimum Java runtime version.
+
+
+== Custom composite types
+
+Preliminary work has been done in terms of supporting custom composite types (what used to 
+be called `CompositeUserType`).  In this first iteration we have introduced 
+`org.hibernate.metamodel.EmbeddableInstantiator` to allow integrating a custom strategy
+for how composite (embeddable) types are instantiated.  
+
+Even better, `EmbeddableInstantiator` adds the ability to perform constructor injection!
+
+See the new documentation section in the User Guide covering providing a custom instantiator.
+
+We opted for starting with instantiation as we believe it covers a majority of custom composite 
+type use cases.  In the next release or 2 we will be adding even more ways to integrate handling
+for other aspects of mapping a composite type.
+
+
+== Work on non-core modules
+
+A lot of work has been put into the `hibernate-envers`, `hibernate-jcache` and `hibernate-spatial`
+modules.  A lot of thanks to Karel Maesen, Chris Cranford and Chris Dennis for this work.
+
+
+== Status toward Final
+
+At this point, we have roughly 10,200 of the `hibernate-core` tests running successfully with just a 
+few remaining failures to address - approximately 100.  That's a good indication that 6.0 is getting
+feature complete.
+
+We recently started testing against the persistence portions of the Jakarta EE TCK.  It is hard to 
+get a good handle on exactly where we are with that testing.  The tests take a few hours to run, 
+so turn around time is slow.  We will do more work there in the coming weeks and have a better idea
+at that time.  Considering most of the `hibernate-core` testsuite is up and passing again, I do not 
+foresee big problems there.
+
+We've also been working with Hibernate Search to get a version that works with ORM 6.0.  This work
+has helped shake a few issues loose over the past few weeks.  A lot of thanks to Yoann Rodiere and 
+Fabio Massimo Ercoli for this.
+
+And lastly, we have been working with the WildFly team to ensure that ORM 6.0 will work in upcoming
+Jakarta EE versions of WildFly.  Thanks to Scott Marlow for his help with that effort.
+
+
+== Additional details
+
+A lot of other work has gone into this release.  Far too much to list everything.
+
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Beta2/migration-guide.adoc[migration guide].
+
+Also check out the https://hibernate.org/orm/releases/6.0/[release page].
+
+To get in touch, use the usual channels as discussed on https://hibernate.org/community/
