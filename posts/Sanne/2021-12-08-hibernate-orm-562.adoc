@@ -12,12 +12,14 @@ This is a maintenance release of the latest stable branch `5.6`; speaking of bra
 
 == Deprecations in prepation for Hibernate ORM 6
 
-In version `5.6.1.Final` we had marked some types as deprecated, with the goal of preparing you all for Hibernate ORM 6. Among others, we had `org.hibernate.EntityMode`, `org.hibernate.tuple.Tuplizer`, `org.hiberante.tuple.entity.EntityTuplizer`, `org.hibernate.tuple.component.ComponentTuplizer` marked as deprecated in version `5.6.1.Final` but many users highlighted that this deprecation was confusing as it's not "actionable":
+In version `5.6.1.Final` we had marked some types as deprecated, with the goal of preparing you all for Hibernate ORM 6.
+
+Among others, we had `org.hibernate.EntityMode`, `org.hibernate.tuple.Tuplizer`, `org.hiberante.tuple.entity.EntityTuplizer`, `org.hibernate.tuple.component.ComponentTuplizer` marked as deprecated in version `5.6.1.Final` but many users highlighted that this deprecation was confusing as it's not "actionable":
 since there is no replacement API yet, they had no way to resolve such deprecations other than ignoring them.
 
 For this reason and even though that's not necessarily how deprecations are intended, we decided to listen to feedback and are going to revert these deprecations; some of these have been resolved but a couple deprecations are still there at the time of releasing; most notably `org.hibernate.annotations.Type` is still marked as deprecated: we'll fix that in the next micro.
 
-In the meantime, no need to panic: it still is the best way to define a custom type mapping - the use of this deprecation warning is to call attention to it as this particular API will be different in version 6.
+In the meantime, no need to panic: it still is the best way to define a custom type mapping - the use of this deprecation warning is to call attention to it as this particular API will be different in version 6; it's ok to ignore this for now.
 
 == Changes to the DDL type for CLOB in PostgreSQL dialects
 
@@ -87,7 +89,7 @@ which is in turn necessary for streaming data.
 
 All details are available and up to date on https://hibernate.org/orm/releases/5.6/#get-it[the dedicated page on hibernate.org].
 
-Full https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=31985[changelog for {released-version}].
+Full https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=32001[changelog for {released-version}].
 
 == Feedback, issues, ideas?
 
