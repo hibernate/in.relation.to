@@ -1,0 +1,39 @@
+= "Hibernate Validator 6.2.1.Final and 7.0.2.Final released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+Today, we released maintenance releases for our Hibernate Validator 6.2 and 7.0 branches.
+
+As of now, you are all aware of the Log4j 2 security issue called Log4Shell announced on Friday.
+The good news is that Hibernate Validator does **NOT** use Log4j 2 but uses JBoss Logging as its logging framework.
+
+Why release these versions then? Log4j 2 is only a **test** dependency of Hibernate Validator (being a test dependency, Log4j 2 doesn't come in your apps through Hibernate Validator so you don't have to worry about this issue from the Hibernate Validator perspective),
+but we already got hit in the past by security scanners being not as fine grained as we would have liked so we preferred to release new versions proactively so that we are sure Hibernate Validator does not get wrongly reported as unsafe.
+
+== Getting 6.2.1.Final
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.2.1.Final_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.2.1.Final/hibernate-validator-6.2.1.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.2.1.Final/hibernate-validator-6.2.1.Final-dist.zip/download[ZIP]).
+
+== Getting 7.0.2.Final
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:7.0.2.Final_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/7.0.2.Final/hibernate-validator-7.0.2.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/7.0.2.Final/hibernate-validator-7.0.2.Final-dist.zip/download[ZIP]).
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Bean Validation development mailing list] (discussions about the Jakarta Bean Validation specification)
+
+== What's next?
+
+Depending on the feedback we get on these two Candidate Releases, we will release both Finals in the coming weeks.
