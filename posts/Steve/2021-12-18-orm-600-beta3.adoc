@@ -1,0 +1,106 @@
+= Hibernate ORM 6.0.0.Beta3 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.Beta3
+:release-id: 32004
+---
+
+Hibernate ORM 6.0.0.Beta3 has been released.  Just in time for the holidays!
+
+We are especially excited for this release because it feels like the last beta on the long
+journey it has taken to develop 6.0.  Lots of work has gone into Beta3, but like Beta2 most
+of that work has been behind the scenes.  A few specific things of note:
+
+
+== @IdGeneratorType
+
+We have defined a new approach to supplying custom `IdentifierGenerator` implementations and allowing
+configuration of those implementations in a very type-safe way.  This leverages meta-annotations which
+we have (finally) been embracing much more in 6.0.  The `@IdGeneratorType` is applied to the custom
+`IdentifierGenerator` implementation.  The implementation is then instantiated passing the custom
+annotation the defines the `IdentifierGenerator` configuration (along with some contextual details).
+For example, a custom sequence-based `IdentifierGenerator` might be defined as -
+
+```
+@IdGeneratorType( SimpleSequenceGenerator.class )
+@Target({METHOD, FIELD})
+@Retention(RUNTIME)
+public @interface Sequence {
+	String name();
+	int startWith() default 1;
+	int incrementBy() default 50;
+}
+
+class SimpleSequenceGenerator implements IdentifierGenerator {
+
+    /**
+     * The constructor signature Hibernate will use to
+     * instantiate your custom generator.
+     */
+	public SimpleSequenceGenerator(
+            Sequence configAnnotation,
+            Member annotatedMember,
+            CustomIdGeneratorCreationContext context) {
+    }
+}
+```
+
+
+== @TenantId
+
+Hibernate has for many years supported multi-tenancy based on separate catalogs and schemas.
+6.0 adds the ability to use column-based multi-tenancy via the new `@TenantId` attribute used to
+mark the attribute that defines the tenant.  E.g.
+
+```
+@Entity
+public class Account {
+    @Id Long id;
+    @TenantId String tenantId;
+    ...
+}
+```
+
+It works in combination with the `org.hibernate.context.spi.CurrentTenantIdentifierResolver` contract
+to determine the tenant-id to use.
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html#multitenacy9User Guide]
+for additional information.
+
+
+== @AttributeBinderType
+
+Another new meta-annotation added in 6.0 is `@AttributeBinderType` which allows customization
+of how mapping of an attribute is defined.  It declares an implementation of
+`org.hibernate.tuple.AttributeBinder` which can bind or mutate Hibernate's boot-time
+metamodel (the `org.hibernate.mapping` package).
+
+This is a very powerful, albeit low-level approach to integrating with Hibernate for rich
+models.  See the
+link:https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html#domain-customizing[User Guide]
+for more information.
+
+
+== Default catalog and schema
+
+Handling of default catalog and schema has been made more consistent.  See
+https://hibernate.atlassian.net/browse/HHH-14921 and
+https://hibernate.atlassian.net/browse/HHH-14922 for details.
+
+
+== Work on Migration Guide
+
+As we get closer to Final, the migration guide will become more and more important.
+We spent time this release getting better content into the migration guide.
+
+
+== More information
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Beta3/migration-guide.adoc[migration guide].
+
+Also check out the https://hibernate.org/orm/releases/6.0/[release page].
+
+To get in touch, use the usual channels as discussed on https://hibernate.org/community/
+
