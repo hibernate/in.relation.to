@@ -1,0 +1,72 @@
+= Hibernate Search 6.0.8.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:awestruct-project: search
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.0
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 31997
+---
+
+We just published a bugfix release for Hibernate Search: 6.0.8.Final.
+
+== What's new
+
+[[log4j]]
+=== Log4j upgrade
+
+As mentioned https://in.relation.to/2021/12/16/log4j-cve/[here],
+Hibernate projects do not use Log4j at runtime and thus are not affected
+by the various vulnerabilities discovered in Log4j 2 recently.
+
+However, Hibernate Search does use Log4j during its own build, when executing tests,
+which is why we had to link:{hsearch-jira-url-prefix}/HSEARCH-4421[update our test dependency to Log4j 2.17.1] anyway.
+
+Incidentally, this might help with some security sniffers that do not correctly
+understand the difference between runtime dependencies and test dependencies,
+leading to Hibernate Search being (falsely) reported as affected by the Log4j vulnerabilities.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4423[HSEARCH-4423]:
+Hibernate Search will no longer incorrectly detect a cycle and fail to process `@IndexingDependency(derivedFrom = ...)`
+when the path to source properties contains two properties with the same name, but on different types.
+Thanks to fraf for https://discourse.hibernate.org/t/cyclic-dependency-wrong-error-report/5936?u=yrodiere[reporting this]!
+* link:{hsearch-jira-url-prefix}/HSEARCH-4348[HSEARCH-4348]:
+Mapping should now work when the properties are defined inside Groovy Traits.
+Thanks to Ollie Freeman for his contribution!
+* link:{hsearch-jira-url-prefix}/HSEARCH-4352[HSEARCH-4352]:
+Hibernate Search no longer fails on bootstrap when an un-indexed entity has a derived identifier.
+When an _indexed_ entity has a derived identifier, Hibernate Search produces a more helpful and actionable error message.
+Thanks to Al Turker for reporting this!
+* link:{hsearch-jira-url-prefix}/HSEARCH-4354[HSEARCH-4354]:
+Hibernate Search will no longer retrieve and try to interpret Hibernate ORM metadata
+for properties that are not involved in indexing.
+This should reduce the impact of metadata parsing bugs in the future.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4363[HSEARCH-4363]:
+Fixed a `NullPointerException` that occurred from time to time on shutdown.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4391[HSEARCH-4391]:
+Fixed images not being displayed in the documentation.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4408[HSEARCH-4408]:
+Fixed syntax highlighting for code example not working anymore in the documentation.
+
+For a full list of changes since the previous release,
+please see the
+link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
