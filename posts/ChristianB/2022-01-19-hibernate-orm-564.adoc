@@ -1,0 +1,44 @@
+= "Hibernate ORM {released-version} released"
+Christian Beikov
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.6.4.Final
+:release-id: 32012
+---
+
+We just released Hibernate ORM version `5.6.4.Final`.
+
+== Backwards incompatible SPI changes
+
+In version `5.6.2.Final` we had to make a few changes to some SPIs to accomodate for the needs in Quarkus, but unfortunately we forgot to make sure these were backwards compatible.
+
+With this bug fix release we introduced default methods in the SPIs `MultiTableBulkIdStrategy` and `Exporter` to retain the backwards compatibility with `5.6.1.Final`.
+
+== Restrict JNDI lookups to "java" scheme
+
+Hibernate ORM includes a default implementation of its `JndiService`, which is used internally to lookup `Datasource` and references to the platform's `TransactionManager`. This service is also used to register its own components to allow them being looked up by other frameworks.
+
+Binding a `Datasource` and/or a `TransactionManager` to JNDI is a common practice in the industry on many runtimes and application servers running Hibernate ORM; this functionality is required by the JPA specification and we believe is a reasonable use case of JNDI. A conversation with the security team came to the same conclusion, after we scrutinized our code.
+
+Previously, when performing a `Datasource` lookup, any valid JNDI lookup URLs were accepted by the code, including schemas which might not be local. Initially this looked a little alarming, but considering this URL can only be provided by the Hibernate configuration it's not considered a security vulneratbility; as a hardening improvement though - and an excess of caution - this release now improves the code to reject any URL which isn't using the `java` protocol.
+
+We don't think this is really necessary nor urgent, but it should make any other (possibly future?) vulnerability related to JNDI much harder to exploit.
+
+As usual, please let us know if it breaks your application; we don't expect anyone to actually have made use of exotic patterns to bind their datasources or transaction managers, so we don't expect this to actually matter to anyone - but it's good to be cautious when JNDI is involved.
+
+== Getting {released-version}, detailed changelogs
+
+All details are available and up to date on https://hibernate.org/orm/releases/5.6/#get-it[the dedicated page on hibernate.org].
+
+Full https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=32012[changelog for {released-version}].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
+
