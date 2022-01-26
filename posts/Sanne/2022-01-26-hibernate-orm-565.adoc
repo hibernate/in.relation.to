@@ -1,0 +1,49 @@
+= "Hibernate ORM {released-version} released"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.6.5.Final
+:release-id: 32029
+---
+
+Hibernate ORM version `5.6.5.Final` is now available, improving compatibility with the latest version of H2.
+
+== H2 upgrade options
+
+The H2 database, a very popular development tool and testing target, has recently been flagged because of https://nvd.nist.gov/vuln/detail/CVE-2022-23221[CVE-2022-23221].
+
+While you might not be running H2 in production, or most likely are not running it with the vulnerable configuration, we appreciate
+that upgrading might be desireable.
+
+Getting a version not affected by this vulnerability implies upgrading H2 to version `2.1.210`, which unfortunately so far didn't work well with Hibernate ORM as we have been using H2 version '1.4.197'.
+
+The H2 project doesn't follow semantic versioning conventions, and has often included breaking changes in various "micro" releases.
+
+It is of course the right of any project to choose a release versioning strategy that works for them, but for this reason you might appreciate that
+the Hibernate team has not regularly upgraded H2 versions: sometimes it's easy, sometimes it implies significant work for
+us and disruptive changes for our users. So we might occasionally prefer to lag behind on supporting such components, especially if there is no strong reason to upgrade.
+
+With version `5.6.5.Final` of Hibernate ORM several improvements have been applied that will make it possible for you to upgrade H2
+to this latest version, should you need to, but please do check the H2 documentation and http://www.h2database.com/html/changelog.html[changelogs] as well: if you intend to upgrade you might need to apply some changes to your scripts, your ORM mappings, and H2 configuration.
+
+As usual Hibernate will simplify this work and possibly perform the heavy lifting automatically, but the significant upgrade might still require your attention:
+don't expect this to be fully automatic.
+
+Upgrading H2 is entirely optional. If you're happy with the current version and are not concerned by this CVE, either because you only use H2 for testing or because you don't enable the H2 console in production, you can keep using the older version of H2 with this version of Hibernate ORM.
+
+== Getting {released-version}, detailed changelogs
+
+All details are available and up to date on https://hibernate.org/orm/releases/5.6/#get-it[the dedicated page on hibernate.org].
+
+Full https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=32029[changelog for {released-version}].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
+
