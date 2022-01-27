@@ -1,0 +1,88 @@
+= Hibernate ORM 6.0.0.CR1 released
+Steve Ebersole
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 6.0.0.CR1
+:release-id: 32013
+---
+
+The first candidate release!
+
+[[custom-collection-type]]
+== UserCollectionType
+
+Support for `UserCollectionType` using either `@CollectionType` or `@CollectionTypeRegistration`.
+
+See the
+https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html#collection-type-ann[User Guide]
+for details
+
+
+[[user-guide]]
+== User Guide
+
+The https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[User Guide]
+has been undergoing a refresh over the last few 6.0 releases.  Still a little more work to be done, but it
+is looking good.
+
+
+[[migration-guide]]
+== Migration Guide
+
+The https://github.com/hibernate/hibernate-orm/blob/main/migration-guide.adoc[Migration Guide]
+was given a lot of love between Beta3 and CR1.
+
+
+[[deprecation-removals]]
+== Deprecation Removals
+
+Many deprecations from version 5.x and earlier have been removed.
+
+
+[[api-spi-internal]]
+== Review API, SPI and Internal distinctions
+
+API, SPI and Internal distinctions were reviewed and corrections were made through a number of methods.
+
+For quick reference, we mean:
+
+API:: Anything we expect the application will use directly (`Session`, e.g.)
+SPI:: Anything we expect integrations will use directly (`SessionImplementor`, `TypeContributor`, etc.)
+Internal:: Anything considered for internal use by Hibernate itself
+
+Years ago we began moving to a split package approach for highlighting this distinction -
+
+* A package-path ending with `.internal` (`org.hibernate.internal`, e.g) is considered Internal
+* A package-path ending with `.spi` (`org.hibernate.spi`, e.g.) is considered SPI
+* A package-path ending in neither  (`org.hibernate`, e.g.) is considered API
+
+Mass moving packages is disruptive for Hibernate development as well as consumers and integrations.
+It is still the preferred approach but, due to the disruption aspect, we try to limit that to
+packages that have not yet been re-organized and that we are actively working on for that particular
+version (the `org.hibernate.query` package this release, e.g.).
+
+To help make this distinction when we don't want to re-organize the packages, as well as to allow
+more granularity, the `@Internal` annotation is used to mark something (package, class, method, etc.)
+as Internal.
+
+We also use `@Incubating` to indicate that something (package, class, method, etc.) is considered incubating.
+
+
+[[testing]]
+== Testing
+
+Another focus for development has been both the
+https://github.com/hibernate/hibernate-orm/actions/workflows/contributor-build.yml?query=branch%3Amain+[Hibernate test-suite]
+and the Jakarta Persistence https://ci.hibernate.org/view/ORM/job/hibernate-orm-6.0-jpa-3.0-tck/[TCK].
+
+The TCK results are difficult to see given how it stores the results.  But as of today we are down to roughly 50 remaining failures!
+
+
+== More information
+
+See the https://docs.jboss.org/hibernate/orm/6.0/userguide/html_single/Hibernate_User_Guide.html[user guide] and
+https://github.com/hibernate/hibernate-orm/blob/6.0.0.Beta3/migration-guide.adoc[migration guide].
+
+Also check out the https://hibernate.org/orm/releases/6.0/[release page].
+
+To get in touch, use the usual channels as discussed on https://hibernate.org/community/
