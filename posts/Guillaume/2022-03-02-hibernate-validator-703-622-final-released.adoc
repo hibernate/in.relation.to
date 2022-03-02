@@ -1,0 +1,50 @@
+= "Hibernate Validator 6.2.2.Final, 7.0.3.Final and 8.0.0.Alpha1 released"
+Guillaume Smet
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+We released maintenance releases for our Hibernate Validator 6.2 and 7.0 branches.
+
+Both versions bring back support for validating `java.sql.Date` which was broken when we refactored the time constraints.
+
+7.0.3.Final also fixes an oversight in the annotation processor made when we migrated to the `jakarta.*` packages.
+Until this fix, the annotation processor for 7.0 was ignored, even if you properly used the `jakarta.validation` constraints.
+
+We also released Hibernate Validator 8.0.0.Alpha1, which specifically targets the upcoming Jakarta EE 10.
+
+== Getting 6.2.2.Final
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:6.2.2.Final_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.2.2.Final/hibernate-validator-6.2.2.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/6.2.2.Final/hibernate-validator-6.2.2.Final-dist.zip/download[ZIP]).
+
+== Getting 7.0.3.Final
+
+**Hibernate Validator 7 targets Jakarta EE 9.**
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:7.0.3.Final_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/7.0.3.Final/hibernate-validator-7.0.3.Final-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/7.0.3.Final/hibernate-validator-7.0.3.Final-dist.zip/download[ZIP]).
+
+== Getting 8.0.0.Alpha1
+
+**Hibernate Validator 8 targets the upcoming Jakarta EE 10.**
+
+To get the release with Maven, Gradle etc. use the GAV coordinates _org.hibernate.validator:{hibernate-validator|hibernate-validator-cdi|hibernate-validator-annotation-processor}:8.0.0.Alpha1_. Note that the group id has changed from `org.hibernate` (Hibernate Validator 5 and earlier) to `org.hibernate.validator` (from Hibernate Validator 6 onwards).
+
+Alternatively, a distribution bundle containing all the bits is provided on SourceForge (http://sourceforge.net/projects/hibernate/files/hibernate-validator/8.0.0.Alpha1/hibernate-validator-8.0.0.Alpha1-dist.tar.gz/download[TAR.GZ], http://sourceforge.net/projects/hibernate/files/hibernate-validator/8.0.0.Alpha1/hibernate-validator-8.0.0.Alpha1-dist.zip/download[ZIP]).
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Bean Validation development mailing list] (discussions about the Jakarta Bean Validation specification)
+
+== What's next?
+
+Depending on the feedback we get on these two Candidate Releases, we will release both Finals in the coming weeks.
