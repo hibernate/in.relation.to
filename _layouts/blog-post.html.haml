@@ -19,10 +19,8 @@ layout: base
   .ui.container
     = partial( 'blog/post-title.html.haml', {"post" => page} )
 
-- if page.project == 'search'
-  .project-reminder
-    .ui.container
-      = partial( "project/#{page.project}/project-reminder.html.haml" )
+- if page.project == 'search' || page.project == 'ogm'
+  = partial( "project/#{page.project}/project-reminder.html.haml" )
 
 .ui.container.blog-article
   .content#content
