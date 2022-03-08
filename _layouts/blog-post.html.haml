@@ -19,10 +19,10 @@ layout: base
   .ui.container
     = partial( 'blog/post-title.html.haml', {"post" => page} )
 
-- if page.tags&.any? { |tagStat| tagStat.to_s == 'Hibernate Search' }
+- if page.project == 'search'
   .project-reminder
     .ui.container
-      = partial( "project/search/project-reminder.html.haml" )
+      = partial( "project/#{page.project}/project-reminder.html.haml" )
 
 .ui.container.blog-article
   .content#content

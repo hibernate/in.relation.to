@@ -22,6 +22,7 @@ require 'ignore_old_posts'
 require 'date'
 require 'i18n'
 require 'json_feed_generator'
+require 'project_assigner'
 
 # custom extensions
 require 'legacy_post_code_highlighter'
@@ -71,6 +72,7 @@ Awestruct::Extensions::Pipeline.new do
 
   extension InRelationTo::Extensions::IgnoreOldPosts.new :posts
   extension InRelationTo::Extensions::Summary.new :posts
+  extension InRelationTo::Extensions::ProjectAssigner.new
 
   if Engine.instance.site.profile != 'editor'
     extension InRelationTo::Extensions::Splitter.new( :posts,
