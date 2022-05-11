@@ -1,0 +1,52 @@
+= Hibernate Search 6.1.5.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.1/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.1
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32063
+---
+
+We just published a maintenance release for Hibernate Search:
+6.1.5.Final.
+
+This release mainly upgrades to Hibernate ORM 5.6.8.Final,
+upgrades to Hibernate ORM 6.0.1.Final for -orm6 artifacts,
+upgrades to the latest version of Jakarta dependencies for `-orm6`/`-jakarta` artifacts,
+and fixes a few bugs.
+
+== What's new
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4543[HSEARCH-4543]:
+Upgrade to Hibernate ORM 5.6.8.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4569[HSEARCH-4569]:
+Upgrade -orm6 artifacts to Hibernate ORM 6.0.1.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4540[HSEARCH-4540]:
+Upgrade to the latest version of Jakarta dependencies in `-orm6`/`-jakarta` artifacts
+* link:{hsearch-jira-url-prefix}/HSEARCH-4536[HSEARCH-4536]:
+`.flags(Collections.emptySet())` when defining a `simpleQueryString` predicate now correctly disables all flags.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4537[HSEARCH-4537]:
+A routing bridge preventing indexing of a particular entity no longer causes
+a `NullPointerException` with the `outbox-polling` coordination strategy.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4544[HSEARCH-4544]:
+Defining an aggregation on a text field with `.maxTermCount(<very large value>)`
+no longer causes an `OutOfMemoryError` with the Lucene backend.
+
+For a full list of changes since the previous release,
+see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
