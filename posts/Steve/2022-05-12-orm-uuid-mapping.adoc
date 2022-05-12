@@ -1,0 +1,288 @@
+= Mapping UUID values with ORM 6
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM"]
+:awestruct-layout: blog-post
+:docs-url: https://docs.jboss.org/hibernate/orm/6.0
+:javadocs-url: {docs-url}/javadocs
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+
+Hibernate ORM 6.0 makes mapping UUID values easy, including use of generated UUID
+values as identifiers.
+
+By default, Hibernate will map `UUID` values to either
+
+- a database-specific UUID type, if one - `UUID` for PostgreSQL, `UNIQUEIDENTIFIER` for T-SQL variants, etc.
+- `BINARY` if the database does not define a specific UUID type.
+
+[NOTE]
+====
+Technically, Hibernate uses its special link:{javadocs-url}/org/hibernate/type/SqlTypes.html#UUID[`SqlTypes.UUID`]
+code for implicit UUID mappings, which indicates that Hibernate should pick an appropriate strategy (ultimately
+based on the underlying `Dialect`).
+
+Think of `SqlTypes` as an extension of JDBC's `Types`.  It defines the same constants and exposes
+additional codes which Hibernate handles in specific ways (`SqlTypes.UUID`, e.g.).
+====
+
+
+[[implicit-model]]
+.Implicit UUID mapping
+====
+[source, JAVA, indent=0]
+----
+@Basic
+UUID sku;
+----
+====
+
+Here, in the absence of explicit mapping configuration, Hibernate uses this special `SqlTypes.UUID` code.
+
+
+== Hibernate extensions
+
+However, consider we want to always map this UUID to CHAR instead.  Hibernate offers several ways to accomplish
+this.  We can configure this locally for just a single attribute:
+
+[[jdbc-type-code-model]]
+.@JdbcTypeCode
+====
+[source, JAVA, indent=0]
+----
+@Basic
+@JdbcTypeCode(SqlTypes.CHAR)
+UUID sku;
+----
+====
+
+Here, we've explicitly configured the use of `CHAR` for storing this `UUID` on the database.
+
+However, this approach affects only the attribute to which we apply the annotation.
+Considering this decision is usually consistent across an organization, we'd
+likely prefer to instead specify using `CHAR` for all `UUID` values.  Hibernate supports
+that as well:
+
+[[preference_setting]]
+.hibernate.type.preferred_uuid_jdbc_type
+====
+[source, indent=0]
+----
+hibernate.type.preferred_uuid_jdbc_type=CHAR
+----
+====
+
+Given that configuration, all implicit UUID value mappings (including the <<implicit-model, example>> from
+earlier) will now be mapped to SQL `CHAR`.
+
+
+== Jakarta Persistence
+
+The same can also be achieved in a portable manner using `jakarta.persistence.AttributeConverter`.
+
+Again, we can apply this handling for just a specific attribute:
+
+[[convert]]
+.@Convert
+====
+[source, JAVA, indent=0]
+----
+@Basic
+@Convert(UuidConverter.class)
+UUID sku;
+----
+====
+
+as well as globally for all `UUID` values by making `UuidConverter` auto-applied:
+
+[[auto-applied-conversion]]
+.@Converter(autoApply=true)
+====
+[source, JAVA, indent=0]
+----
+@Converter(autoApply=true)
+public class UuidConverter
+        implements AttributeConverter<UUID,Character> {
+    ...
+}
+----
+====
+
+See the link:{user-guide-url}#basic-jpa-convert[User Guide] for more details
+on using conversions.
+
+[NOTE]
+====
+Mapping a `UUID` using an `AttributeConverter` has one major drawback... Those attributes
+cannot be used as identifiers, as the Jakarta Persistence specification explicitly says
+that identifier attributes cannot be converted.
+====
+
+== Identifier Generation
+
+Hibernate has supported using `UUID` values as identifiers and using generated `UUID` values for
+quite some time now.
+
+We've seen how to map UUID values above.  Let's take a look at specifying value generation.  First the legacy form:
+
+[[id-generation-GenericGenerator]]
+.@GenericGenerator
+====
+[source, JAVA, indent=0]
+----
+@Id
+@GeneratedValue(generator="uuid-generator")
+@GenericGenerator(name="uuid-generator", strategy="UuidGenerator.class" )
+UUID id;
+----
+====
+
+A more simplified form (but with no control over the generation):
+
+[[id-generation-GeneratedValue]]
+.@GenericGenerator
+====
+[source, JAVA, indent=0]
+----
+@Id
+@GeneratedValue
+UUID id;
+----
+====
+
+6.0 also adds a dedicated, simplified annotation allowing configuration:
+
+[[id-generation-UuidGenerator]]
+.@UuidGenerator
+====
+[source, JAVA, indent=0]
+----
+@Id
+@GeneratedValue
+@UuidGenerator
+UUID id;
+----
+====
+
+`UuidGenerator` supports a number of "generation strategies":
+
+AUTO:: defaults to `RANDOM`
+RANDOM:: Uses {@link UUID#randomUUID()}
+TIME:: Uses a time-based generation strategy
+
+[NOTE]
+====
+These strategies all produce IETF RFC 4122 compliant values.
+====
+
+
+For those using Jakarta Persistence 3.1, that version also adds a new `GenerationType#UUID` enum:
+
+[[id-generation-GenerationStrategy]]
+.GenerationStrategy#UUID
+====
+[source, JAVA, indent=0]
+----
+@Id
+@GeneratedValue(strategy=UUID)
+UUID id;
+----
+====
+
+The "downside" to the Jakarta Persistence annotation is that it defines no portable
+facility to customize the actual generation, saying only that the provider "should
+assign an RFC 4122 Universally Unique Identifier".
+
+For custom generation strategies, we can also leverage the new `IdGeneratorType`
+annotation introduced in ORM 6.0
+
+
+[[custom-generation]]
+.@IdGeneratorType
+====
+[source, JAVA, indent=0]
+----
+public class CustomUuidGenerator implements IdentifierGenerator {
+    ...
+
+    @Override
+    Object generate(SharedSessionContractImplementor session, Object object) { ... }
+}
+
+@IdGeneratorType( CustomUuidGenerator.class )
+@Target({METHOD, FIELD})
+@Retention(RUNTIME)
+public @interface CustomUuidGeneration {
+    // any config to expose to user
+}
+
+@Entity
+public class TheEntity {
+    @Id
+    @GeneratedValue
+    @CustomUuidGeneration(
+            // config here
+    )
+    UUID id;
+}
+----
+====
+
+See the link:{user-guide-url}#identifiers-generators-IdGeneratorType[User Guide]
+for more details on using `IdGeneratorType`.
+
+Hibernate can also apply UUID-based generation for identifiers attributes defined as
+`String`.  E.g., all the following mappings are legal:
+
+
+[[id-generation-String]]
+.UUID generation as String
+====
+[source, JAVA, indent=0]
+----
+@Id
+@GeneratedValue(generator="uuid-generator")
+@GenericGenerator(name="uuid-generator", strategy="UuidGenerator.class" )
+String id;
+
+
+@Id
+@GeneratedValue
+@UuidGenerator
+String id;
+
+
+@Id
+@GeneratedValue(strategy=UUID)
+String id;
+----
+====
+
+Note specifically, however, that the following does not produce UUID values at all:
+
+[[id-generation-String]]
+.UUID generation as String
+====
+[source, JAVA, indent=0]
+----
+@Id
+@GeneratedValue
+String id;
+----
+====
+
+
+
+== Further reading
+
+Additional details on basic value mappings can be found
+at link:{user-guide-url}#basic[Basic values] User Guide section.  See especially
+the sections on link:{user-guide-url}#basic-mapping-composition[compositional mapping],
+which is new in 6.0; `@JdbcTypeCode` is an example of compositional mapping.
+
+Additional details on identifier generation can be found
+at link:{user-guide-url}#identifiers-generators[Generated identifier values] and
+link:{user-guide-url}#identifiers-generators-uuid[Using UUID generation] User Guide sections.
+
+For users migrating from previous versions, be sure to check out the
+link:{migration-guide-url}[Migration Guide] as well.
+
