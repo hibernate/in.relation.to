@@ -1,0 +1,172 @@
+= Mapping Boolean attributes in ORM 6
+Jan Schatteman
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+:icons: font
+:url-hibernate-base: https://docs.jboss.org/hibernate/orm/6.0
+:url-hibernate-javadoc: {url-hibernate-base}/javadocs
+:url-hibernate-ug: {url-hibernate-base}/userguide/html_single/Hibernate_User_Guide.html
+:url-sdk11-javadoc: https://docs.oracle.com/en/java/javase/11/docs/api
+
+
+By default, Hibernate ORM maps a Boolean value to a BOOLEAN column. However, not all databases have a built-in BOOLEAN datatype and not all applications will want to use BOOLEAN (legacy schema e.g.) .
+
+Hibernate provides multiple ways to map Boolean value to other SQL types; this post explores the most common ways.
+
+.Implicit Boolean mapping
+====
+[source, JAVA, indent=0]
+----
+
+    @Basic
+    private boolean aBoolean;
+
+----
+====
+How Hibernate chooses to map a boolean implicitly is determined by a series of cascading checks:
+
+1. It first checks whether the link:{url-hibernate-javadoc}/org/hibernate/cfg/AvailableSettings.html#PREFERRED_BOOLEAN_JDBC_TYPE[hibernate.type.preferred_boolean_jdbc_type] setting has been specified and, if so, uses it;
+2. Next it consults the link:{url-hibernate-javadoc}/org/hibernate/dialect/Dialect.html#getPreferredSqlTypeCodeForBoolean()[Dialect] to see if it reports a preferred SQL type and, if so, uses it;
+3. Otherwise it will use link:{url-sdk11-javadoc}/java.sql/java/sql/Types.html#BOOLEAN[Types.BOOLEAN]
+
+This default, 'implicit' mapping can be modified in several ways.
+
+== Using Jakarta Persistence AttributeConverter
+An `AttributeConverter` provides a natural way to map a boolean accounting for different storage representations.
+
+Hibernate provides 3 built-in `AttributeConverter` implementations for the most common cases:
+
+* *YesNoConverter* encodes a boolean value as 'Y' or 'N',
+* *TrueFalseConverter* encodes a boolean value as 'T' or 'F', and
+* *NumericBooleanConverter* encodes the value as an integer, 1 for true, and 0 for false.
+
+[[convert]]
+.Using built-in AttributeConverters
+====
+[source, JAVA, indent=0]
+----
+// this will get mapped to CHAR or NCHAR
+@Basic
+@Convert(converter = org.hibernate.type.YesNoConverter.class)
+boolean convertedYesNo;
+
+// this will get mapped to CHAR or NCHAR
+@Basic
+@Convert(converter = org.hibernate.type.TrueFalseConverter.class)
+boolean convertedTrueFalse;
+
+// this will get mapped to TINYINT
+@Basic
+@Convert(converter = org.hibernate.type.NumericBooleanConverter.class)
+boolean convertedNumeric;
+----
+====
+
+If another type of conversion is needed, one can also implement a custom `AttributeConverter`. See the link:{url-hibernate-ug}#basic-jpa-convert[User Guide] for details about using `AttributeConverter`.
+
+.Defining a custom AttributeConverter
+====
+[source, JAVA, indent=0]
+----
+
+    @Converter
+    public class CustomBooleanConverter implements AttributeConverter<Boolean, Character> {
+        ...
+    }
+
+----
+====
+
+In the above <<convert,examples>>, the converter will only be applied to the specific annotated attribute.
+
+Usually, however, this storage representation will be the same across an entire application or organization.  In such cases, annotating each and every boolean attribute individually is tedious and error prone.
+
+Jakarta Persistence defines a portable way to auto-apply a converter to all boolean types found in the domain model using `jakarta.persistence.Converter#autoApply`.
+
+[[convert-auto]]
+.Auto-applied AttributeConverter
+====
+[source, JAVA, indent=0]
+----
+@Converter( autoApply = true )
+public class CustomBooleanConverter implements AttributeConverter<Boolean, Character> {
+    ...
+}
+----
+====
+
+See the link:{url-hibernate-ug}[User Guide] for details about such 'auto-applied' converters.
+
+How would we define such auto-application for the aforementioned built-in `AttributeConverters` though? One option is to explicitly tell Hibernate about it using `orm.xml`:
+
+.<converter/>
+====
+[source, XML, indent=0]
+----
+<entity-mappings>
+    ...
+        <converter>org.hibernate.type.YesNoConverter</converter>
+    ...
+</entity-mappings>
+----
+====
+
+== @ConverterRegistration
+The imminent Hibernate 6.1 release will provide an alternative solution for this, by registering converters using the new `@ConverterRegistration` annotation.
+This annotation is a corollary to the `orm.xml` `<converter/>` element.
+
+Consider Hibernate's built-in `YesNoConverter`, and let's say we want to auto-apply it.  The converter itself is not defined for auto-application (and that would not be appropriate given potential discovery problems). However, we can use this new annotation, which can be specified at the class or package level  (it's scope is global regardless), as shown below:
+
+.@ConverterRegistration
+====
+[source, JAVA, indent=0]
+----
+@ConverterRegistration( converter=org.hibernate.type.YesNoConverter.class, autoApply=true )
+----
+====
+
+`ConverterRegistration` will be covered in more detail in the 6.1 version of the User Guide.
+
+
+== Hibernate extensions
+
+=== `@JdbcTypeCode / @JdbcType`
+
+If one wants to map a specific boolean attribute to something different from the default for the current database, then the easiest way to achieve this is to annotate that attribute with the desired `@JdbcTypeCode`, or with `@JdbcType` and the desired `JdbcType` implementor. In the latter case one can either use an implementation provided by Hibernate that accounts for the desired transformation, or provide a custom implementation.
+
+.Apply a specific Jdbc Type locally to a Boolean
+====
+[source, JAVA, indent=0]
+----
+    // this Boolean attribute will be converted to a CHAR in the database
+    @JdbcTypeCode(SqlTypes.CHAR)
+    private Boolean toCharBoolean;
+
+    // this Boolean attribute will be converted to a SMALLINT in the database
+    @JdbcType( SmallIntJdbcType.class )
+    private Boolean toSmallIntBoolean;
+----
+====
+
+If the default Boolean mapping to the database needs to change on an application-wide basis, then one would use the `@JdbcTypeRegistry` annotation as shown below:
+
+.Apply a specific Jdbc Type globally to all Boolean attributes
+====
+[source, JAVA, indent=0]
+----
+
+    @Entity
+    @JdbcTypeRegistration(registrationCode = Types.BOOLEAN, value = SmallIntJdbcType.class)
+    public static class AnEntity {
+        @Id
+        private Integer id;
+
+        private Boolean someBooleanAttribute;
+
+        //Getters and setters omitted for brevity
+    }
+----
+====
+
+Don't hesitate to check out the link:{url-hibernate-ug}#basic[User Guide] for more examples and further reading!
+
