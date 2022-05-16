@@ -1,0 +1,49 @@
+= "Hibernate ORM {released-version} and Hibernate Reactive 1.1.5.Final"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate ORM", "Hibernate Reactive", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.6.9.Final
+:release-id: 32067
+---
+
+Over the weekend we released both Hibernate ORM `5.6.9.Final` and Hibernate Reactive `1.1.5.Final`.
+
+== Hibernate ORM 5.6.9.Final
+
+Version 5.6.9 is a regular maintenance release of our 5.6 branch; as usual it includes conservative patches and focuses on important bugfixes:
+if you're a user of Hibernate ORM 5.x we recommend you upgrade.
+
+Full https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId=10031&version=32067[changelog for `5.6.9.Final`].
+
+== Hibernate Reactive 1.1.5.Final
+
+Hibernate Reactive 1.1.5.Final includes a critical bugfix making it more reliable for people using the API based on `Stage.SessionFactory`
+and related `Stage.Session`.
+(If you were using the Mutiny based API you were not affected by this problem).
+
+If you ever noticed an error mentioning "No Vert.x context active", which would happen only occasionally, then you should upgrade;
+in practice while operations need to be executed on the vert.x thread, it was possible with particular timings of the machine
+for some operations to be scheduled on the wrong thread.
+
+Unfortunately this could happen in ways that are fairly unpreditable and hard to reproduce, making me classify it as critical.
+
+Many thanks to Vladislav Kisel for having identified the problem and helping to reproduce it!
+
+Among other minor fixes, this version also upgrades to Vert.x `4.2.7` an Hibernate ORM `5.6.9.Final`.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
+And for Hibernate Reactive:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
+
