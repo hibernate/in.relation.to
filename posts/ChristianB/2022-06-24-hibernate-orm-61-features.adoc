@@ -1,0 +1,150 @@
+= "Hot features of Hibernate ORM 6.1"
+Christian Beikov
+:awestruct-tags: [ "Hibernate ORM", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate ORM version `6.1.0.Final` was just announced a few days ago, but the announcement didn't go into a too much detail.
+Read on if you want to know more about some of the hot new features this shiny new release comes with.
+
+== Subquery in the FROM clause
+
+One of the longest awaited features, also known as link:https://hibernate.atlassian.net/browse/HHH-3356[HHH-3356], was finally implemented!
+So far, querying with HQL and Criteria was limited to entities and associations, and it was good enough for most cases.
+There always was this itch though, that SQL allows to also put subqueries in the `from` clause,
+yet Hibernate ORM with HQL was incapable to model a dynamic subquery in the `from` clause.
+The best you could do is, annotate an entity with `@Subselect`, essentially telling Hibernate that the data comes from a SQL subquery instead of a table reference.
+This is neither dynamic nor very portable though. The votes on the JIRA issue were high and I was planning to work on this anyway as I wanted to add support for `lateral` joins.
+
+Forget about what you thought querying in ORMs is about, as Hibernate ORM is about to change the game with the concept of a derived `from` clause node.
+
+Next to the regular `from` nodes which refer to entity types in case of `from` clause roots (i.e. `from MyEntity e`) or associations (i.e. `join e.association a`),
+or basic/embeddable types in case of embeddable or element collection joins (i.e. `join e.elementCollection e`) there is a new kid in town.
+
+We labeled this new kind of `from` node "derived", so now you can also have a derived root and derived join.
+The type of this node is "dynamic" as it is based on its subquery selection items rather than a Java class.
+
+In short, every selection item alias of a derived subquery becomes a model part of this dynamic type.
+The type of the model part is derived from the respective selection item expression type in the subquery.
+
+If you know how this stuff works in SQL, you will see it mostly works the same in HQL, except that there is no implicit naming of selection items.
+Let's consider the following example query:
+
+```sql
+select d.derivedId, d.derivedText
+from (
+  select
+    p.id as derivedId,
+	p.firstname || ' ' || p.lastname as derivedText
+  from
+    Person p
+) d
+```
+
+The variable `d` refers to a derived root being of a type that contains two model parts `derivedId` and `derivedText`.
+The type of `derivedId` is the same as `Person#id`, but `derivedText` will be of the type `String`, as that is the expression type of the `concat` function.
+
+Considering that these subqueries can contain aggregate functions, it becomes apparent that this is not just a fancy way to encapsulate data subsets,
+but actually enables to run new kinds of queries with HQL.
+
+If aggregations are not your kind of thing, maybe you are more of a `lateral` subquery person?
+Subqueries in the `from` clause usually are independently executable in the sense, that they are not allowed to refer to aliases from the outer query.
+To be able to refer to aliases from the outer query, one must mark a `from` clause subquery as `lateral`, which usually translates to the same named SQL concept,
+or a variant of it, like `cross apply`.
+
+Consider the following example to fetch the top 3 visited locations of every person:
+
+```sql
+select p.firstname, d.nr, d.loc.street, d.loc.zip
+from Person p
+left join lateral (
+  select
+    row_number() over() as nr,
+	count(*) as visitCount,
+    v.location as loc
+  from
+    p.visitedLocations v
+  group by
+    v.location
+  order by
+    visitCount desc
+  limit 3
+) d
+```
+
+In this example, the `from` clause subquery refers to the `visitedLocations` collection of the `p` alias, defined in the enclosing query.
+The effect of this in SQL is, that the `person_visited_locations` table is queried and a `where` clause predicate is added to the subquery,
+to match only the rows of the "current" person as given by `p`.
+
+Beware that not all databases support `lateral` subqueries and that the emulation of `lateral` subqueries is limited to certain subquery shapes.
+To avoid surprises in production, we especially recommend you to check if queries that use `lateral` can be executed on your target database.
+
+If your intuition tells you, that this is sort of a nested loop join, then you are absolutely correct.
+You can read your database documentation about the details of how lateral joins are implemented, but to the best of my knowledge,
+a lateral join will force a specific join ordering and a nested loop join algorithm. Don't be scared of this, just beware of the implication ;)
+
+As you might have noticed, a regular `from` clause subquery is a lot like a common table expression (CTE), related to the famous SQL `with` clause.
+Now that we have implemented `from` clause subquery support, which will serve as the basis for emulating CTEs,
+I'd like to give you the outlook that we will start working on `with` clause support in HQL for the next Hibernate ORM version.
+
+If you're disappointed now, because you understand that regular CTEs will not bring any new query features to the table,
+then be assured that we won't stop at supporting just regular CTEs. Apart from support for the `recursive` keyword,
+Hibernate ORM will also try to add support for the lesser known `search` and `cycle` clauses.
+
+If you want to track the progress on the CTE support, checkout link:https://hibernate.atlassian.net/browse/HHH-15328[HHH-15328].
+
+== JDBC array type support
+
+Up until Hibernate ORM 6.1, the support for Java arrays was essentially limited to `byte[]`/`char[]` for binary/text DDL types 
+and mapping *-to-many associations as `T[]` Java arrays. Other kinds of arrays were so far interpreted as "serializable",
+which has the effect that the Java array is serialized with standard Java serialization to a binary DDL type.
+
+The biggest problem of using binary DDL types is, that developers can't "see" or operate on the actual data with SQL and the usual database clients.
+To make the data more accessible, yet still keep it densly packed in a single column, it is necessary to make use of more advanced DDL types and encoding techniques.
+
+Starting with Hibernate ORM 6.1, basic arrays, other than the previously mentioned special array types like `byte[]` etc.,
+and basic collections are now first class citizens that can be mapped to `array`, `json` or `xml` DDL types.
+In fact, the default was changed to map such so called "basic plural" types to `array`, `json` or `xml`, depending on the actual database support.
+Using these DDL types allows to access or manipulate individual elements through functions for the respective data types.
+
+Making use of this new mapping is simple, just declare a basic typed array in the persistence model:
+
+```java
+@Entity
+public class MyEntity {
+    // ...
+
+    int[] favoriteNumbers;
+}
+```
+
+Beware that you are not limited to Java arrays or primitive types. You can also use a plural type extending `java.util.Collection` like `List` or `Set`:
+
+```java
+@Entity
+public class MyEntity {
+    // ...
+
+    Set<TopicTag> watchedTags;
+
+    enum TopicTag { TOPIC1, TOPIC2 }
+}
+```
+
+As long as you are not annotating the field with `@ElementCollection`, this will be treated as "basic plural" mapping.
+
+Hibernate ORM 6.2 or 6.3 might introduce HQL accessor/manipulator functions which will allow access/modification to/of individual elements.
+The great thing about using structurally accessible DDL types to represent the data, is that these functions can be properly emulated.
+So even if your database does not support array types natively, chances are good that it supports JSON or XML functions which can be used behind the scenes,
+to provide you the same experience across all major databases.
+
+== Outlook
+
+There are certain limitations in the 6.1.0.Final implementation of the `from` clause subquery support which will be lifted in 6.1.1.Final as part of link:https://hibernate.atlassian.net/browse/HHH-15330[HHH-15330].
+
+Since I mentioned possible features for 6.2 or 6.3, I would like to mention what I plan to work on for 6.2,
+which is the support for mapping JDBC composite/struct types to embeddable types. If you want to join the discussion to shape this feature,
+let us know what you think by posting a comment to the link:https://github.com/hibernate/hibernate-orm/discussions/5104[GitHub discussion].
+
+And with that, I conclude this article on hot features of 6.1! Give 6.1 a try and let us know what you like or what doesn't work.
+Any feedback is welcome :)
