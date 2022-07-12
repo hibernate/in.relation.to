@@ -1,0 +1,330 @@
+= Hibernate Search 6.2.0.Alpha1 is out
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.2/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32036
+---
+
+We just published Hibernate Search 6.2.0.Alpha1,
+an alpha release of the next minor version of Hibernate Search.
+
+The main feature of this new version
+is the new Standalone POJO mapper,
+allowing to map arbitrary objects to an index,
+even if those objects are not Hibernate ORM entities.
+This opens the way to custom integrations to your favorite NoSQL datastores!
+
+Beyond that, 6.1.0.Alpha1 also includes
+mapping of classes/records to projections using @ProjectionConstructor,
+search DSL improvements (including projections on object fields),
+compatibility with Elasticsearch 8.3 and OpenSearch 2.0,
+and more.
+
+== Thanks
+
+Thanks to:
+
+* https://github.com/marko-bekhta[Marko Bekhta] for his work on features and bugfixes in this release.
+* https://github.com/wklaczynski[Waldemar Kłaczyński]
+for providing the groundwork for many features of the <<mapper-pojo-standalone,Standalone POJO Mapper>>
+over the past year.
+
+== What's new
+
+[NOTE]
+====
+Hibernate Search 6.2 is still in development:
+some features are still incomplete or may change in a backward-incompatible way.
+====
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-4628[HSEARCH-4628]/link:{hsearch-jira-url-prefix}/HSEARCH-4627[HSEARCH-4627])::
+Hibernate Search now depends on Hibernate ORM 5.6.10.Final,
+or Hibernate ORM 6.1.1.Final for -orm6 artifacts.
+[[lucene-version]]
+Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-4609[HSEARCH-4609])::
+The Lucene backend now uses Lucene 8.11.2.
+[[elasticsearch-version]]
+Elasticsearch (link:{hsearch-jira-url-prefix}/HSEARCH-4473[HSEARCH-4473]/link:{hsearch-jira-url-prefix}/HSEARCH-4622[HSEARCH-4622])::
+The Elasticsearch backend now works with Elasticsearch 8.3 and 7.17
+as well as other versions that were already compatible.
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-4561[HSEARCH-4561]/link:{hsearch-jira-url-prefix}/HSEARCH-4562[HSEARCH-4562])::
+The Elasticsearch backend now works with OpenSearch 1.3 and 2.0
+as well as other versions that were already compatible.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-4631[HSEARCH-4631]: Upgrade to Elasticsearch **client** 8.3.2
+* link:{hsearch-jira-url-prefix}/HSEARCH-4485[HSEARCH-4485]: Upgrade to GSON 2.9.0
+* link:{hsearch-jira-url-prefix}/HSEARCH-4486[HSEARCH-4486]: Upgrade to slf4j 1.7.36
+* link:{hsearch-jira-url-prefix}/HSEARCH-4539[HSEARCH-4539]: Upgrade to JBeret 1.4.7.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4581[HSEARCH-4581]: Upgrade to Jackson 2.13.3
+* link:{hsearch-jira-url-prefix}/HSEARCH-4598[HSEARCH-4598]: Upgrade to Reactive Streams 1.0.4
+* link:{hsearch-jira-url-prefix}/HSEARCH-4608[HSEARCH-4608]: Upgrade to the latest version of Jakarta dependencies in -orm6/-jakarta artifacts
+* link:{hsearch-jira-url-prefix}/HSEARCH-4590[HSEARCH-4590]: Upgrade to HCANN 6.0.2 for -orm6 artifacts
+
+[[mapper-pojo-standalone]]
+=== Standalone POJO Mapper
+
+The Standalone POJO Mapper enables mapping arbitrary POJOs to indexes.
+
+Its key feature compared to the Hibernate ORM integration is its ability to run without Hibernate ORM or a relational database.
+It can be used to index entities coming from an arbitrary datastore or even
+(though that’s not recommended in general) to use Lucene or Elasticsearch as a primary datastore.
+
+For more information about the Standalone POJO Mapper,
+see link:{hsearch-doc-url-prefix}#mapper-pojo-standalone[this section of the reference documentation].
+
+To get started with the Standalone POJO Mapper,
+see link:{hsearch-doc-url-prefix}#mapper-pojo-standalone-getting-started[this getting started guide].
+
+[[mapping-projection]]
+=== Mapping index content to custom types (projection constructors)
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-3927[HSEARCH-3927],
+Hibernate Search now offers the ability to define projections through the mapping of custom types (typically records),
+by applying the `@ProjectionConstructor` annotation to those types or their constructor:
+
+[source, JAVA, indent=0]
+----
+@ProjectionConstructor
+public record MyBookProjection(String title, List<Author> authors) {
+    @ProjectionConstructor
+    public record Author(String firstName, String lastName) {
+    }
+}
+----
+
+Executing such a projection then becomes as easy as referencing the custom type:
+
+[source, JAVA, indent=0]
+----
+List<MyBookProjection> hits = searchSession.search( Book.class )
+        .select( MyBookProjection.class )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
+
+See link:{hsearch-doc-url-prefix}#mapping-projection[this section of the reference documentation]
+for more information.
+
+[[mapping-improvements]]
+=== Mapping improvements
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4575[HSEARCH-4575],
+all fields are projectable by default with the Elasticsearch backend.
+
+This change was made because making a field projectable doesn't incur any performance penalty with the Elasticsearch backend.
+
+Since making a field projectable does have an impact on performance with the Lucene backend,
+the defaults with the Lucene backend didn't change:
+Lucene fields still need to be made projectable explicitly.
+
+[[search-dsl-improvements]]
+=== Search DSL improvements
+
+[[predicate-matchnone]]
+New link:{hsearch-doc-url-prefix}#search-dsl-predicate-match-none[`matchNone` predicate] (link:{hsearch-jira-url-prefix}/HSEARCH-4489[HSEARCH-4489])::
+The `matchNone` predicate matches no documents.
++
+[source, JAVA, indent=0]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.matchNone() )
+        .fetchHits( 20 );
+----
+[[predicate-bool-new-syntax-root]]
+Shorter syntax for link:{hsearch-doc-url-prefix}#search-dsl-predicate-boolean-lambda[complex, root boolean predicates] (link:{hsearch-jira-url-prefix}/HSEARCH-4520[HSEARCH-4520])::
+Instead of `.where( f -> f.bool( b -> ... ) )`, you can now use `.where( (f, b) -> ... )`:
++
+[source, JAVA, indent=0]
+----
+MySearchParameters searchParameters = getSearchParameters();
+List<Book> hits = searchSession.search( Book.class )
+        .where( (f, b) -> {
+            b.must( f.matchAll() );
+            if ( searchParameters.getGenreFilter() != null ) {
+                b.must( f.match().field( "genre" )
+                        .matching( searchParameters.getGenreFilter() ) );
+            }
+            if ( searchParameters.getFullTextFilter() != null ) {
+                b.must( f.match().fields( "title", "description" )
+                        .matching( searchParameters.getFullTextFilter() ) );
+            }
+            if ( searchParameters.getPageCountMaxFilter() != null ) {
+                b.must( f.range().field( "pageCount" )
+                        .atMost( searchParameters.getPageCountMaxFilter() ) );
+            }
+        } )
+        .fetchHits( 20 );
+----
++
+The older syntax has been deprecated in favor of the new one.
+[[predicate-bool-new-syntax-non-root]]
+Clearer syntax for link:{hsearch-doc-url-prefix}#search-dsl-predicate-boolean-lambda[complex, non-root boolean predicates] (link:{hsearch-jira-url-prefix}/HSEARCH-4520[HSEARCH-4520])::
+Instead of `f.bool( b -> ... )`, you can now use `f.bool().with( b -> ... )`:
++
+[source, JAVA, indent=0]
+----
+MySearchParameters searchParameters = getSearchParameters();
+List<Book> hits = searchSession.search( Book.class )
+        .where( (f, b) -> {
+            b.must( f.matchAll() );
+            if ( searchParameters.getGenreFilter() != null ) {
+                b.must( f.match().field( "genre" )
+                        .matching( searchParameters.getGenreFilter() ) );
+            }
+            if ( !searchParameters.getAuthorFilters().isEmpty() ) {
+                b.must( f.bool().with( b2 -> {
+                    for ( String authorFilter : searchParameters.getAuthorFilters() ) {
+                        b2.should( f.match().fields( "authors.firstName", "authors.lastName" )
+                                .matching( authorFilter ) );
+                    }
+                } ) );
+            }
+        } )
+        .fetchHits( 20 );
+----
++
+The older syntax has been deprecated in favor of the new one.
+[[predicate-nested-new-syntax]]
+Clearer syntax for the link:{hsearch-doc-url-prefix}#search-dsl-predicate-nested[`nested` predicate] (link:{hsearch-jira-url-prefix}/HSEARCH-4499[HSEARCH-4499])::
+Instead of `f.nested().objectField( ... ).nest( f.bool().must( ... ) )`, you can now use `f.nested( ... ).must( ... )`:
++
+[source, JAVA, indent=0]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.nested( "authors" )
+                .must( f.match().field( "authors.firstName" )
+                        .matching( "isaac" ) )
+                .must( f.match().field( "authors.lastName" )
+                        .matching( "asimov" ) ) )
+        .fetchHits( 20 );
+----
++
+The older syntax has been deprecated in favor of the new one.
+[[predicate-matchnone]]
+New link:{hsearch-doc-url-prefix}#search-dsl-predicate-match-none[`matchNone` predicate] (link:{hsearch-jira-url-prefix}/HSEARCH-4489[HSEARCH-4489])::
+The `matchNone` predicate matches no documents.
++
+[source, JAVA, indent=0]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.matchNone() )
+        .fetchHits( 20 );
+----
+[[projection-composite-syntax]]
+New syntax for link:{hsearch-doc-url-prefix}#search-dsl-projection-composite[composite projections] (link:{hsearch-jira-url-prefix}/HSEARCH-4498[HSEARCH-4498])::
+The definition of composite projections is now possible with a fluent syntax:
++
+[source, JAVA, indent=0]
+----
+List<MyPair<String, Genre>> hits = searchSession.search( Book.class )
+        .select( f -> f.composite()
+                .from( f.field( "title", String.class ),
+                        f.field( "genre", Genre.class ) )
+                .as( MyPair::new ) )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
++
+Most older syntaxes have been deprecated in favor of the new one.
+[[projection-object]]
+New link:{hsearch-doc-url-prefix}#search-dsl-projection-object[`object` projection] (link:{hsearch-jira-url-prefix}/HSEARCH-3943[HSEARCH-3943])::
+The `object` projection yields one projected value for each object in a given object field.
++
+[source, JAVA, indent=0]
+----
+List<List<MyAuthorName>> hits = searchSession.search( Book.class )
+        .select( f -> f.object( "authors" )
+                .from( f.field( "authors.firstName", String.class ),
+                        f.field( "authors.lastName", String.class ) )
+                .as( MyAuthorName::new )
+                .multi() )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
+[[predicate-matchnone]]
+New link:{hsearch-doc-url-prefix}#search-dsl-projection-constant[`constant` projection] (link:{hsearch-jira-url-prefix}/HSEARCH-4489[HSEARCH-4489])::
+The `constant` projection returns the same value for every single document, the value being provided when defining the projection.
++
+[source, JAVA, indent=0]
+----
+Instant searchRequestTimestamp = Instant.now();
+List<MyPair<Integer, Instant>> hits = searchSession.search( Book.class )
+        .select( f -> f.composite()
+                .from( f.id( Integer.class ), f.constant( searchRequestTimestamp ) )
+                .as( MyPair::new ) )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
+
+[[outbox-polling-improvements]]
+=== `outbox-polling` coordination improvements
+
+As of link:{hsearch-jira-url-prefix}/HSEARCH-4533[HSEARCH-4533],
+you can now customize table names, schema and catalog involved in Hibernate Search's `outbox-polling` coordination strategy
+through simple, straightforward configuration properties.
+
+See link:{hsearch-doc-url-prefix}#_custom_schematable_nameetc[this section of the reference documentation]
+for more information.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4565[HSEARCH-4565]:
+Cyclic dependency detection for IndexingDependency(derivedFrom = ...) now detects "buried" cycles.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4580[HSEARCH-4580]:
+"_routing" in custom Elasticsearch schema no longer leads to "JsonIOException: JSON document was not fully consumed."
+* link:{hsearch-jira-url-prefix}/HSEARCH-4584[HSEARCH-4584]:
+Projection and sort on the same nested field no longer fails with the Lucene Backend.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4619[HSEARCH-4619]:
+Boolean predicate now consistently match no documents when not adding any clause,
+regardless of the backend.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4604[HSEARCH-4604]:
+AWS Request signing no longer ignores the target port of the service endpoint.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4483[HSEARCH-4483]:
+The default mass indexing monitor (which uses logging) now uses a different format
+and displays an "instant speed" on top of the overall speed.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4594[HSEARCH-4594]:
+Bean references to configurers defined in configuration properties can now be multi-valued,
+allowing you to apply multiple configurers at once.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4611[HSEARCH-4611]:
+A few error messages have been improved,
+and multi-line error messages are now better indented in Hibernate Search's failure reports.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-doc-url-prefix}#mapper-orm-getting-started[here for the Hibernate ORM integration]
+* link:{hsearch-doc-url-prefix}#mapper-pojo-standalone-getting-started[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 6.1,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
