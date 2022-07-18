@@ -129,16 +129,6 @@ Lucene fields still need to be made projectable explicitly.
 [[search-dsl-improvements]]
 === Search DSL improvements
 
-[[predicate-matchnone]]
-New link:{hsearch-doc-url-prefix}#search-dsl-predicate-match-none[`matchNone` predicate] (link:{hsearch-jira-url-prefix}/HSEARCH-4489[HSEARCH-4489])::
-The `matchNone` predicate matches no documents.
-+
-[source, JAVA, indent=0]
-----
-List<Book> hits = searchSession.search( Book.class )
-        .where( f -> f.matchNone() )
-        .fetchHits( 20 );
-----
 [[predicate-bool-new-syntax-root]]
 Shorter syntax for link:{hsearch-doc-url-prefix}#search-dsl-predicate-boolean-lambda[complex, root boolean predicates] (link:{hsearch-jira-url-prefix}/HSEARCH-4520[HSEARCH-4520])::
 Instead of `.where( f -> f.bool( b -> ... ) )`, you can now use `.where( (f, b) -> ... )`:
