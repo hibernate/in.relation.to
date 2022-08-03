@@ -1,0 +1,79 @@
+= "Hibernate ORM {released-version} released"
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.1.2.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.1
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32087
+
+Today, we published a new maintenance release of Hibernate ORM 6.1: {released-version}.
+
+== What's new
+
+This release introduces a few minor improvements as well as bug fixes.
+
+
+=== @Any mapping and HQL function `type(...)`
+
+It is now possible to use the HQL function `type(...)` to access the type of a polymorphic association.
+
+E.g.
+
+```
+    @Entity
+    public class PropertyHolder {
+
+        @Any
+        @AnyDiscriminator(DiscriminatorType.STRING)
+        @AnyDiscriminatorValue(discriminator = "S", entity = StringProperty.class)
+        @AnyDiscriminatorValue(discriminator = "I", entity = IntegerProperty.class)
+        @AnyKeyJavaClass(Integer.class)
+        @Column(name = "property_type")
+        @JoinColumn(name = "property_id")
+        private Property property;
+
+        ...
+	}
+
+    public interface Property {
+        ...
+    }
+
+    @Entity
+    public class IntegerProperty implements Property {
+        ...
+    }
+
+```
+
+we can select the `PropertyHolders` having a property of type `IntegerProperty`
+
+```
+List<PropertyHolder> propertyHolders = session.createQuery(
+    "select p from PropertyHolder p where type(p.property) = IntegerProperty ",
+    PropertyHolder.class ).list();
+```
+
+=== Bugfixes
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here].
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.1/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
