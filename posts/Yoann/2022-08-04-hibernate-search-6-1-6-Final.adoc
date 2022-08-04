@@ -1,0 +1,76 @@
+= Hibernate Search 6.1.6.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.1/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.1
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32072
+---
+
+We just published a maintenance release for Hibernate Search:
+6.1.6.Final.
+
+This release mainly upgrades to Hibernate ORM 5.6.10.Final,
+upgrades to Hibernate ORM 6.0.2.Final and compatibility with Hibernate ORM 6.1.2.Final for -orm6 artifacts,
+upgrades to the latest version of Jakarta dependencies for `-orm6`/`-jakarta` artifacts,
+adds compatibility with CockroachDB,
+and fixes several bugs.
+
+== Thanks
+
+Thanks to https://github.com/ivankotev-taulia[Ivan Kotev],
+https://discourse.hibernate.org/u/fraf[fraf],
+https://hibernate.atlassian.net/jira/people/62cbeb9ac4c3be001fb4a80e[herzhang]
+and https://github.com/marko-bekhta[Marko Bekhta]
+for their help reporting and in some cases fixing bugs!
+
+== What's new
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4628[HSEARCH-4628]:
+Upgrade to Hibernate ORM 5.6.10.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4596[HSEARCH-4596]:
+Upgrade to Hibernate ORM 6.0.2.Final for `*-orm6` artifacts
+* link:{hsearch-jira-url-prefix}/HSEARCH-4635[HSEARCH-4635]:
+`*-orm6` artifacts are now compatible with Hibernate ORM 6.1.2.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4608[HSEARCH-4608]:
+Upgrade to the latest version of Jakarta dependencies in `*-orm6`/`*-jakarta` artifacts
+* link:{hsearch-jira-url-prefix}/HSEARCH-4611[HSEARCH-4611]:
+Some exceptions and log messages involving multivalued elements will now be clearer and better formatted.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4644[HSEARCH-4644]:
+From now on, Hibernate Search will be tested regularly against CockroachDB.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4634[HSEARCH-4634], link:{hsearch-jira-url-prefix}/HSEARCH-4647[HSEARCH-4647]:
+Hibernate Search's `outbox-polling` coordination strategy now works correctly with CockroachDB.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4565[HSEARCH-4565]:
+Hibernate Search will now detect "buried" cycles for `@IndexingDependency(derivedFrom = ...)`
+instead of leading to a `StackOverflowError`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4580[HSEARCH-4580]:
+"_routing" in custom Elasticsearch schema will no longer lead to "JsonIOException: JSON document was not fully consumed."
+* link:{hsearch-jira-url-prefix}/HSEARCH-4584[HSEARCH-4584]:
+Projecting and sorting on the same nested field with the Lucene Backend will no longer fail.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4654[HSEARCH-4654]:
+Hibernate Search will no longer deadlock when experiencing a large number of concurrent failures
+during startup or schema validation.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4604[HSEARCH-4604]:
+AWS request signing now takes into account the configured port of the Elasticsearch host.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4652[HSEARCH-4652]:
+Schema validation with the Elasticsearch backend will no longer fail
+when setting `searchAnalyzer` to the same value as `analyzer` on a full-text field.
+
+For a full list of changes since the previous release,
+see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
