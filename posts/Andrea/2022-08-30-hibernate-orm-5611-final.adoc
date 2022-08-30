@@ -1,0 +1,49 @@
+= "Hibernate ORM {released-version} released"
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 5.6.11.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/5.6
+:migration-guide-url: https://github.com/hibernate/hibernate-orm/blob/5.6/migration-guide.adoc
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32089
+
+Today, we published a new maintenance release of Hibernate ORM 5.6: {released-version}.
+
+== What's new
+
+This release introduces a few minor improvements as well as bug fixes.
+
+=== Optimisation
+
+Thanks to Sanne Grinovero and Bernd Meisel an issue causing severe performance drops in large projects has been fixed (see https://hibernate.atlassian.net/browse/HHH-15100[HHH-15100]).
+
+=== Jandex
+
+Thanks to Ladislav Thon Hibernate 5.6.11 is now compatible with both Jandex 2.4 and 3.0.0 (see https://hibernate.atlassian.net/browse/HHH-15466[HHH-15466]).
+
+=== Bugfixes
+
+==== @NotFound and Hibernate Criteria
+
+We have fixed a bug causing an exception when trying to select the id of an association annotated with `@NotFound` (see https://hibernate.atlassian.net/browse/HHH-15425[HHH-15425] and https://docs.jboss.org/hibernate/orm/5.6/userguide/html_single/Hibernate_User_Guide.html#associations-not-found[User guide]).
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here].
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/5.6/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
