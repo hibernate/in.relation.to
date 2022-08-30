@@ -29,8 +29,11 @@ pipeline {
                 not { changeRequest() }
             }
             steps {
-                sshagent(['jenkins.in.relation.to']) {
-                    sh '_scripts/publish-to-staging.sh'
+                configFileProvider([configFile(fileId: 'release.config.ssh', targetLocation: env.HOME + '/.ssh/config'),
+                                    configFile(fileId: 'release.config.ssh.knownhosts', targetLocation: env.HOME + '/.ssh/known_hosts')]) {
+                    sshagent(['jenkins.in.relation.to']) {
+                        sh '_scripts/publish-to-staging.sh'
+                    }
                 }
             }
         }
@@ -41,8 +44,11 @@ pipeline {
                 not { changeRequest() }
             }
             steps {
-                sshagent(['jenkins.in.relation.to']) {
-                    sh '_scripts/publish-to-production.sh'
+                configFileProvider([configFile(fileId: 'release.config.ssh', targetLocation: env.HOME + '/.ssh/config'),
+                                    configFile(fileId: 'release.config.ssh.knownhosts', targetLocation: env.HOME + '/.ssh/known_hosts')]) {
+                    sshagent(['jenkins.in.relation.to']) {
+                        sh '_scripts/publish-to-production.sh'
+                    }
                 }
             }
         }
