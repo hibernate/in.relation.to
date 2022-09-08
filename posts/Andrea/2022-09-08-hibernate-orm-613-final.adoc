@@ -1,0 +1,51 @@
+= "Hibernate ORM {released-version} released"
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.1.3.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.1
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32093
+
+Today, we published a new maintenance release of Hibernate ORM 6.1: {released-version}.
+
+== What's new
+
+This release introduces a few minor improvements as well as bug fixes.
+
+=== Optimisation
+
+====  JSON/XML type
+String annotated with `@JdbcTypeCode(SqlTypes.JSON)`/`@JdbcTypeCode(SqlTypes.SQLXML)` are not anymore serialized to JSON/XML but are now interpreted as plain JSON/XML avoiding serialization/deserialization (see https://hibernate.atlassian.net/browse/HHH-15458[HHH-15458]).
+
+==== ColumnReference
+Christian Beikov worked on optimizing the `ColumnReference` rendering, reducing string buffering and allocations (see https://hibernate.atlassian.net/browse/HHH-15462[HHH15462])
+
+==== Merge operation
+We have optimised the merge operation limiting the properties replacement operations executed (see https://hibernate.atlassian.net/browse/HHH-15471[HHH-15471]).
+
+
+
+
+=== Bugfixes
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here].
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.1/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
