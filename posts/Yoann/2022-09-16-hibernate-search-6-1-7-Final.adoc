@@ -1,0 +1,54 @@
+= Hibernate Search 6.1.7.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.1/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.1
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32102
+---
+
+We just published a maintenance release for Hibernate Search:
+6.1.7.Final.
+
+This release mainly upgrades to Hibernate ORM 5.6.11.Final,
+replaces dependency management of Hibernate ORM dependencies with simple alignment in all artifacts (including -orm6 artifacts),
+and fixes a bug related to Java modules.
+
+== Thanks
+
+Thanks to https://hibernate.atlassian.net/secure/ViewProfile.jspa?accountId=70121%3Ad48390c0-1583-4a3f-b95b-71b88672ea08[Yasin Koyuncu]
+for his help reporting bugs!
+
+== What's new
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4692[HSEARCH-4692]:
+Upgrade to Hibernate ORM 5.6.11.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4691[HSEARCH-4691]:
+Hibernate Search no longer attempts to manage Hibernate ORM dependencies,
+but is simply aligned on the dependencies of Hibernate ORM 5.6.11.Final
+(or 6.0.2.Final for `-orm6` artifacts).
+This should make upgrading Hibernate ORM without upgrading Hibernate Search
+slightly easier for frameworks and application developers.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4701[HSEARCH-4701]:
+When running Hibernate Search as a Java module (in the modulepath),
+Elasticsearch schema management will no longer lead to exceptions
+caused by missing inter-module dependencies.
+
+For a full list of changes since the previous release,
+see the link:https://hibernate.atlassian.net/secure/ReleaseNote.jspa?projectId={hsearch-jira-project-id}&version={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
