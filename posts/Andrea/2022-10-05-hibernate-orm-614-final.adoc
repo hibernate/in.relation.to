@@ -1,0 +1,86 @@
+= "Hibernate ORM {released-version} released"
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.1.4.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.1
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32106
+
+Today, we published a new maintenance release of Hibernate ORM 6.1: {released-version}.
+
+== What's new
+
+This release introduces a few minor improvements as well as bug fixes.
+
+=== Improvements
+
+==== Insert from Select
+
+When an insert from select is executed
+
+E.g.
+
+`session.createMutationQuery("insert into TestEntity(id, name) select 1, 'abc' from TestEntity e").executeUpdate();`
+
+if the identifier is assigned, an unnecessary multi-table insert is no longer generated (see https://hibernate.atlassian.net/browse/HHH-15527[HHH-15527]).
+
+==== Second Level Cache Key
+
+Optimised 2nd level cache size for Redis cache (see https://hibernate.atlassian.net/browse/HHH-15500[HHH-15500]).
+
+=== Bugfixes
+
+==== Insert from Select
+
+Setting `hibernate.default_schema` was causing an error when an insert from select was executed (see https://hibernate.atlassian.net/browse/HHH-15517[HHH-15517]).
+
+==== Enum and Query Parameters
+
+A problem causing an exception when a query with an enum type parameter is executed has been fixed (see https://hibernate.atlassian.net/browse/HHH-15498[HHH-15498]).
+
+E.g.
+
+```
+@Entity
+class Event {
+    ...
+
+    @Enumerated(EnumType.STRING)
+    private Type type;
+}
+
+enum Type {
+    INDOOR, OUTDOOR
+}
+
+
+session.createMutationQuery("DELETE FROM Event WHERE (:type IS NULL OR type = :type)");
+```
+
+
+==== Stored Procedure and ParameterMode.REF_CURSOR
+
+It is now possible to register a Stored Procedure parameter of type `ResultSet` and `ParameterMode.REF_CURSOR` (see https://hibernate.atlassian.net/browse/HHH-15542[HHH_15542]).
+
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here].
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.1/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
