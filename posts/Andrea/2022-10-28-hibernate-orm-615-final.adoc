@@ -2,19 +2,40 @@
 Andrea Boriero
 :awestruct-tags: ["Hibernate ORM", "Releases"]
 :awestruct-layout: blog-post
-:released-version: 6.1.4.Final
+:released-version: 6.1.5.Final
 :docs-url: https://docs.jboss.org/hibernate/orm/6.1
 :migration-guide-url: {docs-url}/migration-guide/migration-guide.html
 :user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
-:release-id: 32113
 
 Today, we published a new maintenance release of Hibernate ORM 6.1: {released-version}.
 
 == What's new
 
-This release introduces a few minor improvements as well as bug fixes.
+This release introduces a few improvements, bug fixes, and a significant set of performance improvements.
 
 === Improvements
+
+==== Performance
+
+The Red Hat performance team has identified a particular pattern of code which triggers a severe performance penalty on large multi-core servers.
+Many libraries have been found to be affected, including Hibernate ORM.
+
+While the engineering team's primary goal will be to try address the JVM issue, tracked as https://bugs.openjdk.org/browse/JDK-8180450[JDK-8180450], we've
+started to include some mitigation patches so that our users won't have to wait for years.
+
+This work is in early phases and we're likely to follow up with additional related improvements, but if running on the HotSpot JVM and having multiple cores and using bytecode enhancements you should already experience improved CPU efficiency with this release.
+
+Early tests are extremely promising!
+
+In case you're interested to learn more, we discuss the problem extensively on https://youtu.be/G40VfIsnCdo[Quarkus Insights episode #107].
+
+To figure out if your own code or other libraries are affected, use the https://github.com/RedHatPerf/type-pollution-agent[Type Pollution Agent].
+
+The patch in Hibernate ORM was tracked as https://hibernate.atlassian.net/browse/HHH-15616[HHH-15616] - more similar goodies are expected in further
+upcoming releases.
+
+N.B. this issue has been around for 20 years approximately: we're not facing a regression, I'd rather say it's an important discovery and coming
+with terrific good news, assuming you care about the costs of your servers and/or the environment.
 
 ==== DB2 aliases
 
@@ -29,6 +50,8 @@ We have fixed two bugs affecting the Gradle plugin:
 
 * A bug causing failures when trying to enhance entities has been fixed (see https://hibernate.atlassian.net/browse/HHH-15597[HHH-15597])
 * A bug preventing to execute tasks whose names consist of three or more parts, e.g. `compileThreePartNameJava` (see https://hibernate.atlassian.net/browse/HHH-15558[HHH-15558])
+
+These fixes are important for Spring Native.
 
 
 ==== Entity Graph and Inheritance
