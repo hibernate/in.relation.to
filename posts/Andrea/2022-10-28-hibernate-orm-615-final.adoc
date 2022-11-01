@@ -1,0 +1,54 @@
+= "Hibernate ORM {released-version} released"
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.1.4.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.1
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32113
+
+Today, we published a new maintenance release of Hibernate ORM 6.1: {released-version}.
+
+== What's new
+
+This release introduces a few minor improvements as well as bug fixes.
+
+=== Improvements
+
+==== DB2 aliases
+
+Hibernate schema validation now supports table aliases also for DB2, to enable this feature is necessary to set the `hibernate.synonyms` configuration property to `true` (see https://hibernate.atlassian.net/browse/HHH-15585[15585])
+
+
+=== Bugfixes
+
+==== Hibernate Gradle Plugin
+
+We have fixed two bugs affecting the Gradle plugin:
+
+* A bug causing failures when trying to enhance entities has been fixed (see https://hibernate.atlassian.net/browse/HHH-15597[HHH-15597])
+* A bug preventing to execute tasks whose names consist of three or more parts, e.g. `compileThreePartNameJava` (see https://hibernate.atlassian.net/browse/HHH-15558[HHH-15558])
+
+
+==== Entity Graph and Inheritance
+
+We have fixed a bug preventing to eager loading an association of a Single Table Inheritance (see https://hibernate.atlassian.net/browse/HHH-15622[HHH-15622])
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.1/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
