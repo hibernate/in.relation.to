@@ -13,9 +13,7 @@ Today, we published a new maintenance release of Hibernate ORM 6.1: {released-ve
 
 This release introduces a few improvements, bug fixes, and a significant set of performance improvements.
 
-=== Improvements
-
-==== Performance
+=== Performance
 
 The Red Hat performance team has identified a particular pattern of code which triggers a severe performance penalty on large multi-core servers.
 Many libraries have been found to be affected, including Hibernate ORM.
@@ -37,14 +35,23 @@ upcoming releases.
 N.B. this issue has been around for 20 years approximately: we're not facing a regression, I'd rather say it's an important discovery and coming
 with terrific good news, assuming you care about the costs of your servers and/or the environment.
 
-==== DB2 aliases
+=== Handling of associations on non-primary keys
+
+Gavin himself https://github.com/hibernate/hibernate-orm/pull/5454[has been reworking] this tricky area, improving both the code and the error message that might be generated in case of user mistakes.
+
+This set of changes potentially addresses a whole set of open issues, we need to still verify how many are resolved.
+
+=== Virtual synthetic properties for multi-column inverse one-to-ones
+
+https://github.com/hibernate/hibernate-orm/pull/5462[Another patch] by Gavin addressing multiple issues relating to Many-to-One mappings.
+
+
+=== DB2 aliases
 
 Hibernate schema validation now supports table aliases also for DB2, to enable this feature is necessary to set the `hibernate.synonyms` configuration property to `true` (see https://hibernate.atlassian.net/browse/HHH-15585[15585])
 
 
-=== Bugfixes
-
-==== Hibernate Gradle Plugin
+=== Hibernate Gradle Plugin
 
 We have fixed two bugs affecting the Gradle plugin:
 
@@ -54,7 +61,7 @@ We have fixed two bugs affecting the Gradle plugin:
 These fixes are important for Spring Native.
 
 
-==== Entity Graph and Inheritance
+=== Entity Graph and Inheritance
 
 We have fixed a bug preventing to eager loading an association of a Single Table Inheritance (see https://hibernate.atlassian.net/browse/HHH-15622[HHH-15622])
 
