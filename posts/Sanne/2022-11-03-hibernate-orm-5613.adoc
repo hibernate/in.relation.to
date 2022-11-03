@@ -1,0 +1,71 @@
+= "Hibernate ORM {released-version}"
+Sanne Grinovero
+:awestruct-tags: [ "Hibernate ORM", "Releases" ]
+:awestruct-layout: blog-post
+:released-version: 5.6.13.Final
+:release-id: 32112
+---
+
+Hibernate ORM `5.6.13.Final` is available now, including some important bugfixes and a very exciting performance improvement.
+
+== Bugfix: HHH-15634 Lazy basic property does not get updated on change
+
+An https://hibernate.atlassian.net/browse/HHH-15634[important issue] was identified: when enabling bytecode enhancement and applying this to https://docs.jboss.org/hibernate/orm/current/userguide/html_single/Hibernate_User_Guide.html#BytecodeEnhancement-lazy-loading[lazy loaded properties],
+the Hibernate ORM engine would fail to recognize dirtyness properly.
+
+We would recommend everyone who is using bytecode enhancement to update to prevent failing to write the correct state back to the database.
+
+
+== Bugfix: HHH-15554 Merge of an Entity with an immutable composite user type throws Exception
+
+Far less critical as anyone affected would have seen an exception, still this was annoying and several users reporting it.
+
+A regression was introduced in `5.6.11.Final` that was causing exceptions on attempting a merge on entities having immutable composite user types;
+this has now been fixed.
+
+
+== Bugfix:  HHH-15561 Function "IDENTITY" not found when inserting audited revision using Hibernate Envers
+
+This was essentially an compatibility problem between Hibernate Envers and the latest H2 database versions, now resolved.
+
+
+== Performance: secondary_super_cache scalability problem mitigations
+
+Similarly to what we did for https://in.relation.to/2022/10/28/hibernate-orm-615-final/[Hibernate ORM `6.1.5.Final`], you might find
+this version to perform significantly better - especially when run on servers with many CPUs.
+
+This version includes some mitigations for https://bugs.openjdk.org/browse/JDK-8180450[JDK-8180450], as we realized the problem is
+causing much more severe performance penalties than previously thought.
+
+For more details please refer to the https://in.relation.to/2022/10/28/hibernate-orm-615-final/[previous release blog], the JDK issue tracker and the https://www.youtube.com/watch?v=G40VfIsnCdo[Quarkus Insights episode], in which we discuss this extensively.
+
+Let me clarify once again that we only applied a partial mitigation; the code still exhibits some cases that we could improve further,
+however we're unlikely to solve them all in Hibernate ORM v5 as our focus is now the `main` branch (versions 6 and beyond);
+we encourage everyone to upgrade to Hibernate ORM 6 as soon as possible, not least to keep getting free new performance patches like this one.
+
+That said, our work greatly relies on your feedback; these performance fixes have shown exciting high potential on our reference benchmarks,
+including not least on SpecJ Enterprise, but we'd love to hear about impact on your real world applications as well.
+
+Special thanks to https://twitter.com/forked_franz/status/1588122316147675136[Francesco Nigro], a colleague from the Red Hat Middleware Performance team,
+and the whole team in fact as they regularly support us in such difficult diagnostics and develop https://github.com/RedHatPerf/type-pollution-agent[amazing tooling].
+
+
+== Some more polishing
+
+ - The getter `org.hibernate.criterion.SimpleExpression#getOp()` https://hibernate.atlassian.net/browse/HHH-15575[was made public] on user request to help migrating from the legacy Criteria API.
+ - Our DB2 integration code now https://hibernate.atlassian.net/browse/HHH-15585[supports aliases during schema validation].
+
+
+== Dependency upgrades
+
+We also upgraded https://bytebuddy.net/[ByteBuddy] to version 1.12.18, and https://byteman.jboss.org/[Byteman] to version 4.0.20; besides bringing best of breed to our users, this also allows us to keep testing on all latested JDK previews.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+
