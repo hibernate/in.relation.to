@@ -1,0 +1,84 @@
+= "Hibernate ORM {released-version} released"
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.1.6.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.1
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32118
+
+Today, we published a new maintenance release of Hibernate ORM 6.1: {released-version}.
+
+== What's new
+
+This release introduces a few improvements, bug fixes, and a significant set of performance improvements.
+
+=== Improvements
+
+==== Second Level Cache
+
+We have improved the initialization of an entity when a reference was found in the Second Level Cache avoiding the unnecessary call to the properties setter methods (see https://hibernate.atlassian.net/browse/HHH-15666[HHH-15666])
+
+==== Query Results duplication checking
+
+We have improved the method to check for duplicates of an HQL query result.
+This will reduce the amount of in-memory processing that the ORM needs to perform (see https://hibernate.atlassian.net/browse/HHH-15479[HHH-15479]).
+
+==== Mitigations for secondary super types cache
+
+As explained in https://redhatperf.github.io/post/type-check-scalability-issue/[this blogpost], while investigating performance regressions
+we identified that some popular middleware libraries, including Hibernate ORM, are having performance being limited by an existing JDK
+issue https://bugs.openjdk.org/browse/JDK-8180450[JDK-8180450].
+
+The OpenJDK team acknowledged its severity and is working on a fix scheduled for Java 21; we hope it will also be considered for backporting but in the meantime we've been patching our code so to limit the impact of it and not having to wait for it.
+
+Examples of such patches are https://github.com/hibernate/hibernate-orm/pull/5483[#5483], https://github.com/hibernate/hibernate-orm/pull/5662[#5662], https://github.com/hibernate/hibernate-orm/pull/5681[#5681], https://github.com/hibernate/hibernate-orm/pull/5684[#5684], https://github.com/hibernate/hibernate-orm/pull/5690[#5690], https://github.com/hibernate/hibernate-orm/pull/5692[#5692], https://github.com/hibernate/hibernate-orm/pull/5694[#5694], https://github.com/hibernate/hibernate-orm/pull/5720[#5720].
+
+These have been verified by the Red Hat Performance team; as we keep going, the highest priority issues have been solved, but we will still keep identifying some more.
+Hibernate ORM 6.2 is expected to have some more significant improvements as we have an additional batch of fixes which are not suitable for being backported to this maintenance branch.
+
+=== Bugfixes
+
+==== Polymorphic Queries
+
+We have fixed a couple of issues related to Polymorphic queries:
+
+* a bug causing a `PersistenceException` for polymorphic queries having a where clause (see https://hibernate.atlassian.net/browse/HHH-15718[HHH-15718])
+* a bug causing a StackOverflow (see https://hibernate.atlassian.net/browse/HHH-15744[HHH-15744])
+
+==== HQL queries and Converters
+
+We have fixed a bug affecting queries involving attributes with a converter applied (see https://hibernate.atlassian.net/browse/HHH-15742[HHH-15742]).
+Thanks to the new Hibernate ORM team member https://github.com/mbladel[Marco Belladelli], who just joined our team last week and is already productive!
+
+==== Embeddables
+
+This release fixes also some bugs affecting Embeddables:
+
+* A `@OneToOne(mappedBy = ...)` within an embeddable was causing an IllegalArgumentException (see https://hibernate.atlassian.net/browse/HHH-15606[HHH-15606])
+* A ClassCastException was thrown when batch-fetching an association of an embeddable (see https://hibernate.atlassian.net/browse/HHH-15644[HHH-15644])
+* An ArrayIndexOutOfBoundsException was thrown when selecting an Entity having an Embeddable with more fields than the parent (see https://hibernate.atlassian.net/browse/HHH-15658[HHH-15658])
+* An UnknownTableReferenceException was thrown during the initialization of an ElementCollection of Embeddable containing a MayToOne association with an Entity containing a ManyToMany association (see https://hibernate.atlassian.net/browse/HHH-15713[HHH-15713])
+* When Batch Fetching was enabled, an Embeddable having a ot null association was considered null when all the other attributes were null (see https://hibernate.atlassian.net/browse/HHH-15695[HHH-15695])
+* A NullPointerException was thrown loading an Entity that contains a null Embedded property when dirty tracking was enabled (see https://hibernate.atlassian.net/browse/HHH-15730[HHH-15730])
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here].
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.1/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
