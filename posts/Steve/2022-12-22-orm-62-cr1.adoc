@@ -1,0 +1,82 @@
+= Hibernate 6.2 CR1
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:docs-url: https://docs.jboss.org/hibernate/orm/6.2
+:javadocs-url: {docs-url}/javadocs
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+
+
+Hibernate ORM 6.2.0.CR1 was just released which contains a lot of new features, enhancements and bug-fixes.
+
+NOTE:: Since this is a CR, and in the interest of getting this done before the holidays, this announcement simply
+categorizes the links.  The details will get fleshed out for the Final release announcement.
+
+
+== Support for Java records
+
+* https://hibernate.atlassian.net/browse/HHH-15072 - Default EmbeddableInstantiator for records
+
+
+== Support for structs
+
+* https://hibernate.atlassian.net/browse/HHH-15327 - Support mapping composite/struct types
+
+
+== Jakarta Persistence 3.1
+
+* https://hibernate.atlassian.net/browse/HHH-15398 - Move to Jakarta Persistence 3.1
+
+
+== Improved generated value support
+
+* https://hibernate.atlassian.net/browse/HHH-15789 - unify configuration of value generators and id generators
+* https://hibernate.atlassian.net/browse/HHH-15774 - make @CurrentTimestamp take over the job of @Source, and make value generation work better with version properties
+* https://hibernate.atlassian.net/browse/HHH-15782 - more flexible ValueGeneration + unification with IdentifierGenerator
+
+
+== Query enhancements
+
+* https://hibernate.atlassian.net/browse/HHH-15654 - Window/Ordered set-aggregate function support for Criteria API
+* https://hibernate.atlassian.net/browse/HHH-15868 - Expose more standard HQL functions through HibernateCriteriaBuilder
+
+
+== @PartitionKey
+
+* https://hibernate.atlassian.net/browse/HHH-15899 - Add @PartitionKey annotation
+
+
+== Temporals
+
+* https://hibernate.atlassian.net/browse/HHH-15679 - Respect the offset of OffsetTime when persisting/loading data
+* https://hibernate.atlassian.net/browse/HHH-15820 - inconsistent DDL generated Instant and ZonedDateTime, OffsetDateTime on Oracle
+
+
+== Other notables
+
+* https://hibernate.atlassian.net/browse/HHH-15571 - Allow @SqlInsert, @SqlUpdate, @SqlDelete to refer to an @SecondaryTable
+* https://hibernate.atlassian.net/browse/HHH-15393 - Improve write-paths to use mapping model & SQL AST
+* https://hibernate.atlassian.net/browse/HHH-15503 - Add UUID support for MariaDB 10.7
+* https://hibernate.atlassian.net/browse/HHH-15504 - Add UUID support for SQL Server 2008
+* https://hibernate.atlassian.net/browse/HHH-15631 - Enable reflection optimizer by default
+* https://hibernate.atlassian.net/browse/HHH-15816 - make @Immutable work at property level
+* https://hibernate.atlassian.net/browse/HHH-15834 - @TypeRegistration for UserTypes
+* https://hibernate.atlassian.net/browse/HHH-15679 - Respect the offset of OffsetTime when persisting/loading data
+* https://hibernate.atlassian.net/browse/HHH-15883 - Expose MappingMetamodel via unwrap from SessionFactory
+* https://hibernate.atlassian.net/browse/HHH-15483 - allow @TenantId properties of type other than String
+* https://hibernate.atlassian.net/browse/HHH-15926 - allow @Type and @CompositeType to be applied as meta-annotations
+
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.0/[release page]
+- the link:{docs-url}/incubating/incubating.txt[incubating report]
+- the link:{docs-url}/deprecated/deprecated.txt[deprecation report]
+- the link:{docs-url}/internals/internal.txt[internals report]
+
+See the https://hibernate.org/community/[website] for getting in touch with us.
