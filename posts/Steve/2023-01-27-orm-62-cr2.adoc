@@ -1,0 +1,66 @@
+= Hibernate 6.2 CR2
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:major-minor: 6.2
+:docs-url: https://docs.jboss.org/hibernate/orm/{major-minor}
+:javadocs-url: {docs-url}/javadocs
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+
+Hibernate ORM 6.2.0.CR2 was just released with lots of goodies.
+
+A little over a month has gone by since https://in.relation.to/2022/12/22/orm-62-cr1/[6.2 CR1] was released.  In that
+time, and even before, we've recieved really excellent feedback and bug reports and resolved over 100 Jira reports.  Thanks for the feedback!
+
+The code has really stabilized as the SQL AST changes smoothed out as well.
+
+
+[[merge]]
+== SQL MERGE for "optional table" updates
+
+Building on top of the SQL AST, Hibernate can now use the SQL `MERGE` command to handle updates against optional tables.  
+
+An update to an optional table will have one of 3 ultimate outcomes:
+
+1. if there is no corresponding row already in the table, insert the row
+2. else if all the new "value" columns are null, delete the row
+3. else update the row
+
+The legacy behavior was to just do these if-checks ourselves at runtime and execute the insert, update and delete statements individually.
+The `MERGE` command allows that to happen more efficiently in a single JDBC call.
+
+Currently this is supported on:
+
+* https://hibernate.atlassian.net/browse/HHH-16084[H2]
+* https://hibernate.atlassian.net/browse/HHH-16101[Oracle]
+* https://hibernate.atlassian.net/browse/HHH-16103[SQL Server]
+* https://hibernate.atlassian.net/browse/HHH-16110[PostgreSQL]
+
+The fall back is to just use the legacy behavior.
+
+
+[[jdbc-type]]
+== Proprietary SQL types
+
+Dealing with certain SQL types requires access to JDBC driver specific classes in
+order to properly read and write values of that type.  In some environments (various
+containers, e.g.), those classes are not available to Hibernate.
+
+Hibernate better handles these situations now when it can, usually based on casts to more standardized types.  For example,
+we might read a JSON value from a ResultSet as a String by wrapping the JSON expression in a cast function.
+
+
+== Community
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/{major-minor}/[release page]
+- the link:{docs-url}/incubating/incubating.txt[incubating report]
+- the link:{docs-url}/deprecated/deprecated.txt[deprecation report]
+- the link:{docs-url}/internals/internal.txt[internals report]
+- the https://hibernate.org/community/compatibility-policy/[compatibility policy]
+
+See the https://hibernate.org/community/[website] for getting in touch with us.
