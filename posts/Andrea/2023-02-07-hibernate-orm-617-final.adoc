@@ -1,0 +1,74 @@
+= "Hibernate ORM {released-version} released"
+Andrea Boriero
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.1.7.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.1
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32126
+
+Today, we published a new maintenance release of Hibernate ORM 6.1: {released-version}.
+
+== What's new
+
+This release includes some important bug fixes.
+
+=== Bugfixes
+
+==== OneToMany and @Where annotation
+
+We have fixed a bug causing an `EntityNotFoundException` to be thrown when `EntityManager#refresh()` is called for a parent entity having a child annotated with `@Where` (see https://hibernate.atlassian.net/browse/HHH-15902[HHH-15902])
+
+==== Embeddables
+
+We have fixed few issues related to embeddables:
+
+* a `PropertyAccessException` was thrown when deleting an entity having an embeddable with a collection attribute (see https://hibernate.atlassian.net/browse/HHH-16007[HHH-16007])
+
+* an `ArrayIndexOutOfBoundsException` was thrown when loading an entity having an Embeddable with more attributes than the parent that was causing  (see https://hibernate.atlassian.net/browse/HHH-15778[HHH-15778])
+
+* an `IllegalArgumentException` was thrown when deleting an entity having an embeddable with a collection attribute annotated with `orphanRemoval=true` (see https://hibernate.atlassian.net/browse/HHH-15864[HHH-15864])
+
+* a `NullPointException` was thrown when the model contains a nested embeddable with a non-optional association (see https://hibernate.atlassian.net/browse/HHH-15794[HHH-15794])
+
+* a `ClassCastException` was thrown when a not nullable `OneToMany` association references an entity with an embedded id (see https://hibernate.atlassian.net/browse/HHH-15866[HHH-15866] see https://hibernate.atlassian.net/browse/HHH-15865[HHH-15865])
+
+* an `IllegalArgumentException` was thrown when retrieving by identifier entities extending a `MappedSuperclass` class with an embeddable id (see https://hibernate.atlassian.net/browse/HHH-16070[HHH-16070])
+
+* an `HibernateException` was thrown when querying an entity having an embeddable with a collection attribute with cascade delete orphan (see https://hibernate.atlassian.net/browse/HHH-16117[HHH-16117])
+
+==== Bytecode enhancement and dirty checking
+
+We have fixed a bug causing the execution of unnecessary SQL update statements when setting a property to its current value (see https://hibernate.atlassian.net/browse/HHH-16049[HHH-16049])
+
+==== Polymorphic Queries
+
+We have fixed a bug causing an `HibernateException` when a polymorphic query contains a join (see https://hibernate.atlassian.net/browse/HHH-15944[HHH-15944])
+
+==== Batching
+
+We have fixed a couple of bugs affecting batch fetching:
+
+* when refreshing an entity annotated with `@BatchSize` its lazy associations may be swapped with a wrong instance (see https://hibernate.atlassian.net/browse/HHH-15851[HHH-15851])
+* collection batch fetching generated more queries than needed when retrieving empty collections (see https://hibernate.atlassian.net/browse/HHH-16043[HHH-16043])
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/secure/ReleaseNote.jspa?version={release-id}&styleName=Html&projectId=10031[here].
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.1/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
