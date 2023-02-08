@@ -1,0 +1,63 @@
+= "Hibernate ORM 6.2 - Partitioning support"
+Christian Beikov
+:awestruct-tags: [ "Hibernate ORM", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate ORM version `6.2.0.Final` is around the corner, and the following post tries to shed some light
+on one of the new features that comes with that release.
+
+== Table partitioning
+
+In data management, it is sometimes necessary to split data of a table into various (physical) partitions,
+based on partition keys and a partitioning scheme.
+
+Every database has a different way of defining the partitioning keys and scheme for a table,
+but something that all of them have in common is the fact that the query planner needs to decide which partition to look into
+for a query. Unless the database supports globally unique indexes on partitioned tables,
+the query planner can't know which partition it must target, and hence will have to plan to access every partition.
+This unfortunately leads to poor query planning performance on the popular open source databases PostgreSQL and MySQL/MariaDB,
+which support partitioning but not globally unique indexes on partitioned tables.
+
+== Partition Key Mapping
+
+After link:https://github.com/hibernate/hibernate-orm/discussions/5353[some discussions] about how this could be supported in Hibernate,
+we went with a minimal approach first, to make sure we can help people improve their performance as soon as possible.
+
+The minimal approach is to allow marking persistent attributes to be part of the partition key, by annotating `@PartitionKey`.
+This has the effect that SQL update and delete statements, which are issued by Hibernate when flushing entity state changes,
+will additionally restrict the partition key columns in `WHERE` clause predicate.
+
+Consider the following entity model:
+
+```java
+@Entity
+@Table(name = "user_tbl")
+public static class User {
+    @Id
+    private Long id;
+    private String firstname;
+    private String lastname;
+    @PartitionKey
+    private String tenantKey;
+}
+```
+
+When updating or deleting such an entity, Hibernate will now generate SQL similar to this:
+
+```sql
+update user_tbl set firstname=?,lastname=?,tenantKey=? where id=? and tenantKey=?
+delete from user_tbl where id=? and tenantKey=?
+```
+
+The presence of a restriction in the `WHERE` clause predicate allows the planner to take a peek at the parameter value
+and immediately prune tables that don't fit the partition key.
+
+== Outlook
+
+So far, Hibernate only makes use of the partitioning information in SQL update and delete statements.
+There were discussions about adding support for link:https://github.com/hibernate/hibernate-orm/discussions/5360[DDL generation]
+as well, but nothing has been agreed upon yet.
+
+Do you think you could profit from DDL support? If so, let us know about your use case in the comments of the link:https://github.com/hibernate/hibernate-orm/discussions/5360[GitHub discussion].
+
