@@ -1,0 +1,158 @@
+= "Hibernate ORM 6.2 - Composite aggregate mappings"
+Christian Beikov
+:awestruct-tags: [ "Hibernate ORM", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate ORM version `6.2.0.Final` is around the corner, and the following post tries to shed some light
+on one of the new features that comes with that release.
+
+== Composite SQL types
+
+For a long time, SQL was fully relational and every data model had to be modeled as table with columns and constraints.
+Then came the object relational hype and the SQL:1999 standard introduced support for link:https://en.wikipedia.org/wiki/Structured_type[structured types].
+With the XML hype coming next, the SQL:2003 standard added support for link:https://en.wikipedia.org/wiki/SQL/XML[XML]
+and in the SQL:2016 standard link:https://en.wikipedia.org/wiki/SQL:2016[JSON] support first appeared.
+
+Structured or unstructured, composite types have their use cases,
+so it was about time that Hibernate came up with an answer for these data types.
+
+Values of these composite types provide access to their sub-parts and do not have identity like a row of a table.
+In the realm of ORM, embeddable types have the same properties, so it is only natural to allow mapping to these SQL types.
+
+== Struct mapping
+
+Mapping an embeddable to a named SQL object type, also known as structured type,
+is now possible by annotating either the embeddable type or the `@Embedded` field/property with `@Struct(name = "...")`.
+
+The hbm2ddl schema generation tool supports generating DDL to create and drop these structured types.
+Since the order of structured type attributes is important and has to match the expectations of Hibernate,
+users can compare the type definition until schema validation adds link:https://hibernate.atlassian.net/browse/HHH-16156[support for structured types] as well.
+
+Considering this simple example mapping:
+
+```java
+@Embeddable
+@Struct(name = "my_point")
+public class Point {
+	private int x;
+	private int y;
+}
+```
+
+will produce a schema similar to the following:
+
+```sql
+create type my_point as (
+    x int not null,
+    y int not null
+)
+```
+
+The name and the nullability of the struct column can be refined through applying a `@Column` on the persistent attribute.
+
+```java
+@Entity
+public class PointHolder {
+	@Id
+	private int id;
+	@Column(name = "the_point", nullable = false)
+	private Point p;
+}
+```
+
+which will emit a schema similar to this:
+
+```sql
+create table PointHolder as (
+    id int not null primary key,
+    the_point my_point not null
+)
+```
+
+Since the order of structured type attributes is vital, it is important to understand how to control the expectations of Hibernate.
+There are essentially two possible ways to control the order:
+
+* Specifying the `attributes` member on the `@Struct` annotation to define the order
+* Using a Java record to implicitly specify the order through the canonical constructor
+
+The first option is pretty simple. If the desired order is `(y,x)`, then the `Point` embeddable type needs to declare that
+by using `@Struct(name = "my_point", attributes = {"y", "x"})`.
+
+The second option is more interesting as it makes use of another new feature that was introduced in Hibernate 6.2,
+which is the support for Java records out of the box.
+
+```java
+@Embeddable
+@Struct(name = "my_point")
+public record Point(int y, int x) {}
+```
+
+There is no need for the `@EmbeddableInstantiator` anymore for Java records,
+because Hibernate now configures an appropriate instantiator automatically based on the canonical constructor.
+The order of the record components in that canonical constructor then also represents the order in which Hibernate
+expects the structured types attributes to be defined in.
+
+NOTE: At the time of writing, structured type support is only implemented for Oracle, PostgreSQL and DB2.
+
+== XML and JSON mapping
+
+Since XML and JSON are predefined unstructured types, there is no type name or attribute order that has to be defined.
+Mapping an embeddable as XML or JSON can be done by annotating the `@Embedded` field/property with `@JdbcTypeCode(SqlTypes.SQLXML)`
+or `@JdbcTypeCode(SqlTypes.JSON)` respectively.
+
+NOTE: At the time of writing, there is no database dialect for which XML support has been implemented,
+so the following will focus on the JSON parts only, but apply the same way to XML support in the future.
+
+```java
+@Entity
+public class JsonHolder {
+	@Id
+	private int id;
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "my_json", nullable = false)
+	private Point point;
+}
+```
+
+An entity with a mapping like this will roughly produce a schema like the following:
+
+```sql
+create table JsonHolder as (
+    id int not null primary key,
+    my_json json not null,
+    check (json_value(my_json, '$.x') is not null and json_value(my_json, '$.y') is not null)
+)
+```
+
+As you can see, the table definition contains a check constraint that enforces the constraints of the embeddable type
+within the JSON value by accessing the fields through the `json_value` function.
+
+HQL queries that make use of embeddable attributes
+
+```sql
+select j.point.x, j.point.y
+from JsonHolder j
+```
+
+will resolve to the respective `json_value` expression:
+
+```sql
+select json_value(j.point, '$.x'), json_value(j.point, '$.y')
+from JsonHolder j
+```
+
+Similarly, assignment expressions will update the relevant part of the json document.
+
+NOTE: At the time of writing, JSON support is only implemented for Oracle and PostgreSQL.
+
+== Outlook
+
+In upcoming releases we plan to add support for link:https://hibernate.atlassian.net/browse/HHH-16158[struct types on SQL Server],
+as well as support for other databases for the link:https://hibernate.atlassian.net/browse/HHH-16160[XML]
+and link:https://hibernate.atlassian.net/browse/HHH-16159[JSON] mappings.
+We will also try to lift restrictions on composite type mappings and enable the use of link:https://hibernate.atlassian.net/browse/HHH-16161[association mappings]
+as well as link:https://hibernate.atlassian.net/browse/HHH-16162[array mappings].
+
+I hope you like the new features and can provide us feedback about this in the link:https://discourse.hibernate.org/[forum]
+or on our link:https://hibernate.zulipchat.com/[chat platform]!
