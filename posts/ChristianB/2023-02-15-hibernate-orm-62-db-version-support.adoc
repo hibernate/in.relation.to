@@ -1,0 +1,43 @@
+= "Hibernate ORM 6.2 - DB version support"
+Christian Beikov
+:awestruct-tags: [ "Hibernate ORM", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate ORM version `6.2.0.Final` is around the corner, and the following post tries to shed some light
+on one of the new features that comes with that release.
+
+== Supported database versions
+
+For a long time, Hibernate kept around code for supporting database versions that are now considered ancient.
+It wasn't always clear what the minimum database version is that is supposed to be supported and there was no continuous testing
+against old or the latest version of a database. The Hibernate team tried to support database versions on a best effort basis.
+
+With Hibernate 6.0 the team wanted to do better and by making sure we commit ourselves to a link:https://github.com/hibernate/hibernate-orm/blob/main/dialects.adoc#supported-dialects[certain set of DBs],
+and move dialects for other DBs into a link:https://github.com/hibernate/hibernate-orm/blob/main/dialects.adoc#community-dialects[new module], called `hibernate-community-dialects`.
+We provided clear requirements for vendors on link:https://github.com/hibernate/hibernate-orm/blob/main/dialects.adoc#requirements-for-moving-to-hibernate-core[how to get their dialects to `hibernate-core`].
+
+Another thing that changed with Hibernate 6.0 is that dialects can now self-configure based on the database version,
+which eliminated the need for the various version specific dialects. There was still some overhead for dialect
+maintenance due to code that was trying to emulate certain functions or SQL constructs for ancient database versions.
+Since the Hibernate team is relatively link:https://github.com/hibernate/hibernate-orm/wiki/Huge-Project,-Small-Team[small when considering the size of the project],
+we decided to clarify the supported set of databases in version 6.2 by also specifying versions which are supported.
+Doing so will make it easily understandable for users what Hibernate supports and what not.
+Additionally, it allows us to get rid of some code which makes maintenance easier.
+
+As of version 6.2, every dialect will have a "minimum supported version" attached, and during self-configuration
+of the dialect, it will check if the database version is greater or equal to that. If it isn't, Hibernate emits a warning.
+Dialects that support even older database versions were moved to the `hibernate-community-dialects` module
+and are only updated on a best effort basis.
+
+In general, Hibernate ties its database version support to the support cycle of the respective vendor.
+Minor versions of Hibernate might drop support for database versions that have become unsupported.
+The list of version support changes for Hibernate 6.2 can be nicely seen on link:https://hibernate.atlassian.net/browse/HHH-15175[HHH-15175]
+
+== Outlook
+
+Hibernate 6.3 will be the next minor version and as part of that, support for some more database versions will be dropped.
+The list of planned version support changes can be seen on link:https://hibernate.atlassian.net/browse/HHH-15491[HHH-15491].
+
+I hope that this insight into the process of database version support is not a shocker to anyone.
+For the few people to which this is bad news, maybe this article helps you to justify a more continuous version upgrade.
