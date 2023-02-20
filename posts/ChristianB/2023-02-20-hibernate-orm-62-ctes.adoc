@@ -1,0 +1,219 @@
+= "Hibernate ORM 6.2 - CTE support"
+Christian Beikov
+:awestruct-tags: [ "Hibernate ORM", "Discussions" ]
+:awestruct-layout: blog-post
+---
+
+Hibernate ORM version `6.2.0.Final` is around the corner, and the following post tries to shed some light
+on one of the new features that comes with that release.
+
+== With clause
+
+The `with` clause was link:https://en.wikipedia.org/wiki/Hierarchical_and_recursive_queries_in_SQL[introduced in SQL:1999]
+and allows to specify _common table expressions (CTEs)_, which can be imagined like named subqueries.
+Every uncorrelated subquery can be factored to a CTE in the `with` clause. The semantics are equivalent.
+
+The `with` clause offers features beyond naming subqueries though:
+
+* Specify materialization hints
+* Recursive querying
+
+The most important part of CTEs is the support for recursive querying that allows to query hierarchies or graphs of data.
+
+Hibernate chose to support the same syntax as the SQL standard, though there are some differences:
+
+* No need for the `recursive` keyword - Hibernate infers that information
+* Specifying cte attribute names has to be done through select item aliases. Names in the CTE header are not allowed
+
+====
+[source, antlrv4, indent=0]
+----
+queryExpression
+: withClause? orderedQuery (setOperator orderedQuery)*
+;
+
+withClause
+: "WITH" cte ("," cte)*
+;
+
+cte
+: identifier AS ("NOT"? "MATERIALIZED")? "(" queryExpression ")" searchClause? cycleClause?
+;
+----
+====
+
+== Materialization hint
+
+The materialization hint `MATERIALIZED` or `NOT MATERIALIZED` can be applied to tell the DBMS whether a CTE should
+or shouldn't be materialized. Consult the database manual of the respective database for the exact meaning of the hint.
+
+Usually, one can expect that `MATERIALIZED` will cause the subquery to be executed separately and saved into a temporary table,
+whereas `NOT MATERIALIZED` will cause the subquery to be inlined into every use site and considered during optimizations separately.
+
+[[hql-cte-materialized-example]]
+====
+[source, SQL, indent=0]
+----
+with data as materialized(
+    select p.person as owner, c.payment is not null as payed
+    from Call c
+    join c.phone p
+    where p.number = :phoneNumber
+)
+select d.owner, d.payed
+from data d
+----
+====
+
+== Recursive querying
+
+The main use case for the `with` clause is to define a name for a subquery,
+such that this subquery can refer to itself, which ultimately enables recursive querying.
+
+Recursive CTEs must follow a very particular shape, which is
+
+* Base query part
+* `union` or `union all`
+* Recursive query part
+
+[[hql-cte-recursive-example]]
+====
+[source, SQL, indent=0]
+----
+with paymentConnectedPersons as(
+    -- Base query part
+    select a.owner owner
+    from Account a where a.id = :startId
+
+    -- union or union all
+    union all
+
+    -- Recursive query part
+    select a2.owner owner
+    from paymentConnectedPersons d
+    join Account a on a.owner = d.owner
+    join a.payments p
+    join Account a2 on a2.owner = p.person
+)
+select d.owner
+from paymentConnectedPersons d
+----
+====
+
+The base query part represents the initial set of rows. When fetching a tree of data,
+the base query part usually is the tree root.
+
+The recursive query part is executed again and again until it produces no new rows.
+The result of such a CTE is the base query part result _unioned_ together with all recursive query part executions.
+Depending on whether `union all` or `union` (`distinct`) is used, duplicate rows are preserved or not.
+
+Recursive queries additionally can have
+
+* a `search` clause to hint the DBMS whether to use breadth or depth first searching
+* a `cycle` clause to hint the DBMS how to determine that a cycle was reached
+
+Defining the `search` clause requires specifying a name for an attribute in the `set` sub-clause,
+that will be added to the CTE type and allows ordering results according to the search order.
+
+[[hql-cte-recursive-search-bnf-example]]
+====
+[source, antlrv4, indent=0]
+----
+searchClause
+: "SEARCH" ("BREADTH"|"DEPTH") "FIRST BY" searchSpecifications "SET" identifier
+;
+
+searchSpecifications
+: searchSpecification ("," searchSpecification)*
+;
+
+searchSpecification
+: identifier sortDirection? nullsPrecedence?
+;
+----
+====
+
+A DBMS has two possible orders when executing the recursive query part
+
+* Depth first - handle the *newest* produced rows by the recursive query part first
+* Breadth first - handle the *oldest* produced rows by the recursive query part first
+
+[[hql-cte-recursive-search-example]]
+====
+[source, SQL, indent=0]
+----
+with paymentConnectedPersons as(
+    select a.owner owner
+    from Account a where a.id = :startId
+
+    union all
+
+    select a2.owner owner
+    from paymentConnectedPersons d
+    join Account a on a.owner = d.owner
+    join a.payments p
+    join Account a2 on a2.owner = p.person
+) search breadth first by owner set orderAttr
+select d.owner
+from paymentConnectedPersons d
+----
+====
+
+Recursive processing can lead to cycles which might lead to queries executing forever.
+The `cycle` clause hints the DBMS which CTE attributes to track for the cycle detection.
+It requires specifying a name for a cycle mark attribute in the `set` sub-clause,
+that will be added to the CTE type and allows detecting if a cycle occurred for a result.
+
+By default, the cycle mark attribute will be set to `true` when a cycle is detected and `false` otherwise.
+The values to use can be explicitly specified through the `to` and `default` sub-clauses.
+Optionally, it's also possible to specify a cycle path attribute name through the `using` clause
+The cycle path attribute can be used to understand the traversal path that lead to a result.
+
+[[hql-cte-recursive-cycle-bnf-example]]
+====
+[source, antlrv4, indent=0]
+----
+cycleClause
+	: "CYCLE" cteAttributes "SET" identifier ("TO" literal "DEFAULT" literal)? ("USING" identifier)?
+	;
+----
+====
+
+[[hql-cte-recursive-cycle-example]]
+====
+[source, SQL, indent=0]
+----
+with paymentConnectedPersons as(
+    select a.owner owner
+    from Account a where a.id = :startId
+
+    union all
+
+    select a2.owner owner
+    from paymentConnectedPersons d
+    join Account a on a.owner = d.owner
+    join a.payments p
+    join Account a2 on a2.owner = p.person
+) cycle owner set cycleMark
+select d.owner, d.cycleMark
+from paymentConnectedPersons d
+----
+====
+
+[IMPORTANT]
+====
+Hibernate merely translates recursive CTEs but doesn't attempt to emulate the feature.
+Therefore, this feature will only work if the database supports recursive CTEs.
+Hibernate does emulate the `search` and `cycle` clauses though if necessary, so you can safely use that.
+
+Note that most modern database versions support recursive CTEs already.
+====
+
+== Outlook
+
+This was a long awaited feature as you can tell from the issue number link:https://hibernate.atlassian.net/browse/HHH-4030[HHH-4030],
+so it's great that Hibernate finally supports the with clause.
+
+You might think that we are already done with this, but there is still a nice little addition to recursive querying that can be made.
+We are currently discussing link:https://github.com/hibernate/hibernate-orm/discussions/6100[support for a `recursive join fetch`]
+feature which would make fetching data trees a lot simpler. If you have demand for it, let us know and join the discussion!
