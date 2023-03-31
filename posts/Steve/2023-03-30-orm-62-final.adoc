@@ -1,0 +1,149 @@
+= Hibernate 6.2 Final
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:major-minor: 6.2
+:docs-url: https://docs.jboss.org/hibernate/orm/{major-minor}
+:javadocs-url: {docs-url}/javadocs
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:jira-released-page: https://hibernate.atlassian.net/projects/HHH/versions/32144
+
+Hibernate ORM 6.2.0 Final has just been link:{jira-released-page}[released].  
+
+In many ways, this release marks the final step for the major forcus of 6.x centered around changing how Hibernate generates SQL.  Many improvements
+in this release, as well as 6.0 and 6.1, have been implemented on top of this SQL AST work.  As of 6.0 and 6.1, Hibernate used this SQL AST for loading 
+state from the database.  With 6.2, Hibernate also uses SQL AST for writing to the database.
+
+
+[[structured-sql-types]]
+== Support for Structured SQL Types
+
+Hibernate now supports structured SQL types including struct, XML and JSON.  Christian wrote a https://in.relation.to/2023/02/13/hibernate-orm-62-composite-aggregates/[blog post] 
+about this support which covers the details.  See also the link:{user-guide-url}#embeddable-mapping-aggregate[Aggregate embeddable mapping] and 
+link:{user-guide-url}#_struct_aggregate_embeddable_mapping[@Struct aggregate embeddable mapping] User Guide sections.
+
+
+== Support for Java records
+
+Hibernate now support the mapping of Java records as embeddables.  E.g.
+
+```java
+@Embeddable
+public record Name(
+	String firstName;
+	String lastName;
+) {}
+```
+
+even combined with <<structured-sql-types>> to persist to a struct!
+
+```java
+@Embeddable
+@Struct(name = "Name")
+public record Name(
+	String firstName;
+	String lastName;
+) {}
+```
+
+See the link:{user-guide-url}#_struct_aggregate_embeddable_mapping[@Struct aggregate embeddable mapping] User Guide section for more details.
+
+
+[[generated]]
+== Unified generated value support
+
+Support for generated persisted values has been has been unified to use the same contracts, whether for identifiers or other basic values, 
+based on `org.hibernate.annotations.Generated`, `org.hibernate.annotations.ValueGenerationType` and `org.hibernate.generator.Generator`.  E.g.
+
+```java
+@Generated( GenerationTime.INSERT )
+@ColumnDefault( "CURRENT_TIMESTAMP" )
+private Date createdDate;
+```
+
+or 
+
+```java
+@Retention(RetentionPolicy.RUNTIME)
+@Target( { ElementType.FIELD, ElementType.METHOD, ElementType.ANNOTATION_TYPE } )
+@ValueGenerationType( generatedBy = UuidValueGeneration.class )
+public @interface GeneratedUuidValue {
+	GenerationTiming timing();
+}
+
+public static class UuidValueGeneration implements BeforeExecutionGenerator {...}
+
+...
+
+@GeneratedUuidValue( timing = GenerationTiming.INSERT )
+public UUID createdUuid;
+```
+
+See the link:{user-guide-url}#mapping-generated[Generated properties] User Guide section for details.
+
+
+[[partitions]]
+== Database Partitions
+
+Hibernate now supports https://en.wikipedia.org/wiki/Partition_(database)[database partitions] as a first-class citizen using `org.hibernate.annotations.PartitionKey` to map the parition column.  E.g.
+
+```java
+@Entity
+public static class User {
+    @Id private Integer id;
+    ...
+    @PartitionKey private String region;
+}
+```
+
+See the link:{user-guide-url}#partitioning[Paritioning] User Guide section for details.
+
+[[merge]]
+== SQL MERGE for "optional table" updates
+
+Building on top of the SQL AST, Hibernate can now use the SQL `MERGE` command to handle updates against optional tables.  
+
+An update to an optional table will have one of 3 ultimate outcomes:
+
+1. if there is no corresponding row already in the table, insert the row
+2. else if all the new "value" columns are null, delete the row
+3. else update the row
+
+The legacy behavior was to just do these if-checks ourselves at runtime and execute the insert, update and delete statements individually.
+The `MERGE` command allows that to happen more efficiently in a single JDBC call.
+
+Currently this is supported on:
+
+* https://hibernate.atlassian.net/browse/HHH-16084[H2]
+* https://hibernate.atlassian.net/browse/HHH-16101[Oracle]
+* https://hibernate.atlassian.net/browse/HHH-16103[SQL Server]
+* https://hibernate.atlassian.net/browse/HHH-16110[PostgreSQL]
+
+The fall back is to just use the legacy behavior.
+
+
+[[jdbc-type]]
+== Proprietary SQL types
+
+Dealing with certain SQL types requires access to JDBC driver specific classes in
+order to properly read and write values of that type.  In some environments (various
+containers, e.g.), those classes are not available to Hibernate.
+
+Hibernate better handles these situations now when it can, usually based on casts to more standardized types.  For example,
+we might read a JSON value from a ResultSet as a String by wrapping the JSON expression in a cast function.
+
+
+== Community
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/{major-minor}/[release page]
+- the link:{docs-url}/incubating/incubating.txt[incubating report]
+- the link:{docs-url}/deprecated/deprecated.txt[deprecation report]
+- the link:{docs-url}/internals/internal.txt[internals report]
+- the https://hibernate.org/community/compatibility-policy/[compatibility policy]
+
+See the https://hibernate.org/community/[website] for getting in touch with us.
