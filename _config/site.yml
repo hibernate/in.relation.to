@@ -5,13 +5,29 @@ title: In Relation To
 project: in.relation.to
 
 # Default minify settings
+minify: true
+minified: .min
 css_minifier: enabled
 js_minifier: enabled
 html_minifier: disabled
 
+# Various settings
+enable_google_analytics: true
+google_analytics:
+  id: G-C4TCX4V6QY
+ignore_older_than_days: -1
 legacy_post_syntax_highlighting: enabled
-
 date_format: '%b %-d, %Y'
+
+# Various resources
+jborg_fonts_url: https://static.jboss.org/theme/fonts
+jborg_images_url: https://static.jboss.org/theme/images
+project_images_url: https://static.jboss.org/hibernate/images
+jquery_js_url: https://code.jquery.com/jquery-3.1.1
+jquery_js_url_integrity: "sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7"
+semantic_ui_js_url: https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic
+semantic_ui_js_url_integrity: "sha384-KfrAxmzWxzKdfquWGNOhm/N9kEjIgoP2yBPMQmAjQ+Is0hp+3BlcWT6PcI7NuKEP"
+semantic_ui_css_url: https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic
 
 hibernate_org:
   base_url: https://hibernate.org/
@@ -46,70 +62,35 @@ asciidoctor:
 ####################################################################################################
 # Update resource URLs based on the profile
 profiles:
-  editor: &base
+  development:
+    minify: false
+    minified: ""
     css_minifier: disabled
     js_minifier: disabled
     html_minifier: disabled
+    # Different checksums because we're not using the minified files
+    jquery_js_url_integrity: "sha384-VC7EHu0lDzZyFfmjTPJq+DFyIn8TUGAJbEtpXquazFVr00Q/OOx//RjiZ9yU9+9m"
+    semantic_ui_js_url_integrity: "sha384-/OCHdyuUZjDPStDj7ti/VaVeGQ4U9HxuJhh0FNfMTf0eO1VeBLAam8EiKCIK+jso"
     legacy_post_syntax_highlighting: disabled
-    ignore_older_than_days: 10
-
+    ignore_older_than_days: 366
     disqus_shortname: staging-in-relation-to
-    jborg_fonts_url: https://static.jboss.org/theme/fonts
-    jborg_images_url: https://static.jboss.org/theme/images
-    project_images_url: https://static.jboss.org/hibernate/images
-    jquery_js_url: https://code.jquery.com/jquery-3.1.1
-    semantic_ui_js_url: https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic
-    semantic_ui_css_url: https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic
+    enable_google_analytics: false
     base_url: http://0.0.0.0:4242
     asciidoctor:
       :attributes:
         base_url: "http://localhost/"
 
-  development:
-    << : *base
-    ignore_older_than_days: 366
-    disqus_shortname: staging-in-relation-to
-    # Hash for https://code.jquery.com/jquery-3.1.1.js generated using srihash.org
-    jquery_js_url_integrity: "sha384-VC7EHu0lDzZyFfmjTPJq+DFyIn8TUGAJbEtpXquazFVr00Q/OOx//RjiZ9yU9+9m"
-    # Hash for https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic.js generated using srihash.org
-    semantic_ui_js_url_integrity: "sha384-/OCHdyuUZjDPStDj7ti/VaVeGQ4U9HxuJhh0FNfMTf0eO1VeBLAam8EiKCIK+jso"
-    base_url: http://0.0.0.0:4242
-
   staging:
-    << : *base
-    minify: true
-    minified: .min
     disqus_shortname: staging-in-relation-to
-    # Hash for https://code.jquery.com/jquery-3.1.1.min.js generated using srihash.org
-    jquery_js_url_integrity: "sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7"
-    # Hash for https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic.min.js generated using srihash.org
-    semantic_ui_js_url_integrity: "sha384-KfrAxmzWxzKdfquWGNOhm/N9kEjIgoP2yBPMQmAjQ+Is0hp+3BlcWT6PcI7NuKEP"
-    # Update the integrity hashcode if don't use the minified scripts
-    css_minifier: enabled
-    legacy_post_syntax_highlighting: enabled
+    enable_google_analytics: false
     base_url: https://staging.in.relation.to/
-    ignore_older_than_days: -1
     asciidoctor:
       :attributes:
         base_url: "https://staging.in.relation.to/"
 
   production:
-    << : *base
-    minify: true
-    minified: .min
     disqus_shortname: inrelationto
-    # Hash for https://code.jquery.com/jquery-3.1.1.min.js generated using srihash.org
-    jquery_js_url_integrity: "sha384-3ceskX3iaEnIogmQchP8opvBy3Mi7Ce34nWjpBIwVTHfGYWQS9jwHDVRnpKKHJg7"
-    # Hash for https://cdn.jsdelivr.net/npm/semantic-ui@2.2.14/dist/semantic.min.js generated using srihash.org
-    semantic_ui_js_url_integrity: "sha384-KfrAxmzWxzKdfquWGNOhm/N9kEjIgoP2yBPMQmAjQ+Is0hp+3BlcWT6PcI7NuKEP"
-    css_minifier: enabled
-    legacy_post_syntax_highlighting: enabled
     base_url: https://in.relation.to/
-    ignore_older_than_days: -1
-    enable_google_analytics: true
     asciidoctor:
       :attributes:
         base_url: "https://in.relation.to/"
-
-google_analytics:
-  id: G-C4TCX4V6QY
