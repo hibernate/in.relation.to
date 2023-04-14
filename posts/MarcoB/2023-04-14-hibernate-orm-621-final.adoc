@@ -1,0 +1,56 @@
+= "Hibernate ORM {released-version} released"
+Marco Belladelli
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.2.1.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.2
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32126
+
+Today, we published a final release of Hibernate ORM 6.2: {released-version}.
+
+== What's new
+
+This release includes several bug fixes and small performance improvements.
+
+=== Bugfixes
+
+==== Sub-queries using aliases and left join
+
+We have improved the resolution of tables in sub-queries, especially in cases where the same alias was used as in the parent query. This change also fixed a bug that caused left-joins in sub-queries to be wrongly translated. (see https://hibernate.atlassian.net/browse/HHH-16414[HHH-16414])
+
+==== Batching
+
+We have fixed a few issues related to batching:
+
+* a parameter binding error was thrown when using `DynamicUpdate` or `DynamicInserts` with batching enabled (see https://hibernate.atlassian.net/browse/HHH-16352[HHH-16352])
+
+* an `OptimisticLockException` was thrown when an entity having a `Version` attribute and a dirty collection was updated with statement batching enabled  (see https://hibernate.atlassian.net/browse/HHH-15778[HHH-15778])
+
+You can expect more improvements related to batching in the following Hibernate releases.
+
+==== Bytecode enhancement and dirty checking
+
+We have fixed a bug causing generic associations to be ignored when dirty checking and bytecode enhancement were enabled (see https://hibernate.atlassian.net/browse/HHH-16459[HHH-16459])
+
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/issues?jql=project=10031+AND+fixVersion={release-id}[here].
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.1/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
