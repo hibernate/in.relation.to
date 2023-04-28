@@ -1,0 +1,104 @@
+= "Hibernate ORM {released-version} released"
+Marco Belladelli
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.2.2.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.2
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32149
+
+Today, we published a new maintenance release of Hibernate ORM 6.2: {released-version}.
+
+== What's new
+
+This release includes several bug fixes and small performance improvements.
+
+[[batch-fetch]]
+
+=== Batch fetch performance
+
+The performance of batch fetch loading (`@BatchSize`) has been improved by better caching of
+SQL AST and other references where possible. See https://hibernate.atlassian.net/browse/HHH-16441[HHH-16441] for details.
+
+[[multi-key-array]]
+
+=== SQL ARRAY for multi-key loads
+
+When loading entities or collections by multiple keys, Hibernate can now utilize a SQL ARRAY valued
+parameter to pass all ids at once. This is implemented for all multi-key loads:
+
+* <<batch-fetch,Batch fecthing>>
+* `Session#byMultipleIds`
+* `Session#byMultipleNaturalId`
+
+NOTE: This is limited to single-column keys and databases which support ARRAY types. In cases where
+an ARRAY parameter cannot be used, Hibernate falls back to its padded strategy which uses a pre-built
+SQL AST with a fix-sized IN parameter list.
+
+See https://hibernate.atlassian.net/browse/HHH-16466[HHH-16466] for details.
+
+[[bugfixes]]
+
+=== Bugfixes
+
+==== Table resolution and self referencing associations
+
+We have fixed how Hibernate internally resolves the table references to use in a query, with special care put towards self referencing associations and possible optimizations using foreign key columns (see https://hibernate.atlassian.net/browse/HHH-16382[HHH-16382] and related issues).
+
+==== Bytecode Enhancement
+
+We have fixed a couple issues related to bytecode enhancement:
+
+* Faulty code was generated when bidirectional association management was enabled, preventing Hibernate from correctly handling both sides of the association (see https://hibernate.atlassian.net/browse/HHH-15602[HHH-15602]).
+
+* When both a lazy `@ManyToOne` association and an eager one were used on the same entity, in some cases Hibernate would not eagerly initialize the latter (see https://hibernate.atlassian.net/browse/HHH-16477[HHH-16477]).
+
+==== GROUP BY and ORDER BY clauses
+
+We have fixed several bugs related to GROUP BY and ORDER BY clauses:
+
+* When grouping by an entity valued property (like a to-one association), we now always expand the rendered GROUP BY clause to use all columns of the entity type to guarantee that the underlying DBMS can correctly group the selections (see https://hibernate.atlassian.net/browse/HHH-16409[HHH-16409]).
+
+* When using window or ordered-set aggregate functions, we now explicitly disallow using aliased or positional expressions in the ORDER BY clause to prevent problematic query interpretation. We also fixed a bug that was preventing users from ordering by multiple column expression in `OVER` and `WITHIN GROUP` clauses (see https://hibernate.atlassian.net/browse/HHH-16347[HHH-16347]).
+
+==== @Where clause
+
+We fixed a bug causing the `@Where` clause to be mis-rendered when used in a delete mutation query, specifically for the subquery to clean up association tables (see https://hibernate.atlassian.net/browse/HHH-16392[HHH-16392]).
+
+==== Sybase and jConnect JDBC driver
+
+We have fixed several issues encountered when using Sybase with the jConnect JDBC driver, for a detailed view of the fixes please see the full list of changes link at the bottom of the page.
+
+==== Java Records
+
+Support for Java Records annotated with `@Embeddable` was introduced with Hibernate 6.2, but there were still a couple issues:
+
+* Java Record embeddables were not included in the JPA metamodel generation (see https://hibernate.atlassian.net/browse/HHH-16261[HHH-16261]).
+
+* Java Record embeddables properties were not correctly ordered in `ValueAccess#getValues()`  (see https://hibernate.atlassian.net/browse/HHH-16457[HHH-16457]).
+
+==== Generics
+
+We continue to improve support for using Java Generics in entity classes, this time we solved an issue regarding a generic enum property annotated with `@Enumerated` (see https://hibernate.atlassian.net/browse/HHH-16479[HHH-16479]).
+
+
+You can find the full list of changes in this version https://hibernate.atlassian.net/issues?jql=project=10031+AND+fixVersion={release-id}[here].
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.2/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
