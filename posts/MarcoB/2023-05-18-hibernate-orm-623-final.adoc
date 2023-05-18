@@ -1,0 +1,73 @@
+= "Hibernate ORM {released-version} released"
+Marco Belladelli
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.2.3.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.2
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32152
+
+Today, we published a new maintenance release of Hibernate ORM 6.2: {released-version}.
+
+== What's new
+
+This release includes several bug fixes and small performance improvements.
+
+[[hibernate-spatial]]
+
+=== Hibernate Spatial
+
+==== PostGIS distance operators
+
+We have added HQL support for the native PostGIS distance operators. For details, see https://hibernate.atlassian.net/browse/HHH-15160[HHH-15160].
+
+[[bugfixes]]
+
+=== Bugfixes
+
+==== Refresh operations
+
+We have fixed a couple of issues related to the `refresh` operation:
+
+* An error was triggered when calling `refresh` on an entity with both lazy and eager associations (see https://hibernate.atlassian.net/browse/HHH-16423[HHH-16423]).
+
+* The lazy loading of associated collections failed after calling `refresh` on an entity (see https://hibernate.atlassian.net/browse/HHH-16447[HHH-16447]).
+
+==== Associated collection loading
+
+We have fixed several bugs related to loading an entity's associated collections:
+
+* Loading an Entity with two eager collections produced duplicates if one of the collection is a bag (see https://hibernate.atlassian.net/browse/HHH-16453[HHH-16453]).
+
+* Multiple identical `SELECT` statements were issues to load an optional one-to-one association (see https://hibernate.atlassian.net/browse/HHH-16469[HHH-16469]).
+
+==== Treated paths and entity types
+
+We have improved Hibernate's handling of treated entity types. Previously, in some cases, we were creating too restrictive queries for certain inheritance structures and treated paths. With this new logic we should always guarantee correct results while also gaining improved query optimization and performance (see https://hibernate.atlassian.net/browse/HHH-15726[HHH-15726]).
+
+==== Generics
+
+We continue to improve support for Java Generics: we added handling for generic component properties (i.e. `@Embedded` and `@EmbeddedId`) that will allow the use of Generics while being consistent with the JPA specification and providing correct results (see https://hibernate.atlassian.net/browse/HHH-16491[HHH-16491]).
+
+
+There are more improvements and bugfixes included in this version. You can find the full list of changes https://hibernate.atlassian.net/issues?jql=project=10031+AND+fixVersion={release-id}[here].
+
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.2/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
