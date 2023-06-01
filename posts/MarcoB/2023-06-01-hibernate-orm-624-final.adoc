@@ -1,0 +1,93 @@
+= "Hibernate ORM {released-version} released"
+Marco Belladelli
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.2.4.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.2
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32156
+
+Today, we published a new maintenance release of Hibernate ORM 6.2: {released-version}.
+
+== What's new
+
+This release includes several bug fixes and small performance improvements.
+
+[[type-pollution]]
+
+=== Type pollution improvements
+
+We keep gradually improving Hibernate's performance, with special regard to the https://bugs.openjdk.org/browse/JDK-8180450[type pollution issue] currently affecting the JDK (see https://hibernate.atlassian.net/browse/HHH-16629[HHH-16629]).
+
+[[plugin-static-metamodel]]
+
+=== Hibernate Gradle plugin
+
+==== Dropped support for JPA static metamodel generation
+
+Support for JPA static metamodel generation in the Hibernate Gradle plugin was dropped. You can find more details https://hibernate.atlassian.net/browse/HHH-16677[here].
+
+[[bugfixes]]
+
+=== Bugfixes
+
+==== Entity associations and joins
+
+We have fixed some issues related to the handling of entity associations and `joins`:
+
+* We now avoid joining tables in more scenarios and should only introduce `joins` when really needed (see https://hibernate.atlassian.net/browse/HHH-16691[HHH-16691]).
+
+* An error was causing a result multiplication when both `FetchMode.JOIN` and batching were used for retrieving `@OneToMany` associated items (see https://hibernate.atlassian.net/browse/HHH-16570[HHH-16570]).
+
+* We now throw an appropriate error when an entity join that is not a `cross join` doesn't define an on clause (see https://hibernate.atlassian.net/browse/HHH-16495[HHH-16495]).
+
+* A lazy association in a `@Cacheable` entity was already retrieved as initialized (see https://hibernate.atlassian.net/browse/HHH-16613[HHH-16613]).
+
+==== Query caching
+
+We have fixed several bugs related to query caches, specifically regarding the key used for the cache:
+
+* The query cache key was not correctly serializable when working with an enabled `@Filter` or `@TenantId` (see https://hibernate.atlassian.net/browse/HHH-16385[HHH-16385]).
+
+* `@Filter` parameters were not included in the query cache key causing some inconsistent results when using different values (see https://hibernate.atlassian.net/browse/HHH-16617[HHH-16617]).
+
+* Query parameters were not always processed in the same order when generating the query cache key, causing sporadic cache misses expecially with a high number of parameters and criteria queries (see https://hibernate.atlassian.net/browse/HHH-16594[HHH-16594]).
+
+==== Map type associations
+
+We have a couple bugs related to `Map` type associations:
+
+* Using the `@MapKey` annotation led to wrongly generated SQL for inserts in some cases (see https://hibernate.atlassian.net/browse/HHH-16370[HHH-16370]).
+
+* An error was encountered when using an `Embeddable` typed element collection in a map association (see https://hibernate.atlassian.net/browse/HHH-16540[HHH-16540]).
+
+==== Null Pointer Exceptions
+
+The latest Hibernate updates introduced a couple cases triggering a `NullPointerException` that were fixed:
+
+* An NPE was encountered when generating the mapping metamodel if inheritance was used for an `@IdClass` (see https://hibernate.atlassian.net/browse/HHH-16664[HHH-16664]).
+
+* An entity with an `@Any` annotated attribute caused a null pointer when merging (see https://hibernate.atlassian.net/browse/HHH-16532[HHH-16532]).
+
+
+There are many more improvements and bugfixes included in this version. You can find the full list of changes https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HHH%20AND%20fixVersion%20%3D%20{release-id}[here].
+
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.2/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
