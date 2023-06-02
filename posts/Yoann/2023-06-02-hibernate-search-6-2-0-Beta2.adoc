@@ -1,0 +1,300 @@
+= Hibernate Search 6.2.0.Beta1 is out
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.2/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32141
+---
+
+We just published Hibernate Search 6.2.0.Beta1,
+a beta release of the next minor version of Hibernate Search.
+
+This version brings highlighting in the Search DSL,
+indexing plan filters to suspend automatic indexing,
+an Elasticsearch schema export tool,
+mapping annotations for constructor parameters when using `@ProjectionConstructor`,
+and `.missing().lowest()`/`.missing().highest()` options in sorts.
+
+6.2.0.Beta1 also includes many bugfixes and improvements,
+compatibility with Elasticsearch 8.8 and OpenSearch 2.7,
+an upgrade of `-orm6` artifacts to Hibernate ORM 6.2.4.Final,
+and more.
+
+== What's new
+
+[NOTE]
+====
+Hibernate Search 6.2 is still in development:
+some features are still incomplete or may change in a backward-incompatible way.
+====
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-4860[HSEARCH-4860])::
+Hibernate Search now depends on Hibernate ORM 6.2.4.Final for -orm6 artifacts.
+[[elasticsearch-version]]
+Elasticsearch (link:{hsearch-jira-url-prefix}/HSEARCH-4857[HSEARCH-4857])::
+The Elasticsearch backend now works with Elasticsearch 8.8
+as well as other versions that were already compatible.
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-4850[HSEARCH-4850])::
+The Elasticsearch backend now works with OpenSearch 2.7
+as well as other versions that were already compatible.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-4857[HSEARCH-4857]: Upgrade to Elasticsearch **client** 8.8.0
+
+[[search-highlighting]]
+=== Highlighting
+
+With link:{hsearch-jira-url-prefix}/HSEARCH-2192[HSEARCH-2192], Hibernate Search now offers a new feature in the Search DSL: highlighting.
+
+Highlighting is a projection that returns fragments from full-text fields of matched documents that caused a query match.
+Specific terms that caused the match are "highlighted" with a pair of opening and closing tags.
+It can help a user to quickly identify the information they were searching for on a results page.
+
+For example, one can enable highlighting on a full-text field like this:
+
+[source, JAVA, indent=0]
+----
+@Entity
+@Indexed
+public class Book {
+    @Id
+    private Integer id;
+
+    @FullTextField(analyzer = "english")
+    private String title;
+
+    @FullTextField(analyzer = "english", highlightable = Highlightable.ANY)
+    private String description;
+}
+----
+
+And then retrieve highlights like this:
+
+[source, JAVA, indent=0]
+----
+SearchSession searchSession = /* ... */
+
+List<List<String>> result = searchSession.search( Book.class )
+        .select( f -> f.highlight( "description" ) )
+        .where( f -> f.match().field( "description" ).matching( "robot" ) )
+        .fetchHits( 20 );
+----
+
+Which can for example return the following highlights:
+
+[source, indent=0]
+----
+# Hit #0
+["A <em>robot</em> becomes self-aware."]
+# Hit #1
+["A <em>robot</em> helps investigate a murder on an extrasolar colony.", "On this planet, <em>robots</em> are used extensively."]
+# etc.
+----
+
+This is a simple example, but highligting can be configured extensively.
+See link:{hsearch-doc-url-prefix}#search-dsl-highlighting[this section of the reference documentation]
+for more information.
+
+[[indexing-plan-filter]]
+=== Indexing plan filters
+
+With link:{hsearch-jira-url-prefix}/HSEARCH-168[HSEARCH-168]/link:{hsearch-jira-url-prefix}/HSEARCH-1383[HSEARCH-1383],
+Hibernate Search now allow enabling/disabling indexing in indexing plans (which include in particular automatic indexing),
+both fully (for all types) or on a per-type basis.
+
+For example, the following will disable automatic indexing
+for future changes on all instances of the class `Company`,
+except for instances of its subclass `Customer`:
+
+[source, JAVA, indent=0]
+----
+SearchMapping searchMapping = /* ... */
+searchMapping.indexingPlanFilter(
+        ctx -> ctx.exclude( Company.class )
+                .include( Customer.class )
+);
+----
+
+Indexing plan filters can also be configured per-session
+(though limitations apply when using the link:{hsearch-doc-url-prefix}#coordination-outbox-polling[`outbox-polling` coordination strategy]):
+
+[source, JAVA, indent=0]
+----
+SearchSession searchSession = /* ... */
+searchSession.indexingPlanFilter(
+        ctx -> ctx.exclude( Company.class )
+                .include( Customer.class )
+);
+----
+
+See link:{hsearch-doc-url-prefix}#indexing-plan-filter[this section of the reference documentation]
+for more information.
+
+[[mapping-projection]]
+=== Mapping annotations for constructor parameters when using `@ProjectionConstructor`
+
+link:{hsearch-jira-url-prefix}/HSEARCH-4574[HSEARCH-4574] adds mapping annotations for constructor parameters when using `@ProjectionConstructor`.
+
+This means in particular you can now project to other things than just fields when using `@ProjectionConstructor`,
+for example the entity identifier:
+
+[source, JAVA, indent=0]
+----
+@ProjectionConstructor
+public record MyBookIdAndTitleProjection(
+        @IdProjection // <1>
+        Integer id,
+        String title // <2>
+) {
+}
+----
+<1> Projects to the entity identifier (explicit projection through an explicit annotation)
+<2> Projects to field `title` (implicit projection)
+
+But this also allows configuring field projections more precisely,
+for example setting the path of a field projection to something else
+than just the name of the constructor parameter:
+
+[source, JAVA, indent=0]
+----
+@ProjectionConstructor
+public record MyBookTitleAndAuthorNamesProjection(
+        @FieldProjection // <1>
+        String title,
+        @FieldProjection(path = "authors.lastName") // <2>
+        List<String> authorLastNames
+) {
+}
+----
+<1> Projects to field `title` (path derived from the name of the constructor parameter)
+<2> Projects to field `authors.lastName` (explicit path)
+
+See link:{hsearch-doc-url-prefix}#mapping-projection-inner-explicit[this section of the reference documentation]
+for more information about this feature in general,
+and link:{hsearch-doc-url-prefix}#search-dsl-projection[the documentation of each projection]
+for more information about each available annotation.
+
+[[search-dsl-improvements]]
+=== Search DSL improvements
+
+[[missing-lowest-highest]]
+link:{hsearch-doc-url-prefix}#search-dsl-sort-common-missing[`.missing().lowest()`/`.missing().highest()` options] in sorts (link:{hsearch-jira-url-prefix}/HSEARCH-4149[HSEARCH-4149])::
+When sorting on a field that may not have a value for some documents,
+it was already possible to use `.missing().first()`/`.missing().last()`
+to tell Hibernate Search to put such documents in first/last position (respectively),
+regardless of sorting order (ascending/descending).
++
+--
+It is now possible, as an alternative, to use `.missing().lowest()`/`.missing().highest()`
+to tell Hibernate Search to consider such documents as having the lowest/highest value (respectively),
+taking into account sorting order (ascending/descending):
+
+* `.missing().lowest()` puts documents with no value in the first position when using ascending order
+or in the last position when using descending order.
+* `.missing().highest()` puts documents with no value in the last position when using ascending order
+or in the first position when using descending order. The documents with no value will go first if descending order is used.
+
+This is mostly useful when the position of missing values is hardcoded,
+but the sort order is given by the user:
+
+[source, JAVA, indent=0]
+----
+SortOrder orderFromUser = /* ... */;
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.matchAll() )
+        .sort( f -> f.field( "pageCount" ).missing().lowest().order( orderFromuser ) )
+        .fetchHits( 20 );
+----
+--
+
+[[elasticsearch-schema-export]]
+=== Elasticsearch schema export
+
+It is now possible to export the Elasticsearch schema that Hibernate Search expects to JSON files on the filesystem:
+
+[source, JAVA, indent=0]
+----
+SearchSchemaManager schemaManager = searchSession.schemaManager();
+schemaManager.exportExpectedSchema( Path.of( "mydirectory" ) );
+----
+
+The code above will result in a directory tree similar to this:
+
+[source, indent=0]
+----
+# For the default backend: backend/indexes/<index-name>/<file>
+mydirectory/backend/indexes/customer/create-index.json
+mydirectory/backend/indexes/customer/create-index-query-params.json
+mydirectory/backend/indexes/order/create-index.json
+mydirectory/backend/indexes/order/create-index-query-params.json
+# For additional named backends: backend/<backend-name>/indexes/<index-name>/<file>
+mydirectory/backends/auth/indexes/user/create-index.json
+mydirectory/backends/auth/indexes/user/create-index-query-params.json
+mydirectory/backends/auth/indexes/usergroup/create-index.json
+mydirectory/backends/auth/indexes/usergroup/create-index-query-params.json
+----
+
+See link:{hsearch-doc-url-prefix}#schema-management-export[this section of the reference documentation]
+for more information.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4808[HSEARCH-4808]:
+Added a new configuration option for the Elasticsearch client's connection keep-alive:
+link:{hsearch-doc-url-prefix}#backend-elasticsearch-configuration-connection-tuning[`hibernate.search.backend.max_keep_alive`].
+* link:{hsearch-jira-url-prefix}/HSEARCH-4772[HSEARCH-4772]:
+Reporting of non-fatal failures during mass indexing is now limited to a certain number of failures,
+which will prevent those failures from flooding the logs.
+The limit can be customized with link:{hsearch-doc-url-prefix}#indexing-massindexer-parameters[`MassIndexer#failureFloodingThreshold(long)`].
+* link:{hsearch-jira-url-prefix}/HSEARCH-4843[HSEARCH-4843]:
+The various module-specific `EntityReference` interfaces are now deprecated;
+use the common `org.hibernate.search.engine.common.EntityReference` instead.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4827[HSEARCH-4827]:
+The `object` projection will no longer allow inner projections that are not affected by nesting
+(e.g. `id`, `score`, ...).
+* link:{hsearch-jira-url-prefix}/HSEARCH-4803[HSEARCH-4803]:
+Hibernate Search will now properly ignore internal ``ServiceConfigurationError``s when appropriate.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4825[HSEARCH-4825]:
+Hibernate Search-generated Elasticsearch dynamic templates
+will now be merged with those defined by link:{hsearch-doc-url-prefix}#backend-elasticsearch-mapping-custom[custom mappings],
+instead of being erased as soon as a custom mapping are defined (even if those didn't mention any dynamic templates).
+* link:{hsearch-jira-url-prefix}/HSEARCH-4853[HSEARCH-4853]:
+Hibernate Search will now properly handle canonical record constructors used as projection constructors on JDK 21-ea+21 and above.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-doc-url-prefix}#mapper-orm-getting-started[here for the Hibernate ORM integration]
+* link:{hsearch-doc-url-prefix}#mapper-pojo-standalone-getting-started[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 6.1,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
