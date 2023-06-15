@@ -1,0 +1,71 @@
+= "Hibernate ORM {released-version} released"
+Marco Belladelli
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.2.5.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.2
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32158
+
+Today, we published a new maintenance release of Hibernate ORM 6.2: {released-version}.
+
+== What's new
+
+This maintenance release keeps improving stability with several bugfixes.
+
+[[bugfixes]]
+
+=== Bugfixes
+
+==== Second level cache fixes
+
+We have fixed several bugs related to Hibernate's second level cache functionalities:
+
+* Caching was not working properly for entities with inheritance when `hibernate.cache.use_structured_entries` was enabled (see https://hibernate.atlassian.net/browse/HHH-16714[HHH-16714]).
+
+* Hibernate failed to access a lazy fetched `@ManyToOne` association which was part of a composite `@IdClass` identifier when stored in L2 cache (see https://hibernate.atlassian.net/browse/HHH-16673[HHH-16673]).
+
+* A `TransientObjectException` was encountered when loading a versioned entity from the second level cache with a `@OneToOne` lazy mapping (see https://hibernate.atlassian.net/browse/HHH-16745[HHH-16745]).
+
+==== Treated and generic association joins
+
+We addressed a couple issues that occurred when joining on generic or treated association paths:
+
+* When joining on a treated association we failed to retrieve the attribute from the correct treat target type (see https://hibernate.atlassian.net/browse/HHH-16574[HHH-16574]).
+
+* When joining on a `MappedSuperclass` generic association there was a problem recognizing the association attribute from the concrete (see https://hibernate.atlassian.net/browse/HHH-16693[HHH-16693]).
+
+==== Mapping the same column to different properties
+
+* We have fixed several issues that were reported for different use cases which had problems when mapping the same underlying database column to different model properties (see https://hibernate.atlassian.net/browse/HHH-15929[HHH-15929]).
+
+==== Batching and composite identifiers
+
+We have fixed a couple bugs related to composite identifiers when batching was enabled:
+
+* Fetching an element collection on an entity with a composite `@EmbeddedId` identifier failed with batch enabled (see https://hibernate.atlassian.net/browse/HHH-16740[HHH-16740]).
+
+* A `ClassCastException` was triggered when an entity with an `@ElementCollection` had an `@EmbeddedId` with just one field and batching was enabled (see https://hibernate.atlassian.net/browse/HHH-16750[HHH-16750]).
+
+
+There are more improvements and bugfixes included in this version. You can find the full list of changes https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HHH%20AND%20fixVersion%20%3D%20{release-id}[here].
+
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.2/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
