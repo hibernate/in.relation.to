@@ -1,0 +1,113 @@
+= Hibernate Search 6.2.0.CR1 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.2/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32160
+---
+
+We just published Hibernate Search 6.2.0.CR1,
+a candidate release of the next minor version of Hibernate Search.
+
+This release brings in particular a new `excludePaths` filter for `@IndexedEmbedded`,
+and  `includePaths`/`includeDepth`/`excludePaths` filters for `@ObjectProjection`.
+
+6.2.0.CR1 also includes compatibility with OpenSearch 2.8,
+an upgrade to Hibernate ORM 5.6.15.Final,
+an upgrade of `-orm6` artifacts to Hibernate ORM 6.2.5.Final,
+and other bugfixes and improvements.
+
+== What's new
+
+[NOTE]
+====
+For a summary of all new features and improvements since 6.1,
+head to https://hibernate.org/search/releases/6.2/#whats-new[the dedicated page on hibernate.org].
+====
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-4880[HSEARCH-4880]/link:{hsearch-jira-url-prefix}/HSEARCH-4875[HSEARCH-4875]/link:{hsearch-jira-url-prefix}/HSEARCH-4869[HSEARCH-4869])::
+Hibernate Search now depends on Hibernate ORM 5.6.15.Final for its main artifacts,
+and 6.2.5.Final for `-orm6` artifacts.
+Hibernate ORM 6.0 and 6.1 are no longer considered compatible.
+[[elasticsearch-version]]
+Elasticsearch (link:{hsearch-jira-url-prefix}/HSEARCH-4857[HSEARCH-4857])::
+The Elasticsearch backend now works with Elasticsearch 8.8
+as well as other versions that were already compatible.
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-4870[HSEARCH-4870])::
+The Elasticsearch backend now works with OpenSearch 2.8
+as well as other versions that were already compatible.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-4871[HSEARCH-4871]: Upgrade to Elasticsearch **client** 8.8.1
+
+[[indexedembedded-excludepaths]]
+=== `@IndexedEmbedded(excludePaths = ...)`
+
+With link:{hsearch-jira-url-prefix}/HSEARCH-1182[HSEARCH-1182],
+the `@IndexedEmbedded` annotation now exposes an `excludePaths` attribute,
+allowing the inclusion of all paths with only a few selectively excluded,
+as opposed to the previous approach of selectively including paths with `includePaths`.
+
+See link:{hsearch-doc-url-prefix}#mapping-indexedembedded-filtering[this section of the reference documentation]
+for more information.
+
+[[objectprojection-filters]]
+=== `@ObjectProjection(includeDepth = ...)`/`@ObjectProjection(includePaths = ...)`/`@ObjectProjection(excludePaths = ...)`
+
+With link:{hsearch-jira-url-prefix}/HSEARCH-4725[HSEARCH-4725],
+the `@ObjectProjection` annotation now exposes an `includeDepth`/`includePaths`/`excludePaths` attributes,
+which allows in particular breaking cycles of nested object projections.
+
+See link:{hsearch-doc-url-prefix}#search-dsl-projection-object-mapping-filters[this section of the reference documentation]
+for more information.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4616[HSEARCH-4616]:
+For clarity, "automatic indexing" was renamed to something more explicit throughout Hibernate Search and its documentation.
+As a result:
+** `hibernate.search.automatic_indexing.enabled` is now deprecated in favor of `hibernate.search.indexing.listeners.enabled`
+** `hibernate.search.automatic_indexing.synchronization.strategy` is now deprecated in favor of `hibernate.search.indexing.plan.synchronization.strategy`
+* link:{hsearch-jira-url-prefix}/HSEARCH-4866[HSEARCH-4866]:
+`hibernate.search.automatic_indexing.enable_dirty_check` is now deprecated with no alternative to replace it.
+In future versions, a dirty check will always be performed when considering whether to trigger reindexing.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4877[HSEARCH-4877]:
+(Infinispan) Provided identifier bridges are now applied in the Search DSL and `id` projections.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-doc-url-prefix}#mapper-orm-getting-started[here for the Hibernate ORM integration]
+* link:{hsearch-doc-url-prefix}#mapper-pojo-standalone-getting-started[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 6.1,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
