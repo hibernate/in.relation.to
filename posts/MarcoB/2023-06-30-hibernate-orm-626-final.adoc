@@ -1,0 +1,83 @@
+= "Hibernate ORM {released-version} released"
+Marco Belladelli
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:released-version: 6.2.6.Final
+:docs-url: https://docs.jboss.org/hibernate/orm/6.2
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:release-id: 32164
+
+Today, we published a new maintenance release of Hibernate ORM 6.2: {released-version}.
+
+== What's new
+
+This update includes several bugfixes and further stabilization as we approach the release of the next minor Hibernate version.
+
+[[bugfixes]]
+
+=== Bugfixes
+
+==== Embeddable keys and property sorting
+
+We have fixed a bug that caused the properties of composite keys to be in an unexpected order, causing possible problems with constraints (see https://hibernate.atlassian.net/browse/HHH-16514[HHH-16514])
+
+==== Bytecode enhancement
+
+We keep improving Hibernate's bytecode enhancement support, this time we tackled several bugs:
+
+* Reading entities that extended a `@MappedSuperclass` declared in a different package did not work correctly (see https://hibernate.atlassian.net/browse/HHH-16711[HHH-16711])
+
+* Bytecode enhancement caused a lazy `@ManyToOne` association targeting an Entity annotated with `@Proxy(lazy = false)` to be eagerly loaded (see https://hibernate.atlassian.net/browse/HHH-16794[HHH-16794])
+
+* Hibernate failed to update a one-to-one lazy association with `OptimisticLockType.DIRTY` and enabled bytecode enhancement (see https://hibernate.atlassian.net/browse/HHH-16839[HHH-16839])
+
+* Bytecode enhancement led to a broken constructor for an embedded field declared as a generic in a `@MappedSuperclass` (see https://hibernate.atlassian.net/browse/HHH-16832[HHH-16832])
+
+==== Subqueries and joins
+
+We addressed a couple issues that affected Hibernate generated subqeries when using joins:
+
+* When reusing a join in a subquery the table would be referenced again instead of reusing the join (see https://hibernate.atlassian.net/browse/HHH-16537[HHH-16537])
+
+* An HQL query with a subquery that used an entity path at least two levels deep produced SQL with a missing join predicate (see https://hibernate.atlassian.net/browse/HHH-16721[HHH-16721])
+
+==== Polymorphic queries
+
+We have fixed some bugs related to polymorphic queries:
+
+* When using a polymorphic entity-valued path as an argument for a function a _SqmRoot not yet resolved to TableGroup_ error was triggered (see https://hibernate.atlassian.net/browse/HHH-16733[HHH-16733])
+
+* An exception was thrown when processing a polymorphic entity's nested join in a subquery (see https://hibernate.atlassian.net/browse/HHH-16582[HHH-16582])
+
+NOTE: Hibernate now uses the existing `SQM` copy logic to process entity polymorphism, keeping the behavior consistent with what was already in place for criteria queries.
+
+==== Batch loading
+
+In previous 6.2 versions the batch loading feature was improved several times. With this release we keep stabilizing it by fixing a couple issues:
+
+* In-clause parameter padding did not consider the Dialect's in-expression count limit which could cause errors on the DMBS side (see https://hibernate.atlassian.net/browse/HHH-16589[HHH-16589])
+
+* When batching was enabled the `LockModeType` requested through the `session.find()` method was ignored (see https://hibernate.atlassian.net/browse/HHH-16820[HHH-16820])
+
+
+There are more improvements and bugfixes included in this version. You can find the full list of changes https://hibernate.atlassian.net/issues/?jql=project%20%3D%20HHH%20AND%20fixVersion%20%3D%20{release-id}[here].
+
+
+== Conclusion
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/6.2/[release page].
+
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate[**hibernate** tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-orm[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HHH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
