@@ -1,0 +1,522 @@
+= Hibernate Search 6.2.0.Final is out!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.2/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/6.2/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-stanadlone-url-prefix: https://docs.jboss.org/hibernate/search/6.2/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32168
+---
+
+We are pleased to announce the release of Hibernate Search 6.2.0.Final.
+
+This release brings in particular a new standalone POJO Mapper,
+mapping of classes/records to projections using `@ProjectionConstructor`,
+highlighting,
+Elasticsearch schema export,
+and more bugfixes and improvements.
+
+6.2.0.Final also includes compatibility with Elasticsearch 8.8 and OpenSearch 2.8,
+as well as an upgrade of `-orm6` artifacts to Hibernate ORM 6.2.
+
+== What's new compared to Hibernate Search 6.1
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM::
+Hibernate Search still depends on Hibernate ORM 5.6 by default.
+`-orm6` artifacts depend on Hibernate ORM 6.2.
+[[lucene-version]]
+Lucene::
+The Lucene backend still uses Lucene 8.11.
+[[elasticsearch-version]]
+Elasticsearch::
+The Elasticsearch backend now works with Elasticsearch 8.8 and 7.17
+as well as other versions that were already compatible.
+[[opensearch-version]]
+OpenSearch::
+The Elasticsearch backend now works with OpenSearch 1.3 and 2.8
+as well as other versions that were already compatible.
+
+[[mapper-pojo-standalone]]
+=== Standalone POJO Mapper
+
+The Standalone POJO Mapper enables mapping arbitrary POJOs to indexes.
+
+Its key feature compared to the Hibernate ORM integration is its ability to run without Hibernate ORM or a relational database.
+It can be used to index entities coming from an arbitrary datastore or even
+(though that’s not recommended in general) to use Lucene or Elasticsearch as a primary datastore.
+
+For more information about the Standalone POJO Mapper,
+see link:{hsearch-doc-url-prefix}#mapper-pojo-standalone[this section of the reference documentation].
+
+To get started with the Standalone POJO Mapper,
+see link:{hsearch-getting-started-standadlone-url-prefix}[this getting started guide].
+
+[[mapping-projection]]
+=== Mapping index content to custom types (projection constructors)
+
+Hibernate Search now offers the ability to define projections through the mapping of custom types (typically records),
+by applying the `@ProjectionConstructor` annotation to those types or their constructor:
+
+[source, JAVA, indent=0]
+----
+@ProjectionConstructor
+public record MyBookProjection(String title, List<Author> authors) {
+    @ProjectionConstructor
+    public record Author(String firstName, String lastName) {
+    }
+}
+----
+
+Executing such a projection then becomes as easy as referencing the custom type:
+
+[source, JAVA, indent=0]
+----
+List<MyBookProjection> hits = searchSession.search( Book.class )
+        .select( MyBookProjection.class )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
+
+More advanced projections can be configured through explicit annotations,
+for example a projection to the entity identifier:
+
+[source, JAVA, indent=0]
+----
+@ProjectionConstructor
+public record MyBookIdAndTitleProjection(
+        @IdProjection // <1>
+        Integer id,
+        String title // <2>
+) {
+}
+----
+<1> Projects to the entity identifier (explicit projection through an explicit annotation)
+<2> Projects to field `title` (implicit projection)
+
+Explicit annotations also allow configuring field projections more precisely,
+for example setting the path of a field projection to something else
+than just the name of the constructor parameter:
+
+[source, JAVA, indent=0]
+----
+@ProjectionConstructor
+public record MyBookTitleAndAuthorNamesProjection(
+        @FieldProjection // <1>
+        String title,
+        @FieldProjection(path = "authors.lastName") // <2>
+        List<String> authorLastNames
+) {
+}
+----
+<1> Projects to field `title` (path derived from the name of the constructor parameter)
+<2> Projects to field `authors.lastName` (explicit path)
+
+See link:{hsearch-doc-url-prefix}#mapping-projection[this section of the reference documentation]
+for more information.
+
+[[search-highlighting]]
+=== Highlighting
+
+Hibernate Search now offers a new feature in the Search DSL: highlighting.
+
+Highlighting is a projection that returns fragments from full-text fields of matched documents that caused a query match.
+Specific terms that caused the match are "highlighted" with a pair of opening and closing tags.
+It can help a user to quickly identify the information they were searching for on a results page.
+
+For example, one can enable highlighting on a full-text field like this:
+
+[source, JAVA, indent=0]
+----
+@Entity
+@Indexed
+public class Book {
+    @Id
+    private Integer id;
+
+    @FullTextField(analyzer = "english")
+    private String title;
+
+    @FullTextField(analyzer = "english", projectable = Projectable.YES)
+    private String description;
+}
+----
+
+And then retrieve highlights like this:
+
+[source, JAVA, indent=0]
+----
+SearchSession searchSession = /* ... */
+
+List<List<String>> result = searchSession.search( Book.class )
+        .select( f -> f.highlight( "description" ) )
+        .where( f -> f.match().field( "description" ).matching( "robot" ) )
+        .fetchHits( 20 );
+----
+
+Which can for example return the following highlights:
+
+[source, indent=0]
+----
+# Hit #0
+["A <em>robot</em> becomes self-aware."]
+# Hit #1
+["A <em>robot</em> helps investigate a murder on an extrasolar colony.", "On this planet, <em>robots</em> are used extensively."]
+# etc.
+----
+
+This is a simple example, but highligting can be configured extensively.
+See link:{hsearch-doc-url-prefix}#search-dsl-highlighting[this section of the reference documentation]
+for more information.
+
+[[indexing-plan-filter]]
+=== Indexing plan filters
+
+Hibernate Search now allows enabling/disabling indexing in indexing plans
+(which includes in particular listener-triggered indexing),
+both fully (for all types) or on a per-type basis.
+
+For example, the following will disable automatic indexing
+for future changes on all instances of the class `Company`,
+except for instances of its subclass `Customer`:
+
+[source, JAVA, indent=0]
+----
+SearchMapping searchMapping = /* ... */
+searchMapping.indexingPlanFilter(
+        ctx -> ctx.exclude( Company.class )
+                .include( Customer.class )
+);
+----
+
+Indexing plan filters can also be configured per-session
+(though limitations apply when using the link:{hsearch-doc-url-prefix}#coordination-outbox-polling[`outbox-polling` coordination strategy]):
+
+[source, JAVA, indent=0]
+----
+SearchSession searchSession = /* ... */
+searchSession.indexingPlanFilter(
+        ctx -> ctx.exclude( Company.class )
+                .include( Customer.class )
+);
+----
+
+See link:{hsearch-doc-url-prefix}#indexing-plan-filter[this section of the reference documentation]
+for more information.
+
+[[mapping-improvements]]
+=== Mapping improvements
+
+`@IndexedEmbedded(excludePaths = ...)`::
+The `@IndexedEmbedded` annotation now exposes an `excludePaths` attribute,
+allowing the inclusion of all paths with only a few selectively excluded,
+as opposed to the pre-existing approach of selectively including paths with `includePaths`.
++
+See link:{hsearch-doc-url-prefix}#mapping-indexedembedded-filtering[this section of the reference documentation]
+for more information.
+Projectable fields::
+All fields are now projectable by default with the Elasticsearch backend.
++
+This change was made because making a field projectable doesn't incur any performance penalty with the Elasticsearch backend.
++
+Since making a field projectable *does* have an impact on performance with the Lucene backend,
+the defaults with the Lucene backend didn't change:
+Lucene fields still need to be made projectable explicitly.
+
+[[search-dsl-improvements]]
+=== Search DSL improvements
+
+[[predicate-and-or-not]]
+Simpler boolean operators with the link:{hsearch-doc-url-prefix}#search-dsl-predicate-and[`and`]/link:{hsearch-doc-url-prefix}#search-dsl-predicate-or[`or`]/link:{hsearch-doc-url-prefix}#search-dsl-predicate-not[`not`] predicates::
+For simpler use cases, you can now avoid the rather complex link:{hsearch-doc-url-prefix}#search-dsl-predicate-boolean[`bool` predicate]
+and use the new link:{hsearch-doc-url-prefix}#search-dsl-predicate-and[`and`]/link:{hsearch-doc-url-prefix}#search-dsl-predicate-or[`or`]/link:{hsearch-doc-url-prefix}#search-dsl-predicate-not[`not`]
+predicates instead:
++
+[source, JAVA, indent=0]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.and(
+                        f.match().field( "title" )
+                                .matching( "robot" ),
+                        f.match().field( "description" )
+                                .matching( "crime" )
+        ) )
+        .fetchHits( 20 );
+----
++
+[source, JAVA, indent=0]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.or(
+                        f.match().field( "title" )
+                                .matching( "robot" ),
+                        f.match().field( "description" )
+                                .matching( "investigation" )
+        ) )
+        .fetchHits( 20 );
+----
++
+[source, JAVA, indent=0]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.not(
+                f.match()
+                        .field( "genre" )
+                        .matching( Genre.SCIENCE_FICTION )
+        ) )
+        .fetchHits( 20 );
+----
+[[predicate-bool-new-syntax-root]]
+Shorter syntax for link:{hsearch-doc-url-prefix}#search-dsl-predicate-boolean-lambda[complex, root boolean predicates]::
+Instead of `.where( f -> f.bool( b -> ... ) )`, you can now use `.where( (f, b) -> ... )`:
++
+[source, JAVA, indent=0]
+----
+MySearchParameters searchParameters = getSearchParameters();
+List<Book> hits = searchSession.search( Book.class )
+        .where( (f, root) -> {
+            root.add( f.matchAll() );
+            if ( searchParameters.getGenreFilter() != null ) {
+                root.add( f.match().field( "genre" )
+                        .matching( searchParameters.getGenreFilter() ) );
+            }
+            if ( searchParameters.getFullTextFilter() != null ) {
+                root.add( f.match().fields( "title", "description" )
+                        .matching( searchParameters.getFullTextFilter() ) );
+            }
+            if ( searchParameters.getPageCountMaxFilter() != null ) {
+                root.add( f.range().field( "pageCount" )
+                        .atMost( searchParameters.getPageCountMaxFilter() ) );
+            }
+        } )
+        .fetchHits( 20 );
+----
++
+The older syntax has been deprecated in favor of the new one.
+[[predicate-bool-new-syntax-non-root]]
+Clearer syntax for link:{hsearch-doc-url-prefix}#search-dsl-predicate-boolean-lambda[complex, non-root boolean predicates]::
+Instead of `f.bool( b -> ... )`, you can now use `f.bool().with( b -> ... )`:
++
+[source, JAVA, indent=0]
+----
+MySearchParameters searchParameters = getSearchParameters();
+List<Book> hits = searchSession.search( Book.class )
+        .where( (f, b) -> {
+            b.must( f.matchAll() );
+            if ( searchParameters.getGenreFilter() != null ) {
+                b.must( f.match().field( "genre" )
+                        .matching( searchParameters.getGenreFilter() ) );
+            }
+            if ( !searchParameters.getAuthorFilters().isEmpty() ) {
+                b.must( f.bool().with( b2 -> {
+                    for ( String authorFilter : searchParameters.getAuthorFilters() ) {
+                        b2.should( f.match().fields( "authors.firstName", "authors.lastName" )
+                                .matching( authorFilter ) );
+                    }
+                } ) );
+            }
+        } )
+        .fetchHits( 20 );
+----
++
+The older syntax has been deprecated in favor of the new one.
+[[predicate-nested-new-syntax]]
+Clearer syntax for the link:{hsearch-doc-url-prefix}#search-dsl-predicate-nested[`nested` predicate]::
+Instead of `f.nested().objectField( ... ).nest( f.bool().must( ... ) )`, you can now use `f.nested( ... ).add( ... )`:
++
+[source, JAVA, indent=0]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.nested( "authors" )
+                .add( f.match().field( "authors.firstName" )
+                        .matching( "isaac" ) )
+                .add( f.match().field( "authors.lastName" )
+                        .matching( "asimov" ) ) )
+        .fetchHits( 20 );
+----
++
+The older syntax has been deprecated in favor of the new one.
+[[predicate-matchnone]]
+New link:{hsearch-doc-url-prefix}#search-dsl-predicate-match-none[`matchNone` predicate]::
+The `matchNone` predicate matches no documents.
++
+[source, JAVA, indent=0]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.matchNone() )
+        .fetchHits( 20 );
+----
+[[projection-composite-syntax]]
+New syntax for link:{hsearch-doc-url-prefix}#search-dsl-projection-composite[composite projections]::
+The definition of composite projections is now possible with a fluent syntax:
++
+[source, JAVA, indent=0]
+----
+List<MyPair<String, Genre>> hits = searchSession.search( Book.class )
+        .select( f -> f.composite()
+                .from( f.field( "title", String.class ),
+                        f.field( "genre", Genre.class ) )
+                .as( MyPair::new ) )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
++
+Most older syntaxes have been deprecated in favor of the new one.
+[[projection-object]]
+New link:{hsearch-doc-url-prefix}#search-dsl-projection-object[`object` projection]::
+The `object` projection yields one projected value for each object in a given object field.
++
+[source, JAVA, indent=0]
+----
+List<List<MyAuthorName>> hits = searchSession.search( Book.class )
+        .select( f -> f.object( "authors" )
+                .from( f.field( "authors.firstName", String.class ),
+                        f.field( "authors.lastName", String.class ) )
+                .as( MyAuthorName::new )
+                .multi() )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
+[[projection-constant]]
+New link:{hsearch-doc-url-prefix}#search-dsl-projection-constant[`constant` projection]::
+The `constant` projection returns the same value for every single document, the value being provided when defining the projection.
++
+[source, JAVA, indent=0]
+----
+Instant searchRequestTimestamp = Instant.now();
+List<MyPair<Integer, Instant>> hits = searchSession.search( Book.class )
+        .select( f -> f.composite()
+                .from( f.id( Integer.class ), f.constant( searchRequestTimestamp ) )
+                .as( MyPair::new ) )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+----
+[[missing-lowest-highest]]
+link:{hsearch-doc-url-prefix}#search-dsl-sort-common-missing[`.missing().lowest()`/`.missing().highest()` options] in sorts::
+When sorting on a field that may not have a value for some documents,
+it was already possible to use `.missing().first()`/`.missing().last()`
+to tell Hibernate Search to put such documents in first/last position (respectively),
+regardless of sorting order (ascending/descending).
++
+--
+It is now possible, as an alternative, to use `.missing().lowest()`/`.missing().highest()`
+to tell Hibernate Search to consider such documents as having the lowest/highest value (respectively),
+taking into account sorting order (ascending/descending):
+
+* `.missing().lowest()` puts documents with no value in the first position when using ascending order
+or in the last position when using descending order.
+* `.missing().highest()` puts documents with no value in the last position when using ascending order
+or in the first position when using descending order.
+
+This is mostly useful when the position of missing values is hardcoded,
+but the sort order is given by the user:
+
+[source, JAVA, indent=0]
+----
+SortOrder orderFromUser = /* ... */;
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.matchAll() )
+        .sort( f -> f.field( "pageCount" ).missing().lowest().order( orderFromuser ) )
+        .fetchHits( 20 );
+----
+--
+
+[[mass-indexing-improvements]]
+=== Mass indexing improvements
+
+Mass indexing multiple tenants::
+In multi-tenant applications, mass indexing can now handle multiple tenants at once,
+provided you don't pass any tenant identifier when creating the mass indexer,
+and you provided a list of tenants in the Hibernate Search configuration.
+See link:{hsearch-doc-url-prefix}#indexing-massindexer-multitenancy[this section of the reference documentation]
+for more information.
+Setting up thread locals during mass indexing::
+The mass indexer now has a concept of "mass indexing environment",
+allowing for instance to set up custom thread locals in mass indexing threads.
+See the `environment` parameter in link:{hsearch-doc-url-prefix}#indexing-massindexer-parameters[this section of the reference documentation]
+for more information.
+Better exception handling::
+Exceptions thrown by Hibernate ORM during mass indexing
+are now passed to the failure handler as every other exception, instead of aborting the whole mass indexing.
+Smarter defaults for parameters::
+`purgeAllOnStart` is now disabled by default in the mass indexer when `dropAndCreateSchemaOnStart` is enabled.
+
+[[outbox-polling-improvements]]
+=== `outbox-polling` coordination improvements
+
+Outbox events and agents now use UUIDs for their identifiers::
+The primary key of the relevant tables are now using UUIDs instead of longs,
+to avoid reliance on sequences that were slowing down event processing on some databases.
+The migration guide includes migration scripts for the necessary database schema changes.
+Customizable database schema::
+Simple, straightforward configuration properties now allow customizing the database schema involved in Hibernate Search's `outbox-polling` coordination strategy:
+table names, schema and catalog, type of UUID columns as well as UUID generation strategy (random vs. time).
+See link:{hsearch-doc-url-prefix}#_custom_schematable_nameetc[this section of the reference documentation]
+for more information.
+
+[[elasticsearch-schema-export]]
+=== Elasticsearch schema export
+
+It is now possible to export the Elasticsearch schema that Hibernate Search expects to JSON files on the filesystem:
+
+[source, JAVA, indent=0]
+----
+SearchSchemaManager schemaManager = searchSession.schemaManager();
+schemaManager.exportExpectedSchema( Path.of( "mydirectory" ) );
+----
+
+The code above will result in a directory tree similar to this:
+
+[source, indent=0]
+----
+# For the default backend: backend/indexes/<index-name>/<file>
+mydirectory/backend/indexes/customer/create-index.json
+mydirectory/backend/indexes/customer/create-index-query-params.json
+mydirectory/backend/indexes/order/create-index.json
+mydirectory/backend/indexes/order/create-index-query-params.json
+# For additional named backends: backend/<backend-name>/indexes/<index-name>/<file>
+mydirectory/backends/auth/indexes/user/create-index.json
+mydirectory/backends/auth/indexes/user/create-index-query-params.json
+mydirectory/backends/auth/indexes/usergroup/create-index.json
+mydirectory/backends/auth/indexes/usergroup/create-index-query-params.json
+----
+
+See link:{hsearch-doc-url-prefix}#schema-management-export[this section of the reference documentation]
+for more information.
+
+== What's new compared to Hibernate Search 6.2.0.CR1
+
+For a list of changes since 6.2.0.CR1 only,
+refer to the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standadlone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 6.1,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
