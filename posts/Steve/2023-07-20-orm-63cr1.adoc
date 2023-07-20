@@ -1,0 +1,109 @@
+= Hibernate 6.3 CR1 (and 6.2.7)
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:major-minor: 6.3
+:docs-url: https://docs.jboss.org/hibernate/orm/{major-minor}
+:javadocs-url: {docs-url}/javadocs
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:orm6-guide-url: {docs-url}/introduction/html_single/Hibernate_Introduction.html
+:query-guide-url: {docs-url}/introduction/html_single/Hibernate_Query_Language.html
+:63-jira-released-page: https://hibernate.atlassian.net/projects/HHH/versions/32084
+:62-jira-released-page: https://hibernate.atlassian.net/projects/HHH/versions/32170
+
+Hibernate ORM 6.3.0.CR1 has just been link:{63-jira-released-page}[released].  Simultaneously, 6.2.7 
+has also been link:{62-jira-released-page}[released].
+
+[[docs]]
+== New documentation
+
+6.3 provides 2 new documentation guides:
+
+1. An introductory link:{orm6-guide-url}[Hibernate 6 Guide] 
+2. The Hibernate Query Language link:{query-guide-url}[synatx and feature guide]
+
+
+[[query-methods]]
+== Query methods
+
+Hibernate can now generate DAO-style methods for named queries as part of its JPA static metamodel generator.
+
+Take the following entity as an example:
+
+```java
+@NamedQuery(name = "#findByTitleAndType",
+        query = "select book from Book book where book.title like :titlen and book.type = :type")
+@Entity
+public class Book { ... }
+```
+
+When processed by the metamodel generator, we will now have the following generated into the static metamodel:
+
+```java
+class Book_ {
+    // as normal
+    ...
+
+    public static final String QUERY_FIND_BY_TITLE_AND_TYPE = "#findByTitleAndType";
+
+    public static List<Book> findByTitleAndType(@Nonnull EntityManager entityManager, String title, Type type) {
+        return entityManager.createNamedQuery(QUERY_FIND_BY_TITLE_AND_TYPE)
+                .setParameter("titlePattern", title)
+                .setParameter("type", type)
+                .getResultList();
+    }
+}
+```
+
+And the application can then use:
+
+```java
+List<Book> books =
+        Book_.findByTitleAndType(entityManager, titlePattern, Type.BOOK);
+```
+
+There are a lot of capabilities to these query methods; see the link:{orm6-guide-url}#generator[Hibernate 6 Guide] for a full discussion.
+
+
+[[finder-methods]]
+== Finder methods
+
+Using the new `@Find` annotation, arbitrary methods can now be processed by the generator to create finder methods similar to query methods.
+
+```java
+interface Dao {
+    @Find
+    Book findBookByIsbn(String isbn);
+}
+```
+
+The generator will generate:
+
+```java
+class Dao_ {    
+	public static Book findBookByIsbn(@Nonnull EntityManager entityManager, String isbn) {
+		return entityManager.unwrap(Session.class)
+				.byNaturalId(Book.class)
+				.using(Book_.isbn, isbn)
+				.load();
+	}
+}
+```
+
+Again, there are a lot of capabilities to these finder methods; see the link:{orm6-guide-url}#generator[Hibernate 6 Guide] for a full discussion.
+
+
+== Community
+
+For additional details, see:
+
+- the link:{user-guide-url}[User Guide]
+- the link:{migration-guide-url}[Migration Guide]
+- the https://hibernate.org/orm/releases/{major-minor}/[release page]
+- the link:{docs-url}/incubating/incubating.txt[incubating report]
+- the link:{docs-url}/deprecated/deprecated.txt[deprecation report]
+- the link:{docs-url}/internals/internal.txt[internals report]
+- the https://hibernate.org/community/compatibility-policy/[compatibility policy]
+
+See the https://hibernate.org/community/[website] for getting in touch with us.
