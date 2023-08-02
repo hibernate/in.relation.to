@@ -1,20 +1,15 @@
 /**
- * Red Hat logo image
- */
-
-div.logo img {
-    height: 44px;
-    width: auto;
-}
-
-/**
  * Banner
  */
 
 .banner {
-	.logo {
+	.logo.hibernate {
 		margin-top: 12px;
 		float: left;
+		img {
+			height: 44px;
+			width: auto;
+		}
 	}
 
 	.ui.menu {
@@ -351,13 +346,6 @@ pre {
 	}
 }
 
-// don't display the TOC on mobile
-@media only screen and (max-width: 767px) {
-	#toc {
-		display: none;
-	}
-}
-
 /**
  * Home page
  */
@@ -642,8 +630,16 @@ pre .comment .conum {
 		text-align: right;
 	}
 	
-	.sponsor .logo:not(:last-child) {
-		margin-bottom: 20px;
+	.sponsor .logo {
+		&:not(:last-child) {
+			margin-bottom: 20px;
+		}
+		&.redhat, &.redhatdevelopers {
+			img {
+				height: 44px;
+				width: auto;
+			}
+		}
 	}
 }
 
@@ -803,12 +799,21 @@ pre .comment .conum {
 
 .mobile-menu-button-bar {
 	background-color: #444;
-	border-bottom: 1px solid black;
-	padding: 10px;
+
+	.logo.hibernate {
+		float: right;
+		img {
+			margin: 4px;
+			height: 32px;
+			width: auto;
+		}
+	}
 
 	a.item {
+		margin: 10px;
 		cursor: pointer;
 		color: white;
+		float: left;
 
 		&:hover {
 			color: #DDD;
