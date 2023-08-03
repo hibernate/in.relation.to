@@ -1,0 +1,13 @@
+= Jira Automations
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM"]
+:awestruct-layout: blog-post
+
+I recently enabled a number of Jira Automations which focus on closing issues which are considered stale.  
+An issue is considered stale when
+
+* A test case was requested more than 30 days ago, but one was not provided.  This rule considers both Pull Requests and attachments, though not "test cases" defined in description or comments.
+* Additional information for an incomplete report was requested more than 30 days ago, but no reponse was provided.  
+
+As with any attempt at automation, there will be cases which do not fit nicely into the automation rules - both false positives and false negatives.
+If you feel one of these issues was incorrectly closed, re-open it.  Which assumes that there is a test or response of course :)
