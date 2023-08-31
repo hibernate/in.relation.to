@@ -1,0 +1,238 @@
+= Hibernate 6.3.0 (and 6.2.8)
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+:major-minor: 6.3
+:docs-url: https://docs.jboss.org/hibernate/orm/{major-minor}
+:javadocs-url: {docs-url}/javadocs
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:orm6-guide-url: {docs-url}/introduction/html_single/Hibernate_Introduction.html
+:query-guide-url: {docs-url}/introduction/html_single/Hibernate_Query_Language.html
+:63-jira-released-page: https://hibernate.atlassian.net/projects/HHH/versions/32177
+:62-jira-released-page: https://hibernate.atlassian.net/projects/HHH/versions/32178
+
+Hibernate ORM 6.3.0 has just been link:{63-jira-released-page}[released].  Simultaneously, 6.2.8 
+has also been link:{62-jira-released-page}[released].
+
+NOTE:: With the release of 6.3.0, 6.2 now moves into limited maintenance.
+
+
+[[jpa32]]
+== Jakarta Persistence 3.2
+
+https://twitter.com/jlukas/status/1697254255995023834[Jakarta Persistence 3.2] is still under 
+development, but we've already begun incorporating some of the changes into Hibernate.
+
+One specific change to be aware of in 6.3 is the clarification with regard to types of numeric literals in HQL/JPQL queries.  You can
+check out the https://hibernate.atlassian.net/browse/HHH-17076[details], but the gist is -
+
+* Integer - 123
+* Long - 123l, 123L
+* BigInteger - 123bi, 123BI
+* Double - 123.4
+* Float literal - 123.4f, 123.4F
+* BigDecimal literal - 123.4bd, 123.4BD
+
+Notice that Hibernate's `BigInteger` and `BigDecimal` suffix synatx has been standardized also.
+
+
+
+[[docs]]
+== New documentation artifacts
+
+2 new documentation guides have been added -
+
+1. An introductory link:{orm6-guide-url}[Hibernate 6 Guide] 
+2. The Hibernate Query Language link:{query-guide-url}[synatx and feature guide]
+
+
+[[query-methods]]
+== Query methods
+
+Hibernate can now generate DAO-style methods for named queries as part of its JPA static metamodel generator.
+
+Take the following entity as an example:
+
+```java
+@NamedQuery(name = "#findByTitleAndType",
+        query = "select book from Book book where book.title like :titlePattern and book.type = :type")
+@Entity
+public class Book { ... }
+```
+
+When processed by the metamodel generator, Hibernate adds the following into the static metamodel:
+
+```java
+class Book_ {
+    // as normal
+    ...
+
+    public static final String QUERY_FIND_BY_TITLE_AND_TYPE = "#findByTitleAndType";
+
+    public static List<Book> findByTitleAndType(@Nonnull EntityManager entityManager, String titlePattern, Type type) {
+        return entityManager.createNamedQuery(QUERY_FIND_BY_TITLE_AND_TYPE)
+                .setParameter("titlePattern", titlePattern)
+                .setParameter("type", type)
+                .getResultList();
+    }
+}
+```
+
+And the application can then use:
+
+```java
+List<Book> books =
+        Book_.findByTitleAndType(entityManager, titlePattern, Type.BOOK);
+```
+
+There are a lot of capabilities to these query methods; see the link:{orm6-guide-url}#generator[Hibernate 6 Guide] for a full discussion.
+
+
+[[finder-methods]]
+== Finder methods
+
+Using the new `@Find` annotation, arbitrary methods can now be processed by the generator to create finder methods similar to query methods.
+
+```java
+interface Dao {
+    @Find
+    Book findBookByIsbn(String isbn);
+}
+```
+
+The generator will generate:
+
+```java
+class Dao_ {    
+	public static Book findBookByIsbn(@Nonnull EntityManager entityManager, String isbn) {
+		return entityManager.unwrap(Session.class)
+				.byNaturalId(Book.class)
+				.using(Book_.isbn, isbn)
+				.load();
+	}
+}
+```
+
+Again, there are a lot of capabilities to these finder methods; see the link:{orm6-guide-url}#generator[Hibernate 6 Guide] for a full discussion.
+
+
+
+
+[[fetch-profile]]
+== Dynamic SUBSELECT fetch support
+
+Hibernate's https://docs.jboss.org/hibernate/orm/6.3/userguide/html_single/Hibernate_User_Guide.html#fetching-fetchmode-subselect[SUBSELECT]
+fetching style can now be applied dynamically using https://docs.jboss.org/hibernate/orm/6.3/introduction/html_single/Hibernate_Introduction.html#fetch-profiles[fetch profiles].  E.g.
+
+```java
+@FetchProfile(name = "EagerBook")
+@FetchProfile(name = "EagerBookWithSubselect")
+@Entity
+class Book { 
+    ...
+
+    @ManyToMany
+    @FetchProfileOverride(profile = Book_.PROFILE_EAGER_BOOK, mode = JOIN)
+    @FetchProfileOverride(profile = Book_.PROFILE_EAGER_BOOK_WITH_SUBSELECT, mode = SUBSELECT)
+    Set<Author> authors;
+}
+```
+
+Then, at runtime we can pick between these profiles to control how the associations 
+are loaded -
+
+```java
+Session session = ...;
+
+session.enableFetchProfile( Book_.PROFILE_EAGER_BOOK );
+// or
+session.enableFetchProfile( Book_.PROFILE_EAGER_BOOK_WITH_SUBSELECT );
+```
+
+NOTE:: What's up with those `Book_.PROFILE_EAGER_BOOK` references?  See the link:{orm6-guide-url}#generator[Hibernate 6 Guide]
+
+
+
+[[hql-criteria]]
+== Create Criteria from HQL
+
+6.3 adds the abillity to create a `Criteria` reference from HQL -
+
+```java
+var builder = session.getFactory().getCriteriaBuilder();
+var hqlCriteria = session.getFactory()
+        .getCriteriaBuilder()
+        .createQuery( "select id, text from Message order by received", Object[].class );
+```
+
+which can be mutated just like any `Criteria`...
+
+```java
+var root = hqlCriteria.getRootList().get(0)
+root.where( 
+    builder.equal( 
+        root.get(Message_.deleted), 
+        'Y'
+    )
+);
+```
+
+
+[[criteria-definition]]
+== CriteriaDefinition utility
+
+The new `CriteriaDefinition` class is a utility for making it easier to work with Jakarta
+Persistence Criterias in many case.  E.g.
+
+```java
+var query = new CriteriaDefinition<>(factory, Message.class) {{
+    var message = from(Message.class);
+    where(like(message.get("text"), "hell%"), message.get("id").equalTo(1));
+    orderBy(asc(message.get("id")));
+}};
+
+Session session = ...;
+var message = session.createSelectionQuery(query).getSingleResult();
+```
+
+We can even use this to clean up the example from <<hql-criteria>> -
+
+```java
+var query = new CriteriaDefinition<>(factory, Object[].class, "select id, text from Message order by received") {{
+    var root = getRootList().get(0);
+    where( equal( root.get(Message_.deleted), 'Y' );
+}};
+```
+
+
+
+[[ss-upsert]]
+== StatelessSession.upsert()
+
+The new `StatelessSession.upsert()` method allows performing SQL-style UPSERT/MERGE 
+operations from the Hibernate `StatelessSession`.
+
+```java
+// insert it
+ss.upsert(new Widget(1, "the nema"));
+// update it
+ss.upsert(new Widget(1, "the name"));
+```
+
+
+
+== Community
+
+For additional details, see:
+
+- the link:{migration-guide-url}[Migration Guide]
+- the link:{user-guide-url}[User Guide]
+- the link:{orm6-guide-url}[Introduction] Guide
+- the https://hibernate.org/orm/releases/{major-minor}/[release page]
+- the link:{docs-url}/incubating/incubating.txt[incubating report]
+- the link:{docs-url}/deprecated/deprecated.txt[deprecation report]
+- the link:{docs-url}/internals/internal.txt[internals report]
+- the https://hibernate.org/community/compatibility-policy/[compatibility policy]
+
+See the https://hibernate.org/community/[website] for getting in touch with us.
