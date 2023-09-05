@@ -142,9 +142,14 @@ refer to the getting started guide:
 * link:{hsearch-doc-url-prefix}#mapper-orm-getting-started[here for the Hibernate ORM integration]
 * link:{hsearch-doc-url-prefix}#mapper-pojo-standalone-getting-started[here for the Standalone POJO Mapper]
 
-For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 6.1,
-assuming you also upgrade the dependencies.
-Information about deprecated configuration and API
+For existing applications,
+assuming you were already using Hibernate Search 6.2 with `-orm6` artifacts,
+upgrading to Hibernate Search {hsearch-version-family} just requires
+removing the `-orm6` suffix from your Hibernate Search dependencies
+and updating the version numbers (alternatively you can use the <<hibernate-search-bom,BOM>>),
+and of course aligning your other dependencies (e.g. Hibernate ORM), if any.
+
+Information about migration, deprecations and breaking changes
 is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
 
 == Feedback, issues, ideas?
