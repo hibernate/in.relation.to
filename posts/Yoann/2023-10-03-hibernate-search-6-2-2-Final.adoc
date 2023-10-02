@@ -1,0 +1,61 @@
+= Hibernate Search 6.2.2.Final released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/6.2/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 6.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32186
+---
+
+We just published a maintenance release for Hibernate Search:
+6.2.2.Final.
+
+This release mainly adds compatibility with Elasticsearch 8.10 and OpenSearch 2.10,
+upgrades to Hibernate ORM 6.2.9.Final for `-orm6` artifacts,
+upgrades to Elasticsearch client 8.10.2, Jackson 2.15.2 and Avro 1.11.3,
+deprecates the `~` operator in regexp predicates,
+and fixes several bugs.
+
+== What's new
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4921[HSEARCH-4921]/link:{hsearch-jira-url-prefix}/HSEARCH-4941[HSEARCH-4941]/link:{hsearch-jira-url-prefix}/HSEARCH-4946[HSEARCH-4946]/link:{hsearch-jira-url-prefix}/HSEARCH-4958[HSEARCH-4958]/link:{hsearch-jira-url-prefix}/HSEARCH-4967[HSEARCH-4967]:
+Add compatibility with Elasticsearch 8.10 and upgrade to Elasticsearch client 8.10.2
+* link:{hsearch-jira-url-prefix}/HSEARCH-4978[HSEARCH-4978]:
+Add compatibility with OpenSearch 2.10
+* link:{hsearch-jira-url-prefix}/HSEARCH-4933[HSEARCH-4933]/link:{hsearch-jira-url-prefix}/HSEARCH-4960[HSEARCH-4960]:
+Upgrade `-orm6` artifacts to Hibernate ORM 6.2.9.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-4957[HSEARCH-4957]:
+Upgrade to Jackson 2.15.2
+* link:{hsearch-jira-url-prefix}/HSEARCH-4984[HSEARCH-4984]:
+Upgrade to Avro 1.11.3
+* link:{hsearch-jira-url-prefix}/HSEARCH-4937[HSEARCH-4937]:
+The complement operator (`~`) in regexp predicates is now deprecated.
++
+This operator is going to be removed in Hibernate Search 7.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4947[HSEARCH-4947]:
+Hibernate Search will no longer fail to boot on Windows in some setups.
++
+Thanks to https://hibernate.atlassian.net/secure/ViewProfile.jspa?accountId=557058%3Ac6d12782-872a-44d5-a5e0-c44e1541b816[Gábor Lipták]
+for reporting this and helping test the fix!
+* link:{hsearch-jira-url-prefix}/HSEARCH-4980[HSEARCH-4980]:
+Hibernate Search will no longer fail fail when trying to index entities with composite identifiers in the JSR-352
+(Java Batch) mass indexing job.
+
+For a full list of changes since the previous release,
+see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
