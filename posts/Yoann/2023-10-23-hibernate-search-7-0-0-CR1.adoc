@@ -1,0 +1,158 @@
+= Hibernate Search 7.0.0.CR1 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/7.0/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/7.0/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-stanadlone-url-prefix: https://docs.jboss.org/hibernate/search/7.0/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 7.0
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32189
+---
+
+We just published a new candidate release for Hibernate Search: 7.0.0.CR1.
+
+This release brings in particular compatibility with Hibernate ORM's discriminator-based multi-tenancy,
+compatibility with Elasticsearch 8.10 and OpenSearch 2.10/2.11,
+an upgrade to Hibernate ORM 6.3.1.Final,
+an upgrade to Lucene 9.8,
+some Maven artifact renamings,
+and other bugfixes and improvements.
+
+== What's new
+
+[NOTE]
+====
+For a summary of all new features and improvements since 6.2,
+head to https://hibernate.org/search/releases/7.0/#whats-new[the dedicated page on hibernate.org].
+====
+
+=== Dependency upgrades
+
+[[jdk-version]]
+JDK 11 (reminder)::
+Hibernate Search now requires Java 11 as a baseline and is no longer compatible with Java 8.
+[[jakarta-ee-version]]
+Switch to Jakarta EE (reminder)::
+Hibernate Search completely switched to Jakarta EE and is not compatible with Java EE anymore.
+All of `-orm6` and `-jakarta` artifacts from the previous series that provided Hibernate ORM 6 and Jakarta EE compatibility
+are now unavailable since this compatibility is now provided by the main artifacts.
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-4959[HSEARCH-4959])::
+Hibernate Search now depends on Hibernate ORM 6.3.1.Final.
+[[lucene-version]]
+Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-4393[HSEARCH-4982])::
+The Lucene backend now uses Lucene 9.8.
+[[elasticsearch-version]]
+Elasticsearch (link:{hsearch-jira-url-prefix}/HSEARCH-4946[HSEARCH-4946])::
+The Elasticsearch backend works with Elasticsearch 8.10 as well as other versions that were already compatible --
+except for the following versions whose compatibility was dropped, because they already reached their end of life:
+* 5.x/6.x (compatibility already dropped in Hibernate Search 7.0.0.Beta1)
+* 7.0-7.9 (newly dropped in link:{hsearch-jira-url-prefix}/HSEARCH-4934[HSEARCH-4934])
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-4978[HSEARCH-4978]/link:{hsearch-jira-url-prefix}/HSEARCH-4993[HSEARCH-4993])::
+The Elasticsearch backend works with OpenSearch 2.10 and 2.11 as well as other versions that were already compatible --
+except for versions 1.0, 1.1 and 1.2 whose compatibility was dropped
+in link:{hsearch-jira-url-prefix}/HSEARCH-4934[HSEARCH-4934],
+because they already reached their end of life.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-4941[HSEARCH-4941]/link:{hsearch-jira-url-prefix}/HSEARCH-4946[HSEARCH-4946]/link:{hsearch-jira-url-prefix}/HSEARCH-4958[HSEARCH-4958]/link:{hsearch-jira-url-prefix}/HSEARCH-4967[HSEARCH-4967]/link:{hsearch-jira-url-prefix}/HSEARCH-4990[HSEARCH-4990]/link:{hsearch-jira-url-prefix}/HSEARCH-4994[HSEARCH-4994]: Upgrade to Elasticsearch **client** 8.10.4
+* link:{hsearch-jira-url-prefix}/HSEARCH-4957[HSEARCH-4957] Upgrade to Jackson 2.15.2
+* link:{hsearch-jira-url-prefix}/HSEARCH-4984[HSEARCH-4984] Upgrade to Avro 1.11.3
+* link:{hsearch-jira-url-prefix}/HSEARCH-4992[HSEARCH-4992] Upgrade to AWS SDK 2.21.1
+
+[[orm-discriminator-multi-tenancy]]
+=== Compatibility with Hibernate ORM's discriminator-based multi-tenancy
+
+With link:{hsearch-jira-url-prefix}/HSEARCH-4403[HSEARCH-4403],
+Hibernate Search can now index Hibernate ORM entities
+that take advantage of
+https://docs.jboss.org/hibernate/orm/6.3/userguide/html_single/Hibernate_User_Guide.html#multitenacy-hibernate-TenantId[discriminator-based multi-tenancy in the database (`@TenandId`)].
+
+[[renamings]]
+=== Maven artifact renamings
+
+Some Hibernate Search Maven artifacts have been renamed:
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4940[HSEARCH-4940]
+Maven artifacts related to JSR-352 artifacts were renamed to reflect the move to the Jakarta EE specification:
+** `hibernate-search-mapper-orm-batch-jsr352-core` was renamed to `hibernate-search-mapper-orm-jakarta-batch-core`.
+** `hibernate-search-mapper-orm-batch-jsr352-jberet` was renamed to `hibernate-search-mapper-orm-jakarta-batch-jberet`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4928[HSEARCH-4928]
+The artifact `hibernate-search-mapper-orm-coordination-outbox-polling`
+was renamed to `hibernate-search-mapper-orm-outbox-polling`.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4938[HSEARCH-4938]:
+The complement operator (`~`) in regexp predicates is no longer supported.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4947[HSEARCH-4947]:
+Hibernate Search will no longer fail to boot on Windows in some setups.
++
+Thanks to https://hibernate.atlassian.net/secure/ViewProfile.jspa?accountId=557058%3Ac6d12782-872a-44d5-a5e0-c44e1541b816[Gábor Lipták]
+for reporting this and helping test the fix!
+* link:{hsearch-jira-url-prefix}/HSEARCH-4487[HSEARCH-4487]:
+The Jakarta Batch Mass Indexing job has been redesigned to mirror more closely the behavior of the `MassIndexer`.
+As a result, it will no longer fail when indexing entities containing a `@IndexedEmbedded`
+and using MySQL with an `idFetchSize` set to `Integer.MIN_VALUE`.
++
+Thanks to https://hibernate.atlassian.net/secure/ViewProfile.jspa?accountId=70121%3A8bd20b29-e551-467d-a964-39012a9b1f80[Ivan Kotev]
+for reporting this and helping identify the cause!
+* link:{hsearch-jira-url-prefix}/HSEARCH-4980[HSEARCH-4980]:
+Hibernate Search will no longer fail when trying to index entities with composite identifiers
+in the Jakarta Batch Mass Indexing job.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4969[HSEARCH-4969]:
+Fixed a bug caused by a mistake in the Lucene 9 upgrade,
+where `TextMultiValues` would trigger an `IndexOutOfBoundsException`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4983[HSEARCH-4983]:
+Fixed a potential concurrency issue in the Lucene backend
+that could lead to "`LockObtainFailedException`: Lock held by this virtual machine".
+* link:{hsearch-jira-url-prefix}/HSEARCH-4986[HSEARCH-4986]:
+The Jakarta Batch Mass Indexing job will no longer fail in the partition mapping stage
+for some JDBC drivers (DB2, MSSQL, ...).
+* link:{hsearch-jira-url-prefix}/HSEARCH-4988[HSEARCH-4988]:
+Hibernate Search will no longer fail on startup with a `StackOverflowError`
+when mapping types that are containers of their own type,
+such as `java.nio.Path` which implements `Iterable<Path>`.
++
+Attempting to use default container extraction on such types will fail with a clear explanation,
+and link:{hsearch-doc-url-prefix}#mapping-containerextractor-disabling[disabling container extraction]
+or otherwise resolving the infinite recursion will work as expected.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-doc-url-prefix}#mapper-orm-getting-started[here for the Hibernate ORM integration]
+* link:{hsearch-doc-url-prefix}#mapper-pojo-standalone-getting-started[here for the Standalone POJO Mapper]
+
+For existing applications,
+assuming you were already using Hibernate Search 6.2 with `-orm6` artifacts,
+upgrading to Hibernate Search {hsearch-version-family} mainly requires
+removing the `-orm6` suffix from your Hibernate Search dependencies
+updating the version numbers (alternatively you can use the <<hibernate-search-bom,BOM>>),
+and of course aligning your other dependencies (e.g. Hibernate ORM), if any.
+
+Information about migration, deprecations and breaking changes
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
