@@ -1,0 +1,113 @@
+= Hibernate 6.4.0.CR1
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+:family: 6.4
+
+:docs-url: https://docs.jboss.org/hibernate/orm/{family}
+:javadocs-url: {docs-url}/javadocs
+:migration-guide-url: {docs-url}/migration-guide/migration-guide.html
+:intro-guide-url: {docs-url}/introduction/html_single/Hibernate_Introduction.html
+:user-guide-url: {docs-url}/userguide/html_single/Hibernate_User_Guide.html
+:ql-guide-url: {docs-url}/querylanguage/html_single/Hibernate_Query_Language.html
+
+6.4 adds some cool new features, in addition to many improvements and fixes.
+
+[[soft-delete]]
+== Soft Delete
+
+6.4 adds support for soft deletes using the new `@SoftDelete` annotation.
+
+[source,java]
+----
+@Entity
+@SoftDelete
+class Account {
+	...
+}
+----
+
+Dealing with values as deleted/non-deleted versus active/inactive (reversed) is simple using an annotation attribute:
+
+[source,java]
+----
+@Entity
+@SoftDelete(strategy=ACTIVE)
+class Account {
+	...
+}
+----
+
+It even supports pluggable converters for dealing with what gets stored in the database.
+
+See the link:{userGuideBase}#soft-delete[User Guide] for details.
+
+
+
+[[sqm-array-functions]]
+== HQL/Criteria Array Functions
+
+Following up on https://hibernate.atlassian.net/browse/HHH-16780[earlier work], 6.4 adds the
+https://github.com/hibernate/hibernate-orm/discussions/5562[remaining] functions for handling
+arrays in HQL and Criteria queries, including -
+
+`array()`::
+    Creates an array based on the passed arguments - e.g. `array(1,2,3)`
+`array_position()`::
+    Determines the position of an element in an array - e.g. `where array_position(an.array,'x') = 1`
+`array_length()`::
+    Determines the length of an array - e.g. `where array_length(an.array) > 50`
+`array_get()`::
+    Accesses the element of an array by index - e.g. `where array_get(an.array, 1) <> 13`
+`array_slice()`::
+    Creates a sub-array of the given array based on lower and upper index - e.g. `array_slice(an.array,3,6)`
+`array_contains()`::
+    Whether an array contains an element - e.g. `array_contains(an.array, 1)`
+
+And others...  See the link:{ql-guide-url}#hql-functions-arrays[Query Guide] for excellent coverage of these functions.
+
+[NOTE]
+====
+These functions are still incubating and some things (names, etc) may change before Final.
+====
+
+
+[[jfr-events]]
+== Java Flight Recorder Events
+
+CR1 contains support for producing a small number of Java Flight Recorder (JFR) events as a proof of concept.
+This works on many JDKs, but we recently discovered that not all JDKs support the JFR package despite being part of Open JDK.
+
+Long story short,
+
+* If your JDK does support JFR, CR1 produces some Hibernate-specific events
+* If your JDK does not support JFR, CR1 will not work for you.
+
+We will https://hibernate.atlassian.net/browse/HHH-17347[decide] how to proceed, before 6.4 Final.
+
+
+[[non-strng-tenant-id]]
+== Non-String Tenant Id
+
+6.4 adds support for using tenant-id with types other than String.
+
+
+
+== P.S.
+
+For additional details, see:
+
+- the https://hibernate.org/orm/releases/6.0/[release page]
+- the link:{migration-guide-url}[Migration Guide]
+- the link:{intro-guide-url}[Hibernate 6 Introduction]
+- the link:{user-guide-url}[User Guide]
+
+See also the following resources related to supported APIs:
+
+- the https://hibernate.org/community/compatibility-policy/[compatibility policy]
+- the link:{docs-url}/incubating/incubating.txt[incubating API report] (`@Incubating`)
+- the link:{docs-url}/deprecated/deprecated.txt[deprecated API report] (`@Deprecated` + `@Remove`)
+- the link:{docs-url}/internals/internal.txt[internal API report] (internal packages, `@Internal`)
+
+Visit the https://hibernate.org/community/[website] for details on getting in touch with us.
