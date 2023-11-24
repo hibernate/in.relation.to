@@ -1,0 +1,115 @@
+= Hibernate Search 7.0.0.CR2 released
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/7.0/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/7.0/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-stanadlone-url-prefix: https://docs.jboss.org/hibernate/search/7.0/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 7.0
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32211
+---
+
+We just published a new candidate release for Hibernate Search: 7.0.0.CR2.
+
+This release upgrades to the recently released Hibernate ORM 6.4;
+as this upgrade implies dropping compatibility with Hibernate ORM 6.3,
+it was deemed a big enough change to warrant a second candidate release.
+7.0.0.CR2 also contains a few bugfixes and improvements;
+see below for more information.
+
+== What's new
+
+[NOTE]
+====
+For a summary of all new features and improvements since 6.2,
+head to https://hibernate.org/search/releases/7.0/#whats-new[the dedicated page on hibernate.org].
+====
+
+=== Dependency upgrades
+
+[[jdk-version]]
+JDK 11 (reminder)::
+Hibernate Search now requires Java 11 as a baseline and is no longer compatible with Java 8.
+[[jakarta-ee-version]]
+Switch to Jakarta EE (reminder)::
+Hibernate Search completely switched to Jakarta EE and is not compatible with Java EE anymore.
+All of `-orm6` and `-jakarta` artifacts from the previous series that provided Hibernate ORM 6 and Jakarta EE compatibility
+are now unavailable since this compatibility is now provided by the main artifacts.
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5008[HSEARCH-5008])::
+Hibernate Search now depends on Hibernate ORM 6.4.0.Final.
+[[lucene-version]]
+Lucene (reminder)::
+The Lucene backend now uses Lucene 9.8.
+[[elasticsearch-version]]
+Elasticsearch (link:{hsearch-jira-url-prefix}/HSEARCH-5005[HSEARCH-5005]/link:{hsearch-jira-url-prefix}/HSEARCH-5012[HSEARCH-5012])::
+The Elasticsearch backend works with Elasticsearch 8.11 as well as other versions that were already compatible --
+except for the following versions whose compatibility was dropped, because they already reached their end of life:
+* 5.x/6.x (compatibility dropped in Hibernate Search 7.0.0.Beta1)
+* 7.0-7.9 (compatibility dropped in Hibernate Search 7.0.0.CR1)
+[[opensearch-version]]
+OpenSearch (reminder)::
+The Elasticsearch backend works with OpenSearch 2.10 and 2.11 as well as other versions that were already compatible --
+except for versions 1.0, 1.1 and 1.2 whose compatibility was dropped
+in Hibernate Search 7.0.0.CR1,
+because they already reached their end of life.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-5005[HSEARCH-5005]/link:{hsearch-jira-url-prefix}/HSEARCH-5012[HSEARCH-5012]: Upgrade to Elasticsearch **client** 8.11.1
+* link:{hsearch-jira-url-prefix}/HSEARCH-4996[HSEARCH-4996] Upgrade to JBeret 2.1.3.Final
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-4995[HSEARCH-4995]:
+Hibernate Search will no longer log exceptions encountered during complex operations (boot, schema validation) at the `ERROR` level, but at the `TRACE` level.
+To propagate these exceptions, Hibernate Search will add them as "suppressed" to the exception thrown at the end (of boot/schema validation).
++
+This means in particular that explicit uses of `SchemaManager` (e.g. for schema validation)
+that encounter exceptions (e.g. inconsistent Elasticsearch index aliases)
+will no longer flood the logs,
+but will instead result in an exception with all the necessary information,
+in its own message (failure report with short description of all failures)
+and in its suppressed exception (full stack trace of all relevant exceptions).
+* link:{hsearch-jira-url-prefix}/HSEARCH-4999[HSEARCH-4999]:
+Elasticsearch spatial predicates will now use the `geo_shape` query instead of the deprecated `geo_polygon` query.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5015[HSEARCH-5015]:
+`OutboxEvent` is no longer a final class,
+avoiding warnings in some situations where Hibernate ORM would try to generate proxy classes for `OutboxEvent`.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-doc-url-prefix}#mapper-orm-getting-started[here for the Hibernate ORM integration]
+* link:{hsearch-doc-url-prefix}#mapper-pojo-standalone-getting-started[here for the Standalone POJO Mapper]
+
+For existing applications,
+assuming you were already using Hibernate Search 6.2 with `-orm6` artifacts,
+upgrading to Hibernate Search {hsearch-version-family} mainly requires
+removing the `-orm6` suffix from your Hibernate Search dependencies
+updating the version numbers (alternatively you can use the <<hibernate-search-bom,BOM>>),
+and of course aligning your other dependencies (e.g. Hibernate ORM), if any.
+
+Information about migration, deprecations and breaking changes
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
