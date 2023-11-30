@@ -1,0 +1,119 @@
+= Hibernate Search 7.1.0.Alpha1 is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/7.1/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 7.1
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32219
+---
+
+We just published Hibernate Search 7.1.0.Alpha1,
+a first alpha release of the next major version of Hibernate Search.
+
+This version opens up possibilities for searching over binary (image, audio or video) data using vector search.
+
+Beyond that, it improves Hibernate Search compatibility with other frameworks.
+
+== What's new
+
+[NOTE]
+====
+Hibernate Search 7.1 is still in its early stages of development:
+some features are still incomplete or may change in a backward-incompatible way.
+====
+
+[[vector-search]]
+=== Vector search for the Lucene Backend
+
+Hibernate Search now allows vector search in the Lucene backend as an incubating feature.
+Vector search provides the tools to search over binary (images, audio or video) or text data:
+external tools convert that data to vectors (arrays of bytes or floats, also called "embeddings"),
+which are then used for indexing and queries in Hibernate Search.
+Hibernate Search introduces a new field type -- `@VectorField` and a new predicate `knn`, so that the vectors can be indexed
+and then searched upon.
+
+Vector fields can work with vector data represented as `byte` or `float` arrays in the documents.
+Out of the box `byte[]` and `float[]` property types will work with the new field type. For any other entity property types,
+a custom link:{hsearch-doc-url-prefix}#binding-valuebridge[value bridge]
+or link:{hsearch-doc-url-prefix}#binding-valuebridge-valuebinder[value binder] should be implemented.
+Keep in mind that indexed vectors *must* be of the same length
+and that this length should be specified upfront for the schema to be created:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+@Entity
+@Indexed
+public class Book {
+
+	@Id
+	private Integer id;
+
+	@VectorField(dimension = 512)
+	private float[] coverImageEmbeddings;
+
+	// Other properties ...
+}
+----
+
+Searching for vector similarities is performed via a `knn` predicate:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+float[] coverImageEmbeddingsVector = /*...*/
+
+List<Book> hits = searchSession.search( Book.class )
+.where( f ->
+    // provide the number of similar documents to look for:
+    f.knn( 5 )
+        // the name of the vector field:
+        .field( "coverImageEmbeddings" )
+         // matched documents will be the ones whose indexed vector
+         // is "most similar" to this vector
+        .matching( coverImageEmbeddingsVector )
+    // additionally an optional filter can be supplied
+    // to provide a regular fulltext search predicate
+    .filter( f.match().field( "authors.firstName" ).matching( "arthur" ) )
+).fetchHits( 20 );
+----
+
+See this section of the reference documentation on link:{hsearch-doc-url-prefix}#mapping-directfieldmapping-annotations-vectorfield[vector fields]
+and the one on a new link:{hsearch-doc-url-prefix}#search-dsl-predicate-knn[`knn` predicate]
+for more information.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5024[HSEARCH-5024]:
+Hibernate Search will no longer fail to boot when reading nested JARs in Spring Boot 3.2+.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standadlone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 7.0,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
