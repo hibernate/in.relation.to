@@ -1,0 +1,159 @@
+= Hibernate Search 7.0.0.Final is out!
+Yoann Rodière
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-version-family: 7.0
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/{hsearch-version-family}/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/{hsearch-version-family}/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-stanadlone-url-prefix: https://docs.jboss.org/hibernate/search/{hsearch-version-family}/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32215
+---
+
+We are pleased to announce the release of Hibernate Search 7.0.0.Final.
+
+Compared to Hibernate Search 6.2,
+this release upgrades its baseline to JDK 11 and Hibernate ORM 6.4,
+brings compatibility with Elasticsearch 8.10/8.11 and OpenSearch 2.10/2.11,
+and upgrades to Lucene 9.8.
+It also brings new features such as a brand-new Hibernate Search BOM,
+experimental compatibility with Amazon OpenSearch Serverless,
+compatibility with Hibernate ORM's discriminator-based multi-tenancy,
+and other bugfixes and improvements.
+
+== What's new compared to Hibernate Search 6.2
+
+[[java-version]]
+Java::
+Hibernate Search is now using JDK 11 as a baseline and can work on JDK 11, 17 or 21.
+Compatibility with JDK 8 was dropped.
+[[orm-version]]
+Hibernate ORM::
+Hibernate Search now depends on Hibernate ORM 6.4 as it fully switched to Jakarta EE.
+There are no `-orm6`/`-jakarta` artifacts or Java EE compatibility anymore.
+[[lucene-version]]
+Lucene::
+The Lucene backend now uses Lucene 9.8.
+Upgrading requires reindexing, see the migration guide for details.
+[[elasticsearch-version]]
+Elasticsearch::
+The Elasticsearch backend works with Elasticsearch 8.10/8.11 as well as other versions that were already compatible --
+except for the following versions whose compatibility was dropped, because they already reached their end of life:
+* 5.x/6.x
+* 7.0-7.9
+[[opensearch-version]]
+OpenSearch::
+The Elasticsearch backend works with OpenSearch 2.10 and 2.11 as well as other versions that were already compatible --
+except for versions 1.0, 1.1 and 1.2 whose compatibility was dropped,
+because they already reached their end of life.
+
+[[hibernate-search-bom]]
+=== Hibernate Search BOM
+
+Hibernate Search now offers a BOM providing dependency management for all of its published artifacts.
+It can be imported as part of your dependency management to keep the versions of Hibernate Search artifacts aligned:
+
+[source, XML, indent=0, subs="+attributes"]
+----
+<dependencyManagement>
+    <dependencies>
+        <!-- Import Hibernate Search BOM to get all of its artifact versions aligned: -->
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-bom</artifactId>
+            <version>7.0.0.Final</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <!-- Any other dependency management entries -->
+    </dependencies>
+</dependencyManagement>
+<!-- ... -->
+<dependencies>
+    <!-- Declare dependencies -->
+    <dependency>
+        <groupId>org.hibernate.search</groupId>
+        <artifactId>hibernate-search-mapper-orm</artifactId>
+        <!-- The version is managed by the BOM above -->
+    </dependency>
+    <dependency>
+        <groupId>org.hibernate.search</groupId>
+        <artifactId>hibernate-search-backend-elasticsearch</artifactId>
+        <!-- The version is managed by the BOM above -->
+    </dependency>
+    <!-- Any other dependency entries -->
+</dependencies>
+----
+
+[[aws-opensearch-serverless]]
+=== Amazon OpenSearch Serverless experimental compatibility
+
+Hibernate Search now has incubating compatibility with Amazon OpenSearch Serverless.
+
+Amazon OpenSearch Serverless has certain limitations compared to a regular OpenSearch cluster
+and link:https://docs.aws.amazon.com/opensearch-service/latest/developerguide/serverless-genref.html[may not support all operations] a regular cluster does.
+Compatibility with Amazon OpenSearch Serverless must be enabled explicitly by setting the backend version property:
+
+[source, properties, indent=0]
+----
+hibernate.search.backend.version=amazon-opensearch-serverless
+----
+
+See link:{hsearch-doc-url-prefix}#backend-elasticsearch-compatibility-amazon-opensearch-serverless[this section of the reference documentation]
+for more information, in particular about limitations.
+
+[[orm-discriminator-multi-tenancy]]
+=== Compatibility with Hibernate ORM's discriminator-based multi-tenancy
+
+Hibernate Search can now index Hibernate ORM entities
+that take advantage of
+https://docs.jboss.org/hibernate/orm/6.3/userguide/html_single/Hibernate_User_Guide.html#multitenacy-hibernate-TenantId[discriminator-based multi-tenancy in the database (`@TenandId`)].
+
+[[renamings]]
+=== Maven artifact renamings
+
+Some Hibernate Search Maven artifacts have been renamed:
+
+* Maven artifacts related to JSR-352 artifacts were renamed to reflect the move to the Jakarta EE specification:
+** `hibernate-search-mapper-orm-batch-jsr352-core` was renamed to `hibernate-search-mapper-orm-jakarta-batch-core`.
+** `hibernate-search-mapper-orm-batch-jsr352-jberet` was renamed to `hibernate-search-mapper-orm-jakarta-batch-jberet`.
+* The artifact `hibernate-search-mapper-orm-coordination-outbox-polling`
+was renamed to `hibernate-search-mapper-orm-outbox-polling`.
+
+== What's new compared to Hibernate Search 7.0.0.CR2
+
+For a list of changes since 7.0.0.CR2 only,
+refer to the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-doc-url-prefix}#mapper-orm-getting-started[here for the Hibernate ORM integration]
+* link:{hsearch-doc-url-prefix}#mapper-pojo-standalone-getting-started[here for the Standalone POJO Mapper]
+
+For existing applications,
+assuming you were already using Hibernate Search 6.2 with `-orm6` artifacts,
+upgrading to Hibernate Search {hsearch-version-family} mainly requires
+removing the `-orm6` suffix from your Hibernate Search dependencies
+updating the version numbers (alternatively you can use the <<hibernate-search-bom,BOM>>),
+and of course aligning your other dependencies (e.g. Hibernate ORM), if any.
+
+Information about migration, deprecations and breaking changes
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
