@@ -1,0 +1,208 @@
+= Hibernate Search 7.1.0.Alpha2 is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/7.1/reference/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 7.1
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32220
+---
+
+We just published Hibernate Search 7.1.0.Alpha2,
+a second alpha release of the next minor version of Hibernate Search.
+
+This version brings more vector search capabilities and improvements
+as well as integrates Elasticsearch's/OpenSearch's vector search capabilities.
+
+== What's new
+
+[NOTE]
+====
+Hibernate Search 7.1 is still in its early stages of development:
+some features are still incomplete or may change in a backward-incompatible way.
+====
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5060[HSEARCH-5060])::
+Hibernate Search now depends on Hibernate ORM 6.4.2.Final.
+Which brings among other things a couple of fixes to address
+link:{hsearch-jira-url-prefix}/HSEARCH-5031[possible issues with mass indexing] when an ORM discriminator multi tenancy is in use.
+[[lucene-version]]
+Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-5043[HSEARCH-5043])::
+The Lucene backend now uses Lucene 9.9.1.
+Which beyond other improvements brings better performance for vector search.
+[[elasticsearch-version]]
+Elasticsearch (link:{hsearch-jira-url-prefix}/HSEARCH-5032[HSEARCH-5032]::
+The Elasticsearch backend now is also compatible with Elasticsearch 8.12 as well as with other versions that were already compatible.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-5032[HSEARCH-5032]: Upgrade to Elasticsearch **client** 8.12.0
+* link:{hsearch-jira-url-prefix}/HSEARCH-5057[HSEARCH-5057]: Upgrade to AWS SDK 2.23.3
+* link:{hsearch-jira-url-prefix}/HSEARCH-5047[HSEARCH-5047]: Upgrade to JBeret 2.2.0.Final
+
+[[vector-search]]
+=== Vector search for Lucene and Elasticsearch Backends
+
+This version of Hibernate Search  builds on top of the previous alpha and integrates Elasticsearch/OpenSearch vector search capabilities.
+To recap: vector search provides the tools to search over binary (images, audio or video) or text data:
+external tools convert that data to vectors (arrays of bytes or floats, also called "embeddings"),
+which are then used for indexing and queries in Hibernate Search.
+Hibernate Search introduces a new field type -- `@VectorField` and a new predicate `knn`, so that the vectors can be indexed
+and then searched upon.
+
+Vector fields can work with vector data represented as `byte` or `float` arrays in the documents.
+Out of the box `byte[]` and `float[]` property types will work with the new field type. For any other entity property types,
+a custom link:{hsearch-doc-url-prefix}#binding-valuebridge[value bridge]
+or link:{hsearch-doc-url-prefix}#binding-valuebridge-valuebinder[value binder] should be implemented.
+Keep in mind that indexed vectors *must* be of the same length
+and that this length should be specified upfront for the schema to be created:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+@Entity
+@Indexed
+public class Book {
+
+    @Id
+    private Integer id;
+
+    @VectorField(dimension = 512)
+    private float[] coverImageEmbeddings;
+
+    // Other properties ...
+}
+----
+
+Searching for vector similarities is performed via a `knn` predicate:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+float[] coverImageEmbeddingsVector = /*...*/
+
+List<Book> hits = searchSession.search( Book.class )
+.where( f ->
+    // provide the number of similar documents to look for:
+    f.knn( 5 )
+        // the name of the vector field:
+        .field( "coverImageEmbeddings" )
+         // matched documents will be the ones whose indexed vector
+         // is "most similar" to this vector
+        .matching( coverImageEmbeddingsVector )
+    // additionally an optional filter can be supplied
+    // to provide a regular fulltext search predicate
+    .filter( f.match().field( "authors.firstName" ).matching( "arthur" ) )
+).fetchHits( 20 );
+----
+
+By its nature a `knn` predicate will always try to find nearest vectors,
+even if the found vectors are quite far away from each other, i.e. are not that similar.
+This may lead to getting irrelevant results returned by the query.
+
+To address this, a `knn` predicate allows link:{hsearch-doc-url-prefix}#search-dsl-predicate-knn-with-similarity[configuring the minimum required similarity]:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+float[] coverImageEmbeddingsVector = /*...*/
+
+List<Book> hits = searchSession.search( Book.class )
+    .where( f ->
+        // Create a knn predicate as usual:
+        f.knn( 5 ).field( "coverImageEmbeddings" ).matching( coverImageEmbeddingsVector )
+        // Specify the required minimum similarity value, to filter out irrelevant results:
+        .requiredMinimumSimilarity( 5 ) )
+    .fetchHits( 20 );
+----
+
+Note that each backend may have its own specifics and limitations with regard to the vector search.
+For more details look at the related link:{hsearch-doc-url-prefix}#search-dsl-predicate-knn-limitations[documentation].
+
+See this section of the reference documentation on link:{hsearch-doc-url-prefix}#mapping-directfieldmapping-annotations-vectorfield[vector fields]
+and the one on a link:{hsearch-doc-url-prefix}#search-dsl-predicate-knn[`knn` predicate]
+for more information.
+
+[NOTE]
+====
+This version of Hibernate Search brings some renaming related to the vector search. In particular:
+
+* `@VectorField#beamWidth` becomes `@VectorField#efConstruction` as well as all related API/SPI methods (see link:{hsearch-jira-url-prefix}/HSEARCH-5056[HSEARCH-5056]).
+* `@VectorField#maxConnections` becomes `@VectorField#m`  as well as all related API/SPI methods (see link:{hsearch-jira-url-prefix}/HSEARCH-5056[HSEARCH-5056]).
+* `VectorSimilarity#INNER_PRODUCT` becomes `VectorSimilarity#DOT_PRODUCT` and `VectorSimilarity#MAX_INNER_PRODUCT` is introduced to better align naming of vector similarity functions between backends
+(see link:{hsearch-jira-url-prefix}/HSEARCH-5038[HSEARCH-5038]).
+====
+
+[[metamodel-field-capabilities]]
+=== Looking up the capabilities of each field in the metamodel
+
+It is now possible to see which capabilities (predicates/sorts/projections/etc.)
+are available for a field when link:{hsearch-doc-url-prefix}#mapping-inspect[inspecting the metamodel]:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+SearchMapping mapping = /*...*/ ;
+// Retrieve a SearchIndexedEntity:
+SearchIndexedEntity<Book> bookEntity = mapping.indexedEntity( Book.class );
+// Get the descriptor for that index.
+// The descriptor exposes the index metamodel:
+IndexDescriptor indexDescriptor = bookEntity.indexManager().descriptor();
+
+// Retrieve a field by name
+// and inspect its capabilities if such field is present:
+indexDescriptor.field( "releaseDate" ).ifPresent( field -> {
+    if ( field.isValueField() ) {
+        // Get the descriptor for the field type:
+        IndexValueFieldTypeDescriptor type = field.toValueField().type();
+        // Inspect the "traits" of a field type:
+        // each trait represents a predicate/sort/projection/aggregation
+        // that can be used on fields of that type.
+        Set<String> traits = type.traits();
+        if ( traits.contains( IndexFieldTraits.Aggregations.RANGE ) ) {
+            // ...
+        }
+        if ( traits.contains( IndexFieldTraits.Predicates.EXISTS ) ) {
+            // ...
+        }
+        // ...
+    }
+} );
+----
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5034[HSEARCH-5034]:
+Hibernate Search will allow passing `BeanReference<? extends T>` when registering beans to `BeanConfigurationContext`.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5004[HSEARCH-5004]:
+Hibernate Search will default to Hibernate ORM's defaults instead of forcing `SqlTypes.CHAR` for the `OutboxEvent`/`Agent` ID.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standadlone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 7.0,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
