@@ -1,0 +1,252 @@
+= Hibernate Search 7.1.0.Final is out!
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/7.1/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/7.1/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.jboss.org/hibernate/search/7.1/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 7.1
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32265
+---
+
+We are pleased to announce the release of Hibernate Search 7.1.0.Final.
+
+Compared to Hibernate Search 7.0,
+this release introduces vector search capabilities,
+allows looking up the capabilities of each field in the metamodel,
+adds a new query string predicate,
+simplifies the entity registration in the Standalone POJO mapper,
+brings compatibility with Elasticsearch 8.12 and OpenSearch 2.12,
+upgrades to Lucene 9.9,
+and brings other bugfixes and improvements.
+
++++<!-- more -->+++
+
+== What's new compared to Hibernate Search 7.0
+
+=== Dependency upgrades
+
+[[lucene-version]]
+Lucene::
+The Lucene backend now uses Lucene 9.9.
+Besides other improvements it brings better vector search performance.
+[[elasticsearch-version]]
+Elasticsearch::
+The Elasticsearch backend works with Elasticsearch 8.12 as well as other versions that were already compatible.
+[[opensearch-version]]
+OpenSearch::
+The Elasticsearch backend works with OpenSearch 2.12 as well as other versions that were already compatible.
+
+[[vector-search]]
+=== Vector search for Lucene and Elasticsearch Backends
+
+Hibernate Search now allows vector search in Lucene and Elasticsearch backends as an incubating feature.
+Vector search provides the tools to search over binary (images, audio or video) or text data:
+external tools convert that data to vectors (arrays of bytes or floats, also called "embeddings"),
+which are then used for indexing and queries in Hibernate Search.
+Hibernate Search introduces a new field type -- `@VectorField` and a new predicate `knn`, so that the vectors can be indexed
+and then searched upon.
+
+Vector fields can work with vector data represented as `byte` or `float` arrays in the documents.
+Out of the box `byte[]` and `float[]` property types will work with the new field type. For any other entity property types,
+a custom link:{hsearch-doc-url-prefix}#binding-valuebridge[value bridge]
+or link:{hsearch-doc-url-prefix}#binding-valuebridge-valuebinder[value binder] should be implemented.
+Keep in mind that indexed vectors *must* be of the same length
+and that this length should be specified upfront for the schema to be created:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+@Entity
+@Indexed
+public class Book {
+
+	@Id
+	private Integer id;
+
+	@VectorField(dimension = 512)
+	private float[] coverImageEmbeddings;
+
+	// Other properties ...
+}
+----
+
+Searching for vector similarities is performed via a `knn` predicate:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+float[] coverImageEmbeddingsVector = /*...*/
+
+List<Book> hits = searchSession.search( Book.class )
+.where( f ->
+    // provide the number of similar documents to look for:
+    f.knn( 5 )
+        // the name of the vector field:
+        .field( "coverImageEmbeddings" )
+         // matched documents will be the ones whose indexed vector
+         // is "most similar" to this vector
+        .matching( coverImageEmbeddingsVector )
+    // additionally an optional filter can be supplied
+    // to provide a regular fulltext search predicate
+    .filter( f.match().field( "authors.firstName" ).matching( "arthur" ) )
+).fetchHits( 20 );
+----
+
+Note that each backend may have its own specifics and limitations with regard to the vector search.
+For more details look at the related link:{hsearch-doc-url-prefix}#search-dsl-predicate-knn-limitations[documentation].
+
+[[metamodel-field-capabilities]]
+=== Looking up the capabilities of each field in the metamodel
+
+It is now possible to see which capabilities (predicates/sorts/projections/etc.)
+are available for a field when link:{hsearch-doc-url-prefix}#mapping-inspect[inspecting the metamodel]:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+SearchMapping mapping = /*...*/ ;
+// Retrieve a SearchIndexedEntity:
+SearchIndexedEntity<Book> bookEntity = mapping.indexedEntity( Book.class );
+// Get the descriptor for that index.
+// The descriptor exposes the index metamodel:
+IndexDescriptor indexDescriptor = bookEntity.indexManager().descriptor();
+
+// Retrieve a field by name
+// and inspect its capabilities if such field is present:
+indexDescriptor.field( "releaseDate" ).ifPresent( field -> {
+	if ( field.isValueField() ) {
+		// Get the descriptor for the field type:
+		IndexValueFieldTypeDescriptor type = field.toValueField().type();
+		// Inspect the "traits" of a field type:
+		// each trait represents a predicate/sort/projection/aggregation
+		// that can be used on fields of that type.
+		Set<String> traits = type.traits();
+		if ( traits.contains( IndexFieldTraits.Aggregations.RANGE ) ) {
+			// ...
+		}
+		if ( traits.contains( IndexFieldTraits.Predicates.EXISTS ) ) {
+			// ...
+		}
+		// ...
+	}
+} );
+----
+
+[[search-dsl-predicate-query-string]]
+=== Query string predicate
+
+The `queryString` predicate matches documents according to a structured query given as a string.
+It allows building more advanced query strings (using Lucene's query language) and has more configuration options than a
+link:{hsearch-doc-url-prefix}#search-dsl-predicate-simple-query-string[`simpleQueryString` predicate].
+
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+List<Book> hits = searchSession.search( Book.class )
+    .where( f -> f.queryString().field( "description" )
+        .matching( "robots +(crime investigation disappearance)^10 +\"investigation help\"~2 -/(dis)?a[p]+ea?ance/" ) )
+    .fetchHits( 20 );
+----
+The query string, in this predicate, will result in a boolean query with 4 clauses:
+
+* a should clause matching `robots`;
+* two must clauses
+** another boolean query constructed from `(crime || investigation || disappearance)` string with a boost of `10`
+** a query matching the phrase `investigation help` with the phrase slop equals to `2`
+* a must not clause matching a regular expression `(dis)?a[p]+ea?ance`
+
++
+Note that each of the mentioned clauses may itself end up being translated into other types of queries.
+====
+
+See this section of the reference documentation on the link:{hsearch-doc-url-prefix}#search-dsl-predicate-query-string[`queryString` predicate]
+for more information.
+
+[[standalon-pojo-mapper-simpler-entity-registration]]
+=== Simpler entity registration in the Standalone POJO mapper
+
+Hibernate Search simplifies how link:{hsearch-doc-url-prefix}#concepts-entity[entities] can be defined.
+For standalone mapper now it is enough to annotate your entities with the `@SearchEntity` annotation.
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+@SearchEntity // <1>
+// ... Other annotations, e.g. @Indexed if this entity needs to be mapped to an index.
+public class Book {
+
+    @Id
+    private Integer id;
+
+    // Other properties ...
+}
+----
+<1> Annotate the type with `@SearchEntity` so it is treated as an entity.
+====
+
+Another update related to this is a way the `SearchMappingBuilder` builder is created.
+Now it requires an annotated type source to be provided.
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+CloseableSearchMapping searchMapping =
+SearchMapping.builder( AnnotatedTypeSource.fromClasses( // <1>
+        Book.class, Associate.class, Manager.class ))
+    .property( "hibernate.search.backend.hosts", "elasticsearch.mycompany.com" ) // <2>
+// ...
+    .build(); // <3>
+----
+<1> Create a builder, passing an `AnnotatedTypeSource` to let Hibernate Search know where to look for annotations.
++
+Thanks to link:{hsearch-doc-url-prefix}#mapping-classpath-scanning[classpath scanning],
+your `AnnotatedTypeSource` only needs to include one class
+from each JAR containing annotated types.
+Other types should be automatically discovered.
+<2> Set additional configuration properties.
+<3> Build the `SearchMapping`.
+====
+
+See this section of the reference documentation on the link:{hsearch-doc-url-prefix}#mapping-entitydefinition[entity definition]
+for more information.
+
+[[new-since-last-cr]]
+== What's new compared to Hibernate Search 7.0.0.CR1
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5083[HSEARCH-5083]: Upgrade to AWS SDK 2.24.1.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5091[HSEARCH-5091]: Upgrade to Elasticsearch *client* 8.12.2.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5087[HSEARCH-5087]: Add compatibility with OpenSearch 2.12.0.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5039[HSEARCH-5039]: Fix an issue with knn predicates that require multi-tenant filters.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5088[HSEARCH-5088]: Limit OpenSearch vector search capabilities to 2.9+ versions.
+While earlier versions of OpenSearch have already introduced the vector search capabilities,
+2.9 is the first version where all features required for integration were introduced.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes].
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 7.0,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
