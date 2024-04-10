@@ -1,0 +1,120 @@
+= Hibernate Search 7.1.1.Final/7.0.1.Final/6.2.4.Final are out!
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/7.1/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/7.1/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.jboss.org/hibernate/search/7.1/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family-71: 7.1
+:hsearch-version-family-70: 7.0
+:hsearch-version-family-62: 6.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id-71: 32269
+:hsearch-jira-version-id-70: 32226
+:hsearch-jira-version-id-62: 32237
+---
+
+We are pleased to announce the releases of Hibernate Search 7.1.1.Final, 7.0.1.Final and 6.2.4.Final.
+
+While these releases are mainly to address some minor documentation discrepancies,
+they also bring compatibility with newer versions of Elasticsearch and OpenSearch
+and a few bugfixes.
+
++++<!-- more -->+++
+
+== Hibernate Search 7.1.1.Final
+
+=== Dependency upgrades
+
+[[orm-version-7-1]]
+Hibernate ORM::
+While Hibernate Search 7.1 still depends on Hibernate ORM 6.4, it is being tested and is compatible with the upcoming Hibernate ORM 6.5.
+[[elasticsearch-version-7-1]]
+Elasticsearch::
+The Elasticsearch backend works with Elasticsearch 8.13, as well as other versions that were already compatible.
+[[opensearch-version-7-1]]
+OpenSearch::
+The Elasticsearch backend works with OpenSearch 2.13, as well as other versions that were already compatible.
+
+[[other-since-last-7-1]]
+=== Other
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5128[HSEARCH-5128]: Correct supported Java version discrepancies in the reference documentation.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5110[HSEARCH-5110]: Update potentially misleading error message about the minimum Elasticsearch version required for vector search capabilities.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5112[HSEARCH-5112]: Make Hibernate Search migration helper compatible with the Hibernate ORM 6.5 series.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-71}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family-71}/#get-it[dedicated page on hibernate.org].
+
+== Hibernate Search 7.0.1.Final
+
+=== Dependency upgrades
+
+[[orm-version-7-0]]
+Hibernate ORM::
+Hibernate Search 7.0 now depends on Hibernate ORM 6.4.4.Final.
+[[elasticsearch-version-7-0]]
+Elasticsearch::
+The Elasticsearch backend works with Elasticsearch 8.12, as well as other versions that were already compatible.
+
+[[other-since-last-7-0]]
+=== Other
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5128[HSEARCH-5128]: Correct supported Java version discrepancies in the reference documentation.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5031[HSEARCH-5031]: Fix for possible issues with mass indexing when an ORM discriminator multi-tenancy is in use.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5067[HSEARCH-5067]: Allow targeting entities by name in the Standalone POJO Mapper.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-70}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family-70}/#get-it[dedicated page on hibernate.org].
+
+== Hibernate Search 6.2.4.Final
+
+=== Dependency upgrades
+
+[[orm-version-6-2]]
+Hibernate ORM::
+Hibernate Search 6.2 `-orm6` artifacts now depend on Hibernate ORM 6.2.24.Final.
+
+[[other-since-last-6-2]]
+=== Other
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5128[HSEARCH-5128]: Correct supported Java version discrepancies in the reference documentation.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-62}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family-62}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, these releases of Hibernate Search are drop-in replacements of their previous micros within the same minors,
+assuming you also upgrade the dependencies.
+To upgrade to a newer major/minor, see https://hibernate.org/search/documentation/migrate/[migration guides].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
