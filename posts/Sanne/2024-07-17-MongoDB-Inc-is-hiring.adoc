@@ -1,0 +1,83 @@
+= "MongoDB Inc. is hiring to lead the integration of Hibernate with MongoDB"
+Sanne Grinovero
+:awestruct-tags: [ "Commonhaus", "Hiring", "Community" ]
+:awestruct-layout: blog-post
+---
+
+== TLDR
+
+
+[quote,a message from our friends at MongoDB Inc.]
+--
+MongoDB is looking for an experienced Java developer who has expertise in building applications with Hibernate ORM (even better if you are familiar with hibernate-ogm) to help build a Hibernate integration with MongoDB. To apply, please https://grnh.se/8886c4961us[use this link], or directly reach out to our Director of Engineering jeff.yemin[at]mongodb.com with your resume. 
+--
+
+== Commonhaus: Hibernate & MongoDB
+
+As we make progress with the practicalities of https://in.relation.to/2024/04/09/hibernate-to-commonhaus/[moving the Hibernate Intellectual Property to the Commonhaus Foundation], we welcome the increased interest not only by individual experts but also by other companies beyond Red Hat, our historical sponsor and employer of most team members, in committing to help evolve the Hibernate community and its projects.
+
+Individual community members have made extraordinary contributions over the years, but it has been more complex for larger companies to get involved. We have had fantastic contributions from the SAP HANA and Oracle Database teams and some interest from Cockroach Labs. One of the goals of moving to a foundation is to stimulate such collaborations further.
+
+In particular, the team at MongoDB Inc. has now reached out, keen to develop an improved middleware layer for the Java ecosystem to integrate with the MongoDB database based on the well-known Hibernate APIs.
+
+This is likely going to be a new project, loosely inspired by our exiting Hibernate OGM but not necessarily the same: details are to be defined. It could be a reboot of Hibernate OGM or slightly different; details will need to be worked out by whoever is going to work on it.
+
+== What happened to Hibernate OGM?
+
+Some years back, we decided to discontinue the maintenance of Hibernate OGM.
+This wasn't an easy choice, but as a small team, we felt the need to focus more on the other projects.
+
+The effort to maintain Hibernate OGM and, in particular, keep up with all the differences between a variety of NoSQL stores was particularly draining: sometimes, the differences are apparent, but sometimes, they get blurry; yet in our field, any small detail could require a critical paradigm shift implying rewriting consistent portions of the system: different consistency guarantees, integration with transactions and therefore expected design of business logic, or peculiar concurrency control specifics required quite some research and expertise on each of these stores, and often they would evolve rapidly.
+
+Add to this that Hibernate OGM was highly coupled to Hibernate ORM 5, while Hibernate ORM 6 came with a fully redesigned, much improved internal engine. Compound this with the need to migrate everything to Jakarta APIs; this was too much work for our small team to entertain while keeping up with the evolutions of the JVM, JPA spec, and NoSQL stores.
+
+We received only a little feedback about the value and effectiveness of Hibernate OGM. Unfortunately for library developers, it's unusual for happy users to share their thoughts. We would more often hear complaints, so when we only get a few, it makes us wonder if the project is too good for people to find fault with or if it's not being used at all. The download figures look quite good, but it's hard to determine if they're due to people experimenting with prototypes or using the software in large-scale production environments. Ironically, download statistics aren't influenced by such large-scale deployments because they typically have various forms of caching in place.
+
+In conclusion, we received little feedback, and very few volunteers offered to help maintain the complex project. Hopefully, a lesson learned for our dear community!
+
+== A path forward
+
+But now that we made it clear that we're no longer maintaining Hibernate OGM, many users - including large-scale production users of which we had no idea they would exist - are coming forward as they express concern about a lack of updates.
+
+Some are finally coming forward because they feel the pressure about upgrading to Jakarta APIs: the latest available Hibernate OGM is still based on `javax.persistence` APIs, and there is no OGM version supporting `jakarta.persistence` , which also implies no compatibility with any other library now aligning with Jakarta EE 10 and beyond.
+
+So we're finally learning that many actual production users are interested in the path forward; several of these users are using the MongoDB backend, and therefore, the MongoDB Inc. group is graciously stepping in to help revive the project. However, since they won't be supporting the other NoSQL technologies that we used to support, the successor of Hibernate OGM might look a bit different.
+
+== MongoDB Inc. hiring opportunity
+
+For the MongoDB company to be able to step in and help, they intend to hire some expertise from our community.
+
+I'll quote their message verbatim below; please help spread the word for this unique opportunity to start a new project.
+
+
+[quote,MongoDB Inc. is hiring a Java engineer to lead the integration of Hibernate with MongoDB]
+--
+Hibernate undeniably plays a critical role in the Java ecosystem. At MongoDB, we are thrilled about the idea of empowering our millions of developers to build applications using Hibernate, the familiar database mapping layer they know and love. We are seeking an experienced engineer eager to tackle the unique challenge of extending Hibernate's support beyond relational databases to include MongoDB, world’s most popular document database.
+
+You would be joining us as part of the Database Experience team that builds the libraries and tools that developers use day-to-day working with MongoDB. Our mission is to increase developer adoption, satisfaction and retention by providing a reliable, enjoyable interface for developers and other end-users.
+
+For this role, we're looking for someone who enjoys designing, writing, and supporting Open Source libraries and standalone tools for developers and administrators using MongoDB. You will have the opportunity to be surrounded by veteran Java programmers, as you deepen your knowledge of the Java ecosystem, or advance your career as a writer and speaker.
+
+You might be right for this role if you:
+
+- Have 5+ years of experience writing high-quality software
+- Experience implementing libraries and applications in Java 
+- Expertise in building Hibernate ORM-based database applications
+- Knowledge of Hibernate internals (hibernate-orm or hibernate-ogm)
+- Eager to participate in Open Source software development and communities
+- Communicate well, internally and externally, both in writing and face-to-face
+- Advocate for testing and agile development best practices
+- Can make pragmatic design tradeoffs while balancing features, maintainability, and delivery time
+- Elevate the skills and expertise of those around you
+- Are excited by our mission and values
+
+To apply, please https://grnh.se/8886c4961us[use this link], or directly reach out to our Director of Engineering jeff.yemin[at]mongodb.com with your resume.
+
+
+About MongoDB
+
+The worldwide data management software market is massive (according to IDC, the worldwide database software market, which it refers to as the database management systems software market, was forecasted to be approximately $82 billion in 2023 growing to approximately $137 billion in 2027. This represents a 14% compound annual growth rate). At MongoDB we are transforming industries and empowering developers to build amazing apps that people use every day. We are the leading developer data platform and the first database provider to IPO in over 20 years. We’d love for you to join our team and be at the forefront of innovation and creativity.
+--
+
+
+
