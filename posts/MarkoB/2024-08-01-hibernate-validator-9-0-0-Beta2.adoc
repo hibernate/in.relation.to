@@ -1,0 +1,234 @@
+= Hibernate Validator 9.0.0.Beta2 is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:hibernate-validator-doc-url-prefix: https://docs.jboss.org/hibernate/validator/9.0/reference/en-US/html_single/
+:hibernate-validator-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hibernate-validator-version-family: 9.0
+:hibernate-validator-jira-project-id: 10060
+:hibernate-validator-jira-version-id: 32281
+---
+
+We just published Hibernate Validator 9.0.0.Beta2,
+the first release of the new 9.0 series of Hibernate Validator.
+
+This series targets Jakarta EE 11. It is the implementation of the Jakarta Validation 3.1.
+It also introduces new constraints,
+removes the integration of the Security Manager,
+provides the BOM for simpler dependency management,
+includes dependency updates,
+and makes other improvements and bug fixes.
+
+
+[NOTE]
+====
+In case you are wondering how it is that the second beta release is the first release in the series,
+it is because of the testing of the new release process that the first beta wasn't correctly published.
+Hence, please ignore the 9.0.0.Beta1 version.
+We want to apologise for any inconvenience this may cause you and thank you for your understanding.
+====
+
+[NOTE]
+====
+While this release of Hibernate Validator already includes all the features
+and bug fixes planned for the 9.0 series, and no significant changes are planned,
+we are still waiting for some of the dependencies to release their final versions before we
+can publish a CR or a Final version of Hibernate Validator.
+====
+
+== What's new
+
+=== Jakarta EE 11 and Jakarta Validation 3.1
+
+The 9.0 series is specifically intended to target the Jakarta EE 11 and implement the Jakarta Validation 3.1.
+The 3.1 update of the specification does not bring many https://jakarta.ee/specifications/bean-validation/3.1/jakarta-validation-spec-3.1#whatsnew-31[changes]:
+
+- The minimum required Java version is set to 17.
+- The rename of the specification from Jakarta Bean Validation to Jakarta Validation.
+- The clarification on the `record` validation, which has been supported by Hibernate Validator for some time.
+
+=== Dependency upgrades
+
+[[jakarta-validation]]
+Jakarta Validation (link:{hibernate-validator-jira-url-prefix}/HV-1979[HV-1979])::
+Hibernate Validator now implements Jakarta Validation 3.1.
+[[jakarta-expression-language]]
+Jakarta Expression Language (link:{hibernate-validator-jira-url-prefix}/HV-2015[HV-2015])::
+Hibernate Validator now uses the Jakarta Expression Language 6.0.
+Users wanting to rely on this expression language for message interpolation must
+link:{hibernate-validator-doc-url-prefix}#validator-gettingstarted-uel[include its implementation, e.g. Expressly].
+[[jakarta-other]]
+Jakarta Annotation/Jakarta Interceptor/Jakarta Injection/Jakarta Contexts and Dependency Injection(link:{hibernate-validator-jira-url-prefix}/HV-2015[HV-2015])::
+Hibernate Validator now uses the Jakarta Annotation 3.0, Jakarta Interceptor 2.2, Jakarta Injection 2.0 and Jakarta Contexts and Dependency Injection 4.1.
+
+[[others-version]]
+Others::
+* link:{hibernate-validator-jira-url-prefix}/HV-1982[HV-1982]: Upgrade to Javax Money 1.1.
+* link:{hibernate-validator-jira-url-prefix}/HV-1983[HV-1983]: Upgrade to Classmate 1.7.0.
+* link:{hibernate-validator-jira-url-prefix}/HV-1985[HV-1985]: Upgrade to Joda Time 2.12.7.
+* link:{hibernate-validator-jira-url-prefix}/HV-1982[HV-1982]: Upgrade to JBoss Logging 3.6.0.
+
+=== New constraints
+
+This release also brings new constraints.
+
+==== Country-specific South Korean RRN constraint
+
+The new constraint `@KorRRN` validates that the character sequence is a valid Korean resident registration number.
+This constraint also provides an optional attribute `ValidateCheckDigit validateCheckDigit()` that allows user to specify
+whether the check digit should be computed and validated. RRNs issued prior to October 2020 use the check digit, while
+the ones issued after don't.
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+@KorRRN <1>
+String rrn;
+// ...
+@KorRRN(validateCheckDigit = KorRRN.ValidateCheckDigit.ALWAYS)  <2>
+String rrn;
+----
+<1> Using a default configuration of the Korean resident registration number constraint,
+where the check digit is not validated.
+<2> Using a Korean resident registration number constraint,
+where check digit validation is required to pass.
+====
+
+Thanks to https://github.com/ing9990[Taewoo Kim] for contributing this constraint.
+
+==== Bitcoin address constraint
+
+The new `@Bitcoin` constraint validates that the corresponding string is a well-formed BTC (Bitcoin) address.
+This constraint provides a `BitcoinAddressType` enum with the list of address types it can validate.
+By default, `BitcoinAddressType.ANY` is used, which allows validating all the other address types listed in the `BitcoinAddressType` enum.
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+@Bitcoin <1>
+String address;
+// ...
+@Bitcoin({ BitcoinAddressType.P2TR, BitcoinAddressType.P2PKH }) <2>
+private String address;
+----
+<1> Using a default configuration of the `@Bitcoin` constraint,
+where all address types listed in the `BitcoinAddressType` are considered valid.
+<2> Applying the `@Bitcoin` constraint where the `P2TR` and `P2PKH` addresses are considered valid.
+====
+
+Thanks to https://github.com/jyoshiriro[José Yoshiriro] for contributing this constraint.
+
+==== Alphanumeric CNPJ
+
+Starting January 2026, CNPJ, a Brazilian corporate taxpayer registry number (Cadastro de Pessoa Jurídica),
+will begin using an alphanumeric format instead of the simple numeric one that is currently used.
+To address the transition, a new optional `format` parameter is introduced to allow validating the alphanumeric format.
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+@CNPJ <1>
+String cnpj;
+// ...
+@CNPJ(format = CNPJ.Format.ALPHANUMERIC) <2>
+private String cnpj;
+----
+<1> Using a default configuration of the `@CNPJ` constraint,
+where the numeric-only format is considered as valid.
+<2> Applying the `@CNPJ` constraint where the alphanumeric registry numbers are considered as valid.
+====
+
+Thanks to https://github.com/detinho[Marcos Vinícius da Silva] for bringing up the planned change to the format of the CNPJ.
+
+[[hibernate-validator-bom]]
+=== Hibernate Validator BOM
+
+Hibernate Validator now offers a BOM providing dependency management for all of its published artifacts.
+It can be imported as part of your dependency management to keep the versions of Hibernate Validator artifacts aligned:
+
+[source, XML, indent=0]
+----
+<dependencyManagement>
+    <dependencies>
+        <!-- Import Hibernate Validator BOM to get all of its artifact versions aligned: -->
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator-bom</artifactId>
+            <version>{hibernateValidatorVersion}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <!-- Any other dependency management entries -->
+    </dependencies>
+</dependencyManagement>
+<!-- ... -->
+<dependencies>
+    <!-- Declare dependencies -->
+    <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator</artifactId>
+        <!-- The version is managed by the BOM above -->
+    </dependency>
+    <dependency>
+        <groupId>org.hibernate.validator</groupId>
+        <artifactId>hibernate-validator-cdi</artifactId>
+        <!-- The version is managed by the BOM above -->
+    </dependency>
+    <!-- Any other dependency entries -->
+</dependencies>
+----
+
+=== Removal of the Security Manager integration
+
+With the security manager being deprecated without an alternative for some time now,
+we took the opportunity provided by the specification requirement of the minimum Java version
+to remove the integration of the Security Manager from Hibernate Validator.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hibernate-validator-jira-url-prefix}/HV-1328[HV-1328]:
+Add an option to validate class-level constraints only if all property constraints are valid.
+* link:{hibernate-validator-jira-url-prefix}/HV-1978[HV-1978]:
+Fix a bug where the expression language level may be incorrectly propagated to an iterable node.
+* link:{hibernate-validator-jira-url-prefix}/HV-1971[HV-1971]:
+Fix a bug where CNPJ with all digits the same was considered valid.
+* link:{hibernate-validator-jira-url-prefix}/HV-1946[HV-1946]:
+Fix a problem where the path may get corrupted when a custom value extractor uses `null` as
+the name of an iterable node.
+* link:{hibernate-validator-jira-url-prefix}/HV-2008[HV-2008]:
+Remove the AssertJ version alignment from Hibernate Validator test utils on the one defined by Jakarta Validation TCK
+and use the current AssertJ release.
+This has been requested a few times as users use the test utils to test their custom constraints.
+
+And more.
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hibernate-validator-jira-project-id}+AND+fixVersion={hibernate-validator-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+**Hibernate Validator 9 targets the upcoming Jakarta EE 11.**
+
+All details are available and up to date on the
+link:https://hibernate.org/validator/releases/{hibernate-validator-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, please refer to the getting started guide:
+
+* link:{hibernate-validator-doc-url-prefix}#validator-gettingstarted[Getting started with Hibernate Validator]
+
+For existing applications, Hibernate Validator {hibernate-validator-version-family} is most cases a drop-in replacement for 8.0,
+assuming you also upgrade the other Jakarta EE 11 related dependencies.
+Information about deprecated configuration and API
+is included in the https://hibernate.org/validator/documentation/migration-guide/#migration-guide-9-0-x[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Validation development mailing list] (discussions about the Jakarta Validation specification)
