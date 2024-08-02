@@ -98,22 +98,22 @@ Thanks to https://github.com/ing9990[Taewoo Kim] for contributing this constrain
 
 ==== Bitcoin address constraint
 
-The new `@Bitcoin` constraint validates that the corresponding string is a well-formed BTC (Bitcoin) address.
+The new `@BitcoinAddress` constraint validates that the corresponding string is a well-formed BTC (Bitcoin) address.
 This constraint provides a `BitcoinAddressType` enum with the list of address types it can validate.
 By default, `BitcoinAddressType.ANY` is used, which allows validating all the other address types listed in the `BitcoinAddressType` enum.
 
 ====
 [source, Java, indent=0, subs="+attributes"]
 ----
-@Bitcoin <1>
+@BitcoinAddress <1>
 String address;
 // ...
-@Bitcoin({ BitcoinAddressType.P2TR, BitcoinAddressType.P2PKH }) <2>
+@BitcoinAddress({ BitcoinAddressType.P2TR, BitcoinAddressType.P2PKH }) <2>
 private String address;
 ----
-<1> Using a default configuration of the `@Bitcoin` constraint,
+<1> Using a default configuration of the `@BitcoinAddress` constraint,
 where all address types listed in the `BitcoinAddressType` are considered valid.
-<2> Applying the `@Bitcoin` constraint where the `P2TR` and `P2PKH` addresses are considered valid.
+<2> Applying the `@BitcoinAddress` constraint where the `P2TR` and `P2PKH` addresses are considered valid.
 ====
 
 Thanks to https://github.com/jyoshiriro[José Yoshiriro] for contributing this constraint.
