@@ -1,0 +1,396 @@
+= Hibernate Search 7.2.0.Final is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/7.2/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/7.2/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.jboss.org/hibernate/search/7.2/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 7.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 32335
+---
+
+We are pleased to announce the release of Hibernate Search 7.2.0.Final.
+
+Compared to Hibernate Search 7.1, this version contains many improvements to the Search DSL,
+including new projection types, new predicates, enhancements to the existing ones, query parameters, and more.
+
+This version also includes the license change to Apache License 2.0,
+which will be the project license moving forward.
+
+It upgrades to Hibernate ORM 6.6,
+introduces compatibility with OpenSearch 2.14, 2.15 and 2.16,
+as well as compatibility with Elasticsearch 8.14 and 8.15.
+
++++<!-- more -->+++
+
+== What's new compared to Hibernate Search 7.1
+
+[NOTE]
+====
+For a summary of all new features and improvements since 7.1,
+head to https://hibernate.org/search/releases/7.2/#whats-new[the dedicated page on hibernate.org].
+====
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5219[HSEARCH-5219])::
+Hibernate Search now depends on Hibernate ORM 6.6.0.Final.
+[[lucene-version]]
+Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-5184[HSEARCH-5184])::
+The Lucene backend now uses Lucene 9.11.1.
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-5181[HSEARCH-5181])/(link:{hsearch-jira-url-prefix}/HSEARCH-5151[HSEARCH-5151])/(link:{hsearch-jira-url-prefix}/HSEARCH-5218[HSEARCH-5218])::
+The Elasticsearch backend now is compatible with OpenSearch 2.14/2.15/2.16 as well as with other versions that were already compatible.
++
+[WARNING]
+====
+OpenSearch 2.16 has introduced a problem with range aggregations,
+where the results of the aggregation may be incorrect due to search query being ignored.
+The OpenSearch team is aware of the https://github.com/opensearch-project/OpenSearch/issues/15169[issue] and is working on fixing it.
+Consider this when deciding to do the 2.16 upgrade.
+====
+[[elasticsearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-5164[HSEARCH-5164])/(link:{hsearch-jira-url-prefix}/HSEARCH-5220[HSEARCH-5220])::
+The Elasticsearch backend now is compatible with Elasticsearch 8.14/8.15 as well as with other versions that were already compatible.
+
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-5221[HSEARCH-5221]: Upgrade to Elasticsearch **client** 8.15.0
+* link:{hsearch-jira-url-prefix}/HSEARCH-5200[HSEARCH-5200]: Upgrade to Jackson 2.17.2.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5212[HSEARCH-5212]: Upgrade to Avro 1.12.0.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5167[HSEARCH-5167]: Upgrade to HPPC 0.10.0.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5179[HSEARCH-5179]: Upgrade to AWS SDK 2.26.4.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5100[HSEARCH-5153]: Upgrade to GSON 2.11.0
+* link:{hsearch-jira-url-prefix}/HSEARCH-5144[HSEARCH-5144]: Upgrade to JBoss logging 3.6.0.Final
+
+[[search-dsl-predicate-knn]]
+=== `knn` predicate updates
+
+The OpenSearch 2.14 release introduced a way to apply score/similarity filters to a knn query.
+This means that previous limitations imposed on the vector search filtering when using the OpenSearch distribution
+of the Elasticsearch backend are now removed.
+It is worth mentioning that because of how this filter is implemented on the OpenSearch side,
+applying the similarity filter will result in ignoring the `k` value.
+
+The `knn` predicate, besides the existing `.requiredMinimumSimilarity(..)` filter,
+now also has a score-based alternative: `requiredMinimumScore(..)`.
+With knn search, similarity and score are derived one from the other, and in some scenarios, it may be simpler to use score,
+while in others -- similarity.
+
+To remind you how the vector search works: for vector fields to be indexed, they should be annotated with a  `@VectorField` annotation:
+
+[source, Java, indent=0, subs="+attributes"]
+----
+@Entity
+@Indexed
+public class Book {
+
+    @Id
+    private Integer id;
+
+    @VectorField(dimension = 512)
+    private float[] coverImageEmbeddings;
+
+    // Other properties ...
+}
+----
+
+Then, searching for vector similarities is performed via a `knn` predicate:
+
+====
+[source, Java, indent=0, subs="+callouts"]
+----
+float[] coverImageEmbeddingsVector = /*...*/
+
+List<Book> hits = searchSession.search( Book.class )
+.where( f ->
+    f.knn( 5 ) // <1>
+        .field( "coverImageEmbeddings" ) // <2>
+        .matching( coverImageEmbeddingsVector ) // <3>
+        .requiredMinimumSimilarity( similarity ) // <4>
+).fetchHits( 20 );
+----
+<1> Provide the number of similar documents to look for.
+<2> Specify the name of the vector field.
+<3> Provide a reference vector; matched documents will be the ones whose indexed vector
+is "most similar" to this vector.
+<4> Specify the minimum required similarity between the reference and indexed vectors;
+documents where indexed vector similarity is less than the specified `similarity` value will be filtered out.
+Alternatively, the `requiredMinimumScore( score )` filter can be applied instead of the `requiredMinimumSimilarity( similarity )`.
+====
+
+See this section of the reference documentation on link:{hsearch-doc-url-prefix}#mapping-directfieldmapping-annotations-vectorfield[vector fields]
+and the one on a link:{hsearch-doc-url-prefix}#search-dsl-predicate-knn[`knn` predicate]
+for more information.
+
+[[search-dsl-predicate-prefix]]
+=== Prefix predicate
+
+The `prefix` predicate matches documents for which a given field has a value starting with a given string.
+
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+List<Book> hits = searchSession.search( Book.class )
+    .where( f -> f.prefix().field( "description" )
+        .matching( "rob" ) )
+    .fetchHits( 20 );
+----
+====
+
+See this section of the reference documentation on the link:{hsearch-doc-url-prefix}#search-dsl-predicate-prefix[`prefix` predicate]
+for more information.
+
+[[search-dsl-value-convert]]
+=== `ValueConvert` gets deprecated
+
+The Search DSL has been using `ValueConvert` enum to let the user specify how the values in search queries have to be converted,
+be it the ones passed to the predicates/aggregations/sorts or the ones returned by projections/aggregations.
+Moving forward, to better support new use cases and bring better clarity on the expectations, this enum is replaced with the new one: `ValueModel`.
+At the moment `ValueModel` provides these options:
+
+`MAPPING`:: This is the default model that allows working with the types as defined on the entity side.
+`INDEX`:: This model does not apply conversion and allows working with the types as defined on the index side.
+`STRING`:: This model applies formatting and parsing allowing working with the string representation of values.
+`RAW`:: This model does not apply conversion and allows working with the types that the backend operates with on a low level.
+
+For each deprecated method accepting the `ValueConvert` input, there is now an alternative that accepts `ValueModel` instead.
+Replace `ValueConvert.YES` with `ValueModel.MAPPING` and `ValueConvert.NO` with `ValueModel.INDEX` in your code where the values were set explicitly.
+
+See this section of the reference documentation on the link:{hsearch-doc-url-prefix}#search-dsl-argument-type[types of arguments passed to the DSL]
+and on the link:{hsearch-doc-url-prefix}#search-dsl-projected-value-type[types of projected values]
+for more information.
+
+
+[[range-within-withinany]]
+=== `within`/`withinAny` for the range predicate
+
+The link:{hsearch-doc-url-prefix}#search-dsl-predicate-range[`range`] predicate can now accept multiple ranges,
+matching the document when the value is within at least one of the provided ranges.
+
+[source, Java, indent=0, subs="+attributes"]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.range().field( "pageCount" )
+                .withinAny(
+                        Range.between( 200, 250 ),
+                        Range.between( 500, 800 )
+                ) )
+        .fetchHits( 20 );
+----
+
+[[query-string-numeric-date-fields]]
+=== `queryString`/`simpleQueryString` predicates for numeric/date fields
+
+link:{hsearch-doc-url-prefix}#search-dsl-predicate-simple-query-string[`simpleQueryString`] and
+link:{hsearch-doc-url-prefix}#search-dsl-predicate-query-string[`queryString`]
+can now be applied to numeric and date fields.
+
+[source, Java, indent=0, subs="+attributes"]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.queryString()
+                .field( "numberOfPages" )
+                .matching( "[350 TO 800]" )
+        )
+        .fetchHits( 20 );
+----
+
+See corresponding sections in link:{hsearch-doc-url-prefix}#search-dsl-predicate-simpleQueryString-format-types[`simpleQueryString`]
+link:{hsearch-doc-url-prefix}#search-dsl-predicate-query-string-format-types[`queryString`] documentation
+for details.
+
+[[minimum-should-match-for-match]]
+=== `match` predicate and minimum number of terms that should match
+
+With the introduction of the `minimumShouldMatch` option,
+similar to the ones already available for the
+link:{hsearch-doc-url-prefix}#search-dsl-predicate-boolean-minimumshouldmatch[`bool`],
+link:{hsearch-doc-url-prefix}#search-dsl-predicate-query-string-minimumshouldmatch[`queryString`],
+link:{hsearch-doc-url-prefix}#search-dsl-predicate-simple-query-string-minimumshouldmatch[`simpleQueryString`] predicates,
+it is now possible to require that
+an arbitrary number of terms from the match string are present in the document
+in order for the `match` predicate to match.
+
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+List<Book> hits = searchSession.search( Book.class )
+        .where( f -> f.match()
+                .field( "title" )
+                .matching( "investigation detective automatic" )
+                .minimumShouldMatchNumber( 2 ) ) // <1>
+        .fetchHits( 20 ); // <2>
+----
+<1> At least two terms must match for this predicate to match.
+<2> All returned hits will match at least two of the terms:
+their titles will match either `investigation` and `detective`,
+`investigation` and `automatic`, `detective` and `automatic`, or all three of these terms.
+====
+
+[[query-paramters]]
+=== Basic support for parameters at the query level
+
+A number of `withParameters(..)` methods were introduced to the Search DSL.
+Through them, it is now possible to construct
+link:{hsearch-doc-url-prefix}#search-dsl-aggregation-withparameters[aggregations],
+link:{hsearch-doc-url-prefix}#search-dsl-predicate-withparameters[predicates],
+link:{hsearch-doc-url-prefix}#search-dsl-projection-withparameters[projections],
+and link:{hsearch-doc-url-prefix}#search-dsl-sort-withparameters[sorts]
+using link:{hsearch-doc-url-prefix}#search-dsl-query-parameters[query parameters].
+These can be helpful when there is a need to use the same parameter in multiple parts of the query
+or when the same query has to be executed for various parameter values.
+
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+SearchScope<Book> scope = searchSession.scope( Book.class );
+SearchPredicateFactory factory = scope.predicate();
+SearchPredicate predefinedPredicate = factory.withParameters(
+        params -> factory.bool() // <1>
+                .should( factory.match().field( "title" )
+                        .matching( params.get( "title-param", String.class ) ) ) // <2>
+                .filter( factory.match().field( "genre" )
+                        .matching( params.get( "genre-param", Genre.class ) ) ) // <3>
+).toPredicate();
+
+List<Book> crimeBooks = searchSession.search( Book.class )
+        .where( predefinedPredicate ) // <4>
+        .param( "title-param", "robot" )  // <5>
+        .param( "genre-param", Genre.CRIME_FICTION )
+        .fetchHits( 20 );
+
+List<Book> scienceFictionBooks = searchSession.search( Book.class )
+        .where( predefinedPredicate ) // <6>
+        .param( "title-param", "spaceship" ) // <7>
+        .param( "genre-param", Genre.SCIENCE_FICTION )
+        .fetchHits( 20 );
+----
+<1> Start creating the `.withParameters()` predicate.
+<2> Access the query parameter `title-param` of `String` type when constructing the predicate.
+<3> Access the query parameter `genre-param` of `Genre` enum type when constructing the predicate.
+<4> Use the predefined, parameterized predicate in a query.
+<5> Set parameters required by the predicate at the query level.
+<6> Reuse the predefined, parameterized predicate in a query.
+<7> Set a different pair of parameters required by the predicate at the query level.
+====
+
+[[distance-projection]]
+=== `@DistanceProjection` to map a constructor parameter to a distance projection
+
+With the introduction of the query parameters, it is now possible to define a
+link:{hsearch-doc-url-prefix}#search-dsl-projection-distance-mapping[`@DistanceProjection`]
+that can be used in the projection constructors.
+
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+@ProjectionConstructor
+public record MyAuthorPlaceProjection(
+        @DistanceProjection( // <1>
+                fromParam = "point-param", // <2>
+                path = "placeOfBirth") // <3>
+        Double distance ) {
+}
+----
+<1> Annotate the parameter that should receive the distance value with `@DistanceProjection`.
+<2> Specify the query parameter that will be used to calculate the distance from.
+<3> Optionally, customize the path, since most likely the `GeoPoint` property of the entity will have a different name from the
+distance property in a projection.
+
+[source, JAVA, indent=0, subs="+callouts"]
+----
+List<MyAuthorPlaceProjection> hits = searchSession.search( Author.class )
+        .select( MyAuthorPlaceProjection.class )
+        .where( f -> f.matchAll() )
+        .param( "point-param", GeoPoint.of( latitude, longitude ) ) // <1>
+        .fetchHits( 20 );
+----
+<1> Pass a query parameter value, with the same name `point-param` as in the `@DistanceProjection` `fromParam` of a projection constructor.
+====
+
+[[document-tree-projection]]
+=== Document tree projection
+
+With the Lucene backend, requesting a document tree projection is now possible.
+This new link:{hsearch-doc-url-prefix}#search-dsl-projection-extensions-lucene-document-tree[`.documentTree()`]
+projection returns the matched document as a tree containing native Lucene `Document` and corresponding nested tree nodes.
+
+[source, Java, indent=0, subs="+attributes"]
+----
+List<DocumentTree> hits = searchSession.search( Book.class )
+        .extension( LuceneExtension.get() )
+        .select( f -> f.documentTree() )
+        .where( f -> f.matchAll() )
+        .fetchHits( 20 );
+
+DocumentTree documentTree = hits.get( 0 );
+Document rootDocument = documentTree.document();
+Map<String, Collection<DocumentTree>> nestedDocuments = documentTree.nested();
+// ...
+----
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5170[HSEARCH-5170]:
+Fix a potential issue when setting an association to `null` before removing an entity may not trigger indexing
+* link:{hsearch-jira-url-prefix}/HSEARCH-5161[HSEARCH-5161]:
+Prevent mass indexer from dropping the schema on start when requested but multitenancy is configured.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5162[HSEARCH-5162]:
+Ensure that Hibernate Search works correctly when Hibernate ORM's JPA compliance is enabled (`hibernate.jpa.compliance.query=true`).
+* link:{hsearch-jira-url-prefix}/HSEARCH-5107[HSEARCH-5107]/link:{hsearch-jira-url-prefix}/HSEARCH-5108[HSEARCH-5108]:
+Close Lucene index readers sooner.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4572[HSEARCH-4572]:
+Using SearchPredicate/SearchProjection/SearchSort with a broader scope than the search query.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4929[HSEARCH-4929]:
+Add an option to drop and create the schema when starting mass indexing using Jakarta Batch integration.
+* link:{hsearch-jira-url-prefix}/HSEARCH-4963[HSEARCH-4963]:
+API to run analysis on a given String.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5006[HSEARCH-5006]:
+Non-string tenant identifiers
+* link:{hsearch-jira-url-prefix}/HSEARCH-5016[HSEARCH-5016]:
+Allow binding a @HighlightProjection to a single-valued String (instead of List<String>) when using numberOfFragments(1)
+* link:{hsearch-jira-url-prefix}/HSEARCH-5039[HSEARCH-5039]:
+Fix the tenant filter for knn predicates and use it as a filter for knn predicates
+* link:{hsearch-jira-url-prefix}/HSEARCH-5124[HSEARCH-5124]:
+Jakarta Batch Job parameter `purgeAllOnStart` will now only purge the documents of the types specified in the `entityTypes`
+instead of purging all documents.
+
+[[new-since-last-cr]]
+== What's new compared to Hibernate Search 7.2.0.CR1
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5218[HSEARCH-5218]: Add compatibility with OpenSearch 2.16.0.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5219[HSEARCH-5219]: Upgrade to Hibernate ORM 6.6.0.Final.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5220[HSEARCH-5220]: Add Elasticsearch 8.15.0 compatibility.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5221[HSEARCH-5221]: Upgrade to Elasticsearch **client** 8.15.0.
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 7.1,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
