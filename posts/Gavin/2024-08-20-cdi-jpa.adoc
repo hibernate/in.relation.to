@@ -1,0 +1,104 @@
+= Injecting JPA using CDI
+Gavin King
+:awestruct-tags: [ "Jakarta Persistence", "CD", "Jakarta EE" ]
+:awestruct-layout: blog-post
+---
+
+Since the link:https://jcp.org/en/jsr/detail?id=365[JSR-220] Expert Group introduced annotation-based dependency injection and the Java Persistence API as part of Java EE 1.5, it's been possible to inject an `EntityManager` or `EntityManagerFactory` into most Java EE components using the dedicated `@PersitenceContext` and `@PersitenceUnit` annotations respectively.
+
+Later, my link:https://jcp.org/en/jsr/detail?id=365[JSR-299] Expert Group introduced a completely new approach to dependency injection, which ultimately came to be named _Contexts and Dependency Injection for Java_.
+Initially very controversial, CDI has over time become central to the Java EE platform--oops, I mean, _Jakarta_ EE--and other technologies have adopted CDI, now in its sixth revision, as the base-level component model.
+
+But back in CDI 1.0, I needed a way to bridge the gap between `@PersistenceContext` and the `@Inject` annotation supported by CDI.
+And with CDI itself mired in FUD, I wasn't exactly in a very strong political position to go asking the EE platform group to redefine their, at the time, pretty much brand-new dependency injection annotations in terms of the crazy new direction we were taking with CDI.
+
+So my solution--which I considered quite elegant at the time--was to let you define a mapping in Java.
+For example, we may define the following mappings:
+
+[source, java]
+----
+ public class Databases {
+
+      @Produces @PersistenceContext(unitName="UserData")
+      @Users EntityManager userDatabaseEntityManager;
+
+      @Produces @PersistenceContext(unitName="DocumentData")
+      @Documents EntityManager docDatabaseEntityManager;
+
+  }
+----
+
+And then inject the ``EntityManager``s as follows:
+
+[source, java]
+----
+@Inject @Users EntityManager userDatabaseEntityManager;
+
+@Inject @Documents EntityManager docDatabaseEntityManager;
+----
+
+More recently, link:https://github.com/jakartaee/persistence/issues/377[it came to my attention] that some people have never loved my elegant solution; that, indeed, most people appear to view it as a "hack"; and that such people do not appear to be easily dislodgeable from this position. 😭
+
+Therefore, we've proposed something different for Jakarta EE 11.
+You can read the specification link:https://github.com/jakartaredhat/jakartaee-platform/blob/c8fc388f0a25b8e03ab309f2929bd0059f4733cf/specification/src/main/asciidoc/webprofile/jpa-cdi/CDI-JPA.adoc[here].
+
+The idea is that if you have just one persistence unit, you'll be able to inject its `EntityManager` or `EntityManagerFactory` just like this:
+
+[source, java]
+----
+@Inject EntityManager em;
+
+@Inject EntityManagerFactory emf;
+----
+
+If you have more than one persistence unit, then you may assign a CDI qualifier annotation to the unit using the new `<qualifier>` XML element in `persistence.xml`.
+
+[source, xml]
+----
+<persistence-unit name="UserData">
+    ...
+    <qualifier>my.program.Users</qualifier>
+    ...
+
+<persistence-unit name="DocumentData">
+    ...
+    <qualifier>my.program.Documents</qualifier>
+    ...
+----
+
+And then you may write, as before:
+
+[source, java]
+----
+@Inject @Users EntityManager userDatabaseEntityManager;
+
+@Inject @Documents EntityManager docDatabaseEntityManager;
+----
+
+By default, such an injected `EntityManager` has scope `@TransactionScoped`.
+But occasionally we would like more flexibility here.
+How can we get something like a JPA _extended persistence context_?
+
+Well, we've also decided to hand you the following weapon, one that's easily-orientable along negative-_y_ axis:
+
+[source, xml]
+----
+<persistence-unit name="UserData">
+    ...
+    <qualifier>my.program.Users</qualifier>
+    <scope>javax.enterprise.context.RequestScoped</scope>
+    ...
+
+<persistence-unit name="DocumentData">
+    ...
+    <qualifier>my.program.Documents</qualifier>
+    <scope>javax.enterprise.context.ConversationScoped</scope>
+    ...
+----
+
+[WARNING]
+Please, please understand that absolutely nothing about the existence of the `<scope>` element gives you permission to start sharing a stateful persistence context between concurrently-executing code.
+
+Naturally, the `EntityManagerFactory` is always `@applicationScoped`.
+
+The new functionality even goes a bit beyond this: not only can we inject an `EntityManager` or `EntityManagerFactory`, but, for convenience, we can even inject certain helper objects: `CriteriaBuilder`, `PersistenceUnitUtil`, `Cache`, `SchemaManager`, and `Metamodel` using the same annotations.
