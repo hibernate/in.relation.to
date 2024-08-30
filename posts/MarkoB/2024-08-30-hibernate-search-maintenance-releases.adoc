@@ -1,0 +1,77 @@
+= Hibernate Search 7.1.2.Final/7.2.1.Final are out!
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/7.2/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/7.2/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.jboss.org/hibernate/search/7.2/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family-71: 7.1
+:hsearch-version-family-72: 7.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id-71: 32283
+:hsearch-jira-version-id-72: 32342
+---
+
+We are pleased to announce the release of Hibernate Search 7.1.2.Final and 7.2.1.Final.
+
+These releases bring a few bug fixes and clarifications in the migration guides.
+
++++<!-- more -->+++
+
+== Hibernate Search 7.1.2.Final
+
+=== Dependency upgrades
+
+[[orm-version-7-1]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5216[HSEARCH-5216])::
+Hibernate Search now depends on Hibernate ORM 6.4.10.Final, it is also being tested and is compatible with the Hibernate ORM 6.5 series.
+
+[[other-since-last-7-1]]
+=== Other
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5162[HSEARCH-5162]: Update for the ORM mass indexer to prevent it from failing with enabled JPA compliance.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5226[HSEARCH-5226]: Fix startup failure when indexed entities are using `@Formula` and `@IndexedEmbedded` in their mapping.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-71}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family-71}/#get-it[dedicated page on hibernate.org].
+
+== Hibernate Search 7.2.1.Final
+
+[[other-since-last-7-2]]
+=== Other
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5226[HSEARCH-5226]: Fix startup failure when indexed entities are using `@Formula` and `@IndexedEmbedded` in their mapping.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-72}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family-72}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, these releases of Hibernate Search are drop-in replacements of their previous micros within the same minors,
+assuming you also upgrade the dependencies.
+To upgrade to a newer major/minor, see https://hibernate.org/search/documentation/migrate/[migration guides].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
