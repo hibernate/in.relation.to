@@ -1,0 +1,148 @@
+= Efficiently adding to persistent collections
+Gavin King
+:awestruct-tags: [ "Hibernate ORM" ]
+:awestruct-layout: blog-post
+---
+
+Today someone asked us to add some documentation explaining how to deal with addition of elements to very large collections.
+I'm not sure if this is a topic I really want to talk about in the https://docs.jboss.org/hibernate/orm/6.6/introduction/html_single/Hibernate_Introduction.html[documentation], but it's definitely worth a blog.
+
+== The problem
+
+The context is the following: suppose I have an entity `Book` with thousands of ``Page``s.
+We might choose to make `Page` an `@Embeddable` record, and map this with `@ElementCollection`.
+
+[source,java]
+----
+@Entity
+class Book {
+    @Id String isbn;
+
+    @ElementCollection
+    @OrderColumn(name="number")
+    List<Page> pages;
+
+    ...
+}
+----
+[source,java]
+----
+@Embeddable
+record Page(String text){}
+----
+
+That looks nice and clean.
+
+Now, imagine that we add a new `Page` to our book:
+
+[source,java]
+----
+emf.runInTransaction(em -> {
+    var book = em.find(Book.class, isbn);
+    book.getPages().add(new Page(text));
+});
+----
+
+This code fragment results the execution of three SQL statements:
+
+1. the `Book` is retrieved at the first line,
+2. the collection is fetched at the call to `add()` on the second line, and
+3. an `insert` occurs when the transaction commits.
+
+That's very inefficient.
+
+== Attempted solution
+
+We can improve this in the usual way, by requesting that the collection be fetched upfront:
+
+[source,java]
+----
+emf.runInTransaction(em -> {
+    var bookWithPages = em.createEntityGraph(Book.class);
+    bookWithPages.addAttributeNode(Book_.pages)
+    var book = em.find(bookWithPages, isbn);
+    book.getPages().add(new Page(text));
+});
+----
+
+Now we have only two SQL statements being executed.
+
+On the other hand, the first statement -- the `select` -- now has to `join` the `Page` table.
+But a `Book` can have thousands of pages, so retrieving them all is still costly.
+What we would really like to do is avoid initializing the collection of ``Page``s at all.
+
+So using `EntityGraph` wasn't really a proper fix.
+
+== A proper solution
+
+Instead, we're going to make the following changes to our model:
+
+- make `Page` an `@Entity` instead of an `@Embeddable`,
+- map `pages` as an unowned `@OneToMany`.
+
+Let's begin with the `Page` class:
+
+[source,java]
+----
+@Entity
+class Page {
+    @Id String isbn;
+    @Id int number;
+    String text;
+
+    ...
+}
+----
+
+Note that `Page` now needs fields holding the `isbn` of its book, and the page `number`, its position in the `List`.
+
+Now, on the `Book` side of thing we need to change the mapping to:
+
+[source,java]
+----
+@Entity
+class Book {
+    @Id String isbn;
+
+    @OneToMany(cascade = PERSIST,
+               mappedBy = Page_.ISBN)
+    @OrderBy(Page_.NUMBER)
+    List<Page> pages;
+
+    ...
+}
+----
+
+Now when we execute:
+
+[source,java]
+----
+emf.runInTransaction(em -> {
+    var book = em.find(Book.class, isbn);
+    book.getPages().add(new Page(isbn, pageNumber, text));
+});
+----
+
+the collection of `Page` objects does not need to be fetched from the database.
+
+TIP: I've said it many times before, but I'm going to say it again now: entities with one-to-many associations are much more flexible than more exotic things like `@ElementCollection` or `@ManyToMany`.
+You will have more success with Hibernate if you map entities in the most boring way.
+
+NOTE: In the past, this problem was sometimes addressed using `@LazyCollection(LazyCollectionOption.EXTRA)`, but this feature was deprecated in Hibernate 6, and has been removed in Hibernate 7.
+
+== Dealing with sets
+
+There's one caveat to be aware of.
+The `add()` method of `Set` returns a `boolean` value that can't be computed without fetching all the elements of the `Set`.
+Therefore, the solution above does not work for ``Set``s.
+However, there's a much hackier solution which we tolerate but don't necessarily encourage: just don't add the new `Page` to the `Set` collection, and instead `persist()` it directly:
+
+[source,java]
+----
+emf.runInTransaction(em -> {
+    em.persist(new Page(isbn, pageNumber, text));
+});
+----
+
+WARNING: With this approach, if the set of `Page` objects is held in the second-level cache, you will need to explicitly invalidate the cache by calling `Cache.evictCollectionData()`.
+
