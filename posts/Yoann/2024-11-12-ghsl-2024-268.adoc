@@ -31,7 +31,7 @@ For us, Develocity provides two main (and excellent!) features:
 
 Build scans::
 Detailed HTML reports that are published on the Develocity instance.
-They allows easier investigation of build problems, mainly test failures.
+They allow easier investigation of build problems, mainly test failures.
 Remote build cache::
 A shared cache between our CI builds.
 It allows speeding up the builds by skipping some steps (Gradle configuration, Java compilation, test execution, ...) when a previous build already executed them with exactly the same input (same code, same tested DB, ...).
@@ -39,7 +39,7 @@ It allows speeding up the builds by skipping some steps (Gradle configuration, J
 Build scans in particular are the solution to our reporting problems, as they unify reporting across CIs, and are very easy to read.
 They can of course be very useful on pull requests, so we wanted to enable them there. We even managed to https://github.com/hibernate/hibernate-github-bot/pull/227[get a unified list of all build scans directly on PRs] through our GitHub bot.
 There is a small risk with allowing arbitrary pull requests to publish build scans, though:
-we don't want to allow just anyone to send a pull request containing illegal/harmful content, and have that automatically be hosted on our Develocity instance as part of a build scan.
+we don't want to allow just anyone to send a pull request containing illegal/harmful content, and have that automatically hosted on our Develocity instance as part of a build scan.
 
 The build cache is also a nice solution to our (long) CI build times, in particular when rebuilding something that's _almost the same_ as a previous build, e.g. when you just fix formatting.
 We wanted to read from the build cache from all CI builds.
@@ -53,7 +53,7 @@ Aware of these risks, when we enabled Develocity on our CI, and in particular on
 +
 The workflows were set up in such a way that the environment variables were populated with the appropriate key based on whether they were building a pull request (untrusted, build scan only) or a branch (trusted, build scan _and_ population of the build cache).
 2. We split the steps, separating in particular the "build" step, with no access to secrets but that could run arbitrary code, from the "build scan publishing" step, with access to secrets but that could not run arbitrary code.
-3. As a last line of defense, just in case we got the above wrong somehow, we enabled mandatory pre-approval of GitHub Actions runs on pull requests by team members, allowing us to filter out hypothetical malicious pull requests.
+3. As a last line of defense, just in case we got the above wrong somehow, we enabled mandatory pre-approval of GitHub Actions runs on pull requests, allowing us to filter out hypothetical malicious pull requests.
 
 That done, we felt safe enough, merged, and enjoyed our Develocity-enhanced CI for a few months.
 
@@ -105,11 +105,11 @@ That was done quickly, and bought us time to think.
 
 First things first: we shouldn't be using the Develocity remote build cache during releases.
 That's obvious when you say it, even without taking security into account: we really want releases to be isolated, and certainly don't want parts of built artifacts to be inherited from past builds.
-In this case, it was an oversight,  and fixing it was https://github.com/hibernate/hibernate-orm/commit/543e095cf70396256ebbf2dd9e9d07f80304bebd[relatively straightforward].
+In this case, it was an oversight, and fixing it was https://github.com/hibernate/hibernate-orm/commit/543e095cf70396256ebbf2dd9e9d07f80304bebd[relatively straightforward].
 We even made sure to https://github.com/hibernate/hibernate-release-scripts/commit/7f605058a4557f6184303e3ac245986ecb917684#diff-30883d1df2fc62f59d66255a70dc05f60d3d4ef4d3957e6e3e38e62f6e471bd0R21-R24[disable the Gradle build cache completely] during releases while we were at it, just to be safe.
 
 That was the end of it, because Hibernate ORM was the only affected Hibernate project:
-we were already disabling the build cache for Hibernate Search, our only other project using Develocity at the time.
+we were already disabling the build cache for releases of Hibernate Search, our only other project using Develocity at the time.
 
 Regarding the GitHub Actions workflow, the obvious solution was to stop using the `pull_request_target` workflow trigger and revert back to using the `pull_request` trigger. That's two birds with once stone, since `pull_request` doesn't expose secrets to the runner, and enables mandatory workflow approval.
 However, not having access to secrets meant that we could not publish build scans anymore, so we were back to square one.
@@ -124,7 +124,7 @@ With that done, our workflows were (finally) safe.
 
 === Looking for exploits
 
-With everything fixed, the fun begins: we needed to check whether the vulnerability was, in fact, exploited, or if just stood there and we got lucky (spoiler: we got lucky).
+With everything fixed, the fun begins: we needed to check whether the vulnerability was, in fact, exploited, or if it just stood there and we got lucky (spoiler: we got lucky).
 
 The vulnerability was introduced in early April 2024, so we had to assume that between then and our fixes in October, someone could have tampered with releases or gotten access to secrets and published unwanted content.
 
@@ -135,7 +135,7 @@ It was not as obvious as it could have been, due to builds on older branches not
 but a few scripts did the job well enough.
 The tool we created for this is available on GitHub at https://github.com/hibernate/hibernate-release-checker[hibernate/hibernate-release-checker]: you can see the https://github.com/hibernate/hibernate-release-checker/blob/main/CHECKED.md[list of checks we ran] and run them yourself if you want (warning: checking all versions is quite long, requires a lot of disk space, and involves sizeable downloads!).
 
-As mentioned above, some of our secrets used during releases could have been stolen. The corresponding keys had already been revoked just in case, but had to check that none of these secrets had been used to publish/alter content.
+As mentioned above, some of our secrets used during releases could have been stolen. The corresponding keys had already been revoked just in case, but we had to check that none of these secrets had been used to publish/alter content.
 
 We went somewhat beyond what was strictly necessary, e.g. we revoked/checked SSH keys even though they were technically only accessible through an SSH agent and thus relatively hard to steal -- but better safe than sorry:
 
