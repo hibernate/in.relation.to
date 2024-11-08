@@ -78,15 +78,15 @@ So using `EntityGraph` wasn't really a proper fix.
 Instead, we're going to make the following changes to our model:
 
 - make `Page` an `@Entity` instead of an `@Embeddable`,
-- map `pages` as an unowned `@OneToMany`.
+- map `pages` as an _unowned_ `@OneToMany` instead of an owned `@ElementCollection`.
 
 Let's begin with the `Page` class:
 
 [source,java]
 ----
-@Entity
+@Entity  // important
 class Page {
-    @Id String isbn;
+    @Id String isbn;  // important!
     @Id int number;
     String text;
 
@@ -94,9 +94,15 @@ class Page {
 }
 ----
 
-Note that `Page` now needs fields holding the `isbn` of its book, and the page `number`, its position in the `List`.
+The `Page` entity has fields holding:
 
-Now, on the `Book` side of thing we need to change the mapping to:
+- the `isbn` of its book, and
+- the page `number`, its position in the `List`.
+
+Notice that we didn't need to give `Page` a direct reference to `Book` (though we could have).
+The `isbn` field is good enough.
+
+Now, on the `Book` side of things we need to change the collection mapping to:
 
 [source,java]
 ----
@@ -105,13 +111,16 @@ class Book {
     @Id String isbn;
 
     @OneToMany(cascade = PERSIST,
-               mappedBy = Page_.ISBN)
+               mappedBy = Page_.ISBN)  // important!
     @OrderBy(Page_.NUMBER)
     List<Page> pages;
 
     ...
 }
 ----
+
+Notice here that `mappedBy = Page_.ISBN` is a typesafe reference to the `isbn` field of `Page`.
+This is crucial--we need the collection to be "unowned".
 
 Now when we execute:
 
