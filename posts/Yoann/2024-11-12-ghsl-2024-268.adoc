@@ -121,7 +121,18 @@ So https://github.com/hibernate/hibernate-orm/pull/9163[we did the same]:
 2. A second "CI reporting" workflow, executing when the first workflow run completes, downloads GitHub Actions artifacts from the completed workflow run, gets access to the Develocity access key, and publishes the build scan.
 +
 Critically, this workflow does not execute untrusted code at any point.
-It still needs to be written with care, though: the "build scan artifact" it manipulates is not be trusted. For example, one mistake we made in our initial implementation was to unzip the "build scan artifact" to the home directory, assuming it contained a directory at its root. As This is dangerous, as it could allow a malicious artifact to replace anything in the home directory,
+
+[NOTE]
+====
+Even though the "CI reporting" workflow does not execute untrusted code, it still handles untrusted data, and needs to do so with care.
+
+One mistake we made in our initial implementation was to unzip the "build scan artifact" to the home directory, assuming it contained the necessary directories at its root. As Alvaro pointed out, this would allow the extracted zip to overwrite anything in the home directory upon extraction.
+
+For example a malicious zip could overwrite shell configuration files (`.profile`, `.bashrc`, ...) which would open another door to arbitrary code execution when running shell scripts in certain ways.
+It could even overwrite the local Gradle cache at `~/.gradle/caches`, poisoning it and bringing us back to square one, since Develocity build scan publishing is in fact a Gradle task!
+
+For safety reasons, untrusted archives (zip, tar, ...) should be extracted to a directory that does not contain anything sensitive: a subdirectory under `/tmp/...` is generally a good solution.
+====
 
 With that done, our workflows were (finally) safe.
 
