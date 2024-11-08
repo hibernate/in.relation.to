@@ -4,12 +4,12 @@ Yoann Rodière
 :awestruct-layout: blog-post
 ---
 
-A few weeks ago, GitHub Security Lab reported to the Hibernate team a vulnerability in GitHub Actions workflows used in some Hibernate projects, which could have (indirectly) impacted released artifacts.
+A few weeks ago, the GitHub Security Lab reported to the Hibernate team a vulnerability in GitHub Actions workflows used in some Hibernate projects, which could have (indirectly) impacted released artifacts.
 
-Fortunately, that vulnerability *wasn't exploited* and all Hibernate releases *are perfectly safe*.
+Fortunately, that vulnerability wasn't exploited and all Hibernate releases are perfectly safe.
 
 However, considering the impact an exploit could have had,
-we thought it would be best to provide some transparency on what happened and how we made sure Hibernate releases -- past, present and future -- are safe.
+we thought it would be best to provide some transparency on what happened and how we made sure that Hibernate releases -- past, present and future -- are safe.
 
 == The origins
 
@@ -18,11 +18,9 @@ In the Hibernate team, we use two different continuous integration (CI) platform
 1. GitHub Actions, for its ease of use and availability on forks.
 2. A Jenkins instance, for its flexibility and ability to easily use runners provided by DB vendors, or exotic environments.
 
-It's a bit weird, but it generally works out okay, because in the end it's all just checks that appear on GitHub commits and pull requests, with links to CI reports where we can find details in case of failures.
+However, there are issues:
 
-That being said, there are issues:
-
-1. It _is_ inconvenient to have different reports (e.g. for test failures) depending on the CI.
+1. It is inconvenient to have different reports (e.g. for test failures) depending on the CI platform.
 2. GitHub Actions, by default, is rather rough in the way it presents test results: it's just a single log, and in our case a huge, impractical one.
 
 So, in March/April 2024, I took on the task of tackling this problem,
@@ -32,6 +30,7 @@ For us, Develocity provides two main (and excellent!) features:
 Build scans::
 Detailed HTML reports that are published on the Develocity instance.
 They allow easier investigation of build problems, mainly test failures.
+
 Remote build cache::
 A shared cache between our CI builds.
 It allows speeding up the builds by skipping some steps (Gradle configuration, Java compilation, test execution, ...) when a previous build already executed them with exactly the same input (same code, same tested DB, ...).
@@ -59,7 +58,7 @@ That done, we felt safe enough, merged, and enjoyed our Develocity-enhanced CI f
 
 == What went wrong
 
-But in early October, https://github.com/pwntester[Alvaro Muñoz] from GitHub Security Lab reported privately to the Hibernate team
+But in early October, https://github.com/pwntester[Alvaro Muñoz] from the GitHub Security Lab reported privately to the Hibernate team
 that one of our GitHub Actions workflow could actually allow malicious actors to exfiltrate an access key to our Develocity instance.
 You can read the full report https://securitylab.github.com/advisories/GHSL-2024-268_Hibernate_ORM/[here].
 
@@ -114,7 +113,7 @@ we were already disabling the build cache for releases of Hibernate Search, our 
 Regarding the GitHub Actions workflow, the obvious solution was to stop using the `pull_request_target` workflow trigger and revert back to using the `pull_request` trigger. That's two birds with once stone, since `pull_request` doesn't expose secrets to the runner, and enables mandatory workflow approval.
 However, not having access to secrets meant that we could not publish build scans anymore, so we were back to square one.
 
-Fortunately GitHub Security Lab suggested a solution -- which incidentally I would have found if I had asked around as https://github.com/quarkusio/quarkus/blob/eb86e0ee0adc7fa847e2d9c704c9630c1b0a4dca/.github/workflows/develocity-publish-build-scans.yml[our friends from Quarkus do exactly that]: split the workflow in two.
+Fortunately the GitHub Security Lab suggested a solution -- which incidentally I would have found if I had asked around as https://github.com/quarkusio/quarkus/blob/eb86e0ee0adc7fa847e2d9c704c9630c1b0a4dca/.github/workflows/develocity-publish-build-scans.yml[our friends from Quarkus do exactly that]: split the workflow in two.
 So https://github.com/hibernate/hibernate-orm/pull/9163[we did the same]:
 
 1. The main "CI" workflow, executing on the `pull_request` trigger, builds (and runs) arbitrary code with no access to secrets whatsoever. Then it uploads a GitHub Actions artifact containing the local copy of the Develocity build report -- not yet published.
@@ -155,22 +154,27 @@ We went somewhat beyond what was strictly necessary, e.g. we revoked/checked SSH
 
 SSH key used by our release process to push commits/tags to GitHub::
 This involved going through the history of pushes made by the corresponding account on any Hibernate project.
+
 SSH key used by our release process to publish content to https://sourceforge.net/projects/hibernate/[Sourceforge]::
 This involved going through files published to Sourceforge since April, and checking their timestamps match the releases we did.
 +
 Hibernate ORM no longer publishes to SourceForge, so it was mainly about other Hibernate projects.
+
 Access token used by our release process to publish artifacts to Maven Central::
 This involved checking that artifacts versions published to Maven Central in the vulnerable period (April to October 2024) are those we released in that period, and only those.
 +
 Since Maven Central does not allow editing/republishing artifacts with the same version, we did not need to check the content of the artifacts (except the Hibernate ORM ones, see above).
+
 Access token used by our release process to publish artifacts to Gradle Plugin Portal::
 This involved checking the content of artifact versions published to Gradle Plugin Portal in the vulnerable period (April to October 2024).
 +
 `org.hibernate.build.version-injection` was checked manually (there was just one version), while others were checked using https://github.com/hibernate/hibernate-release-checker[hibernate/hibernate-release-checker].
 +
 As a reminder, Gradle Plugin Portal allows republishing artifacts with the same version for up to 7 days, hence the stricter checks compared to Maven Central.
+
 SSH key used by our release process to publish content to https://docs.jboss.org/hibernate::
 This involved going through the list of SSH connections to jboss.org using that key -- provided by the JBoss infrastructure administrators -- and checking they matched exactly the releases we performed in the vulnerable period (April to October 2024).
+
 PGP key used by our release process to sign Maven artifacts::
 This involved checking that no unexpected (signed) Maven artifacts were published to Maven Central and Gradle Plugin Portal (see above) -- this is the only context where our PGP key makes sense.
 
@@ -178,7 +182,7 @@ None of our checks revealed anything suspicious, making us confident that the vu
 
 == Next
 
-We'd like to thank GitHub Security Lab, in particular https://github.com/pwntester[Alvaro Muñoz], for reporting this issue and for their collaboration to address it: that help was invaluable.
+We'd like to thank the GitHub Security Lab, in particular https://github.com/pwntester[Alvaro Muñoz], for reporting this issue and for their collaboration to address it: that help was invaluable.
 
 Security-wise, Hibernate projects are now in a better place than they were last month -- even better than before the vulnerability was introduced back in April, in fact, since mandatory approval is now effective on all workflow runs of pull requests.
 
