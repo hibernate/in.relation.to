@@ -24,16 +24,16 @@ However, there are issues:
 2. GitHub Actions, by default, is rather rough in the way it presents test results: it's just a single log, and in our case a huge, impractical one.
 
 So, in March/April 2024, I took on the task of tackling this problem,
-by integrating our CI builds with the https://gradle.com/develocity/[Develocity] instance that Gradle, Inc is providing us as part of its open-source software sponsoring programs.
-For us, Develocity provides two main (and excellent!) features:
+by integrating our CI builds with the https://ge.hibernate.org/[Develocity instance] that Gradle, Inc is providing us as part of its open-source software sponsoring programs.
+For us, https://gradle.com/develocity/[Develocity] provides two main (and excellent!) features:
 
 Build scans::
-Detailed HTML reports that are published on the Develocity instance.
-They allow easier investigation of build problems, mainly test failures.
+Detailed build reports that are published on the Develocity instance.
+They contain in-depth information about what happened at build time and can help troubleshoot build failures in general.
 
 Remote build cache::
-A shared cache between our CI builds.
-It allows speeding up the builds by skipping some steps (Gradle configuration, Java compilation, test execution, ...) when a previous build already executed them with exactly the same input (same code, same tested DB, ...).
+A shared cache for all builds.
+The cache allows speeding up the builds by skipping some steps (Java compilation, source code generation, test execution, code style verification...) when a previous build already executed them with exactly the same input (same code, same tested DB, ...).
 
 Build scans in particular are the solution to our reporting problems, as they unify reporting across CIs, and are very easy to read.
 They can of course be very useful on pull requests, so we wanted to enable them there. We even managed to https://github.com/hibernate/hibernate-github-bot/pull/227[get a unified list of all build scans directly on PRs] through our GitHub bot.
