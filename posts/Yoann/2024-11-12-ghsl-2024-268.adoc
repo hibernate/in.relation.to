@@ -118,7 +118,10 @@ Fortunately GitHub Security Lab suggested a solution -- which incidentally I wou
 So https://github.com/hibernate/hibernate-orm/pull/9163[we did the same]:
 
 1. The main "CI" workflow, executing on the `pull_request` trigger, builds (and runs) arbitrary code with no access to secrets whatsoever. Then it uploads a GitHub Actions artifact containing the local copy of the Develocity build report -- not yet published.
-2. A second "CI reporting" workflow, executing when the first workflow run completes, downloads GitHub Actions artifacts from the completed workflow run, gets access to the Develocity access key, and publishes the build scan. Critically, this workflow does not execute untrusted code at any point.
+2. A second "CI reporting" workflow, executing when the first workflow run completes, downloads GitHub Actions artifacts from the completed workflow run, gets access to the Develocity access key, and publishes the build scan.
++
+Critically, this workflow does not execute untrusted code at any point.
+It still needs to be written with care, though: the "build scan artifact" it manipulates is not be trusted. For example, one mistake we made in our initial implementation was to unzip the "build scan artifact" to the home directory, assuming it contained a directory at its root. As This is dangerous, as it could allow a malicious artifact to replace anything in the home directory,
 
 With that done, our workflows were (finally) safe.
 
@@ -163,6 +166,8 @@ This involved checking that no unexpected (signed) Maven artifacts were publishe
 None of our checks revealed anything suspicious, making us confident that the vulnerability in our workflow was not actually exploited. Phew.
 
 == Next
+
+We'd like to thank GitHub Security Lab, in particular https://github.com/pwntester[Alvaro Muñoz], for reporting this issue and for their collaboration to address it: that help was invaluable.
 
 Security-wise, Hibernate projects are now in a better place than they were last month -- even better than before the vulnerability was introduced back in April, in fact, since mandatory approval is now effective on all workflow runs of pull requests.
 
