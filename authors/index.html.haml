@@ -29,14 +29,16 @@ title: Bloggers
                 .ui.card
                   .image
                     - if not post_author.nil?
-                      %a{:href=>post_author.primary_page.url}
+                      -# relying on primary_page.output_path instead of url which is for our purposes identical - see WEBSITE-318
+                      %a{:href=>post_author.primary_page.output_path}
                         %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=300"}
                     - else
                       %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=300"}
                   .content
                     .header
                       - if not post_author.nil?
-                        %a{:href=>post_author.primary_page.url}
+                        -# relying on primary_page.output_path instead of url which is for our purposes identical - see WEBSITE-318
+                        %a{:href=>post_author.primary_page.output_path}
                           = blogger.name
                       - else
                         = blogger.name
@@ -67,14 +69,16 @@ title: Bloggers
                 .ui.card
                   .image
                     - if not post_author.nil?
-                      %a{:href=>post_author.primary_page.url}
+                      -# relying on primary_page.output_path instead of url which is for our purposes identical - see WEBSITE-318
+                      %a{:href=>post_author.primary_page.output_path}
                         %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=300"}
                     - else
                       %img.author-image{:src=>"https://www.gravatar.com/avatar/#{blogger.gravatar_hash}?s=300"}
                   .content
                     .header
                       - if not post_author.nil?
-                        %a{:href=>post_author.primary_page.url}
+                        -# relying on primary_page.output_path instead of url which is for our purposes identical - see WEBSITE-318
+                        %a{:href=>post_author.primary_page.output_path}
                           = blogger.name
                       - else
                         = blogger.name
