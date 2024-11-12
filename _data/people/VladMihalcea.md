@@ -3,7 +3,7 @@ name: Vlad Mihalcea
 photo: /images/team/VladMihalcea.jpg
 level: 1
 gravatar_hash: 8467574e717b39cc53fbecb4fa3564c2
-active: true
+active: false
 twitter: http://twitter.com/vlad_mihalcea
 website: http://vladmihalcea.com
 ---

@@ -55,6 +55,9 @@ title: Bloggers
 
         %h2 Retired bloggers
 
+        :asciidoc
+          NOTE: Bio of these bloggers may be out of date.
+
         - # Sort by level first (putting 0 at the end), then by name
         .ui.three.column.grid
           - for blogger in site.people.values.select{|s| s.active.nil? || !s.active}.sort{|blogger1, blogger2| level1 = blogger1.level == 0 ? 10000 : blogger1.level; level2 = blogger2.level == 0 ? 10000 : blogger2.level; res = level1 <=> level2; res != 0 ? res : blogger1.name <=> blogger2.name}

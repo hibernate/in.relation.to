@@ -6,7 +6,7 @@ website: http://mincong-h.github.io/
 location: Paris, France
 occupation: Google Summer of Code 2016 participant
 gravatar_hash: e9760ae831cb65cf1b7453c98701aae1
-active: true
+active: false
 website: https://github.com/mincong-h
 twitter: https://twitter.com/mincong_h
 ---

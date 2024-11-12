@@ -6,7 +6,7 @@ website: http://musingsofaprogrammingaddict.blogspot.com/
 location: Hamburg, Germany
 occupation: Hibernate team member
 gravatar_hash: 8e25c0ca4bf25113bd9c0ccc5d118164
-active: true
+active: false
 twitter: https://twitter.com/gunnarmorling
 ---
 I am member of the Hibernate Team at Red Hat, primarily working on

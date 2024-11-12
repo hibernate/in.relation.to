@@ -6,7 +6,7 @@ website:
 location: Rome, Italy
 occupation: Hibernate team member
 gravatar_hash: e406cb91ba291a91def089944ba490c9
-active: true
+active: false
 ---
 I'm a member of the Hibernate Team at Red Hat, primarily working on
 [Hibernate OGM](https://hibernate.org/ogm/),

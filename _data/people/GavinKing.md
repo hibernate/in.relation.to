@@ -3,6 +3,7 @@ name: Gavin King
 photo: /images/team/GavinKing.jpg
 level: 0
 gravatar_hash: 77987db6d7dd75abd4a14651641b3d46
+active: true
 ---
 Gavin King is a Distinguished Engineer at Red Hat. He's the creator of 
 [Hibernate](https://hibernate.org), a popular persistence solution for 

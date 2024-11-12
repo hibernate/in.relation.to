@@ -3,7 +3,7 @@ name: Emmanuel Bernard
 photo: /images/team/EmmanuelBernard.jpg
 level: 1
 gravatar_hash: 34a47bd77922181070aef96782110714
-active: true
+active: false
 website: https://emmanuelbernard.com/
 twitter: http://twitter.com/emmanuelbernard
 ---
