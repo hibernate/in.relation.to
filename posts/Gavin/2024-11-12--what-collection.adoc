@@ -1,0 +1,99 @@
+= What collection mapping should I use?
+Gavin King
+:awestruct-tags: [ "Hibernate ORM", "JPA" ]
+:awestruct-layout: blog-post
+---
+
+I think it's fair to say that Jakarta Persistence has too many options for mapping collections and to-many associations.
+Way back when we wrote JPA 1.0, I argued against adding so many things, on the grounds that a lot of these options tend to lead users down the wrong path.
+But the things I wasn't keen on were ultimately added in JPA 2.0, and I can't really say this was a bad decision, since all these options are things users ask for.
+
+That said, I'm going to begin by reiterating what I've said many times before:
+
+1. Most tables should be mapped as entities, and therefore `@ElementCollection` and `@ManyToMany` should be used sparingly, if at all.
+2. As a corollary of 1, most collections should be _unowned_ collections, that is, almost every collection should be the `mappedBy` side of a one-to-many association.
+
+Historically, we recommended the use of `Set` as the Java type of a collection, since that seems to correspond most closely to the semantics of a foreign key relationship.
+But `Set` comes with some disadvantages:
+
+- it obligates the developer to be very careful in how they implement https://docs.jboss.org/hibernate/orm/6.6/introduction/html_single/Hibernate_Introduction.html#equals-and-hash[`equals()` and `hashcode()`] for entity classes, and
+- due to the return value of `Set.add()`, we can't add new elements to a set https://in.relation.to/2024/11/07/adding-to-collections/[without fetching it from the database first].
+
+In hindsight, perhaps we should have done a better job of letting people know that using `List` is and was always a https://docs.jboss.org/hibernate/orm/6.6/introduction/html_single/Hibernate_Introduction.html#set-vs-list[perfectly respectable option], and frankly simpler.
+
+With all this preamble out of the way, I want to clarify the use of annotations like `@OrderBy`, `@OrderColumn`, `@MapKey`, and `@MapKeyColumn`, which I sense few people really understand.
+But I'm going to begin with the bit I think _is_ quite easy to understand.
+
+== Sorting or ordering a `Set` or `Map`
+
+A `Set` or `Map` may be ordered as it's retrieved from the database.
+Usually, we use `@OrderBy` for this, which lets us specify sorting criteria an JPQL, but Hibernate also provides the `@SQLOrder` annotation which lets you write the criteria in SQL if you prefer.
+
+The order of such a `Set` or `Map` is maintained by an underlying `LinkedHashSet` or `LinkedHashMap`, and so if you add a new element to the `Set` or `Map`, it will be placed out of order, at the end of the collection.
+
+Alternatively, you can ask Hibernate to sort the `Set` or `Map` in memory, using a `@SortNatural` or `@SortComparator` annotation.
+In this case, the order is maintained by an underlying `TreeSet` or `TreeMap`.
+
+So far, so good.
+Now it starts to get slightly murky.
+
+== `List` index or `Map` key for an unowned association
+
+For an unowned association, the index of a `List`, or the key of a `Map` _should always be maintained by a field of the associated entity_.
+This point has been misunderstood by users, bloggers, stackoverflowers, and even past members of the Hibernate team.
+This was the historical semantics of Hibernate, and it's easy to find support for this in the JPA spec itself.
+The spec is perhaps not _quite_ as explicit as it could be, but I'm confident that this is the interpretation we intended.
+
+So what annotation should we use to map such a collection?
+Well, that's easy:
+
+- for a `Map`, we should use `@MapKey` to indicate the field of the associated entity which holds the key of the map, and
+- for a `List`, we can reuse the `@OrderBy` annotation for the same purpose.
+
+[TIP]
+====
+A wrinkle for advanced Hibernate understanders: internally, Hibernate treats a `List` with an `@OrderBy` as an _ordered bag_ instead of a _list_.
+This has the advantages that:
+
+- the list indices don't need to precisely line up with the field values, and that
+- we can even order by much more complex criteria.
+====
+
+[WARNING]
+====
+Hibernate does--incorrectly, in my view--tolerate the use of `@OrderColumn` or `@MapKeyColumn` with an unowned `@OneToMany` association.
+But (inconsistently) Hibernate doesn't support these annotations for an unowned association with a join table, including any `@ManyToMany` association.
+Please just avoid this usage, since it runs contrary to the intention of the Persistence specification, and can result in inefficient SQL when the collection is mutated.
+====
+
+A bit murky, like I said.
+
+== `List` index or `Map` key for an owned collection
+
+Remembering that owned collections should be used sparingly, we now ask how to map their indexes or keys.
+Well, in this case we have some more flexibility, since the `List` index or `Map` key is _not_ required to correspond to a field of the collection element type:
+
+- if there is no such field, we should use `@OrderColumn` for a list index, or `@MapKeyColumn` for a map key, or
+- otherwise, if there _is_ such a field, we may again use `@OrderBy` or `@MapKey`.
+
+Note that for an association with a join table--including any `@ManyToMany` association:
+
+- `@MapKeyColumn` or `@OrderColumn` produces a dedicated column in the _join table_, but
+- `@MapKey` refers to a column of the _associated entity table_, and,
+- similarly to `@MapKey`, `@OrderBy` specifies sorting criteria based on columns of the associated entity table.
+
+Sound complicated?
+It is a little, but it actually makes sense.
+
+== Recommendations
+
+Let's try and boil all this down to some simplified recommendations:
+
+- Use unowned `@OneToMany` associations in preference to other collection mappings. Avoid `@ElementCollection`.
+- If the collection needs to be ordered, use `@OrderBy` or `@SortNatural`. If the collection is a `Map`, use `@MapKey`.
+- If you decide--against my advice--to do something more complicated:
+
+  * use `@MapKey` or `@OrderBy` when the key or index is held in the table of the associated entity, or
+  * otherwise, use `@MapKeyColumn` or `@OrderColumn` only in the case that the column belongs to an association join table or to the collection table of an `@ElementCollection`. Never use these annotations for unowned (`mappedBy`) collections.
+
+I hope that makes all this a bit clearer.
