@@ -1,0 +1,61 @@
+= Hibernate Validator 8.0.2.Final is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:hibernate-validator-doc-url-prefix: https://docs.jboss.org/hibernate/validator/8.0/reference/en-US/html_single/
+:hibernate-validator-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hibernate-validator-version-family: 8.0
+:hibernate-validator-jira-project-id: 10060
+:hibernate-validator-jira-version-id: 32167
+---
+
+Hibernate Validator 8.0.2.Final maintenance release is out.
+
+This release contains some documentation
+and constraint violation message translation updates
+as well as a few bug fixes.
+
+== What's new
+
+[NOTE]
+====
+For a summary of all new features and improvements since 7.0,
+head to https://hibernate.org/validator/releases/8.0/#whats-new[the dedicated page on hibernate.org].
+====
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hibernate-validator-jira-url-prefix}/HV-2002[HV-2002]:
+Fix a problem with the `@TituloEleitoral` constraint, where some Brazilian Voter ID card numbers were incorrectly reported as invalid.
+* link:{hibernate-validator-jira-url-prefix}/HV-2067[HV-2067]:
+Fix a problem with the `@UUID` constraint, where UUIDs could have been incorrectly validated for explicitly specified versions.
+
+And more.
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hibernate-validator-jira-project-id}+AND+fixVersion={hibernate-validator-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/validator/releases/{hibernate-validator-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, please refer to the getting started guide:
+
+* link:{hibernate-validator-doc-url-prefix}#validator-gettingstarted[Getting started with Hibernate Validator]
+
+For existing applications, Hibernate Validator {hibernate-validator-version-family} is a drop-in replacement for 7.0,
+assuming you also upgrade the other Jakarta EE 10 related dependencies.
+Information about API changes is included in the https://hibernate.org/validator/documentation/migration-guide/#8-0-x[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Validation development mailing list] (discussions about the Jakarta Validation specification)
