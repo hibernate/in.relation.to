@@ -1,0 +1,106 @@
+= Hibernate Validator 9.0.0.CR1 is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:hibernate-validator-doc-url-prefix: https://docs.jboss.org/hibernate/validator/9.0/reference/en-US/html_single/
+:hibernate-validator-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hibernate-validator-version-family: 9.0
+:hibernate-validator-jira-project-id: 10060
+:hibernate-validator-jira-version-id: 32349
+---
+
+We just published Hibernate Validator 9.0.0.CR1,
+the first candidate release of the new 9.0 series of Hibernate Validator.
+
+This series targets Jakarta EE 11. It is the implementation of the Jakarta Validation 3.1.
+
+Since the previously released 9.0.0.Beta3, we spent some time on various build improvements,
+tidied up a few things and addressed various reports from the community and our testing.
+
+With this release, we no longer publish relocation POMs for the old `org.hibernate` group id.
+
+There also are some dependency updates and bug fixes.
+
+== What's new
+
+[NOTE]
+====
+For a summary of all new features and improvements since 8.0,
+head to https://hibernate.org/validator/releases/9.0/#whats-new[the dedicated page on hibernate.org].
+====
+
+=== Jakarta EE 11 and Jakarta Validation 3.1
+
+As a reminder: the 9.0 series targets Jakarta EE 11 and implements Jakarta Validation 3.1.
+The 3.1 update of the specification does not bring many https://jakarta.ee/specifications/bean-validation/3.1/jakarta-validation-spec-3.1#whatsnew-31[changes]:
+
+- The minimum required Java version is set to 17.
+- The specification was renamed from _Jakarta Bean Validation_ to _Jakarta Validation_.
+- Validation of Java `record` types was clarified (this has been supported by Hibernate Validator for some time).
+
+=== Dependency upgrades
+
+[[others-version]]
+Others::
+* link:{hibernate-validator-jira-url-prefix}/HV-2045[HV-2045]: Upgrade to JBoss Logging 3.6.1.
+* link:{hibernate-validator-jira-url-prefix}/HV-2048[HV-2048]: Upgrade to Joda Time 2.13.0.
+* link:{hibernate-validator-jira-url-prefix}/HV-2056[HV-2056]: Upgrade to OpenJFX 17.0.13.
+
+=== Removal of the relocation POMs
+
+With Hibernate Validator 9.0, we are no longer publishing relocation POMs for the group id `org.hibernate` previously used by the following artifacts:
+
+- `org.hibernate:hibernate-validator-annotation-processor`
+- `org.hibernate:hibernate-validator-cdi`
+- `org.hibernate:hibernate-validator`
+
+These relocation POM files were introduced back in 2017 to help users gradually migrate to the new `org.hibernate.validator` group id.
+
+See the https://hibernate.org/validator/documentation/migration-guide#9-0-x[migration guide] for more details on migration from previous versions.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hibernate-validator-jira-url-prefix}/HV-1931[HV-1931]:
+Address a problem with Hibernate Validator version printed as `null` in the logs when running on a module path.
+* link:{hibernate-validator-jira-url-prefix}/HV-1942[HV-1942]:
+Update the `DefaultGroupSequenceProvider` interface to be aware of the type it is applied to.
+This should allow a single implementation of the `DefaultGroupSequenceProvider` to be applied to more than one type.
+* link:{hibernate-validator-jira-url-prefix}/HV-1955[HV-1955]:
+Update the implementation of the `@NotBlank` constraint to rely on the `String#isBlank()`.
+* link:{hibernate-validator-jira-url-prefix}/HV-2053[HV-2053]:
+Add translation of Validation Messages for Azerbaijani language. Thanks to https://github.com/Maharramoff[Shamkhal Maharramov] for contributing the translation file.
+* link:{hibernate-validator-jira-url-prefix}/HV-2067[HV-2067]:
+Fix a problem with the `@UUID` constraint, where UUIDs could have been incorrectly validated for explicitly specified versions.
+
+And more.
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hibernate-validator-jira-project-id}+AND+fixVersion={hibernate-validator-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+**Hibernate Validator 9 targets the upcoming Jakarta EE 11.**
+
+All details are available and up to date on the
+link:https://hibernate.org/validator/releases/{hibernate-validator-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, please refer to the getting started guide:
+
+* link:{hibernate-validator-doc-url-prefix}#validator-gettingstarted[Getting started with Hibernate Validator]
+
+For existing applications, Hibernate Validator {hibernate-validator-version-family} in most cases is a drop-in replacement for 8.0,
+assuming you also upgrade the other Jakarta EE 11 related dependencies and were not relying on the removed deprecated APIs.
+Information about deprecated configuration and API
+is included in the https://hibernate.org/validator/documentation/migration-guide/#migration-guide-9-0-x[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Validation development mailing list] (discussions about the Jakarta Validation specification)
