@@ -100,7 +100,7 @@ Awestruct::Extensions::Pipeline.new do
                                                    :feed_title=>'In Relation To Blog')
   end
 
-  extension InRelationTo::Extensions::JsonFeedGenerator.new( :posts, 'feeds', [ 'Hibernate ORM', 'Hibernate Search', 'Hibernate Validator', 'Hibernate OGM', 'JBoss Tools' ], 5)
+  extension InRelationTo::Extensions::JsonFeedGenerator.new( :posts, 'feeds', [ 'Hibernate ORM', 'Hibernate Search', 'Hibernate Validator', 'Hibernate Reactive', 'Hibernate Data Repositories', 'Hibernate OGM', 'JBoss Tools' ], 5)
 
   extension Awestruct::Extensions::Paginator.new( :posts, 'index', :per_page=>10, :per_page_init=>10 )
   extension InRelationTo::Extensions::PaginationLinkRenderer.new()

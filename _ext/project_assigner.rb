@@ -10,6 +10,7 @@ module InRelationTo
         'Hibernate Validator' => 'validator',
         'Hibernate OGM' => 'ogm',
         'Hibernate Reactive' => 'reactive',
+        'Hibernate Data Repositories' => 'repositories',
         'Hibernate Tools' => 'tools'
       }
 
