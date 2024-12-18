@@ -181,7 +181,7 @@
 	}
 
 	dt {
-		font-size: 1.2em;
+		font-size: 1.1em;
 		font-weight: bold;
 		margin-bottom: 0.3em;
 	}
@@ -294,6 +294,11 @@ pre {
 	padding: 1%;
 	white-space: pre;
 	border-radius: 0.3rem;
+	font-family: Inconsolata, monospace;
+}
+
+code, kbd, samp {
+	font-family: Inconsolata, monospace;
 }
 
 #preamble {
@@ -444,8 +449,8 @@ pre {
 
 	&.note table, &.tip table {
 		box-shadow: 0 0 0 1px #a9d5de inset, 0 0 0 0 transparent;
-			background-color: #f8ffff;
-			color: #276f86;
+		background-color: #f8ffff;
+		color: #276f86;
 	}
 
 	&.warning table {
@@ -563,7 +568,7 @@ pre {
 	letter-spacing: -1px;
 
 	& * {
-	color: white !important;
+		color: white !important;
 	}
 
 	// hack for when highlight.js adds a bogus element into DOM
@@ -631,13 +636,13 @@ pre .comment .conum {
 	}
 	
 	.sponsor .logo {
+		display: block;
 		&:not(:last-child) {
 			margin-bottom: 20px;
 		}
-		&.redhat, &.redhatdevelopers {
+		&.redhat, &.redhatdevelopers, &.commonhaus {
 			img {
-				height: 44px;
-				width: auto;
+				width: 186px;
 			}
 		}
 	}
@@ -658,6 +663,15 @@ pre .comment .conum {
 	border-left: 1px solid #CCC;
 }
 
+.ui.items > .item > .content > a.header {
+	color: #4183C4;
+}
+
+// Make sure newlines are properly rendered in tooltips (popups)
+[data-tooltip]:after {
+	white-space: pre;
+}
+
 // Semantic UI has these classes, however they're only applicable to
 // grids, containers, rows and columns.
 // plus, there isn't any `mobile hidden`, `X hidden` class.
@@ -668,10 +682,10 @@ pre .comment .conum {
 
 /* Mobile */
 @media only screen and (max-width: 767px) {
-		[class*="mobile hidden"],
-		[class*="tablet only"]:not(.mobile),
-		[class*="computer only"]:not(.mobile),
-		[class*="or lower hidden"] {
+	[class*="mobile hidden"],
+	[class*="tablet only"]:not(.mobile),
+	[class*="computer only"]:not(.mobile),
+	[class*="or lower hidden"] {
 		display: none !important;
 	}
 }
