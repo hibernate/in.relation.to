@@ -68,3 +68,6 @@ So, my recommendations are as follows:
 3. For special cases like batch processing of huge datasets, use https://docs.jboss.org/hibernate/orm/7.0/introduction/html_single/Hibernate_Introduction.html#stateless-sessions[`StatelessSession`] or https://docs.jboss.org/hibernate/orm/7.0/introduction/html_single/Hibernate_Introduction.html#session-cache-management[`Session.clear()`] to control the use of memory on the Java side, and https://docs.jboss.org/hibernate/orm/7.0/javadocs/org/hibernate/ScrollableResults.html[`ScrollableResults`] together with https://docs.jboss.org/hibernate/orm/7.0/javadocs/org/hibernate/ScrollableResults.html#setFetchSize(int)[`setFetchSize()`] to control fetching. Or even better, just make life easy for yourself and write a damn stored procedure.
 
 So if you belong to that 70% of Oracle users, you should be able to make your program more responsive and more scalable with almost no work, using this One Simple Trick.
+
+UPDATE: Note that if you try searching for "JDBC fetch size" on Google, you'll encounter a bunch of misinformation.
+The https://franckpachot.medium.com/oracle-postgres-jdbc-fetch-size-3012d494712[one source which gets this right] is (coincidence?) from Franck Pachot.
