@@ -1,0 +1,72 @@
+= Ideas are cheap
+Gavin King
+:awestruct-tags: []
+:awestruct-layout: blog-post
+---
+
+I often find myself in the slightly uncomfortable position of playing _gatekeeper_.
+Someone comes along with some good idea, and I have to be the asshole who pulls their idea apart, or ultimately winds up saying "no".
+I'm acutely aware that this often leaves the impression of me being resistant to new ideas, or change, or whatever, but people who know me well know this isn't the case.
+So let's think about why gate-keeping is necessary, and what it means to do it well.
+
+Let me begin by saying that _good ideas are cheap_.
+On an average week I have one or two good ideas about how to improve Hibernate, or Jakarta Persistence, or Jakarta Data, and when I'm in one of those periods where I'm really focussed on this stuff -- which means I'm thinking about persistence 24 hours a day, including when I'm eating and sleeping, work/life balance _a la mierda_ -- it's more like ten good ideas a day.
+
+Naturally, upon reflection, it turns out that nine out of ten of my "good" ideas are actually rubbish.
+Generously, one in ten _of the remaining tenth_ ultimately get implemented in Hibernate.
+And of these survivors, I propose many fewer than a tenth for inclusion in the Persistence or Data specifications.
+Some of those proposals get knocked down by the rest of the group, or are transformed into something almost unrecognizable.
+That is to say, I need to generate _thousands_ of ideas to get one new feature into the platform, and the process from "idea" to specification change typically takes years, or in extreme cases even decades (looking at you, `StatelessSession`).
+
+So what happens when a community member pops up proposing a new feature for a specification like Persistence or Data?
+First of all, it's important to recognize that it's quite unlikely that the proposal is really "new" in the sense of being something we've never thought of before; a huge class of proposals is for standardization of something that already exists in Hibernate, or in EclipseLink, or wherever; a second large class of proposals is for things we already thought really hard and deeply about, perhaps more than a decade ago, and decided against for very good but possibly non-obvious reasons.
+
+So what happens with the remaining, truly "new" ideas?
+Well, they have to submit themselves to a quite brutal interrogation.
+
+The first issue is that a new proposal is most often framed as a _solution_, that is, as a concrete new API or whatever.
+But we really need to begin by understanding the _problem_.
+What is it that motivates the perceived need for this solution?
+Is this problem representative of a more general class of problem than originally contemplated?
+Does our specification even have any business attempting to address the given problem?
+If so, is the time ripe to do so?
+
+Assuming we arrive at understanding of the problem, and think it's something we should try to solve, we must then explore the full range of possible solutions, picking each possible solution apart.
+This is the point where things sometimes get ugly.
+It's incredibly common for someone to get attached to _one particular solution_, either because it's what they're familiar with, having used it elsewhere; or because it's the one they thought of for themselves; or because it fits their particular use case very comfortably; or due to some combination of the previous factors.
+And having one's own favorite idea put under the microscope can be uncomfortable, especially when the operator of the microscope is someone like me, who sometimes forgets to care about your feelings.
+(Sorry about that!)
+
+How can we make this process work better?
+
+One discipline I practice as an API designer is to **never emotionally commit to given single solution**.
+Let's be honest: this is really hard, and I'm not going to pretend I'm anything like a perfect practitioner of this discipline.
+Of course I quite regularly have a favorite solution to a given problem, and I'm known to fight quite hard for what I think is right, and for what fits elegantly into my overarching vision.
+But I do run a background thread which is always there, always on the lookout for the possibility I've lost my objectivity.
+And I'm also always asking: _hey, what would make me change my mind_.
+If I don't have a good answer to this question, I know I need to take a step back.
+
+A second discipline, a corollary of the first, is to assume that **my interlocutor has a good reason for preferring their preferred solution, which they quite likely have not stated explicitly**.
+If there's one thing I actually am really good at, it's drawing out such unstated motivations.
+_Making implicit requirements explicit_ is an incredibly powerful tool that allows us to work together to find a solution that addresses everyone's requirements simultaneously, very often leading to a more innovative, more general, more powerful solution than any we started out with.
+
+And now we come to what I think is a key responsibility of a gatekeeper: **to avoid premature convergence to a local optimum**.
+Writing a specification isn't like writing code.
+Suboptimal code is perfectly good code because code can be easily changed.
+The API and semantics defined by a specification are in some sense set in stone.
+Fixing mistakes is extremely costly.
+It's painful to come back ten years later and think: _damn, I wish we would not have done it this way_.
+
+A solution arrived at by majority vote, or by one party's exhaustion with the argument, or by an exercise of power by a benevolent dictator, or by some sort of "pragmatic" --  i.e. _inelegant_ -- compromise is rarely a global optimum.
+It takes hard work to escape local optima, and hard work requires keeping emotions in check.
+In this context, it means recognizing that a good idea might not be the best idea, not even when it's my favorite idea.
+
+---
+
+At the risk of this post turning into a ramble, I'd like to wrap up with a more general exhortation.
+Some of ya'll seem to think having "soft skills" is about being more agreeable.
+And it's true that naturally-agreeable people usually have it easier in the workplace, and so, thinking selfishly, it's often the safest strategy.
+But a "soft skill" I happen to think is important is to take full responsibility for the downstream effects of one's choices.
+For example, at least one of my biggest regrets about the Persistence specification--I'm thinking of a mistake which still causes pain today, and which has surely resulted in many millions of dollars of lost productivity over the years--was the direct result of me going along with something I thought wasn't quite right, but wanted to avoid getting into a fight about.
+Being agreeable is easy, but going along with things for the sake of not rocking boats creates negative externalities for everyone.
+So: stand up for what you believe in, just don't get stuck on one particular realization of your beliefs.
