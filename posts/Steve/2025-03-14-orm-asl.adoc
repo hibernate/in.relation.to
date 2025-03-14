@@ -1,0 +1,53 @@
+= Hibernate ORM Moves to Apache License
+Steve Ebersole
+:awestruct-tags: ["Hibernate ORM"]
+:awestruct-layout: blog-post
+
+The Hibernate team is ecstatic to report that we have successfully relicensed Hibernate ORM under the https://www.apache.org/licenses/LICENSE-2.0[Apache 2.0] license!
+As discussed https://in.relation.to/2023/11/18/license/[previously], this decision was solely about opening up wider acceptance amongst Apache/Jakarta projects and 
+other places that (for whatever reasons) disallow the LGPL license.
+
+This was a massive effort on the part of many people and took nearly 2 years to complete.
+We are grateful to all the contributors who explicitly agreed to allow the relicensing of their contributions - thank you!
+
+
+IMPORTANT: This will only be applicable to versions moving foward from 7.0.0.Beta4.  We will not be backporting any relicensing to any 6.x, 5.x, etc branches.
+
+
+A first release of ORM 7.0 covered under the Apache 2.0 License will be released early next week!
+
+
+== Casualties 
+
+There were a few unfortunate casualties of this process where we were unable to get agreement for relicensing specific contributions which required removing some functionality.
+
+=== hibernate-envers
+
+We were unable to get explicit agreement for too many contributions to `hibernate-envers` and did not feel comfortable relicensing it. For the time being, `hibernate-envers`
+has been removed from the Hibernate repository and is not published with the rest of Hibernate ORM.  The code has been temporarily moved to the following locations keeping
+all of the commit history intact:
+
+* For main/test code - https://github.com/sebersole/hibernate-envers-lgpl
+* For documentation - https://github.com/sebersole/hibernate-envers-docs-lgpl
+
+We are still looking into relicensing `hibernate-envers` and how to publish it going forward. Stay tuned for more information.  In the meantime,
+users wanting to coninue using `hibernate-envers` have 2 options:
+ 
+1. Continue to use older released versions
+2. Build hibernate-envers from the https://github.com/sebersole/hibernate-envers-lgpl[repository] mentioned above
+
+IMPORTANT: Both of these options continue to fall under the terms of the LGPL.
+
+
+=== hibernate-ucp
+
+This module was wholly contributed by a user we were never able to contact.  As we did not feel comfortable to relicense it, it was removed.
+
+To be determined whether we will reintroduce `hibernate-ucp` later.
+
+
+=== TeradataDialect and friends
+
+We were not able to get explicit agreement for relicensing of `TeradataDialect` and its friends.  As it lived in the `hibernate-community-dialects`
+and was therefore already considered not supported, the easiest solution was to simply drop that code.
+
