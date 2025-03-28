@@ -1,0 +1,124 @@
+= "Specifications" in Jakarta Data
+Gavin King
+:awestruct-tags: ["Jakarta Data", "Hibernate Data Repositories"]
+:awestruct-layout: blog-post
+---
+
+Several people have recently asked me how to do "specifications" in Hibernate or in Jakarta Data.
+I believe this idea comes from Spring Data, where a repository method may be passed a function that applies programmatic restrictions to the query result via the JPA Criteria API.
+
+CAUTION: I'm not a massive fan of this approach, though I do see how it _somewhat_ reduces the famous verbosity of the Criteria API, at least in simple cases. We have something *much* more exciting cooking in Jakarta Data 1.1, but you'll have to wait a bit for that.
+
+There are no built-in specifications in Jakarta Data.
+But fortunately, it's really easy to implement this feature in your own program.
+Actually, this is a rather instructive exercise, that illustrates some of the flexibility of https://hibernate.org/repositories[Hibernate Data Repositories].
+
+First, we're going to define a generic repository supertype.
+Spring calls this interface `JpaSpecificationExecutor`, but we'll just call it `JpaRepository`.
+
+[source,java]
+----
+public interface JpaRepository<T> {
+
+    StatelessSession session();  // implemented by Jakarta Data
+
+    Class<T> entityClass();  // implemented explicitly by subtypes
+
+    ...
+
+}
+----
+
+1. The `session()` method is a standard https://docs.jboss.org/hibernate/orm/7.0/repositories/html_single/Hibernate_Data_Repositories.html#resource-accessor-method[resource accessor method] returning the underlying Hibernate `StatelessSession`.
+2. The `entityClass()` method is one that each repository which extends `JpaRepository` is going to have to provide--it just returns the entity class, `Book.class` or whatever.
+
+In case (2) really bothers you, we can do something fancy with reflection.
+
+[TIP]
+====
+The Java Reflection API makes working with generic types absolutely miserable, but the following ugly and fragile implementation of `entityClass()` works well enough for our immediate purposes:
+[source,java]
+----
+@SuppressWarnings("unchecked")
+default Class<T> entityClass() {
+    var thisInterface = (ParameterizedType)
+            getClass().getInterfaces()[0].getGenericInterfaces()[0];
+    return (Class<T>) thisInterface.getActualTypeArguments()[0];
+}
+----
+====
+
+Now we need a `find()` method which accepts a "specification".
+We _could_ define our own single-method `Specification` interface for this, but Java already has an interface that we can reuse: the unlovely `BiFunction`.
+
+Let's add the following method to `JpaRepository`.
+
+// [source,java]
+// ----
+// default List<T> find(BiFunction<CriteriaBuilder, Root<T>, Predicate> specification) {
+//     return new CriteriaDefinition<>(session(), entityClass()) {{
+//         restrict(specification.apply(this, from(entityClass())));
+//     }}.createSelectionQuery(session()).getResultList();
+// }
+// ----
+//
+// Notice that we used https://docs.jboss.org/hibernate/orm/7.0/javadocs/org/hibernate/query/criteria/CriteriaDefinition.html[`CriteriaDefinition`] but we don't need to.
+
+[source,java]
+----
+default List<T> find(BiFunction<CriteriaBuilder, Root<T>, Predicate> specification) {
+    var builder = session().getCriteriaBuilder();
+    var query = builder.createQuery(entityClass());
+    query.where(specification.apply(builder, query.from(entityClass())));
+    return session().createQuery(query).getResultList();
+}
+----
+
+Similarly, we can define a `count()` method:
+
+[source,java]
+----
+default long count(BiFunction<CriteriaBuilder, Root<T>, Predicate> specification) {
+    var builder = session().getCriteriaBuilder();
+    var query = builder.createQuery(Long.class);
+    query.where(specification.apply(builder, query.from(entityClass())))
+            .select(builder.count());
+    return session().createQuery(query).getSingleResult();
+}
+----
+
+Ad we're done: less than twenty lines of code.
+
+Now let's define a Jakarta Data repository which extends our interface:
+
+[source,java]
+----
+@Repository
+public interface Library extends JpaRepository<Book> {
+    @Override
+    default Class<Book> entityClass() {
+        return Book.class;
+    }
+}
+----
+
+A client of the `Library` repository may call `count()` and `find()` as follows:
+
+[source,java]
+----
+long count = library.count((builder, book) ->
+        builder.like(book.get(Book_.title), "%" + title + "%"));
+----
+[source,java]
+----
+var books = library.find((builder, book) ->
+        builder.and(builder.like(book.get(Book_.title), "%" + title + "%"),
+                builder.lower(book.join(Book_.authors).get(Author_.name))
+                        .equalTo(authorName.toLowerCase())));
+
+----
+
+As usual, I ask you to take note of the fact that everything here is _completely_ typesafe, since we're making use of the JPA static metamodel.
+
+Of course, you can go ahead and define additional generic methods which work with such "specifications".
+As an exercise, I'll leave you with the task of adding an overload of `find()` which lets the caller specify an ordering.
