@@ -122,3 +122,16 @@ As usual, I ask you to take note of the fact that everything here is _completely
 
 Of course, you can go ahead and define additional generic methods which work with such "specifications".
 As an exercise, I'll leave you with the task of adding an overload of `find()` which lets the caller specify an ordering.
+
+[TIP]
+==== 
+If you need to compose specifications, this function does the trick:
+[source,java]
+----
+static <T> BiFunction<CriteriaBuilder, Root<T>, Predicate>
+compose(BiFunction<CriteriaBuilder, Root<T>, Predicate> first,
+        BiFunction<CriteriaBuilder, Root<T>, Predicate> second) {
+    return (builder, root) -> builder.and(first.apply(builder, root), second.apply(builder, root));
+}
+----
+====
