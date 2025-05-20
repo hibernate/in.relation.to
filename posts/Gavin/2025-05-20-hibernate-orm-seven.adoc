@@ -1,0 +1,113 @@
+= Hibernate 7 (and Hibernate Validator 9)
+Gavin King
+:awestruct-tags: ["Hibernate ORM", "Jakarta Persistence"]
+:awestruct-layout: blog-post
+---
+
+Today--or rather, late last night--we released https://in.relation.to/2025/05/19/orm-70/[Hibernate ORM 7], which includes the latest version of https://hibernate.org/repositories[Hibernate Data Repositories].
+We've also released https://in.relation.to/2025/05/20/hibernate-validator-9-0-0-Final/[Hibernate Validator 9].
+
+- Hibernate ORM 7 features a complete implementation of https://jakarta.ee/specifications/persistence/3.2/[Jakarta Persistence 3.2] and of https://jakarta.ee/specifications/data/1.0/[Jakarta Data 1.0].
+- Hibernate Validator 9 implements https://jakarta.ee/specifications/bean-validation/3.1/[Jakarta Validation 3.1].
+
+This is the first production-ready version of our platform available entirely under the Apache Software License.
+(Yes, that includes Envers!)
+And it's the first version of our platform to fully support Jakarta EE 11.
+
+Compared to the massive reengineering effort that went into Hibernate 6, this release is much more incremental, and most users should experience a smoother migration.
+But, as befits a major release, we've removed some deprecated functionality.
+So let's get the bad news out of the way first.
+
+== Detached entities
+
+Hibernate 7 no longer permits reassociation of a detached entity with a persistence context.
+This change has been a very long time coming, and so nobody should be surprised to see it finally happen.
+For many users, this will have no impact at all.
+But for folks who've been sticking stubbornly with `saveOrUpdate()` through all these years, well, this is probably going to hurt.
+Sorry.
+
+As of Hibernate 7, there are only two ways to deal with detached entities:
+
+1. the JPA-standard `merge()` operation, or
+2. the `StatelessSession`.
+
+Speaking of which...
+
+== More powerful stateless session
+
+The `StatelessSession` underlies our implementation of Jakarta Data, and this has pushed it in a new direction, away from its original sweet spot as a way to process entities in bulk.
+Recent releases of Hibernate have seen `StatelessSession` gradually accrete new functionality, and as of Hibernate 7 it has essentially reached feature parity with `Session`.
+In this release:
+
+- a stateless session can now https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#stateless-session-cache[read and write data to and from the second-level cache], and
+- has an https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#stateless-session-multiple[improved API for dealing with batching].
+
+== Specifications, restrictions, and ranges
+
+Early versions of Hibernate featured a simple API for tree-like criteria queries, that is, one oriented around placing restrictions (filtering criteria) on the fields and associations of a single root entity.
+This API was eventually superseded by the JPA Criteria API, which was far more powerful, and much more type safe.
+
+But over the years, more than a few users have grumbled that the original API was in some respects much easier to use for the most common scenarios.
+Hibernate 7 features a brand-new set of APIs, more similar in spirit to the original criteria queries, but based on the JPA static metamodel, and therefore completely type safe.
+
+[source,java]
+var books =
+     SelectionSpecification.create(Book.class)
+         .restrict(Restriction.contains(Book_.title, "Hibernate", false))
+         .restrict(Restriction.greaterThan(Book_.pages, 100))
+         .sort(Order.desc(Book_.title))
+         .createQuery(session)
+         .getResultList();
+
+What makes this new API truly powerful that it can be used to https://docs.jboss.org/hibernate/orm/7.0/introduction/html_single/Hibernate_Introduction.html#restrictions-and-ordering[add restrictions or ordering] to an existing "base" query written in HQL:
+
+[source,java]
+var books =
+    SelectionSpecification.create(Book.class,
+            "from Book where discontinued = false")
+        .restrict(Restriction.startsWith(Book_.title, "hibernate"))
+        .sort(Order.desc(Book_.title))
+        .fetch(Path.from(Book.class).to(Book_publisher))
+        .createQuery(session)
+        .setPage(Page.first(50))
+        .getResultList();
+
+A https://docs.jboss.org/hibernate/orm/7.0/javadocs/org/hibernate/query/restriction/Restriction.html[`Restriction`] packages a reference to an element of the static metamodel with a https://docs.jboss.org/hibernate/orm/7.0/javadocs/org/hibernate/query/range/Range.html[`Range`] of allowed values.
+
+`Restriction` and `Range` may even be used in https://docs.jboss.org/hibernate/orm/7.0/repositories/html_single/Hibernate_Data_Repositories.html#dynamic-restrictions[Hibernate Data Repositories].
+
+== Options
+
+Jakarta Persistence 3.2 introduces `FindOption`, `RefreshOption`, and `Lockoption`, allowing control over the behavior of the standard operations `find()`, `refresh()`, and `lock()`.
+
+[source,java]
+Book book = session.find(Book.class, isbn, PESSIMISTIC_WRITE, Timeouts.NO_WAIT);
+
+Among the menagerie of concrete options are:
+
+- `LockModeType`, `Timeout`, `CacheStoreMode`, and `CacheRetrieveMode`, defined by the spec, along with
+- `BatchSize`, `ReadOnlyMode`, and `EnabledFetchProfile` added by Hibernate.
+
+``FindOption``s may even be passed to the new method `Session.findMultiple()`.
+
+== Much more
+
+A full list of new features may be found in https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html[What's New], and more information about changes which affect existing programs may be found in the https://docs.jboss.org/hibernate/orm/7.0/migration-guide/migration-guide.html[Migration Guide].
+I will mention just couple more new features here.
+
+=== Pattern-based column naming for embeddables
+
+We've finally yielded to years of begging and nagging from our user community, and introduced https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#embedded-column-naming[a way to specify a common prefix or suffix] for the columns mapped by an `@Embeddable` type.
+
+=== Mini-language for entity graphs
+
+Steve has created a https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#NamedEntityGraph[simple mini-language] making it incredibly easy to define a named `EntityGraph`.
+
+=== New functions in HQL
+
+Christian added new functions for https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#json-xml-functions[working with JSON and XML], and for https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#set-returning-functions[returning sets]
+
+== A Short Guide to Hibernate 7
+
+Finally, https://docs.jboss.org/hibernate/orm/7.0/introduction/html_single/Hibernate_Introduction.html[_A Short Guide to Hibernate 7_] is a substantially-rewritten new edition of _An Introduction to Hibernate 6_.
+This is the best place to go if you want to learn how to effectively use Hibernate as it exists today, or even if you're just curious about the considerations motivating the recent evolution of Hibernate ORM.
