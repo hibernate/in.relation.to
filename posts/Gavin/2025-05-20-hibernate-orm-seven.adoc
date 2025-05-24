@@ -93,13 +93,17 @@ Among the menagerie of concrete options are:
 == Much more
 
 A full list of new features may be found in https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html[What's New], and more information about changes which affect existing programs may be found in the https://docs.jboss.org/hibernate/orm/7.0/migration-guide/migration-guide.html[Migration Guide].
-I will therefore limit myself to mentioning just three more new features here:
+I will therefore limit myself to mentioning just a few more new features here:
 
 - We've finally yielded to years of begging and nagging from our user community, and introduced https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#embedded-column-naming[a way to specify a common prefix or suffix] for the columns mapped by an `@Embeddable` type.
 
 - Steve has created a https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#NamedEntityGraph[simple mini-language] making it incredibly easy to define a named `EntityGraph`.
 
-- Christian added new functions for https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#json-xml-functions[working with JSON and XML], and for https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#set-returning-functions[returning sets]
+- Speaking of which, I https://docs.jboss.org/hibernate/orm/7.0/migration-guide/migration-guide.html#load-fetch-graphs[completely re-engineered] the package `org.hibernate.graph`.
+
+- Christian added new functions for https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#json-xml-functions[working with JSON and XML], and for https://docs.jboss.org/hibernate/orm/7.0/whats-new/whats-new.html#set-returning-functions[returning sets].
+
+- It's easy to miss the new features of the JPA Criteria API, including https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/jakarta/persistence/criteria/criteriabuilder#union(jakarta.persistence.criteria.CriteriaSelect,jakarta.persistence.criteria.CriteriaSelect)[`union()`], `intersect()`, and `except()`, joins on entity type, along with https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/jakarta/persistence/criteria/expression#cast(java.lang.Class)[`cast()`], https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/jakarta/persistence/criteria/criteriabuilder#extract(jakarta.persistence.criteria.TemporalField,jakarta.persistence.criteria.Expression)[`extract()`], `left()` `right()`, and https://jakarta.ee/specifications/persistence/3.2/apidocs/jakarta.persistence/jakarta/persistence/criteria/criteriabuilder#replace(jakarta.persistence.criteria.Expression,java.lang.String,java.lang.String)[`replace()`].
 
 == A Short Guide to Hibernate 7
 
