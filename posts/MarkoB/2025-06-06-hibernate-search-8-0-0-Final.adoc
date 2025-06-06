@@ -1,0 +1,300 @@
+= Hibernate Search 8.0.0.Final is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/8.0/reference/en-US/html_single/
+:horm-doc-url-prefix: https://docs.jboss.org/hibernate/orm/7.0/userguide/html_single/Hibernate_User_Guide.html
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/8.0/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.jboss.org/hibernate/search/8.0/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 8.0
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 33769
+---
+
+We are excited to announce the release of Hibernate Search 8.0.0.Final.
+
+Compared to the previous 7.2 version it introduces new metric aggregations,
+compatibility with the latest Elasticsearch and OpenSearch versions,
+a new Lucene 10 based backend,
+allows projecting multivalued fields to any container,
+improves logging by grouping logs into categories,
+brings a preview of Hibernate Search static metamodel for building search queries
+with compile-time checks and more!
+Compared to the previously released 8.0.0.CR1, this version is almost identical, and only adds a few minor dependency updates.
+
+== What's new
+
+[NOTE]
+====
+For a summary of all new features and improvements since 7.2,
+head to https://hibernate.org/search/releases/8.0/#whats-new[the dedicated page on hibernate.org],
+or check a more detailed list below.
+====
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5383[HSEARCH-5383])::
+Hibernate Search targets the Hibernate ORM 7.0 series, which implements Jakarta Persistence 3.2.0.
+In particular, it is currently based on Hibernate ORM 7.0.0.Final.
+[[lucene-version]]
+Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-5373[HSEARCH-5373])::
+The Lucene-next backend now uses Lucene 10.2.1.
+[[elasticsearch-version]]
+Elasticsearch (link:{hsearch-jira-url-prefix}/HSEARCH-5361[HSEARCH-5361])/(link:{hsearch-jira-url-prefix}/HSEARCH-5365[HSEARCH-5365])::
+The Elasticsearch backend works with Elasticsearch 9.0 and 8.18, as well as other already compatible versions.
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-5363[HSEARCH-5363]::
+The Elasticsearch backend works with OpenSearch 3.0, as well as other already compatible versions.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-5374[HSEARCH-5393]: Upgrade to Elasticsearch **client** 9.0.2
+* link:{hsearch-jira-url-prefix}/HSEARCH-5370[HSEARCH-5370]: Upgrade to GSON 2.13.1.Final
+* link:{hsearch-jira-url-prefix}/HSEARCH-5368[HSEARCH-5368]: Upgrade to Jandex 3.3
+* link:{hsearch-jira-url-prefix}/HSEARCH-5371[HSEARCH-5371]: Upgrade to Jackson 2.19.0
+* link:{hsearch-jira-url-prefix}/HSEARCH-5238[HSEARCH-5238]: Upgrade to commons-codec 1.18.0
+
+[[metric-aggregations]]
+=== Metric aggregations
+
+The Hibernate Search DSL now allows requesting metric aggregations:
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+AggregationKey<Double> avgPriceKey = AggregationKey.of( "avgPrice" ); // <1>
+AggregationKey<LocalDate> oldestReleaseKey = AggregationKey.of( "oldestRelease" ); // <2>
+
+SearchResult<Book> result = searchSession.search( Book.class )
+    .where( f -> f.matchAll() )
+    .aggregation( avgPriceKey, f -> f.avg().field( "price", Double.class ) ) // <3>
+    .aggregation( oldestReleaseKey, f -> f.min().field( "releaseDate", LocalDate.class ) ) // <4>
+    .fetch( 20 );
+
+Double avgPrice = result.aggregation( avgPriceKey ); // <5>
+LocalDate oldestRelease = result.aggregation( oldestReleaseKey );
+----
+<1> Create an aggregation key for an average price aggregation.
+<2> Create an aggregation key for a minimum date aggregation.
+<3> Request an `.avg()` aggregation on the price field.
+Specifying `Double` here defines the expected return type of the computed aggregation.
+<4> Request a `.min()` aggregation on the release date field.
+Specifying `LocalDate` here defines the expected return type of the computed aggregation.
+<5> Extract the aggregated value from the results.
+====
+
+See the corresponding section on link:{hsearch-doc-url-prefix}#search-dsl-aggregation-metric[metric aggregations]
+to learn which aggregations are available.
+
+[[backend-lucene-next]]
+=== New Lucene backend
+
+While Hibernate Search 8.0 still targets JDK 17, Lucene, starting with version 10,
+is leveraging new Java APIs, particularly to work with memory, that are available starting with JDK 21.
+To give users an option to work with the newer Lucene version, Hibernate Search introduces the
+`hibernate-search-backend-lucene-next` backend.
+
+Currently, this backend is backed by Lucene 10 and requires JDK 21. In terms of functionality,
+both Lucene-based backends have the same search capabilities.
+
+See link:{hsearch-doc-url-prefix}#other-integrations-lucene-next[this section] of the reference documentation
+to learn more.
+
+[[multi-collectors]]
+=== Projecting multivalued fields
+
+It is now possible to use other collection types than `List` for multivalued projections:
+
+.Using a Set to collect author names in a projection constructor
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+@ProjectionConstructor
+public record MyBookProjection(
+    @IdProjection Integer id,
+    String title,
+    Set<String> authors) {  // <1>
+}
+----
+<1> Using `Set` as a collection for a multivalued projection.
+====
+.Using the set collector within projection DSL
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+List<Set<String>> hits = searchSession.search( Book.class )
+    .select( f -> f.field( "authors.lastName", String.class ).set() ) // <1>
+    .where( f -> f.matchAll() )
+    .fetchHits( 20 );
+----
+<1> Using the set collector.
+====
+
+Hibernate Search comes with implementation for most popular collections,
+but it is also possible to extend it and use a custom collector for an unsupported collection:
+
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+List<MyCustomCollection<String>> hits = searchSession.search( Book.class )
+    .select( f -> f.field( "authors.lastName", String.class ).collector( new MyCustomCollector() ) ) // <1>
+    .where( f -> f.matchAll() )
+    .fetchHits( 20 );
+----
+<1> Pass an instance of `ProjectionCollector.Provider` to the `.collector()` method.
+====
+
+[[logging-categories]]
+=== Logging categories
+
+Hibernate Search now utilizes logging categories instead of FQCNs. It is now easier to enable logging
+when debugging a particular area of Hibernate Search:
+
+[source, properties, indent=0, subs="+callouts"]
+----
+# Set logging level for massindexing events to `TRACE`:
+org.hibernate.search.mapper.massindexing=TRACE
+----
+
+See the corresponding section on link:{hsearch-doc-url-prefix}#logging-categories-aggregated[logging categories]
+to find out which categories are available.
+
+[[static-metamodel]]
+=== Static metamodel
+
+[NOTE]
+====
+Hibernate Search's static metamodel is a new and noteworthy preview feature.
+We would like for you to give it a try and let us know about your experience with it!
+====
+
+Hibernate Search's link:{hsearch-doc-url-prefix}#static-metamodel[static metamodel] is a set of generated classes that represents the structure of each entity's index,
+thereby allowing type-safe references to index fields when creating search queries through the link:{hsearch-doc-url-prefix}#search-dsl[Search DSL].
+
+The basic principles are very similar to the link:{horm-doc-url-prefix}#tooling-modelgen[JPA static metamodel available in Hibernate ORM],
+but in the case of Search the metamodel is about indexes rather than entities.
+
+To try out this new feature, add the annotation processor to the build configuration:
+
+====
+[source,XML,subs="+attributes"]
+----
+<plugin>
+    <artifactId>maven-compiler-plugin</artifactId>
+    <executions>
+        <execution>
+            <id>default-compile</id>
+            <configuration>
+                <annotationProcessors>
+                    <annotationProcessor>org.hibernate.search.processor.HibernateSearchProcessor</annotationProcessor> <1>
+                </annotationProcessors>
+                <annotationProcessorPaths>
+                    <path>
+                        <groupId>org.hibernate.search</groupId>
+                        <artifactId>hibernate-search-processor</artifactId> <2>
+                    </path>
+                    <path>
+                        <groupId>org.hibernate.search</groupId>
+                        <artifactId>hibernate-search-backend-lucene</artifactId> <3>
+                    </path>
+                </annotationProcessorPaths>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
+----
+
+<1> Provide the fully qualified class name of the annotation processor that generates the metamodel.
+<2> Add the `org.hibernate.search:hibernate-search-processor` dependency to the annotation processor path (a superset of the compile path),
+so the Java compiler can find the processor.
+<3> Add the backend dependency, in this example, the Lucene backend, to the annotation processor path.
+
+NOTE: The version of both annotation processor and backend dependencies can be omitted in the definition of the annotation paths,
+because they are defined in the Hibernate Search BOM, which we recommend you import via dependency management.
+This way the generated metamodel classes will be based on the same backend that the application uses.
+====
+
+And then use the generated metamodel classes to create search queries, e.g.:
+
+====
+[source, JAVA, indent=0, subs="+callouts"]
+----
+SearchSession searchSession = /* ... */; // <1>
+var scope = Book__.INDEX.scope( searchSession ); // <2>
+
+List<Book> hits = searchSession.search( scope )
+    .where( f -> f.match()
+        .field( Book__.INDEX.title ).field( Book__.INDEX.description ) // <3>
+        .matching( "robot" ) )
+    .fetchHits( 20 );
+----
+<1> Obtain the search session.
+<2> Create the search scope over the book index. Using such scope in the link:{hsearch-doc-url-prefix}#search-dsl[Search DSL] will automatically
+limit acceptable field references to the ones obtained from the `Book__.INDEX`
+<3> Use the metamodel to reference the fields when creating the queries.
+====
+
+See the corresponding section on link:{hsearch-doc-url-prefix}#static-metamodel[static metamodel]
+to find out more.
+
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5385[HSEARCH-5385]:
+Adjust projection definition API to be better aligned with its sibling: predicate definition.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5384[HSEARCH-5384]:
+Adjust field reference changes in Search DSL APIs to have less impact on existing applications.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5305[HSEARCH-5305]:
+Allow vector embeddings up to 16,000 dimensions with the Lucene backends.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5358[HSEARCH-5358]:
+Fail faster if an enclosing instance parameter is encountered in a projection constructor on JDK 25+.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5346[HSEARCH-5346]:
+ORM mapper now relies on the class details registry provided by Hibernate ORM.
+Jandex view previously exposed through Hibernate ORM's bootstrap context is now ignored;
+integrators should either configure Jandex through Hibernate Models
+or pass required index views through the mapping configurer.
+* link:{hsearch-jira-url-prefix}/HSEARCH-3204[HSEARCH-3204]:
+Better detection of collection changes in the ORM mapper.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5334[HSEARCH-5334]:
+Fix possible issue with sorting in the Lucene backend
+* link:{hsearch-jira-url-prefix}/HSEARCH-5342[HSEARCH-5342]:
+Improve class loading strategy in the Standalone mapper.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5208[HSEARCH-5208]:
+Add a fail-fast configuration option to the mass indexer.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5180[HSEARCH-5180]:
+Better mass indexing support for data streams with an initially unknown total size
+* link:{hsearch-jira-url-prefix}/HSEARCH-2945[HSEARCH-2945]:
+Update the massindexer monitor API and the default logging implementation.
+
+And more.
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 7.2,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
