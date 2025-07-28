@@ -1,0 +1,223 @@
+= Hibernate Search 8.1.0.Alpha1 is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/8.1/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.jboss.org/hibernate/search/8.1/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.jboss.org/hibernate/search/8.1/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 8.1
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 33869
+---
+
+We just published Hibernate Search 8.1.0.Alpha1,
+the first alpha release of the next minor version of Hibernate Search.
+
+This version brings various improvements to aggregations, Hibernate Search platform BOM files and more.
+
+== What's new
+
+[NOTE]
+====
+Hibernate Search 8.1 is still in its early stages of development:
+some features still need to be completed or may change in a backwards-incompatible way.
+====
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5433[HSEARCH-5433])::
+Hibernate Search still targets the Hibernate ORM 7.0 series, with the plan, in the following beta releases to target 7.1 once it is out.
+[[lucene-version]]
+Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-5405[HSEARCH-5405]/link:{hsearch-jira-url-prefix}/HSEARCH-5406[HSEARCH-5406])::
+The Lucene backend now uses Lucene 9.12.2, while the `lucene-next` backend relies on Lucene 10.2.2
+[[elasticsearch-version]]
+Elasticsearch::
+The Elasticsearch backend is still compatible with all already compatible versions.
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-5410[HSEARCH-5410])::
+The Elasticsearch backend works with OpenSearch 3.1, as well as other already compatible versions.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-5427[HSEARCH-5427]: Upgrade to Elasticsearch **client** 9.0.4
+* link:{hsearch-jira-url-prefix}/HSEARCH-5435[HSEARCH-5435]: Upgrade to Jackson 2.19.2
+* link:{hsearch-jira-url-prefix}/HSEARCH-5436[HSEARCH-5436]: Upgrade to AWS SDK 2.32.10
+
+[[aggregations-improvements]]
+=== Aggregation improvements
+
+With this version of Hibernate Search it is now possible to request terms and range aggregations for more than counts,
+i.e. such that would return other aggregations provided by the DSL.
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+AggregationKey<Map<Range<Double>, Double>> avgRatingByPriceKey = AggregationKey.of( "avgRatingByPrice" ); // <1>
+SearchResult<Book> result = searchSession.search( Book.class )
+    .where( f -> f.matchAll() )
+    .aggregation(
+        avgRatingByPriceKey, f -> f.range()
+            .field( "price", Double.class ) // <2>
+            .range( 0.0, 10.0 )
+            .range( 10.0, 20.0 )
+            .range( 20.0, null )
+            .value( f.avg().field( "ratings", Double.class, ValueModel.RAW ) ) // <3>
+    )
+    .fetch( 20 );
+Map<Range<Double>, Double> countsByPrice = result.aggregation( avgRatingByPriceKey ); // <4>
+----
+<1> Create an aggregation key for an average rating by book price aggregation.
+<2> Start building range aggregation as usual, by specifying the field and ranges.
+<3> Request an `.avg()` aggregation on the ratings field.
+Specifying `Double` and using `ValueModel.RAW` here defines the expected return type of the computed aggregation.
+<4> Extract the aggregated value from the results.
+====
+
+[TIP]
+====
+The value of the `range()`/`terms()` aggregation can be any of the aggregations provided by the Search DSL, e.g.
+one of the metric aggregations: `min()`/`max()`/`avg()`/`count()`/`sum()`,
+a `range()`/`terms()` aggregation or a composite aggregation combining a number of other aggregations.
+====
+
+See the corresponding section on link:{hsearch-doc-url-prefix}#search-dsl-aggregation-range-value[range aggregations]
+to learn more. This also is applicable to the link:{hsearch-doc-url-prefix}#search-dsl-aggregation-terms-value[terms aggregations].
+
+If multiple aggregations are of interest be it at the root level or per aggregation (terms/range) bucket,
+it is now possible to request a composite aggregation:
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+record PriceAggregation(Double avg, Double min, Double max) { // <1>
+}
+AggregationKey<Map<Range<Double>, PriceAggregation>> priceAggregationsKey = AggregationKey.of( "priceAggregationsKey" ); // <2>
+SearchResult<Book> result = searchSession.search( Book.class )
+    .where( f -> f.matchAll() )
+    .aggregation(
+        countsByPriceKey, f -> f.range()
+            .field( "price", Double.class ) // <3>
+            .range( 0.0, 10.0 ) // <3>
+            .range( 10.0, 20.0 )
+            .range( 20.0, null )
+            .value( f.composite() // <4>
+                .from(
+                    f.avg().field( "price", Double.class ), // <5>
+                    f.min().field( "price", Double.class ),
+                    f.max().field( "price", Double.class )
+                ).as( PriceAggregation::new ) ) // <6>
+    )
+    .fetch( 20 );
+Map<Range<Double>, PriceAggregation> countsByPrice = result.aggregation( priceAggregationsKey ); // <7>
+----
+<1> Define a structure to hold composite aggregation results.
+<2> Create an aggregation key for the composite range aggregation.
+<3> Start building range aggregation as usual, by specifying the field and ranges.
+<4> Request a `.composite()` aggregation.
+<5> Add any required aggregations to build up a composite one.
+<6> Specify how to transform the composite aggregation. By default, you would need to request the composite aggregation
+as a `List` or an array of aggregated values, but then it is possible to transform it to something else.
+<7> Extract the aggregated value from the results.
+====
+
+See the corresponding section on link:{hsearch-doc-url-prefix}#search-dsl-aggregation-composite[composite aggregations]
+to learn more.
+
+[[platform-bom]]
+=== Hibernate Search Platform BOM
+
+Besides the lean BOM file, Hibernate Search now also provides several platform POM files that manage
+the versions of Hibernate Search artifacts, _and_ their transitive dependencies, _and_ related artifacts that must be aligned.
+For example, it brings the management of all other `org.hibernate.orm` artifacts,
+beyond the ones required by the ORM mapper, or extra Lucene artifacts like
+`lucene-suggest` or `lucene-analysis-icu` and others, that can be helpful for more advanced applications.
+These platform files will help keep the versions of extra Hibernate ORM/Lucene/Elasticsearch client dependencies
+aligned with the versions of artifacts from the same groups that are used by Hibernate Search itself.
+
+Currently, there are two platform POM files for Hibernate Search:
+
+* `hibernate-search-platform-bom`: use this when in doubt.
+* `hibernate-search-platform-next-bom`: use this if you want to use the `lucene-next` backend.
+
+To leverage the dependency management provided by these platform files, use the same approach of importing as for
+the regular BOM file:
+
+[source, XML, subs="+attributes"]
+----
+<dependencyManagement>
+    <dependencies>
+        <!--
+            Import Hibernate Search platform
+            to get all of its artifact versions aligned:
+        -->
+        <dependency>
+            <groupId>org.hibernate.search</groupId>
+            <artifactId>hibernate-search-platform-bom</artifactId>
+            <version>8.1.0.Alpha1</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+        <!-- Any other dependency management entries -->
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <!-- Any other dependency management entries -->
+    <!--
+         For example, add an extra Lucene dependency without specifying the version
+         as it is managed by the platform POM:
+    -->
+    <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-suggest</artifactId>
+    </dependency>
+    <!-- Any other dependency management entries -->
+</dependencies>
+----
+
+See the corresponding section on link:{hsearch-doc-url-prefix}#compatibility-search-dependencies-platform[Hibernate Search Platform]
+to find out more.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-3666[HSEARCH-3666]:
+Lucene terms aggregations (discrete facets) may return wrong results for any sort other than the default one
+* link:{hsearch-jira-url-prefix}/HSEARCH-5309[HSEARCH-5309]:
+Limit the time that the outbox polling processor spends trying to lock/load event entities after processing
+* link:{hsearch-jira-url-prefix}/HSEARCH-5423[HSEARCH-5423]:
+Introduce search method to reference scopes
+* link:{hsearch-jira-url-prefix}/HSEARCH-5437[HSEARCH-5437]:
+Deprecate the JPA/ORM query extension and `Search#toOrmQuery`/`Search#toOrmQuery` for removal
+
+And more.
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 8.0,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.jboss.org/hibernate/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
