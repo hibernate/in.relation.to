@@ -1,0 +1,65 @@
+= Hibernate Validator 8.0.3.Final is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:hibernate-validator-doc-url-prefix: https://docs.jboss.org/hibernate/validator/8.0/reference/en-US/html_single/
+:hibernate-validator-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hibernate-validator-version-family: 8.0
+:hibernate-validator-jira-project-id: 10060
+:hibernate-validator-jira-version-id: 34759
+---
+
+Hibernate Validator 8.0.3.Final maintenance release is out.
+
+This release contains a few bug fixes, and enables alphanumeric format for the `@CNPJ` constraint.
+
+== What's new
+
+[NOTE]
+====
+For a summary of all new features and improvements since 7.0,
+head to https://hibernate.org/validator/releases/8.0/#whats-new[the dedicated page on hibernate.org].
+====
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hibernate-validator-jira-url-prefix}/HV-1917[HV-1917]:
+Fix a problem with the `@MinDuration`/`@MaxDuration` validation message for zero duration.
+* link:{hibernate-validator-jira-url-prefix}/HV-1999[HV-1999]:
+Enables alphanumeric format for the `@CNPJ` constraint.
+* link:{hibernate-validator-jira-url-prefix}/HV-1978[HV-1978]:
+Fix a problem with Expression Language not propagated to iterable nodes.
+* link:{hibernate-validator-jira-url-prefix}/HV-1971[HV-1971]:
+Fix a problem with the `@CNPJ` constraint when validating a value where all digits are the same
+* link:{hibernate-validator-jira-url-prefix}/HV-1965[HV-1965]:
+Fix a typo in `CrossParameterConstraint` message.
+
+And more.
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hibernate-validator-jira-project-id}+AND+fixVersion={hibernate-validator-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/validator/releases/{hibernate-validator-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, please refer to the getting started guide:
+
+* link:{hibernate-validator-doc-url-prefix}#validator-gettingstarted[Getting started with Hibernate Validator]
+
+For existing applications, Hibernate Validator {hibernate-validator-version-family} is a drop-in replacement for 7.0,
+assuming you also upgrade the other Jakarta EE 10 related dependencies.
+Information about API changes is included in the https://hibernate.org/validator/documentation/migration-guide/#8-0-x[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Validation development mailing list] (discussions about the Jakarta Validation specification)
