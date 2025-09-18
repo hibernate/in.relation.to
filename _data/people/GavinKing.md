@@ -5,7 +5,7 @@ level: 0
 gravatar_hash: 77987db6d7dd75abd4a14651641b3d46
 active: true
 ---
-Gavin King is a Distinguished Engineer at Red Hat. He's the creator of 
+Gavin King is a Red Hat Distinguished Engineer working at IBM. He's the creator of 
 [Hibernate](https://hibernate.org), a popular persistence solution for 
 Java and of the [Ceylon programming language](http://ceylon-lang.org). 
 He contributed to the Java Community Process as JBoss and then Red Hat 
