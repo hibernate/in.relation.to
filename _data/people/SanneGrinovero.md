@@ -4,11 +4,11 @@ photo:
 level: 1
 website: https://twitter.com/SanneGrinovero
 location: London, UK
-occupation: Middleware Architect at Red Hat, Hibernate technical lead
+occupation: Middleware Architect at IBM, Hibernate technical lead
 gravatar_hash: 57637a2eb871b34eba14e700c78c6a5d
 active: true
 ---
-Sanne is the technical lead of the Hibernate team at Red Hat, where he is an Architect in the engineering department.
+Sanne is the technical lead of the Hibernate team at IBM, where he is an Architect in the engineering department.
 He works across all Hibernate projects and Quarkus, helping define team priorities; works on performance and benchmarks,
 tries to mediate the needs of the OSS community and the business requirements which fund the project, while balancing
 innovation with the requirements of established users.
