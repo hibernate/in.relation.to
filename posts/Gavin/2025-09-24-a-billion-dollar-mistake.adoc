@@ -1,0 +1,47 @@
+= A billion-dollar mistake
+Gavin King
+:awestruct-tags: ["Hibernate ORM"]
+:awestruct-layout: blog-post
+---
+
+I recently https://techleadjournal.dev/episodes/232/[appeared] on the Tech Lead Journal podcast, and the host, Henry Suryawirawan, picked up on a comment I made about the cost of a mistake I made many years ago, namely, the mistake of underestimating the importance of Hibernate's `StatelessSession`, and of not including it in the Java Persistence API.
+
+You might think my statement a bit hyperbolic, and I guess it was intended in that vein, but let me give you a quick order-of-magnitude computation suggesting that my estimate was not far off.
+
+The cost of this mistake should rightly include:
+
+1. the cost of people struggling with stateful sessions when they would have been better served by using the stateless session, and
+2. the cost to people who _actually gave up on Hibernate and JPA_ and went and used something else they were more comfortable with, even though it surely caused them more work in the long run.
+
+Since (1) is much easier to estimate than (2), I'm going to focus on it, even though it's perfectly likely that (2) is larger.
+
+(Note that I'm not saying that stateful sessions are always terrible; in many common scenarios they're great, and are what the majority of developers ask for.)
+
+Our estimate can be broken down to three parts:
+
+1. The number of actively-developed projects per year which bore at least some cost from under-using `StatelessSession` or from not using it at all. I would say:
+   - 10^3^ seems clearly too small, given what we know about the level of usage of Hibernate;
+   - 10^5^ isn't completely implausible, but I can't be sure;
+   - so, conservatively, let's say 10^4^ projects.
+2. The average cost per year to each of these projects. Here:
+   - $10^3^ is a day's work for a single developer--that's too small, if it were this tiny, nobody would care, and we wouldn't be having this discussion;
+   - so, conservatively, let's say $10^4^/project/year. If you're the kind of person who _really_ hates stateful sessions (there's not a few of you), you might be inclined to increase this factor.
+3. Finally, we integrate over 25 (that is, 10^1^) years.
+
+Multiplying this out gives us $10^9^. Ouch.
+
+Perhaps you think one of my factors here was overestimated by an order of magnitude.
+Maybe.
+But that still leaves $10^8^ and that's still much more than enough for me to give myself a good hard kick.
+Some might even think I've __under__estimated (2).
+Let's hope for my sake that's not the case, because a 10 billion dollar auto-kick has got to hurt!
+
+Of course, the benefits that Hibernate and JPA have provided to so many projects over the years far outweigh the cost of this mistake, so perhaps the kick is not fully deserved.
+
+The point of this post is that what we do as software developers matters, and when we fuck up it imposes real costs.
+Even relatively minor mistakes can come with a heavy price tag after integration over time.
+
+
+
+
+
