@@ -2,7 +2,6 @@ require 'js_minifier'
 require 'css_minifier'
 require 'html_minifier'
 require 'relative'
-require 'redirect_creator'
 require 'directory_listing'
 
 # dependencies for asciidoc support
