@@ -435,7 +435,7 @@ That's a great advantage over the traditional flat classpath, where you might ha
 
 == Custom constraints
 
-With the modules basically working, it's time to get a bit more advanced and create a http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-customconstraints[custom Bean Validation constraint].
+With the modules basically working, it's time to get a bit more advanced and create a http://docs.hibernate.org/stable/validator/reference/en-US/html_single/#validator-customconstraints[custom Bean Validation constraint].
 This one should make sure that a car does not have more passengers than seats available.
 
 For that we need an annotation type:
@@ -572,7 +572,7 @@ In order to access resource bundles from other modules, the service loader mecha
 A new SPI interface, http://download.java.net/java/jdk9/docs/api/java/util/spi/ResourceBundleProvider.html[ResourceBundleProvider], has been added to the JDK for that purpose.
 
 Ultimately, Bean Validation should take advantage of that mechanism, but how can we make things work out for now?
-As it turns out, Hibernate Validator has its own extension point for customizing the retrieval of resource bundles, http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-resource-bundle-locator[ResourceBundleLocator].
+As it turns out, Hibernate Validator has its own extension point for customizing the retrieval of resource bundles, http://docs.hibernate.org/stable/validator/reference/en-US/html_single/#section-resource-bundle-locator[ResourceBundleLocator].
 
 This comes in very handy now: we just need to create an implementation of that SPI in the example module:
 
@@ -621,7 +621,7 @@ With the custom constraint in place, let's think about encapsulation a bit more.
 Wouldn't it be nice if the constraint validator implementation didn't live in the exported package but rather somewhere under `internal`?
 After all, that class is an implementation detail and should not be referenced directly by users of the `@PassengersDontExceedSeatCount` constraint.
 
-Another feature of Hibernate Validator is helpful here: http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-constraint-definition-contribution[service-loader based discovery] of constraint validators.
+Another feature of Hibernate Validator is helpful here: http://docs.hibernate.org/stable/validator/reference/en-US/html_single/#section-constraint-definition-contribution[service-loader based discovery] of constraint validators.
 
 This allows us to remove the reference from the constraint annotation to its validator (just add an empty `@Constraint({})` annotation) and relocate the validator implementation to the `internal` package:
 
@@ -724,7 +724,7 @@ There is no notion of a "flat classpath" any longer, and thus a validation provi
 
 More specifically, the method `ClassLoader#getResourceAsStream()` which is used by Hibernate Validator to open mapping files, won't work for named modules as of JDK 9. 
 That change will be a tough nut to crack for many projects when migrating to Java 9, as it renders strategies for resource loading known from existing modular environment such as OSGi inoperable.
-E.g. Hibernate Validator allows to http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-constraint-customizing-class-loading[pass in a classloader] for loading user-provided resources.
+E.g. Hibernate Validator allows to http://docs.hibernate.org/stable/validator/reference/en-US/html_single/#section-constraint-customizing-class-loading[pass in a classloader] for loading user-provided resources.
 In OSGi this can be used to pass what's called the bundle loader and allow Hibernate Validator to access constraint mapping files and other things provided by the user.
 This pattern cannot be employed with Jigsaw unfortunately, as `getResourceAsStream()` http://download.java.net/java/jdk9/docs/api/java/lang/ClassLoader.html#getResourceAsStream-java.lang.String-["does not find resources in named modules"].
 

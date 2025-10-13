@@ -16,7 +16,7 @@ It also includes upgrades to Lucene 8.5, Elasticsearch 7.6.1 and Hibernate ORM 5
 
 If you want to dive right into the new, shiny Hibernate Search 6,
 a good starting point is the
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
 included in the reference documentation.
 
 [NOTE]
@@ -39,7 +39,7 @@ The simpler approach of managing indexes/schemas implicitly, on startup,
 through a pre-configured strategy, is now configured at the mapper level
 through the configuration property `hibernate.search.schema_management.strategy`.
 Several strategies are available: `none`, `create`, `validate`, `create-or-validate`, ...
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-strategy[automatic schema management]
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-strategy[automatic schema management]
 for more information.
 
 [NOTE]
@@ -64,12 +64,12 @@ manager.dropAndCreate();
 // Starting here, the freshly created indexes can be used
 ----
 
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-manager[manual schema management]
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-manager[manual schema management]
 for more information.
 
 Finally, indexes and schema can simply be dropped and re-created when reindexing,
 by setting the new `dropAndCreateSchemaOnStart(boolean)` option on the `MassIndexer`.
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer-parameters[MassIndexer parameters] for more information.
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer-parameters[MassIndexer parameters] for more information.
 
 === Offline startup for the Elasticsearch backend
 
@@ -78,12 +78,12 @@ it is now possible to start Hibernate Search in fully offline mode.
 
 To that end:
 
-* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-elasticsearch-configuration-version[Configure the expected version]
+* https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#backend-elasticsearch-configuration-version[Configure the expected version]
 of the Elasticsearch cluster using the property `hibernate.search.backends.<backend name>.version`,
 and disable version checks on startup using the property `hibernate.search.backends.<backend name>.version_check.enabled`.
-* Disable https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-strategy[automatic schema management on startup]
+* Disable https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-strategy[automatic schema management on startup]
 by setting the property `hibernate.search.schema_management.strategy` to `none`.
-* If necessary, add https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-manager[explicit schema management]
+* If necessary, add https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-manager[explicit schema management]
 code to your application that you will trigger when you know the Elasticsearch cluster is up and running.
 
 [[sort-multi-valued]]
@@ -105,7 +105,7 @@ List<Author> hits = searchSession.search( Author.class )
     .fetchHits( 20 );
 ----
 
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-sort-common-multi-value-mode[this section of the documentation]
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#search-dsl-sort-common-multi-value-mode[this section of the documentation]
 for more information.
 
 Thanks to Waldemar Kłaczyński for contributing the implementation.
@@ -163,7 +163,7 @@ List<Book> hits = searchSession.search( Book.class )
 === Flags in simple query strings
 
 Thanks to the efforts of Waldemar Kłaczyński (https://hibernate.atlassian.net/browse/HSEARCH-3847[HSEARCH-3847]),
-the https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-predicate-simple-query-string[simple query string predicate] can now be configured to enable or disable syntax features as needed:
+the https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#search-dsl-predicate-simple-query-string[simple query string predicate] can now be configured to enable or disable syntax features as needed:
 
 [source, JAVA]
 ----
@@ -181,11 +181,11 @@ and executing these operations in background threads.
 
 In https://hibernate.atlassian.net/browse/HSEARCH-3575[HSEARCH-3575],
 several new configuration options were introduced regarding the background threads
-(https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-threads[Lucene],
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-elasticsearch-threads[Elasticsearch])
+(https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#backend-lucene-threads[Lucene],
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#backend-elasticsearch-threads[Elasticsearch])
 and the queues
-(https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-indexing-queues[Lucene],
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-elasticsearch-indexing-queues[Elasticsearch]).
+(https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#backend-lucene-indexing-queues[Lucene],
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#backend-elasticsearch-indexing-queues[Elasticsearch]).
 
 In https://hibernate.atlassian.net/browse/HSEARCH-3822[HSEARCH-3822] and
 https://hibernate.atlassian.net/browse/HSEARCH-3872[HSEARCH-3872],
@@ -217,7 +217,7 @@ Re-indexing will be necessary if your index contains sortable fields.
 * Configuration properties relative to Elasticsearch index lifecycle management have changed:
 ** The configuration property `lifecycle.strategy` was removed and will trigger an exception on startup if used.
 For automatic schema management on startup, see
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-strategy[the new `schema_management` options]
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-schema-management-strategy[the new `schema_management` options]
 at the mapper level.
 ** The configuration property `lifecycle.minimal_required_status` was renamed to `schema_management.minimal_required_status`.
 ** The configuration property `lifecycle.minimal_required_status_wait_timeout` was renamed to `schema_management.minimal_required_status_wait_timeout`.
@@ -226,8 +226,8 @@ at the mapper level.
 
 A few more features in the Sort DSL are now documented:
 
-* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-sort-common-order[Sort order]
-* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#search-dsl-sort-common-missing[Behavior on missing values]
+* https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#search-dsl-sort-common-order[Sort order]
+* https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#search-dsl-sort-common-missing[Behavior on missing values]
 
 === Other improvements and bug fixes
 
@@ -236,7 +236,7 @@ A few more features in the Sort DSL are now documented:
 You will simply need a different `prefix`.
 * https://hibernate.atlassian.net/browse/HSEARCH-3850[HSEARCH-3850]:
 A new tool is available to build property keys when configuring Hibernate Search programmatically.
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#configuration-builder[this section of the documentation]
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#configuration-builder[this section of the documentation]
 for more information.
 * https://hibernate.atlassian.net/browse/HSEARCH-3844[HSEARCH-3844]:
 Using the simple query string predicate on non-analyzed, non-normalized fields in the Lucene backend

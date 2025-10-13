@@ -16,10 +16,10 @@ That said, I'm going to begin by reiterating what I've said many times before:
 Historically, we recommended the use of `Set` as the Java type of a collection, since that seems to correspond most closely to the semantics of a foreign key relationship.
 But `Set` comes with some disadvantages:
 
-- it obligates the developer to be very careful in how they implement https://docs.jboss.org/hibernate/orm/6.6/introduction/html_single/Hibernate_Introduction.html#equals-and-hash[`equals()` and `hashcode()`] for entity classes, and
+- it obligates the developer to be very careful in how they implement https://docs.hibernate.org/orm/6.6/introduction/html_single/Hibernate_Introduction.html#equals-and-hash[`equals()` and `hashcode()`] for entity classes, and
 - due to the return value of `Set.add()`, we can't add new elements to a set https://in.relation.to/2024/11/07/adding-to-collections/[without fetching it from the database first].
 
-In hindsight, perhaps we should have done a better job of letting people know that using `List` is and was always a https://docs.jboss.org/hibernate/orm/6.6/introduction/html_single/Hibernate_Introduction.html#set-vs-list[perfectly respectable option], and frankly simpler.
+In hindsight, perhaps we should have done a better job of letting people know that using `List` is and was always a https://docs.hibernate.org/orm/6.6/introduction/html_single/Hibernate_Introduction.html#set-vs-list[perfectly respectable option], and frankly simpler.
 
 With all this preamble out of the way, I want to clarify the use of annotations like `@OrderBy`, `@OrderColumn`, `@MapKey`, and `@MapKeyColumn`, which I sense few people really understand.
 But I'm going to begin with the bit I think _is_ quite easy to understand.

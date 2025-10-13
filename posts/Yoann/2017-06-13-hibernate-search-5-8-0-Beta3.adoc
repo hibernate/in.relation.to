@@ -90,8 +90,8 @@ public static class CustomAnalyzerProvider implements ElasticsearchAnalysisDefin
 As you can see, this allows you to avoid needing to refer to Lucene classes to configure Elasticsearch analyzers. 
  
 More details can be found 
-https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#section-programmatic-analyzer-definition[here for Lucene]
-and https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#_custom_analyzers_using_a_definition_provider[here for Elasticsearch].
+https://docs.hibernate.org/search/5.8/reference/en-US/html_single/#section-programmatic-analyzer-definition[here for Lucene]
+and https://docs.hibernate.org/search/5.8/reference/en-US/html_single/#_custom_analyzers_using_a_definition_provider[here for Elasticsearch].
 
 [[normalizers]]
 === Normalizers for safer sorts
@@ -121,8 +121,8 @@ and a text field with a normalizer will take the `text` (5.x) or `string` (2.x) 
 
 You can find out more about normalizers in the reference documentation:
 
- * https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#section-normalizers[main documentation]
- * https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#_normalizers[Elasticsearch specifics]
+ * https://docs.hibernate.org/search/5.8/reference/en-US/html_single/#section-normalizers[main documentation]
+ * https://docs.hibernate.org/search/5.8/reference/en-US/html_single/#_normalizers[Elasticsearch specifics]
 
 [[es-http-client-configurer]]
 === AWS compatibility
@@ -177,12 +177,12 @@ A summary of other notable changes:
  * https://hibernate.atlassian.net/browse/HSEARCH-2734[HSEARCH-2734]: due to a lot of confusion and incorrect (harmful) use,
    we have deprecated the "ram" name for the `RAMDirectory` directory provider.
    If you need it, please **ensure you are not using it in a production environment**,
-   read about https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#directory-provider-table[its limitations in the reference documentation],
+   read about https://docs.hibernate.org/search/5.8/reference/en-US/html_single/#directory-provider-table[its limitations in the reference documentation],
    and use its new name: "local-heap".
  * https://hibernate.atlassian.net/browse/HSEARCH-2735[HSEARCH-2735]: index-time boosting features (`@Boost`, `@DynamicBoost`)
    have been deprecated with no replacement,
    and will need to be removed in a future version because Lucene 7 won't allow index-time boosting anymore.
-   See https://docs.jboss.org/hibernate/search/5.8/reference/en-US/html_single/#section-boost-annotation[the reference documentation for alternatives]:
+   See https://docs.hibernate.org/search/5.8/reference/en-US/html_single/#section-boost-annotation[the reference documentation for alternatives]:
    the suggestion is to switch to using query-time boosting instead.
  * https://hibernate.atlassian.net/browse/HSEARCH-2665[HSEARCH-2665]: `IndexingInterceptor` is no longer considered experimental.
  * https://hibernate.atlassian.net/browse/HSEARCH-2666[HSEARCH-2666]: `IndexControlMBean` is no longer considered experimental.
