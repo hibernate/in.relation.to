@@ -15,7 +15,7 @@ It also includes upgrades to Lucene 8.4, Elasticsearch 7.6 and Hibernate ORM 5.4
 
 If you want to dive right into the new, shiny Hibernate Search 6,
 a good starting point is the
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
 included in the reference documentation.
 
 [NOTE]
@@ -37,7 +37,7 @@ Hibernate Search relies on two aliases for each index: one for writes (`<myindex
 
 This setup is a first step towards introducing, in a future version of Hibernate Search,
 a "zero-downtime" reindexing where search queries still return results while reindexing.
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-elasticsearch-indexlayout[this section of the reference documentation]
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#backend-elasticsearch-indexlayout[this section of the reference documentation]
 for more information, in particular regarding how to change the name of the aliases.
 
 As a result of this change, you will need to either:
@@ -45,7 +45,7 @@ As a result of this change, you will need to either:
 * manually create the two aliases for each index;
 * or drop your indexes and have Hibernate Search re-create empty indexes on startup: it will create the aliases.
 In this case, you will also need to
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[reindex].
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[reindex].
 
 === Delayed commits and near-real-time for the Lucene backend
 
@@ -54,7 +54,7 @@ the Lucene backend can now be configured to commit the writer or refresh the rea
 instead of doing it as soon as possible.
 
 This feature, which was already available but exposed differently in Search 5, can lead to substantial performance improvements.
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#backend-lucene-io[this section of the documentation]
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#backend-lucene-io[this section of the documentation]
 for details.
 
 [[nested-documents-lucene]]
@@ -68,7 +68,7 @@ the nested documents were not visible after deletion of the root document.
 However, this could lead to indexes taking more space than necessary.
 
 In order to clean up your index,
-you should https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[reindex].
+you should https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[reindex].
 
 === More generic wording in the Search DSL
 
@@ -108,10 +108,10 @@ The names of synchronization strategies for automatic indexing have changed:
 You will need to update the value of the property `hibernate.search.automatic_indexing.synchronization.strategy`
 in your configuration.
 * https://hibernate.atlassian.net/browse/HSEARCH-3460[HSEARCH-3460]:
-an explicit https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual-flush[`flush()`] no longer implicitly refreshes the index;
+an explicit https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual-flush[`flush()`] no longer implicitly refreshes the index;
 you will need to use the new
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual-refresh[`refresh()`] operation.
-* https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[Full reindexing] is necessary if you use the Lucene backend and take advantage
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual-refresh[`refresh()`] operation.
+* https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-massindexer[Full reindexing] is necessary if you use the Lucene backend and take advantage
 of nested documents (`@IndexedEmbedded(storage = NESTED)`).
 See <<nested-documents-lucene,above>> for details.
 * Dropping and re-creating your indexes is necessary if you use the Elasticsearch backend.
@@ -120,7 +120,7 @@ See <<aliases-elasticsearch,above>> for details or workarounds.
 === Documentation
 
 * https://hibernate.atlassian.net/browse/HSEARCH-3808[HSEARCH-3808]:
-The https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-automatic-synchronization[documentation of automatic indexing synchronization strategies]
+The https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-automatic-synchronization[documentation of automatic indexing synchronization strategies]
 was improved and should now be clearer.
 
 === Other improvements and bug fixes

@@ -16,7 +16,7 @@ and upgrades to Elasticsearch 7.4 and Hibernate ORM 5.4.7.Final.
 
 If you want to dive right into the new, shiny Hibernate Search 6,
 a good starting point is the
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#getting-started[getting started guide]
 included in the reference documentation.
 
 [NOTE]
@@ -84,9 +84,9 @@ which would have generated the tokens `q`, `qu`, `qui`, `quic`.
 Thus the query would have matched `quid pro quo` (it has the tokens `q`, `qu` and `qui` in common with the query),
 which is obviously not the intended behavior.
 
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#configuration-background-failure-handling[this paragraph]
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#configuration-background-failure-handling[this paragraph]
 of the documentation for more information about search analyzers,
-and https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#concepts-analysis[the "analysis" section]
+and https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#concepts-analysis[the "analysis" section]
 for more information about analysis in general.
 
 [[background-failure-handling]]
@@ -102,7 +102,7 @@ Like in Hibernate Search 5:
 will be logged.
 * You can plug in a custom component to report the exceptions differently: the `FailureHandler`,
 similar to Search 5's `ErrorHandler`.
-See https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#configuration-background-failure-handling[the dedicated section in the documentation]
+See https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#configuration-background-failure-handling[the dedicated section in the documentation]
 for more information.
 
 However, compared to Hibernate Search 5, a lot more failures will be propagated to the user thread
@@ -110,9 +110,9 @@ However, compared to Hibernate Search 5, a lot more failures will be propagated 
 In particular:
 
 * indexing failures during automatic indexing when using the `committed` or `searchable`
-https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-automatic-synchronization[synchronization strategy]
+https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-automatic-synchronization[synchronization strategy]
 (see that section of the documentation for details).
-* failures of https://docs.jboss.org/hibernate/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual[explicit indexing operations].
+* failures of https://docs.hibernate.org/search/6.0/reference/en-US/html_single/#mapper-orm-indexing-manual[explicit indexing operations].
 * failure of a purge, optimize or flush operation during mass indexing.
 In this case, failures will *also* be reported to the failure handler.
 * entity indexing failure during mass indexing.

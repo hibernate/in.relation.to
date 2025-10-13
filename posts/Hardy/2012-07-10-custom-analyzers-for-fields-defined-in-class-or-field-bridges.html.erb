@@ -160,7 +160,7 @@ Let's start directly with the code:</p>
 	
 A lot is going on here and the example shows many useful features of Search. First <tt>@AnalyzerDefs</tt> is used to
 declaratively define and build your analyzers. This analyzers are globally available under their given names and can
-be reused across the application (see also SearchFactory#getAnalyzer(String)). You build an analyzer by first specifying its tokenizer and then a list of filters to apply. Have a look at <a href="http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/%5C#d0e3446" target="" class="regularLink">named analyzers</a> in the online documentation for more information.
+be reused across the application (see also SearchFactory#getAnalyzer(String)). You build an analyzer by first specifying its tokenizer and then a list of filters to apply. Have a look at <a href="http://docs.hibernate.org/stable/search/reference/en-US/html_single/%5C#d0e3446" target="" class="regularLink">named analyzers</a> in the online documentation for more information.
 
 
 <p class="wikiPara">
@@ -169,7 +169,7 @@ Which fields you are adding in the implementation is up to you.
 </p>
 
 <p class="wikiPara">
-Last but not least, we have <tt>@AnalyzerDiscriminator(impl = FooBridge.class)</tt>. This annotation is normally used for <a href="http://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/%5C#d0e3825" target="" class="regularLink">dynamic analyzer selection</a> based on the entity state. However, it can easily be used in this context as well. To make things easy I let the field bridge directly implement the required <tt>Discriminator</tt> interface. <tt>Discriminator#getAnalyzerDefinitionName</tt> will now be called for each field being added to the index. You also get passed the entity itself and the value (in case the field bridge is defined on a property), but this is not important in this case. All which remains to be done is to make sure to return the right analyzer name based on the passed field name. 
+Last but not least, we have <tt>@AnalyzerDiscriminator(impl = FooBridge.class)</tt>. This annotation is normally used for <a href="http://docs.hibernate.org/stable/search/reference/en-US/html_single/%5C#d0e3825" target="" class="regularLink">dynamic analyzer selection</a> based on the entity state. However, it can easily be used in this context as well. To make things easy I let the field bridge directly implement the required <tt>Discriminator</tt> interface. <tt>Discriminator#getAnalyzerDefinitionName</tt> will now be called for each field being added to the index. You also get passed the entity itself and the value (in case the field bridge is defined on a property), but this is not important in this case. All which remains to be done is to make sure to return the right analyzer name based on the passed field name.
 </p>
 
 <p class="wikiPara">

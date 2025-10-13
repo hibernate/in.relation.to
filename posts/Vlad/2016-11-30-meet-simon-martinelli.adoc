@@ -26,7 +26,7 @@ In my opinion, it's the best way to get around the common performance problems w
 But the constructor expression only works with JPQL or Criteria API and sometimes you need to execute a SQL query but don't want to use a fully featured SQL framework like jOOQ.
 +
 Sure, JPA comes with the ConstructorResult but I find it too complicated, and it was not available with JPA 1.0.
-Hibernate has the https://docs.jboss.org/hibernate/orm/5.2/javadocs/org/hibernate/transform/ResultTransformer.html[`ResultTransformer`], but this only works with Hibernate.
+Hibernate has the https://docs.hibernate.org/orm/5.2/javadocs/org/hibernate/transform/ResultTransformer.html[`ResultTransformer`], but this only works with Hibernate.
 So I decided to start Query Language Result Mapper (QLRM).
 +
 QLRM simply tries to find a matching constructor based on a JPA native query result or, when using plain JDBC, a JDBC `ResultSet`.

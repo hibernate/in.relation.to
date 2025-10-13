@@ -78,7 +78,7 @@ This will be persisted into Redis as a JSON document like this under the key "Ac
 } 
 ----
 
-Refer to the http://docs.jboss.org/hibernate/ogm/5.0/reference/en-US/html_single/#ogm-redis[Redis chapter] of the reference guide to learn more about this new dialect and its capabilities.
+Refer to the http://docs.hibernate.org/ogm/5.0/reference/en-US/html_single/#ogm-redis[Redis chapter] of the reference guide to learn more about this new dialect and its capabilities.
 It is quite powerful already (almost all tests of the Hibernate OGM backend TCK pass) and there is support for using it in WildFly, too.
 
 While JSON is a popular choice for storing structured data amongst Redis users, we will investigate alternative mapping approaches, too.
@@ -135,7 +135,7 @@ This is not what one would expect from a document store mapping, though. Therefo
 
 This representation is more concise and should improve interoperability with other clients working on the same database.
 If needed - e.g. for migration purposes - you can enforce the previous mapping through the `hibernate.ogm.datastore.document.map_storage` property.
-Check out the http://docs.jboss.org/hibernate/ogm/5.0/reference/en-US/html_single/#mongodb_specific_configuration_properties[reference guide] for the details.
+Check out the http://docs.hibernate.org/ogm/5.0/reference/en-US/html_single/#mongodb_specific_configuration_properties[reference guide] for the details.
 
 The optimized mapping is currently only applied if the map key comprises a single column which is of type `String`.
 For other types, e.g. `Long` or composite map keys the previous mapping is used since JSON/BSON only supports field names which are strings.
@@ -147,10 +147,10 @@ Let us know whether that's something you'd find helpful or not.
 == Support for multi-get operations
 
 One of the many optimizations in Hibernate ORM is batch fetching of lazily loaded entities.
-This is controlled using the https://docs.jboss.org/hibernate/stable/orm/javadocs/index.html?org/hibernate/annotations/BatchSize.html[@BatchSize] annotation.
+This is controlled using the https://docs.hibernate.org/stable/orm/javadocs/index.html?org/hibernate/annotations/BatchSize.html[@BatchSize] annotation.
 So far, Hibernate OGM did not support batch fetching, resulting in more round trips to the datastore than actually needed.
 
-This situation has been improved by introducing http://docs.jboss.org/hibernate/ogm/5.0/api/index.html?org/hibernate/ogm/dialect/multiget/spi/MultigetGridDialect.html[MultigetGridDialect]
+This situation has been improved by introducing http://docs.hibernate.org/ogm/5.0/api/index.html?org/hibernate/ogm/dialect/multiget/spi/MultigetGridDialect.html[MultigetGridDialect]
 which is an optional "capability interface" that Hibernate OGM backends can implement. If a backend happens to support this contract, the Hibernate OGM engine will take advantage of it
 and fetch entities configured for lazy loading in batches, resulting in a better performance.
 

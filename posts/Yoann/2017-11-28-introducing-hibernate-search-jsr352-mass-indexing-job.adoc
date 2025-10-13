@@ -46,7 +46,7 @@ but this one really is the reason we think JSR 352 makes sense.
 
 === Setup
 
-Within Wildfly 11, https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/#search-configuration-deploy-on-wildfly[use our JBoss modules],
+Within Wildfly 11, https://docs.hibernate.org/stable/search/reference/en-US/html_single/#search-configuration-deploy-on-wildfly[use our JBoss modules],
 configure Hibernate ORM and Hibernate Search.
 In order for your application to access the Hibernate Search mass indexing job,
 https://docs.jboss.org/author/display/WFLY/Class+Loading+in+WildFly#ClassLoadinginWildFly-JBossDeploymentStructureFile[add a dependency]
@@ -138,11 +138,11 @@ Here are some of the most useful:
 * `.restrictedBy(String)`: use HQL to only index a subset of entities.
   Note that when using HQL, the job switches to a degraded mode that suffers from several limitations,
   making it fit only for small, quick executions.
-  See https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#jsr-352-indexing-mode[the documentation] for details.
+  See https://docs.hibernate.org/search/5.9/reference/en-US/html_single/#jsr-352-indexing-mode[the documentation] for details.
 
 You can find more information about the job parameters, how to tune performance,
 or how to deal with applications relying on multiple JPA persistence units
-in https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#jsr352-integration[the documentation].
+in https://docs.hibernate.org/search/5.9/reference/en-US/html_single/#jsr352-integration[the documentation].
 
 == Performance
 
@@ -152,7 +152,7 @@ with that of the existing mass indexer.
 
 However, please keep in mind that performance depends a lot on your setup,
 and you may have to tinker a bit with the job parameters in order to achieve optimal performance,
-as explained in https://docs.jboss.org/hibernate/search/5.9/reference/en-US/html_single/#jsr352-integration[the documentation].
+as explained in https://docs.hibernate.org/search/5.9/reference/en-US/html_single/#jsr352-integration[the documentation].
 
 [[limitations-and-next]]
 == Current limitations and further work

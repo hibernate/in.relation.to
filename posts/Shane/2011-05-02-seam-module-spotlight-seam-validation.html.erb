@@ -85,7 +85,7 @@ But Seam Validation goes one step further and enables dependency injection also 
 
 
 <p class="wikiPara">
-In order to perform the required checks the constraint's validator invokes some sort of registration service (note: accessing external services can potentially be an expensive operation, so it may be a good idea to put the constraint into a separate <a href="http://docs.jboss.org/hibernate/stable/validator/reference/en-US/html/validator-usingvalidator.html#validator-usingvalidator-validationgroups" target="" class="regularLink">validation group</a>, but that's out of scope for this article). The Seam Validation module allows to inject this service into the validator as into any other CDI bean:
+In order to perform the required checks the constraint's validator invokes some sort of registration service (note: accessing external services can potentially be an expensive operation, so it may be a good idea to put the constraint into a separate <a href="http://docs.hibernate.org/stable/validator/reference/en-US/html/validator-usingvalidator.html#validator-usingvalidator-validationgroups" target="" class="regularLink">validation group</a>, but that's out of scope for this article). The Seam Validation module allows to inject this service into the validator as into any other CDI bean:
 </p>
 
 
@@ -134,7 +134,7 @@ There is just one more step required before the <tt>@ValidLicensePlate</tt> cons
 <h2 class="wikiHeadline2" id="H-MethodValidation"><a href="/2011/05/02/seam-module-spotlight-seam-validation#H-MethodValidation">Method validation</a></h2>
 
 <p class="wikiPara">
-The other main feature of Seam Validation besides dependency injection is the automatic validation of method parameters and return values based on the <a href="http://docs.jboss.org/hibernate/validator/4.2/api/index.html?org/hibernate/validator/method/MethodValidator.html" target="" class="regularLink">API for method validation</a> introduced with Hibernate Validator 4.2 (note: at the time of writing Hibernate Validator 4.2 is released as Beta version, but no major changes are expected until the final release).
+The other main feature of Seam Validation besides dependency injection is the automatic validation of method parameters and return values based on the <a href="http://docs.hibernate.org/validator/4.2/api/index.html?org/hibernate/validator/method/MethodValidator.html" target="" class="regularLink">API for method validation</a> introduced with Hibernate Validator 4.2 (note: at the time of writing Hibernate Validator 4.2 is released as Beta version, but no major changes are expected until the final release).
 </p>
 
 <p class="wikiPara">
@@ -173,7 +173,7 @@ Here the following pre- and postconditions are applied onto the <tt>rentCar()</t
 </ul>
 
 <p class="wikiPara">
-By annotating the class <tt>RentalStation</tt> with <tt>@AutoValidating</tt>, all these constraints are automatically validated by a method interceptor whenever the <tt>rentCar()</tt> method is invoked. If any of the constraints can't be validated successfully, a <a href="http://docs.jboss.org/hibernate/validator/4.2/api/index.html?org/hibernate/validator/method/MethodConstraintViolation.html" target="" class="regularLink">runtime exception</a> describing the occurred constraint violation(s) is thrown.
+By annotating the class <tt>RentalStation</tt> with <tt>@AutoValidating</tt>, all these constraints are automatically validated by a method interceptor whenever the <tt>rentCar()</tt> method is invoked. If any of the constraints can't be validated successfully, a <a href="http://docs.hibernate.org/validator/4.2/api/index.html?org/hibernate/validator/method/MethodConstraintViolation.html" target="" class="regularLink">runtime exception</a> describing the occurred constraint violation(s) is thrown.
 </p>
 
 <p class="wikiPara">

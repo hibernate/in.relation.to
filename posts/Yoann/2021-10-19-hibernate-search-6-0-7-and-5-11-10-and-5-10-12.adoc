@@ -2,7 +2,7 @@
 Yoann Rodière
 :awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
 :awestruct-layout: blog-post
-:hsearch-doc-url-prefix: https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/
+:hsearch-doc-url-prefix: https://docs.hibernate.org/search/5.11/reference/en-US/html_single/
 :hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
 :hsearch-version-family: 6.0
 :hsearch-version-family-5-11: 5.11
@@ -39,7 +39,7 @@ will now trigger reindexing just as it used to in Hibernate Search 5.
 This comes with the same limitations as in Hibernate Search 5:
 if the other side of the association is already loaded, the new entity will be ignored.
 So if you can, don't rely on this fix and instead
-https://docs.jboss.org/hibernate/stable/search/reference/en-US/html_single/#mapper-orm-indexing-automatic-concepts-session-consistency[make sure you always update both sides of associations].
+https://docs.hibernate.org/stable/search/reference/en-US/html_single/#mapper-orm-indexing-automatic-concepts-session-consistency[make sure you always update both sides of associations].
 * link:{hsearch-jira-url-prefix}/HSEARCH-4307[HSEARCH-4307]:
 Hibernate Search's detection of its own version (for logging on startup) should now work even on native images.
 * link:{hsearch-jira-url-prefix}/HSEARCH-4331[HSEARCH-4331]:
@@ -47,8 +47,8 @@ We added a few default identifier bridges.
 +
 All types that used to be supported for document identifiers in Hibernate Search 5
 should now be supported in Hibernate Search 6 as well
-(though https://docs.jboss.org/hibernate/search/6.0/migration/html_single/#data-format[possibly with a different format]),
-https://docs.jboss.org/hibernate/search/6.0/migration/html_single/#behavior-default-bridge-java-util-class[with the exception of `java.util.Class`].
+(though https://docs.hibernate.org/search/6.0/migration/html_single/#data-format[possibly with a different format]),
+https://docs.hibernate.org/search/6.0/migration/html_single/#behavior-default-bridge-java-util-class[with the exception of `java.util.Class`].
 
 === 5.11.10.Final
 
@@ -81,7 +81,7 @@ For a full list of these new deprecations, see <<deprecations,below>>.
 Assign an analyzer to each index field separately using `@Field(analyzer = @Analyzer(...))` instead.
 * Support for defining analyzers or normalizers through annotations is deprecated, and will be removed in Hibernate Search 6.
 +
-Use an https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/#section-programmatic-analyzer-definition[analysis definition provider] instead.
+Use an https://docs.hibernate.org/search/5.11/reference/en-US/html_single/#section-programmatic-analyzer-definition[analysis definition provider] instead.
 +
 The following classes and methods are deprecated as a result:
 
@@ -137,7 +137,7 @@ The following classes and methods are deprecated as a result:
 * Support for `@Analyzer.impl`/`@Normalizer.impl` is deprecated, and will be removed in Hibernate Search 6.
 +
 Use `@Analyzer.definition` and an
-https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/#section-programmatic-analyzer-definition[analysis definition provider] instead.
+https://docs.hibernate.org/search/5.11/reference/en-US/html_single/#section-programmatic-analyzer-definition[analysis definition provider] instead.
 +
 The following classes and methods are deprecated as a result:
 
@@ -203,7 +203,7 @@ The following classes and methods are deprecated as a result:
 ** `org.hibernate.search.SearchFactory#getStatistics`
 ** `org.hibernate.search.stat.Statistics`
 ** `org.hibernate.search.stat.spi.StatisticsImplementor`
-* Support for https://docs.jboss.org/hibernate/search/5.11/reference/en-US/html_single/#advanced-features-dynamic-sharding[dynamic sharding]
+* Support for https://docs.hibernate.org/search/5.11/reference/en-US/html_single/#advanced-features-dynamic-sharding[dynamic sharding]
 is deprecated and will be removed in Hibernate Search 6.
 +
 The following classes and methods are deprecated as a result:

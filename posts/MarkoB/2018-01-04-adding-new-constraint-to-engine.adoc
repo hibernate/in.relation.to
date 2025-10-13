@@ -22,7 +22,7 @@ to find.
 - They get Hibernate Validator Annotation Processor support. This annotation processor can scan
 classes during compilation and provide warnings/errors when constraint annotations are
 used inappropriately. This helps to spot possible problems at compilation and avoid runtime errors.
-- https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-programmatic-api[A programmatic constraint definition]
+- https://docs.hibernate.org/stable/validator/reference/en-US/html_single/#section-programmatic-api[A programmatic constraint definition]
 is available for constraints which are part of the engine.
 - Last but definitely not least, it becomes possible for such constraints to get additional required
 functionality on the engine level, such as Hibernate Validator's `ScriptEvaluator` to evaluate a script
@@ -167,7 +167,7 @@ public class ISBNValidator implements ConstraintValidator<ISBN, CharSequence> {
 
 There is really no difference between constraint validators implemented as part of the
 engine, or the ones implemented outside of it. For more details on constraint validator
-implementation see the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#section-constraint-validator[documentation].
+implementation see the https://docs.hibernate.org/stable/validator/reference/en-US/html_single/#section-constraint-validator[documentation].
 
 === Register the validator
 
@@ -393,7 +393,7 @@ private static class Book {
 
 **Commit:** https://github.com/hibernate/hibernate-validator/commit/5134f1265f932ccd63fc761221e747ae5d2df03e
 
-In the third step, a new constraint should also be registered within the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-annotation-processor[annotation processor]
+In the third step, a new constraint should also be registered within the https://docs.hibernate.org/stable/validator/reference/en-US/html_single/#validator-annotation-processor[annotation processor]
 types:
 
 - First, the new constraint should be added to `TypeNames.HibernateValidatorTypes` in alphabetical
@@ -453,9 +453,9 @@ public class ConstraintValidationProcessorTest extends ConstraintValidationProce
 **Commit:** https://github.com/hibernate/hibernate-validator/commit/c7cc895f176fae499fe1fd21e3561e94c7e6bba6
 
 Finally, to finish adding a new constraint to Hibernate Validator, documentation for this constraint
-should be added to the https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single[reference guide].
+should be added to the https://docs.hibernate.org/stable/validator/reference/en-US/html_single[reference guide].
 
-A new list item should be added in the second chapter under https://docs.jboss.org/hibernate/stable/validator/reference/en-US/html_single/#validator-defineconstraints-hv-constraints[Additional constraints],
+A new list item should be added in the second chapter under https://docs.hibernate.org/stable/validator/reference/en-US/html_single/#validator-defineconstraints-hv-constraints[Additional constraints],
 similar to the following one:
 ```
 `@ISBN`:: Checks that the annotated character sequence is a valid https://en.wikipedia.org/wiki/International_Standard_Book_Number[ISBN]. `type` determines the type of ISBN. The default is ISBN-13.
