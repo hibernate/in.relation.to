@@ -1,0 +1,86 @@
+= Hibernate Validator 9.1.0.Beta1 is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:hibernate-validator-doc-url-prefix: https://docs.hibernate.org/validator/9.1/reference/en-US/html_single/
+:hibernate-validator-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hibernate-validator-version-family: 9.1
+:hibernate-validator-jira-project-id: 10060
+:hibernate-validator-jira-version-id: 35386
+---
+
+We just published Hibernate Validator 9.1.0.Beta1,
+the next release of the new 9.1 series of Hibernate Validator.
+
+Compared to the previous release in this series,
+9.1.0.Beta1 contains a new constraint, few improvements, fixes and dependency updates.
+
+[NOTE]
+====
+As this release includes significant changes to the processed bean tracking,
+path implementation and related areas, we encourage users to give it a try and report any findings,
+especially if there are non-trivial validation scenarios.
+====
+
+== What's new
+
+[[ip-address-constraint]]
+=== `IpAddress` constraint
+
+The new `@IpAddress` constraint validates that the corresponding string is a well-formed IP address.
+This constraint provides a `IpAddress.Type` enum with the IP address types it can validate: `IPv4`, `IPv6` or `ANY`.
+By default, `IpAddress.ANY` is used, which allows validating all the other address types listed in the `IpAddress.Type` enum.
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+@IpAddress <1>
+String address;
+// ...
+@IpAddress(type = IpAddress.Type.IPv6) <2>
+private String address;
+----
+<1> Using a default configuration of the `@IpAddress` constraint,
+where both `IPv4` and `IPv6` address types are considered valid.
+<2> Applying the `@IpAddress` constraint, where only the `IPv6` addresses are considered valid.
+====
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hibernate-validator-jira-url-prefix}/HV-2147[HV-2147]:
+Bump Apache Groovy to 5.0.2
+* link:{hibernate-validator-jira-url-prefix}/HV-2144[HV-2144]:
+Update to com.fasterxml:classmate 1.7.1
+* link:{hibernate-validator-jira-url-prefix}/HV-2143[HV-2143]:
+Apply the unified Hibernate Documentation theme
+
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hibernate-validator-jira-project-id}+AND+fixVersion={hibernate-validator-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+**Hibernate Validator 9 targets the Jakarta EE 11.**
+
+All details are available and up to date on the
+link:https://hibernate.org/validator/releases/{hibernate-validator-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, please refer to the getting started guide:
+
+* link:{hibernate-validator-doc-url-prefix}#validator-gettingstarted[Getting started with Hibernate Validator]
+
+For existing applications, Hibernate Validator {hibernate-validator-version-family} is a drop-in replacement for 9.0.
+Information about deprecated configuration and API
+is included in the https://hibernate.org/validator/documentation/migration-guide/#migration-guide-9-1-x[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Validation development mailing list] (discussions about the Jakarta Validation specification)
