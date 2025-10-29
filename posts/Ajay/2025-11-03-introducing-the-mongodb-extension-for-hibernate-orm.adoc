@@ -1,0 +1,72 @@
+= Introducing the MongoDB Extension for Hibernate ORM (Public Preview)
+Ajay Tandon
+:awestruct-tags: ["MongoDB", "Hibernate", "ORM", "JPA", "Java"]
+:awestruct-layout: blog-post
+---
+
+== Introducing the MongoDB Extension for Hibernate ORM
+
+We are excited to announce that the *MongoDB Extension for Hibernate ORM* is now available in public preview. This extension gives Java developers the freedom and flexibility to build modern applications using MongoDB’s document model and Hibernate’s user-friendly features, such as Java Persistence API (JPA) annotations, Hibernate Query Language (HQL) support, Criteria Queries, and caching.
+
+=== Key features of the MongoDB Extension for Hibernate
+
+Now, Java developers using Hibernate ORM can enjoy the best of both worlds: they can use familiar Hibernate paradigms for entity operations, queries, and more, while enjoying the flexibility to evolve their schema over time that comes with building on MongoDB.
+
+The extension supports the following key features:
+
+* *Native embedded documents for faster reads:* Nest objects and collections inside each document for higher read performance and more intuitive data hierarchy.
+* *Familiar JPA annotations:* Use the same annotations and patterns you already know, bridging the document model with standard JPA semantics.
+* *Query using Hibernate’s query languages and MongoDB’s Query API:* Write queries in HQL/JPQL while also using native MongoDB Query API for more advanced operations.
+
+A full list of features in this public preview is available at link:https://www.mongodb.com/docs/languages/java/mongodb-hibernate/current/feature-compatibility[this official documentation page].
+
+=== Why build your Java applications with MongoDB and Hibernate?
+
+Previously, Hibernate ORM worked with relational databases, which introduces challenges, including difficulty evolving schema and handling different data types. As modern applications evolve, they demand support for changing data structures, which can be difficult to implement in relational databases. When developers need to modify the schema (like adding a new column to a table or introducing a new relationship), they must perform a schema migration. This requires careful consideration of data dependencies (like foreign keys), default values for existing rows (or `NULL` values), and the performance impact of altering large tables.
+
+With the MongoDB Extension for Hibernate ORM, Java developers are no longer restricted to using relational databases. They can build with MongoDB and use familiar Hibernate annotations like `@Entity` and `@Id`, along with `Session.persist()` or HQL queries, to create modern applications.
+
+MongoDB's link:https://www.mongodb.com/resources/basics/databases/document-databases[flexible document model] strikes a strategic balance between adaptability and accuracy. For example, Java developers can design suitable data models for their applications and easily add new fields or make other changes to their data schema. Developers don’t need to pre-define a rigid structure of rows and columns when modeling data with MongoDB. They can then enforce the schema using MongoDB’s built-in link:https://www.mongodb.com/docs/manual/core/schema-validation/[schema validation].
+
+Moreover, MongoDB also makes it easier to store and manage different types of data—from simple text and numbers to complex embedded documents and arrays—all within one database.
+
+This flexibility, combined with powerful native features for use cases like *Vector Search*, data analysis (using the Aggregation Framework), real-time data stream processing, graph relationships, and geospatial data handling, makes MongoDB an excellent choice for building modern Java applications with Hibernate ORM.
+
+=== Under the hood: How the Extension talks to MongoDB
+
+To explain how this extension works, let’s look at a code example:
+
+With the new MongoDB Extension, Hibernate can map your entities to MongoDB collections and transform common operations like `persist`, `find`, and HQL queries into MongoDB commands automatically. For instance, consider a straightforward HQL query like:
+
+[source,sql]
+----
+from Contact where country = ?1 and age > ?2
+----
+
+When executed, Hibernate replaces the parameters (`?1` and `?2`) with the actual values provided in your code, for example, `CANADA` and `18`. The MongoDB dialect then translates the query into an equivalent MongoDB aggregation pipeline, such as:
+
+[source,json]
+----
+{
+  "aggregate": "contact",
+  "pipeline": [
+    { "$match": { "$and": [
+      { "country": { "$eq": "CANADA" } },
+      { "age": { "$gt": 18 } }
+    ]}},
+    { "$project": { "_id": true, "age": true, "country": true, "name": true }}
+  ]
+}
+----
+
+This translation happens transparently; developers continue using Hibernate’s familiar API while the framework builds the corresponding link:https://www.mongodb.com/docs/manual/reference/mql/[MongoDB Query API] commands under the hood.
+
+=== Getting started with the MongoDB Extension for Hibernate ORM
+
+The integration is straightforward—simply add the extension to your project's build setup and configure Hibernate to use it. Follow this link:https://docs.google.com/document/d/1l-Mc7fKmQph84m-yEhsXmEEvdMw-39ArxViOnvb6gSw/edit?tab=t.0[getting-started guide] for a step-by-step walkthrough.
+
+You can find more technical information about this extension in our link:https://www.mongodb.com/docs/languages/java/mongodb-hibernate/[documentation].
+
+=== Providing Feedback
+
+We would love to hear your feedback! You can suggest new features or vote on existing ideas at the link:https://feedback.mongodb.com/?category=7548141831345841376[MongoDB Feedback Portal]. Your input is critical for shaping the future of this product.
