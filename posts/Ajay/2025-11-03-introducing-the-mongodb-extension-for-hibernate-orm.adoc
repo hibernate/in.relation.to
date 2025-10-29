@@ -1,6 +1,6 @@
 = Introducing the MongoDB Extension for Hibernate ORM (Public Preview)
 Ajay Tandon
-:awestruct-tags: ["MongoDB", "Hibernate", "ORM", "JPA", "Java"]
+:awestruct-tags: ["MongoDB", "Hibernate ORM", "JPA", "MongoDB Extension"]
 :awestruct-layout: blog-post
 ---
 
@@ -16,6 +16,7 @@ The extension supports the following key features:
 
 * *Native embedded documents for faster reads:* Nest objects and collections inside each document for higher read performance and more intuitive data hierarchy.
 * *Familiar JPA annotations:* Use the same annotations and patterns you already know, bridging the document model with standard JPA semantics.
+* *ACID transactions:* Support for multi-document ACID transactions. You can use the same transaction boundaries (e.g., `@Transactional`, `Session.beginTransaction()`, `commit()`, and `rollback()`) that you already use with Hibernate, now backed by MongoDB’s native transactional guarantees.
 * *Query using Hibernate’s query languages and MongoDB’s Query API:* Write queries in HQL/JPQL while also using native MongoDB Query API for more advanced operations.
 
 A full list of features in this public preview is available at link:https://www.mongodb.com/docs/languages/java/mongodb-hibernate/current/feature-compatibility[this official documentation page].
@@ -40,7 +41,7 @@ With the new MongoDB Extension, Hibernate can map your entities to MongoDB colle
 
 [source,sql]
 ----
-from Contact where country = ?1 and age > ?2
+Select c.age, c.country, c.name from Contact c where c.country = 'CANADA' and c.age > 18
 ----
 
 When executed, Hibernate replaces the parameters (`?1` and `?2`) with the actual values provided in your code, for example, `CANADA` and `18`. The MongoDB dialect then translates the query into an equivalent MongoDB aggregation pipeline, such as:
