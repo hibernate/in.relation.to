@@ -1,11 +1,9 @@
 ---
 name: Ajay Tandon
-photo:
 level: 1
-website:
 location: Los Angeles, CA
-occupation: Senior Product Manager, MongoDB Client Libraries, Java
-gravatar_hash: gleamingbb81beaab1
+occupation: Senior Product Manager, Developer Interfaces
+gravatar_hash: 0909295f5982bf825d2df107ba0ff2f3963c06993231544a098384348cacdd3a
 active: true
 ---
-Ajay is a Senior Product Manager at MongoDB on the Client Libraries Java Team
+Ajay is a Senior Product Manager at MongoDB on the Developer Interfaces Team focusing on Java, Kotlin, and Scala.
