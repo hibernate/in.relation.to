@@ -44,7 +44,7 @@ With the new MongoDB Extension, Hibernate can map your entities to MongoDB colle
 Select c.age, c.country, c.name from Contact c where c.country = 'CANADA' and c.age > 18
 ----
 
-When executed, Hibernate replaces the parameters (`?1` and `?2`) with the actual values provided in your code, for example, `CANADA` and `18`. The MongoDB dialect then translates the query into an equivalent MongoDB aggregation pipeline, such as:
+The MongoDB dialect translates the query into an equivalent MongoDB aggregation pipeline:
 
 [source,json]
 ----
