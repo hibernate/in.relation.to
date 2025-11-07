@@ -1,0 +1,281 @@
+= Hibernate Validator 9.1.0.Final is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:hibernate-validator-doc-url-prefix: https://docs.hibernate.org/validator/9.1/reference/en-US/html_single/
+:hibernate-validator-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hibernate-validator-version-family: 9.1
+:hibernate-validator-jira-project-id: 10060
+:hibernate-validator-jira-version-id: 35947
+---
+
+We are excited to announce the release of Hibernate Validator 9.1.0.Final.
+
+Compared to the previously released 9.1.0.CR1, this version is almost identical,
+and just adjusts the documentation.
+
+
+[NOTE]
+====
+As this release includes significant changes to the processed bean tracking,
+path implementation and related areas, we encourage users to give it a try and report any findings,
+especially if there are non-trivial validation scenarios.
+====
+
+== What's new since 9.0
+
+[[performance-improvements]]
+=== Performance improvements
+
+We have changed the `jakarta.validation.Path` implementation,
+approach to processed bean tracking and slightly modified the message interpolation to improve both overall performance
+and performance of cascading validation when beans require a lot of cascading operations.
+You can find a detailed report on these and other performance updates at our https://in.relation.to/2025/09/29/hibernate-validator-benchmark/[previous blog post].
+
+[[deprecating-valid]]
+=== Deprecating the "legacy" use of `@Valid` at the container level
+
+Since Bean Validation 2.0, which introduced type argument constraints,
+the approach of placing the `@Valid` annotation at the container level to apply cascading validation to container elements
+has been considered a "legacy" approach.
+Users have been encouraged to move their constraints to the type argument level.
+
+.Legacy approach to cascading validation for container elements
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+class MyBean {
+    @Valid <1>
+    List<MyContainerElement> list;
+}
+----
+<1> Cascading validation is requested at the container level,
+whereas the expectation is that container elements will be considered for cascading, not the container itself.
+====
+
+.Current approach to cascading validation for container elements
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+class MyBean {
+    List<@Valid MyContainerElement> list; <1>
+}
+----
+<1> Cascading validation is requested at the container element level.
+This clearly communicates the intention that elements are expected to be cascaded into and not the container itself.
+====
+
+Starting with 9.1, Hibernate Validator will produce warnings during the metadata building step,
+if it detects the legacy approach to cascading validation of container elements.
+In the future version, this support of Bean Validation 1.0/1.1 legacy behaviour will be dropped.
+Placing the `@Valid` at the container level would result in cascading into the container itself rather than into its elements.
+
+[NOTE]
+====
+There is still some work ahead of us before we can turn off this legacy behaviour.
+For example, we must address the case where the container does not have type arguments
+but still requires cascading into its elements.
+This is currently tracked at the Jakarta Validation specification level through the following link:https://github.com/jakartaee/validation/issues/266[issue].
+
+We encourage users to review and update their validation mapping where necessary.
+Additionally, if you encounter a particular use case that you believe is not covered, please don't hesitate to contact us.
+====
+
+[[hibernate-path]]
+=== Extended validation path
+
+This version introduces two extensions the `jakarta.validation.Path`: `org.hibernate.validator.path.Path`
+and `org.hibernate.validator.path.RandomAccessPath`.
+
+==== `org.hibernate.validator.path.Path`
+We identified that there are a lot of use cases that require the leaf node of the path, and to get to it,
+one usually would need to iterate through the path to get to the very last element:
+
+.Iterate through the path to get the leaf node
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+Path path = constraintViolation.getPropertyPath();
+// use a for loop to iterate over the path nodes:
+Node leaf = null;
+for (Node node: path) {
+    leaf = node;
+}
+
+// request the path node iterator explicitly:
+Iterator<Path.Node> nodes = constraintViolation.getPropertyPath().iterator();
+Path.Node leafNode = null;
+while (nodes.hasNext()) {
+    leafNode = nodes.next();
+}
+----
+====
+
+This approach might result in unnecessary allocations and operations,
+especially if the underlying path implementation has a direct reference to the leaf node.
+
+With that in mind `org.hibernate.validator.path.Path` introduces the `getLeafNode()` method.
+
+.Using the Hibernate Validator extension to the `jakarta.validation.Path`
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+Path path = constraintViolation.getPropertyPath();
+if ( path instanceof org.hibernate.validator.path.Path hvPath ) {
+    Node leaf = hvPath.getLeafNode();
+	// ...
+}
+----
+====
+
+==== `org.hibernate.validator.path.RandomAccessPath`
+
+There are scenarios, where the first couple of nodes have to be inspected to determine how to process the constraint violation.
+For cases when the path is represented by an array or some other collection that allows easy random access to the nodes,
+it would be simple enough to expose the access to the nodes by index:
+
+.Random access to the path nodes
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+Path path = constraintViolation.getPropertyPath();
+if ( path instanceof org.hibernate.validator.path.RandomAccessPath hvPath ) {
+    Node rootNode = hvPath.getRootNode();
+    // ...
+    int index = ...
+    Node someNode = hvPath.getNode(index);
+    // ...
+    for(int i; i < hvPath.length(); i++) {
+        hvPath.getNode(i);
+    }
+}
+----
+====
+
+[[initialization-data]]
+=== Constraint initialization shared data
+
+Constraint initialization shared data opens up a way for constraint validators to access a shared instance within the `initialize(..)`.
+This can be used to cache and reuse elements required to construct a constraint validator. For example,
+internally, this mechanism is used by the pattern constraint validator to reuse the `java.util.regex.Pattern` instances
+
+.Accessing the constraint validator's lazy initialization shared data in a constraint validator
+====
+[source, JAVA, indent=0]
+----
+public class ParsableDateTimeFormatValidator
+    implements HibernateConstraintValidator<ParsableDateTimeFormat, String> { // <1>
+
+    private DateTimeFormatter formatter;
+
+    @Override
+    public void initialize(ConstraintDescriptor<ParsableDateTimeFormat> constraintDescriptor,
+            HibernateConstraintValidatorInitializationContext initializationContext) {
+        formatter = initializationContext.getSharedData( DateTimeFormatterCache.class, DateTimeFormatterCache::new ) // <2>
+                .get( constraintDescriptor.getAnnotation().dateFormat() ); // <3>
+    }
+
+    @Override
+    public boolean isValid(String dateTime, ConstraintValidatorContext constraintContext) {
+        if ( dateTime == null ) {
+            return true;
+        }
+
+        try {
+            formatter.parse( dateTime );
+        }
+        catch (DateTimeParseException e) {
+            return false;
+        }
+        return true;
+    }
+
+    private static class DateTimeFormatterCache { // <4>
+        private final Map<String, DateTimeFormatter> cache = new ConcurrentHashMap<>();
+
+        DateTimeFormatter get(String format) {
+            return cache.computeIfAbsent( format, DateTimeFormatter::ofPattern );
+        }
+    }
+}
+----
+<1> Implement the Hibernate Validator `HibernateConstraintValidator` extension to have access to the initialization context.
+<2> Retrieve the shared data from the initialization context, providing the supplier that will be executed
+if the `DateTimeFormatterCache` is not yet available in the current initialization context.
+<3> Perform some actions with the shared data instance.
+<4> A simple wrapper around the map to cache the formatters.
+Compared to the use of a static field cache, using the shared data has the benefit that it is tied to the initialization context
+and will be garbage collected along with it.
+====
+
+See the corresponding section on link:{hibernate-validator-doc-url-prefix}#constraint-validator-shared-data[constraint initialization shared data]
+to find out more.
+
+
+[[ip-address-constraint]]
+=== `IpAddress` constraint
+
+The new `@IpAddress` constraint validates that the corresponding string is a well-formed IP address.
+This constraint provides a `IpAddress.Type` enum with the IP address types it can validate: `IPv4`, `IPv6` or `ANY`.
+By default, `IpAddress.ANY` is used, which allows validating all the other address types listed in the `IpAddress.Type` enum.
+
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+@IpAddress <1>
+String address;
+// ...
+@IpAddress(type = IpAddress.Type.IPv6) <2>
+private String address;
+----
+<1> Using a default configuration of the `@IpAddress` constraint,
+where both `IPv4` and `IPv6` address types are considered valid.
+<2> Applying the `@IpAddress` constraint, where only the `IPv6` addresses are considered valid.
+====
+
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hibernate-validator-jira-url-prefix}/HV-2148[HV-2148]:
+Update Hibernate asciidoc theme to 6.1.1.Final
+* link:{hibernate-validator-jira-url-prefix}/HV-2149[HV-2149]:
+Lower the log level for some resource bundle messages
+* link:{hibernate-validator-jira-url-prefix}/HV-2151[HV-2151]:
+Fix for caching traversable resolvers
+* link:{hibernate-validator-jira-url-prefix}/HV-2147[HV-2147]:
+Bump Apache Groovy to 5.0.2
+* link:{hibernate-validator-jira-url-prefix}/HV-2144[HV-2144]:
+Update to com.fasterxml:classmate 1.7.1
+* link:{hibernate-validator-jira-url-prefix}/HV-2143[HV-2143]:
+Apply the unified Hibernate Documentation theme
+
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hibernate-validator-jira-project-id}+AND+fixVersion={hibernate-validator-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+**Hibernate Validator 9 targets the Jakarta EE 11.**
+
+All details are available and up to date on the
+link:https://hibernate.org/validator/releases/{hibernate-validator-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, please refer to the getting started guide:
+
+* link:{hibernate-validator-doc-url-prefix}#validator-gettingstarted[Getting started with Hibernate Validator]
+
+For existing applications, Hibernate Validator {hibernate-validator-version-family} is a drop-in replacement for 9.0.
+Information about deprecated configuration and API
+is included in the https://docs.hibernate.org/validator/{hibernate-validator-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Validation development mailing list] (discussions about the Jakarta Validation specification)
