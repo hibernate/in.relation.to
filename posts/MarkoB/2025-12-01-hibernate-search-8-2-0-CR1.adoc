@@ -1,0 +1,140 @@
+= Hibernate Search 8.2.0.CR1 is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.hibernate.org/search/8.2/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.hibernate.org/search/8.2/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.hibernate.org/search/8.2/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 8.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 33307
+---
+
+We just published Hibernate Search 8.2.0.CR1,
+the first candidate release of the next minor version of Hibernate Search.
+
+This version brings compatibility with the latest Hibernate ORM 7.2, Elasticsearch 9.2 and OpenSearch 3.2/3.3.
+It also introduces the pluggable Elasticsearch backend clients.
+
+== What's new
+
+=== Dependency upgrades
+
+[[orm-version]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5442[HSEARCH-5442])::
+Hibernate Search targets the Hibernate ORM 7.2 series.
+[[lucene-version]]
+Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-5488[HSEARCH-5488])/(link:{hsearch-jira-url-prefix}/HSEARCH-5525[HSEARCH-5525])::
+The Lucene backend now uses Lucene 9.12.3, while the `lucene-next` backend relies on Lucene 10.3.2
+[[elasticsearch-version]]
+Elasticsearch (link:{hsearch-jira-url-prefix}/HSEARCH-5508[HSEARCH-5508])::
+The Elasticsearch backend works with Elasticsearch 9.2, as well as other already compatible versions.
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-5459[HSEARCH-5459])/(link:{hsearch-jira-url-prefix}/HSEARCH-5504[HSEARCH-5504])::
+The Elasticsearch backend works with OpenSearch 3.2 and 3.3, as well as other already compatible versions.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-5522[HSEARCH-5522]: Upgrade to Elasticsearch **client** 9.2.1 (`elasticsearch-rest-client`)
+* link:{hsearch-jira-url-prefix}/HSEARCH-5523[HSEARCH-5523]: Upgrade to Elasticsearch **client** 9.2.1 (`elasticsearch-rest5-client`)
+* link:{hsearch-jira-url-prefix}/HSEARCH-5524[HSEARCH-5524]: Upgrade to OpenSearch **client** 3.3.2 (`opensearch-rest-client`)
+* link:{hsearch-jira-url-prefix}/HSEARCH-5531[HSEARCH-5531]: Upgrade to AWS SDK 2.39.3
+* link:{hsearch-jira-url-prefix}/HSEARCH-5506[HSEARCH-5506]: Upgrade to Avro 1.12.1
+
+[[pluggable-clients]]
+=== Pluggable Elasticsearch backend REST clients
+
+This version of Hibernate Search introduces pluggable REST clients for the Elasticsearch backend.
+Historically, the Elasticsearch backend relied on the Elasticsearch low-level REST client,
+which is based on the Apache HTTP Client 4. With the new pluggable client architecture,
+it is possible to switch to a different REST client as needed.
+This may be useful when you are running Hibernate Search in an environment relying on a different HTTP client type (e.g. Vert.x).
+or when you need to use some distribution specific client features and for example need to switch to the OpenSearch REST client.
+
+Hibernate Search provides the following REST client options out of the box:
+
+[[backend-elasticsearch-configuration-client-elasticsearch-client-rest4]]
+==== Elasticsearch low level REST client (Apache HTTP Client 4)
+
+Coordinates::
+GroupID::: `org.hibernate.search`
+ArtifactID::: `hibernate-search-backend-elasticsearch-client-rest4`
+Underlying HTTP Client::: Apache HTTP Client 4
+
+This Elasticsearch backend REST client is based on the Elasticsearch low level client (`org.elasticsearch.client:elasticsearch-rest-client`).
+Currently, the default REST client used by the Elasticsearch backend.
+
+[[backend-elasticsearch-configuration-client-elasticsearch-client-rest5]]
+==== Elasticsearch low level REST client (Apache HTTP Client 5)
+
+Coordinates::
+GroupID::: `org.hibernate.search`
+ArtifactID::: `hibernate-search-backend-elasticsearch-client-rest5`
+Underlying HTTP Client::: Apache HTTP Client 5
+
+This Elasticsearch backend REST client is based on the newer Elasticsearch low level client (`co.elastic.clients:elasticsearch-rest5-client`),
+which is also used in the `co.elastic.clients:elasticsearch-java`.
+
+[[backend-elasticsearch-configuration-client-elasticsearch-client-opensearch]]
+==== OpenSearch low level REST client (Apache HTTP Client 5)
+
+Coordinates::
+GroupID::: `org.hibernate.search`
+ArtifactID::: `hibernate-search-backend-elasticsearch-client-opensearch-rest`
+Underlying HTTP Client::: Apache HTTP Client 5
+
+This Elasticsearch backend REST client is based on the OpenSearch low level client (`org.opensearch.client:opensearch-rest-client`).
+
+NOTE: It is recommended to explicitly add a client that you prefer as a dependency, since in the future version
+of Hibernate Search we will remove the implicit dependency on `hibernate-search-backend-elasticsearch-client-rest4`
+from the Elasticsearch backend.
+
+[[backend-elasticsearch-configuration-client-elasticsearch-client-jdk]]
+==== Simple REST client based on the JDKs `HttpClient`
+
+Coordinates::
+GroupID::: `org.hibernate.search`
+ArtifactID::: `hibernate-search-backend-elasticsearch`
+Underlying HTTP Client::: JDKs Http Client (`java.net.http.HttpClient`)
+
+This Elasticsearch backend REST client is based on the HTTP client that is part of the JDKs `java.net` API.
+Mostly intended for very basic use cases, and may lack some features,
+e.g. automatic node discovery, compared to the other clients.
+As this client implementation relies only on the JDK, it is shipped as part of the Elasticsearch backend
+and does not require any extra dependencies.
+
+NOTE: JDKs HTTP client allows configuration though the system properties.
+Consult the list of available properties for your JDK version, e.g. https://docs.oracle.com/en/java/javase/25/docs/api/java.net.http/module-summary.html[JDK 25]
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 8.1,
+assuming you also upgrade the dependencies.
+Information about deprecated configuration and API
+is included in the https://docs.hibernate.org/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
