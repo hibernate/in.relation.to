@@ -1,0 +1,67 @@
+= Hibernate Search 8.2.1.Final is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.hibernate.org/search/8.2/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.hibernate.org/search/8.2/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.hibernate.org/search/8.2/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-version-family: 8.2
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id: 37006
+---
+
+Hibernate Search 8.2.1.Final maintenance release is out.
+
+This release contains some improvements in the AWS integration for the Elasticsearch backend,
+compatibility with OpenSearch 3.4
+and a few dependency updates.
+
+== What's new
+
+=== Dependency upgrades
+
+[[opensearch-version]]
+OpenSearch (link:{hsearch-jira-url-prefix}/HSEARCH-5543[HSEARCH-5543])::
+The Elasticsearch backend works with OpenSearch 3.4, as well as other already compatible versions.
+[[others-version]]
+Others::
+* link:{hsearch-jira-url-prefix}/HSEARCH-5550[HSEARCH-5550]: Upgrade to Elasticsearch **client** 9.2.3 (`elasticsearch-rest-client`)
+* link:{hsearch-jira-url-prefix}/HSEARCH-5546[HSEARCH-5546]: Upgrade to Elasticsearch **client** 9.2.3 (`elasticsearch-rest5-client`)
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5549[HSEARCH-5549]:
+Make AWS integration for the Elasticsearch backend be compatible with a preparsed Elasticsearch version in the configuration properties.
+
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/{hsearch-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications,
+refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, Hibernate Search {hsearch-version-family} is a drop-in replacement for 8.1,
+assuming you also upgrade the dependencies.
+If you are using the Elasticsearch backend, make sure to explicitly include the REST client dependency.
+Information about deprecated configuration and API
+is included in the https://docs.hibernate.org/search/{hsearch-version-family}/migration/html_single/[migration guide].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
