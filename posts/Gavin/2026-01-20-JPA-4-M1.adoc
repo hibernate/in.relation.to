@@ -1,0 +1,462 @@
+= Jakarta Persistence 4.0 Milestone 1
+Gavin King
+:awestruct-tags: ["JPA", "Jakarta Persistence"]
+:awestruct-layout: blog-post
+---
+
+Today we released the first milestone build of Jakarta https://github.com/jakartaee/persistence[Persistence] 4.0.
+
+Jakarta Persistence--more commonly known as JPA--defines the industry standard for management of persistence and object/relational mapping in Java.
+It's the most widely used persistence solution in the Java ecosystem and by far the most successful object/relational mapping API in any programming language.
+JPA4 is easily the most significant revision of the specification since JPA 2.0 was released in December 2009.
+
+This milestone build is being made available for wider community review with the purpose of collecting feedback from users and implementors.
+Remember: _now_ is the time to send feedback.
+JPA 4 is still not feature complete, and none of the changes I'm about to describe are set in stone.
+Don't wait for the specification to go final later this year before trying it out.
+
+Let's see what's new in this release.
+
+== `EntityAgent`
+
+We've been promising this for years and it's finally here.
+
+The most common complaints one hears about object/relational mapping fundamentally all boil down to this: for a minority of developers, and for certain kinds of program, managed entities and stateful persistence contexts just don't quite "click".
+Some people, sometimes, prefer more direct control over interaction with the database.
+
+So, whereas the fundamental operations of `EntityManager` (`persist`, `remove`, `merge`, `detach`, `lock`, `flush`) are operations on the persistence context, and only affect the database _indirectly_, the fundamental operations of `EntityAgent` (`insert`, `update`, `delete`, `upsert`) cut out the middleman and directly affect the database.
+This programming model is simpler and easier to understand and reason about.
+
+[source,java]
+----
+var book = factory.callInTransaction(EntityAgent.class, agent -> {
+    return agent.get(Book.class, isbn); // book is immediately detached
+});
+
+book.title = "Hibernate in Action"; // change it
+
+factory.runInTransaction(EntityAgent.class, agent -> {
+    agent.update(book); // update the database immediately
+});
+----
+
+Along with `EntityAgent` comes a zoo of new, lower-level lifecycle events like `@PreInsert`, `@PostUpsert`, `@PreDelete`, and so on.
+
+== "Static" queries
+
+The new `@StaticQuery` and `@StaticNativeQuery`, along with their friends `@ReadQueryOptions` and `@WriteQueryOptions` were designed for use with Jakarta https://github.com/jakartaee/data/[Data] at the top of our minds.
+
+[source,java]
+----
+@Repository
+interface Library {
+
+     @StaticQuery("from Book where isbn = :isbn")
+     @ReadQueryOptions(lockMode = PESSIMISTIC_READ)
+     Book getBookWithIsbn(String isbn);
+
+     @StaticQuery("from Book where title like :title")
+     @ReadQueryOptions(cacheStoreMode = BYPASS)
+     List<Book> findBooksByTitle(String title);
+
+     @StaticQuery("delete from Trash")
+     @WriteQueryOptions(timeout = 30_000)
+     int emptyTrash();
+ }
+----
+
+An annotation processor like Hibernate Processor is able to type check any static query against:
+
+- the entities in the persistence unit and
+- the signature of the method it annotates.
+
+This means you find out about errors in your queries immediately, at compilation time, without needing to run the code.
+
+These annotations aren't tied to Jakarta Data.
+With the help of the JPA static metamodel, you can call a static query directly the `EntityManager` or `EntityAgent` in a beautifully typesafe way.
+
+[source,java]
+----
+var books =
+        agent.createQuery(Library_.findBooksByTitle("%Jakarta%"))
+             .getResultList();
+----
+[source,java]
+----
+int deleted =
+        agent.createStatement(Library_.emptyTrash())
+             .execute();
+----
+
+Of course, static queries don't have to return entities.
+
+[source,java]
+----
+ record Summary(String title, String isbn, LocalDate date) {}
+
+ @StaticQuery("""
+     select title, isbn, pubDate
+     from Book
+     where title like = ?1 and pubDate > ?2
+ """)
+ List<Summary> retrieveSummaries(String title, LocalDate fromDate);
+----
+[source,java]
+----
+import static org.example.Library_.retrieveSummaries;
+
+var summaries =
+        manager.createQuery(retrieveSummaries("%JPA%",
+                                LocalDate.of(2006,5,11)))
+               .getResultList();
+----
+
+Static queries give us access to much more of the power of JPA than we usually have available when using a repository-like abstraction.
+There's a lot more that could be said about static queries, but we need to move on.
+
+== Programmatic result set mappings
+
+The `@SqlResultSetMapping` annotation dates from JPA 1.0.
+It helps express more complicated mappings of a native SQL result set to Java objects.
+But I've always felt that annotations weren't really a perfect fit to this problem, and so I've been promising an alternative for years.
+That alternative has finally arrived as the `ResultSetMapping` API.
+
+In the following example, an explicit result set mapping is not really needed.
+This is just to illustrate the basic idea.
+
+[source,java]
+----
+var authorResultSetMapping =
+         entity(Author.class,
+                 field(Author_.ssn, "auth_ssn"),
+                 embedded(Author_.name,
+                         field(Name_.first, "auth_first_name"),
+                         field(Name_.last, "auth_last_name")));
+var query =
+         """select
+                 ssn as auth_ssn,
+                 fn as auth_first_name,
+                 ln as auth_last_name
+              from authors""";
+var authors =
+        agent.createNativeQuery(query, authorResultSetMapping)
+             .getResultList();
+----
+
+Of course, a native SQL query doesn't need to return entities.
+
+[source,java]
+----
+ var constructorMapping =
+         constructor(Summary.class,
+                 column("isbn", String.class),
+                 column("title", String.class),
+                 column("author", String.class));
+var query =
+        "select b.isbn, b.title, a.name"
+        + " from books b"
+        + " join book_author ba on ba.isbn = b.isbn"
+        + " join authors a on ba.ssn = a.ssn";
+var summaries =
+        manager.createNativeQuery(query, constructorMapping)
+               .getResultList();
+----
+
+This new API is nice and type safe, thanks again to the static metamodel.
+
+On the other hand, suppose we already have a result set mapping defined using the venerable `@SqlResultSetMapping` annotation.
+
+[source,java]
+----
+@SqlResultSetMapping(
+        name = "orderResults",
+        entities = @EntityResult(
+            entityClass = Order.class,
+            fields = {
+                @FieldResult(name = "id", column = "order_id"),
+                @FieldResult(name = "total", column = "order_total"),
+                @FieldResult(name = "item", column = "order_item")
+            }
+        ),
+        columns = @ColumnResult(name = "item_name")
+)
+@Entity
+class Order { ... }
+----
+
+The new API lets us access those mappings in a type safe way, again courtesy of the static metamodel.
+
+[source,java]
+----
+var orders =
+        entityManager.createNativeQuery(
+                """
+                  SELECT o.id AS order_id,
+                         o.total AS order_total,
+                         o.item_id AS order_item,
+                         i.desc_name AS item_name
+                  FROM orders o, order_items i
+                  WHERE order_total > 25 AND order_item = i.id
+                """,
+                // a typesafe reference to the result set mapping
+                Order_._orderResults
+        ).getResultList();
+----
+
+== Default fetch type for to-one associations
+
+_By far_ the most serious error we made in the design of JPA 1.0 was to have `@ManyToOne` and `@OneToOne` associations default to `fetch=EAGER`.
+I just hate to contemplate the many millions of dollars (quite plausibly a https://in.relation.to/2025/09/24/a-billion-dollar-mistake/[billion]) that this single bad default has cost the industry since May 2006.
+Any time I see someone complaining about Hibernate or JPA producing queries with lots of joins, I want to yell through the screen "noooo, you're supposed to set it to `LAZY`!"
+And I know it's almost completely my fault for shutting up and going along with something I knew was wrong.
+
+From now on, you can make `LAZY` the default at the persistence unit level.
+
+[source,xml]
+<default-to-one-fetch-type>LAZY<default-to-one-fetch-type>
+
+Or:
+
+[source,java]
+persistenceConfiguration.defaultToOneFetchType(FetchType.LAZY)
+
+Please do this in _every_ new project.
+
+== `Statement` and `TypedQuery`
+
+This is a change we struggled with.
+
+The background behind this is that JPA 1.0 was designed before Java had generics.
+Support for generics was retrofitted in JPA 2.0, and unfortunately we made the mistake of leaving `Query` returning a raw `List` and introducing `TypedQuery` as a generic subtype.
+This meant that calls to `Query.getResultList()` produce compiler warnings and the potential for unchecked casts.
+The reasoning at the time was backward compatibility with clients written for 1.0, but frankly that could have been achieved in several different and better ways.
+Of course, none of us properly understood Java generics at the time--this was all quite new--and mistakes like this were sort of inevitable.
+
+In addition to this, JPA has never had a dedicated API for executing `update` and `delete` statements, and over time we've come to think that it should have.
+
+With all this in mind we have made the following changes:
+
+- we've introduced the `Statement` interface for executing statements that don't return results,
+- we've deprecated the use of `Query` for directly executing statements and queries, and
+- we now say more clearly that true queries--that is, statements that return results--should be executed using `TypedQuery` (of course, you should already be doing this in order to avoid those compiler warnings!).
+
+Fortunately, there's a straightforward migration path away from the deprecated programming model.
+
+If we have a query like this:
+
+[source,java]
+----
+List<Book> books = // ouch, unchecked cast
+        em.createQuery("from Book where extract(year from publicationDate) > :year")
+                .setParameter("year", Year.of(2000)) // now deprecated
+                .setMaxResults(10) // now deprecated
+                .setCacheRetrieveMode(CacheRetrieveMode.BYPASS) // now deprecated
+                .getResultList(); // ouch, compiler warning
+----
+
+Then we have a one-line change to make:
+
+[source,java]
+----
+List<Book> books =
+        em.createQuery("from Book where extract(year from publicationDate) > :year")
+                .ofType(Book.class)  // just add this
+                .setParameter("year", Year.of(2000))
+                .setMaxResults(10)
+                .setCacheRetrieveMode(CacheRetrieveMode.BYPASS)
+                .getResultList();
+----
+
+Or if we have a statement like this:
+
+[source,java]
+----
+int updated =
+        em.createQuery("delete from Temporary where timestamp > ?1")
+                .setParameter(1, cutoffDateTime) // now deprecated
+                .executeUpdate(); // now deprecated
+----
+
+We have the following two-line change:
+
+[source,java]
+----
+int updated =
+        em.createQuery("delete from Temporary where timestamp > ?1")
+                .asStatement()
+                .setParameter(1, cutoffDateTime)
+                .execute();
+----
+
+Or, alternatively, just:
+
+[source,java]
+----
+int updated =
+        em.createStatement("delete from Temporary where timestamp > ?1")
+                .setParameter(1, cutoffDateTime)
+                .execute();
+----
+
+We realize that adapting old code to accommodate changes like this is annoying.
+But you don't need to do it right away.
+We're not going to actually _remove_ anything during the lifecycle of JPA4.
+And this is the sort of change that's pretty straightforward to automate using something like OpenRewrite.
+
+== `get()`, `findMultiple()`, and `getMultiple()`
+
+The `find()` operation of an entity manager or entity agent retrieves an entity by its primary key, returning `null` if the entity is not found.
+That's sometimes useful, but it's probably more common that nonexistence of the entity is an error which should be signalled via an `EntityNotFoundException`.
+And that's what the new method `get()` does.
+Use `get()` instead of `find()` unless your code explicitly checks for and handles the `null` returned by `find()`
+
+The new methods `findMultiple()` and `getMultiple()` have similar semantics to `find()` and `get()`, respectively, but accept lists of primary keys, allowing efficient retrieval of a "batch" of entities.
+
+[source,java]
+----
+List<Book> getBooks(List<String> isbns) {
+    return agent.getMultiple(Book.class, isbns,
+                             CacheRetrieveMode.BYPASS,
+                             LockModeType.OPTIMISTIC);
+}
+----
+
+== `getResultCount()`
+
+The oft-requested new method `TypedQuery.getResultCount()` returns the total number of results of a query.
+
+== `setParameter()` and `setConvertedParameter()`
+
+It's occasionally useful to specify the type of a query parameter explicitly when providing an argument to the parameter.
+This isn't usually necessary with JPQL queries, but it does come up with native SQL statements and queries, where the type of a parameter can't be inferred from the query itself.
+
+[source,java]
+----
+manager.createNativeStatement("update books set pub_date = :date where isbn = :ISBN")
+       .setParameter("date", optionalPublicationDate, LocalDate.class)
+       .setParameter("ISBN", isbn)
+       .execute();
+----
+
+== Optional `select new`
+
+The query language in JPA 4 (which is in the process of being redefined as Jakarta Query) no longer requires that queries which return projected results via a simple record type use the `select new` syntax.
+Instead, the record type may be specified as the query result class.
+
+[source,java]
+----
+record Summary(String title, String isbn, LocalDate date) {}
+
+var summaries =
+        agent.createQuery(
+                """
+                   select title, isbn, pubDate
+                   from Book
+                   where title like = ?1 and pubDate > ?2
+                """)
+            .ofType(Summary.class)
+            .setParameter(1, titlePattern)
+            .setParameter(2, minDate)
+            .getResultList();
+
+----
+
+Actually, we already saw an example of this earlier, when we discussed static queries.
+
+== `@ExcludedFromVersioning`
+
+It's sometimes useful to allow a particular field of an entity to be modifiable without an optimistic version check.
+This means that lost updates to the field are tolerated, and can increase concurrency.
+Implementations have allowed this for a long time; it's now standardized via the `@ExcludedFromVersioning` annotation.
+
+== `StoredProcedureQuery`
+
+A number of significant improvements were made to the `StoredProcedureQuery` interface, making it easier to call stored procedures in a more type safe way.
+But I'm not going to discuss them here.
+
+== Programmatic registration of entity lifecycle callback listeners
+
+It's now possible to register a listener for an entity lifecycle event type at runtime.
+
+[source,java]
+----
+factory.addListener(Book.class, PostPersist.class,
+        book -> System.out.println("Book persisted: " + book.title));
+----
+
+This is of special interest to library and framework developers.
+
+Of more interest to application developers, perhaps, a given entity listener class may now have multiple event listener methods of any given callback type, for example, several `@PrePersist` methods for different entity types.
+
+== Named entity graphs
+
+Previously, a named entity graph was always defined using complicated nested annotations which referred to the fields of an entity which belonged to the entity graph by name.
+That still works, but in JPA 4, there's an alternative.
+You can annotate the included fields with the graph they belong to.
+
+[source,java]
+----
+ @NamedEntityGraph(name = "EmployeeWithProjectTasksAndEmployer")
+ @Entity // root entity of graph
+ public class Employee {
+     ...
+     // fetched attribute node
+     @NamedEntityGraphAttributeNode(graph = "EmployeeWithProjectTasksAndEmployer")
+     @ManyToOne(fetch=LAZY) Employer employer;
+
+     // reference to subgraph defined in Project class
+     @NamedEntityGraphSubgraph(graph = "EmployeeWithProjectTasksAndEmployer")
+     @ManyToMany Set<Project> projects;
+ }
+
+ @NamedEntityGraph(name = "EmployeeWithProjectTasksAndEmployer")
+ @Entity // root entity of subgraph
+ public class Project {
+     ...
+     // reference to subgraph defined in Task class
+     @NamedEntityGraphSubgraph(graph = "EmployeeWithProjectTasksAndEmployer")
+     @OneToMany List<Task> tasks;
+ }
+----
+
+Named entity graphs are still _very far_ from being my favorite feature of JPA, but for those who use them, this is arguably a significant improvement to the API.
+
+== Data loading and Schema Export
+
+The method `populate()` was added to `SchemaManager`, to make it easy to populate a schema with data provided in a DML script.
+
+The method `PersistenceConfiguration.exportSchema()` allows schema management actions to be executed before the `EntityManagerFactory` is instantiated.
+
+== Pessimistic lock scopes
+
+`PessimisticLockScope` was added in JPA 2.1, allowing the application to request that the JPA implementation obtain a pessimistic lock not only on the entity, but also on all its related state held in join tables and collection tables.
+Frankly, I never really understood this feature, and I can't imagine myself ever using it.
+For all but the most trivial entities, this locks too much stuff, including rows you're _not even reading_.
+
+Faced with the choice of simply deprecating this feature or turning it into something a bit more useful, we decided to take the second path.
+The new option `PessimisticLockScope.FETCHED` locks rows of join tables and collection tables only if you're actually reading them and fetching their state as part of the operation which obtains the lock.
+
+== JDBC fetch size and batch size
+
+The properties `jakarta.persistence.jdbc.fetchSize` and `jakarta.persistence.jdbc.batchSize` are now defined by the specification as a standard way to control the fetch size and batch size, respectively.
+This is quite important because a certain JDBC driver for a certain very important database has a https://in.relation.to/2025/01/24/jdbc-fetch-size/[bad default].
+
+== Changes to the container/provider contract
+
+We have modified the SPIs governing the contract between the Persistence provider and the Jakarta EE container to allow:
+
+1. the container to take complete responsibility for discovering Persistence-related classes in a persistence unit, a job it can do much more efficiently than the provider, and
+2. separation of the process of class loading and enhancement from the instantiation of an `EntityManagerFactory`, solving a thorny issue affecting integration between the CDI `BeanManager` and the `PersistenceProvider`.
+
+== Specification
+
+The specification itself is incredibly important documentation to both users and implementors.
+As part of an ongoing effort to improve readability of the spec, we've revised and rewritten most sections of the first two chapters, along with other various passages scattered throughout the spec.
+
+== Relationship to Jakarta Data and Jakarta Query
+
+It's important to put this work on Jakarta Persistence 4 in context.
+What I've described here is just part of a larger effort spanning three different specifications: https://github.com/jakartaee/persistence/[Persistence], https://github.com/jakartaee/query/[Query], and https://github.com/jakartaee/data/[Data].
+The components are being designed to fit together perfectly, offering friction-free movement between the more declarative repository model of Jakarta Data and the more programmatic model of Jakarta Persistence, without loss of type safety.
+
+I sure hope you like it!
