@@ -1,0 +1,129 @@
+= Hibernate Search 6.2.5.Final / 7.2.6.Final / 8.1.3.Final / 8.2.2.Final are out!
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Search", "Lucene", "Elasticsearch", "Releases" ]
+:awestruct-layout: blog-post
+:hsearch-doc-url-prefix: https://docs.hibernate.org/search/8.2/reference/en-US/html_single/
+:hsearch-getting-started-orm-url-prefix: https://docs.hibernate.org/search/8.2/getting-started/orm/en-US/html_single/
+:hsearch-getting-started-standalone-url-prefix: https://docs.hibernate.org/search/8.2/getting-started/standalone/en-US/html_single/
+:hsearch-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hsearch-jira-project-id: 10061
+:hsearch-jira-version-id-62: 32288
+:hsearch-jira-version-id-72: 37908
+:hsearch-jira-version-id-81: 35254
+:hsearch-jira-version-id-82: 37173
+---
+
+We are pleased to announce the release of Hibernate Search 6.2.5.Final, 7.2.6.Final, 8.1.3.Final and 8.2.2.Final.
+
+These releases bring a few bug fixes and clarifications in the migration guides.
+
++++<!-- more -->+++
+
+== Hibernate Search 6.2.5.Final
+
+=== Dependency upgrades
+
+[[orm-version-6-2]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5496[HSEARCH-5496])::
+Hibernate Search now depends on Hibernate ORM 6.2.49.Final.
+
+[[other-since-last-6-2]]
+=== Other
+
+* link:{hsearch-jira-url-prefix}/HSEARCH-5571[HSEARCH-5571]: Upgrade to Avro 1.11.5.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5334[HSEARCH-5334]: Fix conditional search failure when sorting by nullable fields.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-62}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/6.2/#get-it[dedicated page on hibernate.org].
+
+== Hibernate Search 7.2.6.Final
+
+=== Dependency upgrades
+
+[[orm-version-7-2]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5574[HSEARCH-5574])::
+Hibernate Search now depends on Hibernate ORM 6.6.42.Final.
+
+[[other-since-last-7-2]]
+=== Other
+* link:{hsearch-jira-url-prefix}/HSEARCH-5506[HSEARCH-5506]: Update to Avro 1.12.1.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-72}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/7.2/#get-it[dedicated page on hibernate.org].
+
+== Hibernate Search 8.1.3.Final
+
+=== Dependency upgrades
+
+[[orm-version-8-1]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5573[HSEARCH-5573])::
+Hibernate Search now depends on Hibernate ORM 7.1.16.Final.
+
+Lucene (link:{hsearch-jira-url-prefix}/HSEARCH-5488[HSEARCH-5488])::
+Hibernate Search now depends on Lucene 9.12.3.
+
+[[other-since-last-8-1]]
+=== Other
+* link:{hsearch-jira-url-prefix}/HSEARCH-5506[HSEARCH-5506]: Update to Avro 1.12.1.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5498[HSEARCH-5498]: Upgrade Elasticsearch *client* to 9.1.5.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5474[HSEARCH-5474]: Upgrade to GSON 2.13.2.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5473[HSEARCH-5473]: Include license file in the `META-INF` of published artifacts.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-81}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/8.1/#get-it[dedicated page on hibernate.org].
+
+== Hibernate Search 8.2.2.Final
+
+=== Dependency upgrades
+
+[[orm-version-8-2]]
+Hibernate ORM (link:{hsearch-jira-url-prefix}/HSEARCH-5572[HSEARCH-5572])::
+Hibernate Search now depends on Hibernate ORM 7.2.4.Final.
+
+[[other-since-last-8-2]]
+=== Other
+* link:{hsearch-jira-url-prefix}/HSEARCH-5562[HSEARCH-5562]: Pass a `ROOT` locale to loggers to avoid unnecessary class lookups.
+* link:{hsearch-jira-url-prefix}/HSEARCH-5517[HSEARCH-5517]: Fix for document may get updated instead of deleted on cascading delete of `OneToOne` relations.
+
+And more. For a full list of changes since the previous releases,
+please see the link:https://hibernate.atlassian.net/issues/?jql=project={hsearch-jira-project-id}+AND+fixVersion={hsearch-jira-version-id-82}[release notes].
+
+=== How to get this release
+
+All details are available and up to date on the
+link:https://hibernate.org/search/releases/8.2/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, refer to the getting started guide:
+
+* link:{hsearch-getting-started-orm-url-prefix}[here for the Hibernate ORM integration]
+* link:{hsearch-getting-started-standalone-url-prefix}[here for the Standalone POJO Mapper]
+
+For existing applications, these releases of Hibernate Search are drop-in replacements of their previous micros within the same minors,
+assuming you also upgrade the dependencies.
+To upgrade to a newer major/minor, see https://hibernate.org/search/documentation/migrate/[migration guides].
+
+== Feedback, issues, ideas?
+
+To get in touch, use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-search[hibernate-search tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-search[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HSEARCH[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
