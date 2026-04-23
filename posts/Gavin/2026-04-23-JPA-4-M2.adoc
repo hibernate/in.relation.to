@@ -1,0 +1,150 @@
+= Jakarta Persistence 4.0 Milestone 2
+Gavin King
+:awestruct-tags: ["JPA", "Jakarta Persistence"]
+:awestruct-layout: blog-post
+---
+
+Today we released the https://github.com/jakartaee/persistence/discussions/1019[second milestone build] of Jakarta https://github.com/jakartaee/persistence[Persistence] 4.0.
+
+I https://in.relation.to/2026/01/20/JPA-4-M1/[previously] blogged about the new features of JPA 4 which were already available in the first milestone.
+Here I'm going to list the changes we've made since then.
+
+== Improvements to criteria queries
+
+We've introduced new operations to obtain a criteria query object representing a JPQL query given as a string:
+
+[source,java]
+CriteriaQuery<Book> query =
+        builder.createQuery(Book.class,
+                // the base query
+                "from Book left join fetch authors");
+if (titlePattern != null) {
+     // add a restriction to the query
+     query.where(book.get(Book_.title).like("%Persistence%"));
+}
+List<Book> books = agent.createQuery(query).getResultList();
+
+The example demonstrates a second improvement in this release.
+We have added:
+
+- specialized expression types `ComparableExpression`, `NumericExpression`,
+  `TextExpression`, `TemporalExpression`, and `BooleanExpression`, and
+- matching metamodel attribute types such as `ComparableAttribute`,
+  `NumericAttribute`, `TextAttribute`, `TemporalAttribute`, and
+  `BooleanAttribute`.
+
+This results in a modest improvement to the verbosity of criteria queries.
+We can now write:
+
+[source,java]
+query.where(book.get(Book_.title).like("%Persistence%"))
+
+instead of:
+
+[source,java]
+query.where(builder.like(book.get(Book_.title), "%Persistence%"))
+
+saving two tokens and enhancing readability.
+
+== Improved control over fetching with `EntityGraph`
+
+It's now possible to control association fetching strategies via the `EntityGraph` API.
+Continuing with the pattern we established in JPA 3.2 with `FindOption`, `RefreshOption`, and `LockOption`, we have introduced a new `FetchOption` interface.
+There are four built-in fetch options defined by the specification itself:
+
+- `FetchType`, allowing _explicit_ selection of `LAZY` or `EAGER` fetching,
+- `CacheRetriveMode` and `CacheStoreMode`, controlling interaction with the second-level cache, and
+- the brand new `BatchSize` (which is also a `FindOption`).
+
+Of course, implementations of the Persistence API are encouraged to provide their own ``FetchOption``s.
+For example, Hibernate will provide an option to request the use of subselect fetching.
+
+== `@EntityListener`
+
+Since JPA 1.0, it has been possible to separate entity lifecycle callback listeners from the entity class itself, via the `@EntityListeners` annotation or equivalent XML descriptor.
+This works, but in the absence of an XML descriptor, it means that the entity class must know about all its listeners at compilation time.
+
+The new `@EntityListener` annotation removes the dependence of the entity class on its listener classes.
+We could write:
+
+[source,java]
+@EntityListener
+class BookListener {
+    @PostInsert
+    void bookInserted(Book book) {
+        ...
+    }
+}
+
+and the listener will be automatically associated with the `Book` class.
+Alternatively, we could write:
+
+[source,java]
+@EntityListener
+class GenericListener {
+    @PostInsert
+    void inserted(Object book) {
+        ...
+    }
+}
+
+and this listener will be associated with every entity class in the persistence unit (since every entity is a subtype of `Object`).
+
+Entity listeners are now permitted to have multiple listeners for the same type of callback.
+
+[source,java]
+----
+@EntityListener
+class BookListener {
+    @PostInsert
+    void bookInserted(Book book) {
+        ...
+    }
+
+    @PostInsert
+    void authorInserted(Author book) {
+        ...
+    }
+}
+----
+
+== More control over flushing
+
+We have added:
+
+- `FlushModeType.EXPLICIT` (similar to Hibernate's `FlushMode.MANUAL`),
+- `QueryFlushMode` enumerating flush modes relevant to query execution (identical to Hibernate's `QueryFlushMode`),
+- `flush` to `@NamedQuery` and `@NamedNativeQuery`, allowing a named query to specify a `QueryFlushMode`, and
+- `Query.setQueryFlushMode()` as a replacement for the now-deprecated `Query.setFlushMode()`
+
+== `StatementOrTypedQuery`
+
+In M1 we introduced a distinction between a `Statement` and a `TypedQuery` in the APIs for query execution.
+In this release we have refined this split by adding `StatementOrTypedQuery` for additional type safety.
+
+== `@Discoverable` annotations
+
+In the past, only _managed classes_ (entities, embeddable types, mapped superclasses, and converters) were automatically discoverable by the Jakarta EE container, which led to certain limitations when JPA was used in Jakarta EE.
+For example, a `@NamedQuery` annotation had to be placed on a managed class, or it would be ignored at runtime.
+
+We have now introduced the meta-annotation `@Discoverable`.
+Any annotation type annotated `@Discoverable` is considered a _discoverable_ annotation type.
+A JPA provider may even define its own discoverable annotation types.
+Any class (even an interface, package descriptor or module descriptor) packaged in a persistence unit and annotated with any discoverable annotation type must now be passed by the Jakarta EE container to the JPA provider at startup.
+
+So, for example, `@NamedQuery` may now be placed on any class or interface in the persistence unit, or even on a package descriptor or module descriptor.
+
+== Other changes
+
+We have also:
+
+- specified that `@MapsId` may be used with `@IdClass`,
+- improved the `@Index` annotation, allowing greater control over generated DDL,
+- consolidated the proposed `@ReadQueryOptions` and `@WriteQueryOptions` annotations into a single annotation `@StaticQueryOptions`,
+- allowed `@EntityResult` and friends to be specified on a `@StaticNativeQuery` method,
+- added support for aliases in the new programmatic `ResultSetMapping` API,
+- reworked the proposed new annotations for defining named entity graphs as inner annotations of `@NamedEntityGraph`, and
+- made a number of important clarifications to the specification and Javadoc.
+
+We could love to hear your feedback on all this!
+
