@@ -115,9 +115,8 @@ Migrating is straightforward:
 4. The plugin configuration can stay the same.
 
 Your existing configuration files should continue to work as before.
-However, note that the Java package names have changed, for example, the public API moved from
-`org.hibernate.tool.api` to `org.hibernate.tool.reveng.api`.
-If you have custom `RevengStrategy` implementations, you will need to update your import statements accordingly.
+If you have custom code relying on Hibernate Tools as a library (e.g. a custom `RevengStrategy`), note that the Java package names have changed, for example, the public API moved from
+`org.hibernate.tool.api` to `org.hibernate.tool.reveng.api`. You will need to update your import statements accordingly.
 
 For detailed documentation on reverse engineering via the build plugins, refer to the
 https://docs.jboss.org/hibernate/orm/7.4/userguide/html_single/Hibernate_User_Guide.html[Hibernate ORM User Guide].
