@@ -1,0 +1,133 @@
+= Hibernate Tools Moves to Hibernate ORM -- and Eclipse Tooling Retires
+Koen Aers
+:awestruct-tags: ["Hibernate ORM", "Hibernate Tools"]
+:awestruct-layout: blog-post
+
+We are happy to announce that, starting with the upcoming releases of Hibernate ORM 7.4,
+the core modules of Hibernate Tools will be integrated directly into the Hibernate ORM repository.
+
+In this post we will cover the motivation behind the move, what it means for your build files,
+what happens to the Eclipse tooling, and how to get started with the new coordinates.
+
+== A Bit of History
+
+Some tooling originally lived inside the Hibernate ORM project itself.
+With the introduction of Eclipse dependencies, some part of it was split out
+into its own https://github.com/hibernate/hibernate-tools[Hibernate Tools]
+project. Pulling in the Eclipse platform as a dependency was not acceptable for ORM,
+so a separate project was the natural solution.
+
+Later, when JBoss IDE (and eventually https://github.com/jbosstools[JBoss Tools]) came into
+existence, the Eclipse-specific parts moved there, into the
+https://github.com/jbosstools/jbosstools-hibernate[jbosstools-hibernate] repository.
+What remained in the Hibernate Tools project was the reverse engineering engine and the Ant task.
+Maven and Gradle plugin support was added later on.
+
+== Why the Move?
+
+With the Eclipse tooling no longer being actively maintained as part of JBoss Tools,
+the original reason for the split, isolating Eclipse dependencies from ORM, no longer applies.
+Meanwhile, the remaining tools modules have always been tightly coupled to ORM:
+the reverse engineering engine depends directly on ORM internals, the build plugins need to
+stay in sync with the ORM version they target, and changed ORM features often require
+corresponding changes in the tools.
+
+Maintaining all of this as a separate project meant coordinating releases across repositories,
+keeping versions aligned, and duplicating build infrastructure.
+In practice, a new ORM release always implied a matching Tools release.
+
+Folding the tools back into ORM brings things full circle. The result: one repository,
+one release cycle, one set of coordinates.
+Contributors also benefit: a single pull request can now touch both the ORM core
+and the tooling that exposes it, making it easier to keep everything consistent.
+
+== New Artifact Coordinates
+
+The group ID changes from `org.hibernate.tool` to `org.hibernate.orm`.
+Here is the full mapping of old to new coordinates:
+
+[cols="1,1", options="header"]
+|===
+| Old Coordinate                              | New Coordinate
+
+| `org.hibernate.tool:hibernate-tools-orm`    | `org.hibernate.orm:hibernate-reveng`
+| `org.hibernate.tool:hibernate-tools-ant`    | `org.hibernate.orm:hibernate-ant`
+| `org.hibernate.tool:hibernate-tools-maven`  | `org.hibernate.orm:hibernate-maven-plugin`
+| `org.hibernate.tool:hibernate-tools-gradle` | `org.hibernate.orm:hibernate-gradle-plugin`
+|===
+
+An important detail: the Maven and Gradle plugins have been merged with the existing ORM plugins.
+If you were already using `hibernate-maven-plugin` or `hibernate-gradle-plugin` for bytecode
+enhancement or other tasks, reverse engineering capabilities are now available directly from
+those same plugins. No additional dependency is needed.
+
+There will be no relocation POMs for the old coordinates, in order to avoid the added
+maintenance cost. Please update your dependencies to the new coordinates directly.
+
+== What About Eclipse Tooling?
+
+The Eclipse-based tooling that was historically part of
+https://github.com/jbosstools/jbosstools-hibernate[JBoss Tools]
+is no longer maintained there.
+For many years these plugins provided a graphical way to configure and run reverse engineering,
+inspect mappings, and execute HQL queries directly from the IDE.
+
+We have made an effort to extract the Hibernate-specific Eclipse plugins from the
+JBoss Tools infrastructure and turn them into a standalone project.
+The result lives at https://github.com/koentsje/hibernate-tools-eclipse[my personal GitHub repository].
+It builds in a very straightforward way using Maven and Tycho.
+No dependency on JBoss Tools build artifacts or update sites is needed.
+This should make it much easier to build, modify, and contribute to the Eclipse plugins
+compared to the old JBoss Tools setup.
+
+However, there are currently no plans to make this an officially supported Hibernate project.
+The repository will be archived, but the code is there for anyone in the community who wants to pick it up and build upon it.
+
+If you are currently relying on the Eclipse tooling, we recommend looking into the
+Maven or Gradle plugins as an alternative. They offer the same reverse engineering capabilities
+and integrate well with any IDE, since they are driven by your build system rather than
+by IDE-specific plugins.
+
+== GitHub Repository
+
+The https://github.com/hibernate/hibernate-tools[Hibernate Tools repository] will continue
+to receive automated dependency upgrades on its older branches for a while,
+but will ultimately be archived and made read-only.
+All new development happens in the
+https://github.com/hibernate/hibernate-orm[Hibernate ORM repository].
+
+== Issue Tracking
+
+With the move to the ORM repository, issue tracking moves as well.
+New issues related to reverse engineering, the Ant task, or the build plugins
+for version 7.4 and later should be filed in the
+https://hibernate.atlassian.net/projects/HHH[Hibernate ORM (`HHH`)] project on Jira.
+
+Open issues that are still relevant will be migrated from the
+https://hibernate.atlassian.net/projects/HBX[Hibernate Tools (`HBX`)] project to ORM.
+The Hibernate Tools project will remain available for reference and for issues
+pertaining to older versions prior to 7.4,
+but we will archive it and make it read-only.
+
+== Getting Started with 7.4
+
+Migrating is straightforward:
+
+1. Update your dependency coordinates as shown in the table above.
+2. Make sure you are using Hibernate ORM 7.4 (7.4.0.CR1 or later, to be released in the next few days).
+3. If you were using the standalone Maven or Gradle tools plugins,
+   switch to the coordinates of the unified ORM plugins (`hibernate-maven-plugin` / `hibernate-gradle-plugin`).
+4. The plugin configuration can stay the same.
+
+Your existing configuration files should continue to work as before.
+If you have custom code relying on Hibernate Tools as a library (e.g. a custom `RevengStrategy`), note that the Java package names have changed, for example, the public API moved from
+`org.hibernate.tool.api` to `org.hibernate.tool.reveng.api`. You will need to update your import statements accordingly.
+
+For detailed documentation on reverse engineering via the build plugins, refer to the
+https://docs.jboss.org/hibernate/orm/7.4/userguide/html_single/Hibernate_User_Guide.html[Hibernate ORM User Guide].
+
+== Feedback
+
+If you run into any issues during migration, or if you have suggestions for how we can
+improve the tooling going forward, feel free to reach out on
+https://discourse.hibernate.org/[the Hibernate forums].
