@@ -1,0 +1,367 @@
+= When @Immutable Made All the Difference: A 3.2x Speedup with Hibernate Second-Level Cache
+Ståle Pedersen
+:awestruct-tags: [ "Hibernate ORM", "Performance", "JSON", "Caching" ]
+:awestruct-layout: blog-post
+:toc:
+:toclevels: 2
+---
+
+In our https://in.relation.to/2026/05/29/hibernate-json-dirty-checking-performance/[previous post], 
+we showed how `@Mutability(Immutability.class)` and removing `CascadeType.MERGE` cut our JSON processing time in half by eliminating unnecessary dirty-checking. 
+That was the first round of optimization. This post covers the second round enabling Hibernate's second-level cache on the same entity, and the surprising 
+discovery that *three annotations must work together* to unlock the full benefit. Getting two out of three still left us over 8x slower than the final result.
+
+== The Setup
+
+https://github.com/Hyperfoil/h5m[h5m] is an open-source benchmark result storage system that processes uploaded JSON data through a directed acyclic graph (DAG) 
+of computation nodes. Each upload produces roughly 870 database operation INSERT's for each computed value plus its relationship edges. 
+The hot path: extraction nodes produce values, downstream nodes read those values, compute new ones, and persist them. 
+The same value entities are loaded repeatedly as different nodes in the DAG need them as inputs.
+
+We knew this was a caching opportunity. The question was how to unlock it.
+
+== Step 1: Enable Second-Level Cache - No Improvement
+
+The obvious first step: enable Hibernate's second-level cache on our most frequently loaded entity.
+
+[source,properties]
+----
+quarkus.hibernate-orm.cache."io.hyperfoil.tools.h5m.entity.ValueEntity".memory.object-count=20000
+----
+
+[source,java]
+----
+@Entity
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+public class ValueEntity extends PanacheEntity {
+    @Column
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Basic(fetch = FetchType.LAZY)
+    public JqValue data;
+    // ...
+}
+----
+
+*Result: no measurable improvement.* The benchmark ran at essentially the same speed 285.9 seconds before, 285.7 seconds after.
+
+We enabled the cache, Hibernate was storing entities in it, the hit rate looked reasonable, but the wall clock didn't move. Something was wrong, and profiling would tell us what.
+
+=== What the profiler revealed
+
+async-profiler CPU flamegraphs showed the top consumers:
+
+[cols="3,1,1"]
+|===
+| Hotspot | CPU % | Description
+
+| `FormatMapper.fromString()`
+| 31.7%
+| JSONB to entity deserialization
+
+| `AbstractEntityPersister.dehydrate()`
+| 14.2%
+| Dirty-checking snapshot creation
+
+| `DefaultFlushEntityEventListener`
+| 8.4%
+| Flush-time dirty detection
+|===
+
+Two problems were visible:
+
+1. *The cache was being bypassed.* Our queries used native SQL with `SELECT *`, which returns full result sets that Hibernate maps to entities via `FormatMapper`. 
+Native SQL queries *do not check the L2 cache* they always go to the database and always deserialize.
+
+2. *Dirty-checking was consuming 22% of CPU.* Every entity load creates a deep-copy snapshot for later dirty comparison. 
+For our JSONB `data` field, this means serializing and deserializing the JSON data multiple times per entity, per flush cycle even for entities that are never modified.
+
+The cache was there, but nothing was using it. And the real bottleneck wasn't cache misses it was the work Hibernate does on every entity it loads.
+
+== Step 2: Make Queries Cache-Friendly - Barely an Improvement
+
+The first problem was clear: our native queries returned full entities, bypassing the L2 cache entirely. The L2 cache is keyed by entity ID, so `em.find(id)` checks the cache, 
+but `SELECT * FROM value v WHERE ...` does not.
+
+The fix: split queries into two steps, fetch only IDs with native SQL, then load each entity via `em.find()`:
+
+[source,java]
+----
+// BEFORE: native query bypasses L2 cache
+List<ValueEntity> values = em.createNativeQuery("""
+    WITH RECURSIVE sourceRecursive (v_id) AS (...)
+    SELECT * FROM value v JOIN sourceRecursive sr ON v.id = sr.v_id
+    WHERE v.node_id = :nodeId
+""", ValueEntity.class)
+    .setParameter("rootId", root.id)
+    .setParameter("nodeId", node.id)
+    .getResultList();
+----
+
+[source,java]
+----
+// AFTER: ID-only query + em.find() hits L2 cache
+List<Number> ids = em.createNativeQuery("""
+    WITH RECURSIVE sourceRecursive (v_id) AS (...)
+    SELECT DISTINCT v.id FROM value v JOIN sourceRecursive sr ON v.id = sr.v_id
+    WHERE v.node_id = :nodeId
+""")
+    .setParameter("rootId", root.id)
+    .setParameter("nodeId", node.id)
+    .getResultList();
+
+List<ValueEntity> values = new ArrayList<>(ids.size());
+for (Number id : ids) {
+    ValueEntity v = em.find(ValueEntity.class, id.longValue());
+    if (v != null) values.add(v);
+}
+----
+
+NOTE: Hibernate 7.x provides `Session.findMultiple()` which can batch-load multiple IDs in a single query when cache misses occur. 
+This is more efficient than the `em.find()` loop above for cold-cache scenarios. 
+Also, HQL supports recursive CTEs, so the native SQL could be replaced with HQL to avoid the two-query pattern entirely.
+
+`em.find()` checks the L2 cache first. For a cache hit: no database round-trip, no JSONB deserialization, no `FormatMapper`. 
+The ID-only native query transfers only integer IDs (a few bytes each) instead of potentially large JSONB payloads.
+
+*Result: barely measurable improvement.* The structural change was correct, cache hits now avoided database round-trips. 
+But the profiler revealed that the cache itself was adding overhead. With `NONSTRICT_READ_WRITE`, Hibernate stores entities 
+in the cache using `StandardCacheEntryImpl`, which *disassembles* (serializes) the entity state into a `Serializable[]` array on every cache put, 
+and *assembles* (deserializes) it back on every cache get. The Hibernate source code makes this explicit:
+
+[source,java]
+----
+// StandardCacheEntryImpl -- "we write to cache by value!"
+this.disassembledState = CacheEntryHelper.disassemble(state, ...);
+
+// On cache hit -- "we read from cache by value!"
+final Object[] state = CacheEntryHelper.assemble(disassembledState, ...);
+----
+
+For our JSONB `data` field, this means every cache hit still triggers a serialization round-trip the entity state is assembled from the cached `Serializable[]` back into live objects. 
+The FormatMapper overhead was reduced (no database I/O), but not eliminated.
+
+On top of this, every entity loaded whether from cache or database still got a dirty-checking snapshot. 
+The profiler showed dirty-checking consuming 22% of CPU: snapshot creation on load, deep copies for comparison, and flush-time dirty detection. 
+For entities that are never modified, this was pure waste.
+
+== Step 3: @Immutable + READ_ONLY - The 3.2x Speedup
+
+The key insight was that we were not giving Hibernate the full picture of our data model. We knew our `ValueEntity` was write-once after initial creation and persist, 
+the entity data is never modified through Hibernate. But Hibernate didn't know that. Without explicit annotation, Hibernate must assume any entity could be modified at any time, 
+and it protects against that with dirty-checking snapshots and serialized cache entries.
+
+By telling Hibernate the truth about our data, that it is immutable, we allow it to make fundamentally different optimization decisions:
+
+[source,java]
+----
+@Entity
+@Immutable
+@Cacheable
+@Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
+public class ValueEntity extends PanacheEntity {
+    @Column
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Basic(fetch = FetchType.LAZY)
+    @Mutability(Immutability.class)
+    public JqValue data;
+    // ...
+}
+----
+
+Three annotations work together, each telling Hibernate something specific about the data:
+
+=== @Immutable on the entity
+
+Tells Hibernate to skip dirty-checking entirely. No snapshot creation on load, no comparison at flush time. The entity is read-only from Hibernate's perspective.
+
+=== @Cache(usage = CacheConcurrencyStrategy.READ_ONLY)
+
+`READ_ONLY` is a simpler cache access strategy than `NONSTRICT_READ_WRITE`. It eliminates version tracking, lock coordination, and the overhead of managing 
+concurrent read-write access patterns. In our benchmarks, `READ_ONLY` was approximately 20% faster than `NONSTRICT_READ_WRITE` for the same workload 
+(25.0s vs 30.1s for 5 imports producing ~2,600 values). Both strategies work correctly with `@Immutable` entities.
+
+=== @Mutability(Immutability.class) on the JSONB field
+
+This turned out to be *critical*, and its importance was not obvious. We initially assumed `@Immutable` on the entity would be sufficient, 
+but benchmarking revealed an 8.1x performance difference from this single field annotation.
+
+The reason: `@Immutable` controls *entity-level* dirty-checking, but Hibernate's type system has its own *field-level* `MutabilityPlan` that operates independently. 
+Even on an `@Immutable` entity, the `MutabilityPlan` is invoked when values are *disassembled* for storage in the second-level cache and *assembled* 
+when retrieved from it. `@Immutable` correctly skips dirty-checking snapshots, but the cache's `StandardCacheEntryImpl` still uses the field's `MutabilityPlan` 
+to serialize and deserialize values. We confirmed this with async-profiler (JFR mode), which showed cache assembly/disassembly consuming 49% of all CPU samples 
+when `@Mutability(Immutability.class)` was absent.
+
+The stack trace shows the cost comes from cache value assembly, not from entity initialization:
+
+[source]
+----
+CacheLoadHelper.loadFromSecondLevelCache(...)
+  CacheLoadHelper.convertCacheEntryToEntity(...)
+    StandardCacheEntryImpl.assemble(...)
+      CacheEntryHelper.assemble(...)
+        AbstractStandardBasicType.assemble(...)
+          MutableMutabilityPlan.assemble(...)
+            SerializableJavaType$SerializableMutabilityPlan.deepCopyNotNull(...)
+              SerializationHelper.clone(...)    // full ObjectOutputStream/ObjectInputStream round-trip
+----
+
+Standard Java types like `String`, `Integer`, and `LocalDateTime` don't suffer from this because Hibernate has built-in `JavaType` implementations 
+with `ImmutableMutabilityPlan`, so their cache assembly/disassembly is zero-cost. Custom types that implement `Serializable`, like our `JqValue`, 
+fall through to `SerializableJavaType` whose `MutabilityPlan` (inherited from `MutableMutabilityPlan`) assumes the value is mutable 
+and makes defensive copies via full Java object serialization for every `assemble`, `disassemble`, and `deepCopy` call:
+
+[source,java]
+----
+// SerializableJavaType$SerializableMutabilityPlan -- DEFAULT for Serializable types
+public T deepCopyNotNull(T value) {
+    return SerializationHelper.clone(value);  // ObjectOutputStream + ObjectInputStream round-trip!
+}
+----
+
+With `@Mutability(Immutability.class)`, the `MutabilityPlan` switches to:
+
+[source,java]
+----
+// Immutability -- ZERO-COST for immutable fields
+public Object deepCopy(Object value) { return value; }  // same reference
+public Serializable disassemble(Object value, ...) { return (Serializable) value; }
+public Object assemble(Serializable cached, ...) { return cached; }
+----
+
+No serialization, no parsing, no copies. The benchmark confirmed the impact:
+
+[cols="2,1"]
+|===
+| Configuration | Time (20 imports)
+
+| `@Immutable` + `@Cache(READ_ONLY)` + `@Mutability(Immutability.class)`
+| *90s*
+
+| `@Immutable` + `@Cache(READ_ONLY)` without `@Mutability`
+| *733s*
+|===
+
+*The entity-level `@Immutable` is not enough.* The field-level `MutabilityPlan` must also be told that the value is immutable, 
+especially for types implementing `Serializable` where the default plan performs full Java object serialization round-trips 
+during cache assembly and disassembly.
+
+=== Handling the exceptions: mutations on @Immutable entities
+
+Marking an entity `@Immutable` means Hibernate will not generate UPDATE statements for it. But our pipeline has two cases where value data legitimately changes:
+
+1. *Deduplication*: when a recalculation produces a different result for an existing value
+2. *Ephemeral nullification*: nulling out intermediate computation data to save storage
+
+Both are handled with native SQL plus explicit cache eviction:
+
+[source,java]
+----
+// Mutation via native SQL (bypasses @Immutable restriction)
+em.createNativeQuery("UPDATE value SET data = cast(:data as jsonb) WHERE id = :id")
+    .setParameter("data", newData.toJsonString())
+    .setParameter("id", existingValue.getId())
+    .executeUpdate();
+
+// Evict the stale cached entry
+em.getEntityManagerFactory().getCache().evict(ValueEntity.class, existingValue.getId());
+----
+
+NOTE: Alternatively, you can set `hibernate.query.immutable_entity_update_query_handling_mode=allow` 
+(or `quarkus.hibernate-orm.query.immutable-entity-update-query-handling-mode=allow` in Quarkus) 
+to enable HQL update queries on `@Immutable` entities, avoiding native SQL.
+
+This pattern works because the mutations are infrequent (only during recalculation or at upload completion) while the reads are frequent (hundreds per upload across the DAG pipeline). 
+The cost of occasional cache eviction is negligible compared to the savings from skipping dirty-checking on every load.
+
+=== Eager fetch for the sources collection
+
+Our `ValueEntity` has a `sources` relationship (the DAG edges):
+
+[source,java]
+----
+@ManyToMany(cascade = { CascadeType.PERSIST }, fetch = FetchType.EAGER)
+@JoinTable(name = "value_edge", ...)
+public List<ValueEntity> sources;
+----
+
+We use `FetchType.EAGER` because our application code accesses the `sources` collection in various contexts including outside the original persistence context. 
+Since the entities are cached in the L2 cache, the eager fetch cost is paid only once per entity; subsequent loads hit the cache.
+
+== Results
+
+Benchmark: 20 uploads of a real-world performance test suite (rhivos-perf-comprehensive), 134 computation nodes in the DAG, ~10,500 values produced, 4 worker threads.
+
+[cols="2,1,1"]
+|===
+| Step | Time | Speedup
+
+| Baseline (no cache)
+| 285.9s
+| 1.0x
+
+| Step 1: L2 cache enabled (NONSTRICT_READ_WRITE)
+| 285.7s
+| 1.0x
+
+| Step 2: ID-only queries + em.find()
+| ~284s
+| ~1.0x
+
+| Step 3: @Immutable + @Cache(READ_ONLY) + @Mutability
+| *90s*
+| *3.2x*
+|===
+
+CPU profile comparison (async-profiler, 30-second sample after 100-second warmup):
+
+[cols="2,1,1"]
+|===
+| Metric | Baseline | After Step 3
+
+| Total CPU samples
+| 1,196
+| 866 (-27%)
+
+| JSONB parse samples
+| 628
+| 306 (-51%)
+
+| Object allocations
+| 20,592
+| 10,284 (-50%)
+|===
+
+The JSONB parse reduction is the L2 cache finally working, cache hits skip `FormatMapper` entirely. 
+The allocation reduction comes from eliminating dirty-checking snapshots. Together with the elimination of `deepCopy` serialization overhead, 
+they account for the throughput improvement.
+
+Scalability verification at larger scale confirmed the improvement holds:
+
+* 500 uploads (214,000 values): stable 340 values/second throughput
+* 1,327 uploads (308,000 values): no degradation
+
+== Key Takeaways
+
+*Give Hibernate accurate information about your data model.* The difference between "cacheable entity" and "fully annotated immutable entity" was 3.2x in our benchmarks. 
+This requires annotations at multiple levels: `@Immutable` on the entity (controls dirty-checking), `@Cache(READ_ONLY)` on the entity (controls cache strategy), 
+AND `@Mutability(Immutability.class)` on complex fields (controls the type system's deep copy and serialization). 
+Missing any one of these leaves significant performance on the table. In our case, omitting the field-level annotation alone caused an 8.1x slowdown 
+because the default `MutabilityPlan` for `Serializable` types performs full Java object serialization round-trips on every `deepCopy` call, 
+even on `@Immutable` entities.
+
+*Entity-level and field-level immutability are independent.* `@Immutable` on the entity class controls dirty-checking (should Hibernate generate UPDATEs?). 
+`@Mutability(Immutability.class)` on a field controls the type system's `MutabilityPlan` (how should the value be copied and serialized?). 
+For scalar fields like `int` or `String`, the default `MutabilityPlan` is cheap. For types implementing `Serializable` (including custom JSON types), 
+the default plan performs full Java object serialization, and this cost applies even on `@Immutable` entities because `StandardCacheEntryImpl` 
+still invokes the field's `MutabilityPlan` to `assemble` and `disassemble` values for cache storage and retrieval.
+
+*Native SQL queries bypass the L2 cache.* This is easy to miss. If your performance-critical queries use native SQL (as ours do for recursive CTEs), 
+the L2 cache provides zero benefit unless you restructure queries to fetch IDs only, then load entities via `em.find()` or `Session.findMultiple()`. 
+Alternatively, Hibernate 7.x HQL supports recursive CTEs, which could avoid the two-query pattern entirely.
+
+*Profile before optimizing.* Without async-profiler showing that dirty-checking consumed 22% of CPU and `FormatMapper` consumed 31%, we would have stopped at Step 1 and concluded that "the L2 cache doesn't help for this workload." The standard cache metrics (hit rate, miss rate) told us nothing useful because the real problem was that the queries were bypassing the cache entirely.
+
+---
+
+_This post builds on our earlier findings about https://in.relation.to/2026/05/29/hibernate-json-dirty-checking-performance/[Hibernate JSON dirty-checking performance]. The h5m project is part of the https://hyperfoil.io[Hyperfoil] ecosystem. The full source is available at https://github.com/Hyperfoil/h5m[github.com/Hyperfoil/h5m]._
