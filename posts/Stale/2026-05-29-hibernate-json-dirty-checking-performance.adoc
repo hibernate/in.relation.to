@@ -42,7 +42,7 @@ java -agentpath:libasyncProfiler.so=start,event=cpu,file=profile.jfr,jfr \
 
 The results were surprising:
 
-[cols="3,1,1"]
+[cols="3,1,1", stripes="even", options="header"]
 |===
 | Category | CPU Samples | %
 
@@ -90,7 +90,7 @@ The allocation profile confirmed this:
 java -agentpath:libasyncProfiler.so=start,event=alloc,file=alloc.jfr,jfr ...
 ----
 
-[cols="3,1"]
+[cols="3,1", stripes="even", options="header"]
 |===
 | Allocator | Bytes
 
@@ -131,7 +131,7 @@ public JsonNode data;
 
 === Results
 
-[cols="2,1,1,1"]
+[cols="2,1,1,1"], stripes="even", options="header"]
 |===
 | Metric | Before | After | Improvement
 
@@ -213,7 +213,7 @@ This is safe because all entities in the relationship are already managed in the
 
 === Results
 
-[cols="2,1,1,1"]
+[cols="2,1,1,1", stripes="even", options="header"]
 |===
 | Metric | Before | After | Improvement
 
@@ -254,7 +254,7 @@ Note that this optimization has nothing to do with JSON specifically. `CascadeTy
 
 Both fixes together, measured on our production import pipeline (5 records, 4 worker threads, PostgreSQL):
 
-[cols="2,1,1,1,1"]
+[cols="2,1,1,1,1", stripes="even", options="header"]
 |===
 | Metric | Original | + @Mutability | + No MERGE | Total Improvement
 
