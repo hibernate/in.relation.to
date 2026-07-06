@@ -32,6 +32,9 @@ module InRelationTo
           if html_node.is_a?(Nokogiri::XML::Text) || html_node.is_a?(Nokogiri::XML::Comment)
             next
           end
+          if html_node.name == 'div' && html_node.attribute('id') && html_node.attribute('id').value == 'toc'
+            next
+          end
           if html_node.name == 'div' && html_node.attribute('id') && html_node.attribute('id').value == 'preamble'
             section_body = html_node.xpath('div[@class="sectionbody"]').first
             if section_body
