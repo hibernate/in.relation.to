@@ -5,23 +5,6 @@ pipeline {
         buildDiscarder logRotator(daysToKeepStr: '30', numToKeepStr: '10')
     }
     stages {
-        stage('Build for PR') {
-            agent {
-                label 'Worker&&Containers'
-            }
-            when {
-                beforeAgent true
-                changeRequest()
-            }
-            steps {
-                script {
-                    env.GEN_ENV = 'production'
-                    docker.image('quay.io/hibernate/awestruct-build-env:latest').inside('--pull always') {
-                        sh "rake setup && rake clean[all] gen[${env.GEN_ENV}]"
-                    }
-                }
-            }
-        }
         stage('Build and deploy') {
             agent {
                 label 'Release'
