@@ -3,18 +3,33 @@
  */
 
 .banner {
-	.logo.hibernate {
-		margin-top: 12px;
-		float: left;
-		img {
-			height: 44px;
-			width: auto;
-		}
-	}
-
 	.ui.menu {
-		margin-top: 0px;
-		margin-bottom: 20px;
+		border: 0;
+		-webkit-box-shadow: none;
+		box-shadow: none;
+
+		.header.logo.hibernate {
+			padding: 7px 10px 1px;
+			flex-shrink: 0;
+			img {
+				height: 32px;
+				width: auto;
+			}
+		}
+
+		.item.social-icon {
+			padding-left: 8px;
+			padding-right: 8px;
+			svg {
+				display: block;
+			}
+		}
+
+		@media only screen and (max-width: 1200px) {
+			.item {
+				padding: 4px 8px;
+			}
+		}
 	}
 
 	.dropup {
@@ -863,6 +878,12 @@ pre .comment .conum {
 		.internal-links {
 			border-bottom: 1px solid #444;
 		}
+	}
+
+	svg.social-icon {
+		display: inline-block;
+		vertical-align: middle;
+		margin-right: 6px;
 	}
 }
 
