@@ -6,6 +6,27 @@ module Awestruct
 
       attr_accessor :path_prefix, :assign_to, :archive_template, :archive_path, :default_layout, :wp_compat
 
+      # Awestruct's AsciidoctorHandler passes all parsed header values through
+      # YAML.load (see asciidoctor_handler.rb, parse_document_attributes).
+      # This is needed for attributes like :awestruct-tags: [ "Hibernate ORM" ]
+      # where the value is a YAML array, but it also applies to the document title.
+      #
+      # When a title contains ": " (colon-space), YAML.load interprets it as a
+      # mapping and returns a Hash instead of a String:
+      #
+      #   YAML.load("Main Title: A Subtitle")
+      #   => {"Main Title" => "A Subtitle"}    # Hash, not a String!
+      #
+      # This breaks layouts that expect page.title to be a String.
+      # The workaround so far has been to wrap titles in quotes in the .adoc source
+      # (= "Title: Subtitle"), but that's fragile and surprising for authors.
+      #
+      # This method reconstructs the original title string from the Hash.
+      def self.fix_title(page)
+        return unless page.title.is_a?(Hash)
+        page.title = page.title.map { |k, v| "#{k}: #{v}" }.join(', ')
+      end
+
       def initialize(path_prefix='', assign_to=:posts, archive_template=nil, archive_path=nil, opts={})
         @archive_template = archive_template
         @archive_path     = archive_path
@@ -20,6 +41,7 @@ module Awestruct
         archive = Archive.new
 
         site.pages.each do |page|
+          Posts.fix_title(page)
           year, month, day, slug = nil
 
           if ( page.relative_source_path =~ /^#{@path_prefix}\// )
