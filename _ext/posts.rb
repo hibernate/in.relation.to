@@ -27,6 +27,21 @@ module Awestruct
         page.title = page.title.map { |k, v| "#{k}: #{v}" }.join(', ')
       end
 
+      # Awestruct's AsciidoctorHandler keeps only the first author in the 'author'
+      # attribute and stores all authors from the document header (separated by ';')
+      # as a list of hashes in the 'authors' attribute. That silently drops every
+      # co-author: the splitter, the templates and the atom feed only see the first.
+      # Promote all authors to the 'author' attribute as a list of names instead,
+      # but leave single-author posts alone to keep the existing String behavior.
+      def self.fix_authors(page)
+        return if page.authors.nil? || !page.authors.kind_of?(Array) || page.authors.empty?
+        names = page.authors.map do |author|
+          author.kind_of?(Hash) ? author[:name] || author['name'] : author.to_s
+        end
+        names = names.reject { |name| name.nil? || name.empty? }
+        page.author = names if names.size > 1
+      end
+
       def initialize(path_prefix='', assign_to=:posts, archive_template=nil, archive_path=nil, opts={})
         @archive_template = archive_template
         @archive_path     = archive_path
@@ -42,6 +57,7 @@ module Awestruct
 
         site.pages.each do |page|
           Posts.fix_title(page)
+          Posts.fix_authors(page)
           year, month, day, slug = nil
 
           if ( page.relative_source_path =~ /^#{@path_prefix}\// )
@@ -143,4 +159,3 @@ module Awestruct
     end
   end
 end
-
