@@ -51,7 +51,7 @@ We enabled the cache, Hibernate was storing entities in it, the hit rate looked 
 
 async-profiler CPU flamegraphs showed the top consumers:
 
-[cols="3,1,1"]
+[cols="3,1,1", stripes="even", options="header"]
 |===
 | Hotspot | CPU % | Description
 
@@ -231,7 +231,7 @@ public Object assemble(Serializable cached, ...) { return cached; }
 
 No serialization, no parsing, no copies. The benchmark confirmed the impact:
 
-[cols="2,1"]
+[cols="2,1", stripes="even", options="header"]
 |===
 | Configuration | Time (20 imports)
 
@@ -292,7 +292,7 @@ Since the entities are cached in the L2 cache, the eager fetch cost is paid only
 
 Benchmark: 20 uploads of a real-world performance test suite (rhivos-perf-comprehensive), 134 computation nodes in the DAG, ~10,500 values produced, 4 worker threads.
 
-[cols="2,1,1"]
+[cols="2,1,1", stripes="even", options="header"]
 |===
 | Step | Time | Speedup
 
@@ -315,7 +315,7 @@ Benchmark: 20 uploads of a real-world performance test suite (rhivos-perf-compre
 
 CPU profile comparison (async-profiler, 30-second sample after 100-second warmup):
 
-[cols="2,1,1"]
+[cols="2,1,1", stripes="even", options="header"]
 |===
 | Metric | Baseline | After Step 3
 
