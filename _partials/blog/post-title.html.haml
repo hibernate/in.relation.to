@@ -6,7 +6,7 @@
 
 .blog-title-bar
   .blog-title-image.mobile.hidden
-    - if member.gravatar_hash && show_author_image != false
+    - if member && member.gravatar_hash && show_author_image != false
       .author-image-container
         .author-image{:itemprop=>"image", :itemscope=>"", :itemtype=>"http://schema.org/ImageObject"}
           %meta{:itemprop=>"height width", :content=>"65"}
@@ -20,18 +20,25 @@
 
     .blog-author-bar
       Posted by
-      - # It's a String in editor mode only
+      - # Author is a String in editor mode, a list of SplitStats (one per author) otherwise
       - if post.author.is_a? String
         %span{:itemprop=>"author", :itemscope=>"", :itemtype=>"http://schema.org/Person"}
           %span{:itemprop=>"name"}
             = post.author
       - else
-        - post.author.each do |author|
-          -# relying on primary_page.output_path instead of url which is for our purposes identical - see WEBSITE-318
-          %a{:href=>author.primary_page.output_path}
+        - post.author.each_with_index do |author, index|
+          - if author.respond_to?(:primary_page)
+            -# relying on primary_page.output_path instead of url which is for our purposes identical - see WEBSITE-318
+            %a{:href=>author.primary_page.output_path}
+              %span{:itemprop=>"author", :itemscope=>"", :itemtype=>"http://schema.org/Person"}
+                %span{:itemprop=>"name"}
+                  = author
+          - else
             %span{:itemprop=>"author", :itemscope=>"", :itemtype=>"http://schema.org/Person"}
               %span{:itemprop=>"name"}
                 = author
+          - unless index == post.author.size - 1
+            ,
       &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
       %time{:datetime=>post.date.strftime( "%F" ), :itemprop=>"dateModified datePublished", :content=>post.date.strftime( "%Y-%m-%d" ) }
         = post.date.strftime( site.date_format )

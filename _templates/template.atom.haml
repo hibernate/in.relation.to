@@ -25,13 +25,17 @@
         %published= entry.date.xmlschema
         %link{:rel=>"alternate", :type=>"text/html", :href=>"#{site.base_url}#{entry.url}" }
         - if ( not entry.author.nil? )
-          %author
-            - if ( defined?( entry.author.name ) )
-              %name= entry.author.name.force_encoding("UTF-8")
-              - if ( entry.author.email )
-                %email= entry.author.email
-            - else
-              %name= entry.author
+          - # Reloaded feed entries only carry the first author in 'author', use 'authors' for the rest
+          - entry_authors = entry.author.is_a?(Array) ? entry.author : (entry.authors.kind_of?(Array) && !entry.authors.empty? ? entry.authors : [entry.author])
+          - for entry_author in entry_authors
+            %author
+              - if ( defined?( entry_author.name ) )
+                %name= entry_author.name.force_encoding("UTF-8")
+                - if ( entry_author.email )
+                  %email= entry_author.email
+              - else
+                - author_name = entry_author.kind_of?(Hash) ? (entry_author[:name] || entry_author['name']) : entry_author.to_s
+                %name= author_name.force_encoding("UTF-8")
         - if ( not entry.tags.nil? )
           - if entry.tags.is_a? String
             - for tag in entry.tags.split(",").map(&:strip)
@@ -43,4 +47,3 @@
           #{summarize( html_to_text( entry.content.force_encoding("UTF-8") ), 100 )}
         %content{:type=>'html'}
           = clean_html( html_escape( fully_qualify_urls( site.base_url, find_and_preserve( entry.content.force_encoding("UTF-8") ) ) ) )
-
