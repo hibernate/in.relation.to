@@ -1,0 +1,77 @@
+= Hibernate 8.0.0.Beta2
+Steve Ebersole
+:toc:
+:toclevels: 2
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+
+Hibernate ORM 8.0.0.Beta2 is now available
+
+The second beta of Hibernate ORM 8.0 brings stronger concurrency guarantees, expanded Jakarta Persistence 4 support, and substantial improvements to migration from legacy XML mappings. It also introduces more convenient configuration options and clarifies the contracts available to integration and dialect providers.
+
+Highlights include:
+
+* *Locking and concurrency improvements.*
+Optimistic version checks now account for database behavior that could previously
+allow concurrent changes to go undetected. Version locking is supported for
+`StatelessSession` and Jakarta Persistence's `EntityAgent`, and concurrent stateless
+upserts handle insert races correctly. Tenant identifiers are now consistently
+included in generated mutation SQL, strengthening isolation for discriminator-based
+multitenancy.
+
+* *Expanded Jakarta Persistence 4 support.*
+Entity listeners can now be declared at package or module scope, and module
+descriptors can declare named queries and other mapping metadata. The new
+`@PostCreate` and `@PreClose` callbacks allow listeners to observe the lifecycle
+of entity manager factories, entity managers, and entity agents.
+
+* *Improved XML mapping migration.*
+`HbmXmlTransformer` more faithfully preserves legacy `hbm.xml` mappings when
+converting them to Hibernate's extended `orm.xml` format. Improvements cover
+composite identifiers, inheritance, associations, collections, custom types,
+constraints, and stored procedures.
+
+* *More convenient configuration and diagnostics.*
+Typed session and query options cover filtering, JDBC batch and fetch sizes,
+query-result caching, and SQL comments. The new `AdjustableSettings` API allows
+selected diagnostic settings, including SQL logging and slow-query thresholds,
+to change at runtime. `@DefaultListSemantics` provides package- and module-level
+control over whether eligible list attributes use bag or indexed-list semantics.
+
+* *Client enhancement and redesigned enhancement SPI.*
+Optional client enhancement rewrites direct entity-field access from application
+classes so that it participates in lazy loading and dirty tracking.
+The enhancement SPI now separates the mapping model, enhancement options,
+and execution environment, replacing `EnhancementContext` with
+`EnhancementModel`, `EnhancementOptions`, and `EnhancementEnvironment`.
+Client enhancement is exposed separately from managed-class enhancement,
+including a dedicated transformer for container integration.
+Integrators using the enhancement SPI should review the migration guidance.
+
+* *Clearer extension contracts.*
+The new `@SPI` annotation distinguishes contracts integration providers may use,
+implement, or supply. Dialect extension contracts now have explicit classifications,
+and the central SQL AST and translator SPIs are out of incubation.
+For non-incubating SPIs, compatibility expectations apply across maintenance
+releases of the same `X.Y` release family.
+
+* *Query and persistence correctness fixes.*
+`@SQLRestriction` supports additional mappings, including references to
+non-primary-table columns and many-to-one associations mapped through join tables.
+H2, Oracle, and SQL Server now correctly handle `on conflict (...) do nothing`
+with explicit conflict columns. A fix to enhanced dirty tracking also prevents
+changed scalar values from being omitted from dynamic updates when nested
+embeddables are dirty.
+
+When upgrading, note that Hibernate now passes `java.time` values directly to JDBC by default where supported, with fallback for known driver limitations. OSGi manifest metadata and relocation POMs under the old `org.hibernate` group ID are no longer published, and support for custom cascade implementations and legacy lock cascading has been removed. Custom property-access implementations and dialect integrations should also review the updated [Migration Guide](https://docs.hibernate.org/orm/8.0/migration-guide/).
+
+Be sure to see -
+
+* [Migration Guide](https://docs.hibernate.org/orm/8.0/migration-guide/)
+* [What’s New](https://docs.hibernate.org/orm/8.0/whats-new/whats-new.html)
+* [Release Details](https://github.com/hibernate/hibernate-orm/releases/tag/8.0.0.Beta2)
+
+Note that 8.0 remains in beta while Jakarta Persistence is not yet approved.
+
+Please try Beta2 with your applications and let us know about any regressions or migration difficulties through [Hibernate Jira](https://hibernate.atlassian.net/).
