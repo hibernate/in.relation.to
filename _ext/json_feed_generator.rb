@@ -65,6 +65,11 @@ module InRelationTo
           feed_entry.output_path = entry.output_path
           feed_entry.date = feed_entry.timestamp.nil? ? entry.date.xmlschema : feed_entry.timestamp.xmlschema
 
+		  # See posts.rb:27
+		  if (feed_entry.title.is_a?(Hash))
+			  feed_entry.title = feed_entry.title.map { |k, v| "#{k}: #{v}" }.join(', ')
+		  end
+
           if @global_entries.size <= @limit
             @global_entries << to_blog_entry( site, feed_entry )
           end
