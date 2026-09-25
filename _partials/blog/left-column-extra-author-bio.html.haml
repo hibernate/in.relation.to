@@ -1,7 +1,10 @@
 - real_page = page['real_page']
 
-- if not real_page.posts.nil?
-  - member = site.people.values.detect{|member| member.name == real_page.posts[0].author[0].to_s}
+- # The page subtitle is named after the author, which stays correct for
+- # posts with multiple authors
+- author_name = real_page.subtitle
+- author_name = real_page.posts[0].author[0].to_s if author_name.nil? && !real_page.posts.nil? && !real_page.posts.empty?
+- member = site.people.values.detect{|member| member.name == author_name} unless author_name.nil?
 
 - if member && member.content && !member.content.empty?
   %hr
