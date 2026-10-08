@@ -159,6 +159,54 @@ public class Test {
 }
 ----
 
+=== Images
+
+Insert an image with the standard Asciidoctor macro:
+
+[source]
+----
+image::my-diagram.svg[Alt text describing the image]
+----
+
+Image files live under link:images/[] at the root of the repository; reference
+them with a path relative to that directory, e.g. `image::posts/my-diagram.svg[...]`.
+
+If the image is large (e.g. an architecture diagram or any other SVG with a lot
+of detail), make it zoomable by adding `role="zoomable"`:
+
+[source]
+----
+image::my-diagram.svg[Alt text describing the image,role="zoomable",width="100%"]
+----
+
+Clicking (or focusing and pressing Enter/Space on) a zoomable image pops it up
+full size over a backdrop; Escape, the close button, or clicking the backdrop
+dismisses it. This is handled by `javascripts/zoom-image.js`, loaded on every
+page, so no extra setup is needed in the post itself.
+
+=== Tables
+
+Tables use the standard Asciidoctor table syntax. The convention on this site
+is to specify column widths, a striped header-aware body, and a header row:
+
+[source]
+----
+.Optional table title
+[cols="2,1,1", stripes="even", options="header"]
+|===
+|Column A |Column B |Column C
+
+|Row 1, A |Row 1, B |Row 1, C
+|Row 2, A |Row 2, B |Row 2, C
+|===
+----
+
+`cols` lists the relative width of each column (adjust the number of entries
+and ratios to match your table), `stripes="even"` alternates row background
+colors for readability, and `options="header"` turns the first row into a
+`<thead>`. The optional `.Table title` line above the `[cols=...]` block adds
+a caption.
+
 === More info
 
 You can read more on the Asciidoctor syntax at http://asciidoctor.org.
