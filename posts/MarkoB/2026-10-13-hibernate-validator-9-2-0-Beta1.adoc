@@ -1,0 +1,365 @@
+= Hibernate Validator 9.2.0.Beta1 is out
+Marko Bekhta
+:awestruct-tags: [ "Hibernate Validator", "Releases" ]
+:awestruct-layout: blog-post
+:hibernate-validator-doc-url-prefix: https://docs.hibernate.org/validator/9.2/reference/en-US/html_single/
+:hibernate-validator-jira-url-prefix: https://hibernate.atlassian.net/browse
+:hibernate-validator-version-family: 9.2
+:hibernate-validator-jira-project-id: 10060
+:hibernate-validator-jira-version-id: 36146
+---
+
+We just published Hibernate Validator 9.2.0.Beta1,
+the first release of the new 9.2 series of Hibernate Validator.
+
+This release brings a wide range of new constraints, including password validation,
+a new bean resolution system for integrating application services,
+configurable property access, performance improvements and bug fixes.
+
+[NOTE]
+====
+Many of the new constraints and extension points are incubating.
+We encourage users to try them and share feedback while we work
+towards the final release.
+====
+
+== What's new
+
+[[password-validation]]
+=== Password validation
+
+Hibernate Validator now provides three constraints for validating passwords:
+`@PasswordStrength`, `@NotCompromised` and `@PasswordPolicy`.
+All three support `CharSequence` and `char[]` values and consider `null` valid;
+combine them with `@NotNull` or `@NotBlank` when a password is required.
+
+[WARNING]
+====
+Passwords are sensitive data. You must handle them securely in your
+`PasswordStrengthEstimator`, `CompromisedPasswordChecker` and custom
+`PasswordPolicyRule` implementations.
+
+Never log passwords or include them in validation messages, and never send
+plaintext passwords or their complete hashes to external breach-checking services.
+Minimize password copies and clear password `char[]` arrays when they are no longer
+needed. Copies held in `String` instances cannot be cleared.
+
+The examples below illustrate the APIs, not a production-ready security
+implementation. Review your implementation against current password security
+guidance, and provide appropriate error handling and timeouts for external
+services.
+====
+
+==== Strength and compromised passwords
+
+`@PasswordStrength` checks a password against a minimum strength score,
+while `@NotCompromised` checks whether it has appeared in a known data breach.
+
+.Applying password constraints
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+import jakarta.validation.constraints.NotBlank;
+
+import org.hibernate.validator.constraints.NotCompromised;
+import org.hibernate.validator.constraints.PasswordStrength;
+
+class RegistrationForm {
+    @NotBlank
+    @PasswordStrength(min = 3) <1>
+    @NotCompromised <2>
+    private String password;
+}
+----
+<1> Require a score of at least `3`. The score scale depends on the strength estimator;
+for an estimator using a scale of `0` to `4`, this selects the upper part of that scale.
+<2> Reject passwords that the configured checker identifies as compromised.
+====
+
+Hibernate Validator does *not* provide a default strength estimator or compromised password checker.
+Applications supply implementations of `PasswordStrengthEstimator` and `CompromisedPasswordChecker`,
+allowing them to choose a strength estimation library and a breach data source.
+Both services receive the password as a `char[]`.
+
+For example, an adapter for the `com.nulabinc.zxcvbn` library can return its score and warning:
+
+.Adapting a password strength estimator
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+import com.nulabinc.zxcvbn.Strength;
+import com.nulabinc.zxcvbn.Zxcvbn;
+
+import org.hibernate.validator.spi.password.PasswordStrengthEstimator;
+import org.hibernate.validator.spi.password.PasswordStrengthResult;
+
+public class ZxcvbnPasswordStrengthEstimator implements PasswordStrengthEstimator {
+    private final Zxcvbn zxcvbn = new Zxcvbn();
+
+    @Override
+    public PasswordStrengthResult estimate(char[] password) {
+        Strength strength = zxcvbn.measure( new String( password ) );
+        String warning = strength.getFeedback() == null
+                ? null : strength.getFeedback().getWarning();
+        return PasswordStrengthResult.simple( strength.getScore(), warning );
+    }
+}
+----
+====
+
+Register the services using the new bean configuration API:
+
+.Registering application-provided password services
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
+
+import org.hibernate.validator.HibernateValidator;
+import org.hibernate.validator.bean.BeanReference;
+import org.hibernate.validator.spi.password.CompromisedPasswordChecker;
+import org.hibernate.validator.spi.password.PasswordStrengthEstimator;
+
+ValidatorFactory createValidatorFactory(CompromisedPasswordChecker breachChecker) {
+    return Validation.byProvider( HibernateValidator.class )
+            .configure()
+            .addBeanConfigurer( context -> {
+                context.define( PasswordStrengthEstimator.class,
+                        BeanReference.ofInstance( new ZxcvbnPasswordStrengthEstimator() ) );
+                context.define( CompromisedPasswordChecker.class,
+                        BeanReference.ofInstance( breachChecker ) );
+            } )
+            .buildValidatorFactory();
+}
+----
+====
+
+Here, `breachChecker` is an application-provided implementation backed by the chosen breach data source.
+The link:{hibernate-validator-doc-url-prefix}#section-password-validation-services[reference guide]
+includes example adapters for strength estimation and compromised password checking.
+
+==== Reusable password policies
+
+`@PasswordPolicy` brings multiple rules together in a reusable `PasswordPolicyDefinition`.
+The builder supports length limits, character requirements, whitespace checks,
+repeating characters, sequences, keyboard walks, strength estimation, compromised
+password checks and custom rules.
+
+For example, an application with specific password composition requirements can
+express them as follows:
+
+.Defining and applying a password policy
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+import jakarta.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.PasswordPolicy;
+import org.hibernate.validator.constraintvalidation.HibernateConstraintValidatorInitializationContext;
+import org.hibernate.validator.spi.password.CharacterType;
+import org.hibernate.validator.spi.password.PasswordPolicyBuilder;
+import org.hibernate.validator.spi.password.PasswordPolicyDefinition;
+
+public class AccountPasswordPolicy implements PasswordPolicyDefinition {
+    @Override
+    public void configure(PasswordPolicyBuilder builder,
+            HibernateConstraintValidatorInitializationContext context) {
+        builder.minLength( 12 )
+                .requireCharacters( CharacterType.UPPERCASE, 1 )
+                .requireCharacters( CharacterType.DIGIT, 1 )
+                .noWhitespace();
+    }
+}
+
+class Account {
+    @NotNull
+    @PasswordPolicy(AccountPasswordPolicy.class)
+    private char[] password;
+}
+----
+====
+
+Each failing rule produces its own constraint violation.
+For the policy above, `short` fails the minimum length, uppercase and digit rules,
+so validation reports three violations instead of a single generic policy failure.
+Policy classes with a public no-argument constructor can be instantiated automatically.
+
+Policies can also resolve application services through the initialization context.
+For example, the following configuration combines a length rule with the same strength estimator
+and breach checker registered above:
+
+.Using application services in a policy's `configure()` method
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+var resolver = context.getBeanResolver();
+
+builder.minLength( 12 )
+        .strengthEstimator( 3, resolver.resolve(
+                PasswordStrengthEstimator.class,
+                org.hibernate.validator.bean.BeanRetrieval.ANY ).get() )
+        .compromisedChecker( resolver.resolve(
+                CompromisedPasswordChecker.class,
+                org.hibernate.validator.bean.BeanRetrieval.ANY ).get() );
+----
+====
+
+For application-specific checks, use `addRule(message, predicate)` or implement `PasswordPolicyRule`.
+Policies can also be applied to custom types through `AbstractPasswordPolicyValidator`,
+allowing rules to access additional properties, such as a username.
+See the link:{hibernate-validator-doc-url-prefix}#section-password-policy[password policy documentation]
+for further examples.
+
+[[optional-values]]
+=== Constraints for optional values
+
+`@NullOrNotBlank` and `@NullOrNotEmpty` are alternatives to `@NotBlank` and `@NotEmpty`
+when an absent value is allowed but an empty value is not.
+They are particularly useful with `Optional`:
+
+.Validating optional values
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+class Profile {
+    Optional<@NullOrNotBlank String> displayName;
+    Optional<@NullOrNotEmpty List<String>> interests;
+}
+----
+====
+
+An empty `Optional` is valid. A present display name must contain a non-whitespace character,
+and a present list of interests must contain at least one element. If you use regular `@NotNull`
+or `@NotEmpty` for an empty `Optional` -- it will result in a constraint violation since `null`
+is considered as invalid for them.
+
+These constraints can also be applied directly to nullable properties.
+
+[[text-constraints]]
+=== Text and date/time constraints
+
+`@Contains` checks for specified substrings. By default, all substrings must be present;
+`minRequired` changes this to a minimum number of matches.
+`@DateTimeFormat` validates date and time strings using `DateTimeFormatter` patterns,
+including localized month or day names.
+
+.Validating text and localized dates
+====
+[source, Java, indent=0, subs="+attributes"]
+----
+class Submission {
+    @Contains(value = { "Hibernate", "Jakarta" },
+            minRequired = 1, ignoreCase = true) <1>
+    String description;
+
+    @DateTimeFormat(pattern = "dd MMMM uuuu",
+            locale = { "en-US", "fr-FR" }) <2>
+    String publicationDate;
+}
+----
+<1> Accept descriptions containing either `Hibernate` or `Jakarta`, ignoring case.
+<2> Accept dates such as `13 October 2026` or `13 octobre 2026`.
+Parsing is strict by default, so invalid calendar dates are rejected.
+====
+
+The release also adds the following constraints:
+
+* `@StartsWith` and `@EndsWith`: require one of the specified prefixes or suffixes,
+with optional case-insensitive matching.
+* `@UpperCase` and `@LowerCase`: check the case of letters, ignoring non-letter characters.
+* `@Trimmed`: reject leading or trailing whitespace, using the same whitespace definition
+as `String.strip()`.
+* `@Hexadecimal`: validate hexadecimal text, with options for letter case, fullwidth characters,
+empty values and a required prefix.
+* `@Port`: validate numeric values or strings representing a port between `0` and `65535`, inclusive.
+* `@IBAN`: validate International Bank Account Numbers, including country-specific lengths and
+check digits.
+* `@BIC`: validate Bank Identifier Codes (SWIFT codes).
+* `@ISSN`: validate International Standard Serial Numbers.
+* `@CUIT` and `@CUIL`, in `org.hibernate.validator.constraints.ar`: validate Argentine tax and labor identification codes.
+* `@RUC`, in `org.hibernate.validator.constraints.py`: validate Paraguayan taxpayer registration numbers.
+* `@RENAVAM`, in `org.hibernate.validator.constraints.br`: validate Brazilian vehicle registration numbers in their current or legacy representation.
+
+Programmatic constraint definitions are available for the new constraints as well.
+Additionally, `@BitcoinAddress` and `@IpAddress` are now repeatable.
+
+[[bean-resolution]]
+=== Bean resolution and dependency injection
+
+The password examples above use the new bean resolution system.
+It allows applications to register implementations by type and, optionally, by name,
+through `addBeanConfigurer()` or `BeanConfigurer` implementations discovered by `ServiceLoader`.
+A custom `BeanProvider` can integrate another dependency injection framework;
+with the `hibernate-validator-cdi` extension, a CDI-backed provider is discovered automatically.
+
+Custom constraint validators can obtain the `BeanResolver` through
+`HibernateConstraintValidatorInitializationContext#getBeanResolver()`.
+It is also available from `HibernateValidatorFactory#getBeanResolver()`.
+For pluggable components with built-in defaults, continue to use the corresponding configuration setter
+or property to select an implementation: registering a bean alone does not replace the default.
+
+[[property-access]]
+=== Configurable property access
+
+Hibernate Validator now uses Hibernate Accessor to read bean properties.
+Reflection remains the default, while optional ASM and ByteBuddy (or Class-File API)
+accessor factories can generate accessors to avoid reflective calls during validation.
+Select an `AccessorFactory` with `accessorFactory()` or the `hibernate.validator.accessor_factory` property.
+See the link:{hibernate-validator-doc-url-prefix}#section-accessor-factory[reference guide]
+for dependencies and configuration examples.
+
+[[other-changes]]
+=== Other improvements and bug fixes
+
+* Constraint validator contexts are reused where possible, and interface constraint
+tracking avoids unnecessary work for beans without interface constraints.
+* link:{hibernate-validator-jira-url-prefix}/HV-2219[HV-2219]:
+Custom message interpolators can retrieve the constraint validator payload through
+`HibernateMessageInterpolatorContext#getConstraintValidatorPayload(Class)`.
+* link:{hibernate-validator-jira-url-prefix}/HV-2167[HV-2167] and link:{hibernate-validator-jira-url-prefix}/HV-2162[HV-2162]:
+`PropertyNodeNameProvider` receives additional context, and `JavaBeanProperty` exposes the backing member name.
+The original `getName(Property)` method is deprecated for removal.
+* link:{hibernate-validator-jira-url-prefix}/HV-1923[HV-1923]:
+`@CPF` rejects partially formatted identifiers, accepting fully formatted or unformatted values with valid check digits.
+* link:{hibernate-validator-jira-url-prefix}/HV-2231[HV-2231]:
+The regular expression based URL validator handles URLs without a host without throwing a `NullPointerException`.
+* link:{hibernate-validator-jira-url-prefix}/HV-2159[HV-2159]:
+Reduce repeated warnings about legacy container-level `@Valid` declarations.
+* link:{hibernate-validator-jira-url-prefix}/HV-2257[HV-2257]:
+The Hibernate Validator version banner is now logged at `DEBUG` instead of `INFO`.
+* link:{hibernate-validator-jira-url-prefix}/HV-2265[HV-2265]:
+Add Mongolian message translations.
+
+Please see the link:https://hibernate.atlassian.net/issues/?jql=project={hibernate-validator-jira-project-id}+AND+fixVersion={hibernate-validator-jira-version-id}[release notes]
+for a complete list of changes since the previous releases.
+
+== How to get this release
+
+**Hibernate Validator 9 targets Jakarta EE 11.**
+
+All details are available and up to date on the
+link:https://hibernate.org/validator/releases/{hibernate-validator-version-family}/#get-it[dedicated page on hibernate.org].
+
+== Getting started, migrating
+
+For new applications, please refer to the getting started guide:
+
+* link:{hibernate-validator-doc-url-prefix}#validator-gettingstarted[Getting started with Hibernate Validator]
+
+For existing applications, please review the
+link:https://docs.hibernate.org/validator/9.2/migration/en-US/html_single/[migration guide]
+before upgrading from 9.1, particularly if you implement `PropertyNodeNameProvider`
+or rely on partially formatted `@CPF` values.
+The core engine also adds a transitive dependency on Hibernate Accessor;
+include it explicitly if you manage your runtime class path manually.
+
+== Feedback, issues, ideas?
+
+To get in touch, use the usual channels:
+
+* https://stackoverflow.com/questions/tagged/hibernate-validator[hibernate-validator tag on Stack Overflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-validator/7[User forum] (usage questions, general feedback)
+* https://hibernate.atlassian.net/browse/HV[Issue tracker] (bug reports, feature requests)
+* https://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+* https://accounts.eclipse.org/mailing-list/bean-validation-dev[Jakarta Validation development mailing list] (discussions about the Jakarta Validation specification)
