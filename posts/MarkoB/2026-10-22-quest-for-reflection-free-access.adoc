@@ -1,5 +1,5 @@
 = The quest for reflection-free access (Part 1)
-Marko Bekhta; Andrea Boriero
+Marko Bekhta; Andrea Boriero; Yoann Rodière
 :awestruct-tags: [ "Hibernate Accessor", "Discussions" ]
 :awestruct-layout: blog-post
 ---
@@ -7,22 +7,27 @@ Marko Bekhta; Andrea Boriero
 Every time we benchmark and profile one of our Hibernate projects for whatever reason
 we can always count on our good old friend -- reflection -- to show up and say hello.
 
-Hibernate works with user-defined Java objects. It needs a way to read and update
-their fields and create new instances of those objects. Java Reflection can do this, but it
-may introduce some performance overhead. We therefore need to ask whether Reflection is the
-best approach, or whether another approach would allow the JVM to optimize the code better
-and reduce unnecessary access checks.
+Hibernate projects work with user-defined Java objects. Hence, all these projects need a way
+to read and update fields and create new instances of such objects. Java Reflection can do this,
+but is it always the best approach? As most abstractions there are downsides to it. It can introduce
+some unnecessary performance overhead and extra checks/behaviour that may not be required for
+our use cases. It can also make performance flamegraphs noisier (that is where we have seen it!).
+Each project is still left to deal with JPMS access rules and member access conventions on its own.
+On top of that, reflection requires extra configuration for native builds. On the other hand,
+reflection is a standard JDK API, is simple enough on the surface, and has stood the test of time.
+Can we do any better than that?
 
 This is certainly not a new problem, and it is not the first time we asked these questions of ourselves.
-Over the years, each project was experimenting in their own codebases in isolation to find a suitable
+Over the years, each project was experimenting within their own codebases in isolation to find a suitable
 approach. Solutions we came up with were either partial, not easily shareable with no simple way of
 plugging an alternative implementation, and some just not suitable because they were tailored to
 work with certain access patterns. Yes, this matters because the best-performing approach
 depends on the task -- for example, traversing a validation graph versus loading database results
 into entities.
 
-To solve this, we started Hibernate Accessor -- a unified state access engine designed to eliminate
-unnecessary reflection overhead across the whole Hibernate project portfolio.
+In an attempt to solve this, we started Hibernate Accessor -- a unified state access engine designed
+to eliminate unnecessary reflection overhead and provide solution for specific access patterns across
+the whole Hibernate project portfolio.
 
 In this series we will take you through the journey starting from giving you an idea why existing
 JDK APIs do not solve the problem for us, then walk you through hidden surprises and tricks of
@@ -31,12 +36,12 @@ we have benchmarked to select a good default all-rounder solution, and finishing
 exploring what shifting code generation to the build time can achieve and how do we plan to leverage
 that.
 
-== Was not this solved already ?!
+== Was not this solved already?!
 
 JDK is constantly improving and one could rightfully ask -- did not method handles already
-solve the slow reflection access problems ?
+solve the slow reflection access problems?
 
-=== Good old plain reflection (`java.lang.reflect`)
+=== Reflection (`java.lang.reflect`): an old flame in our graphs
 
 Plain vanilla reflection, available since forever, something most of the frameworks and libraries
 relied upon at some point in time or still do. It is easy to work with:
@@ -51,20 +56,28 @@ Object value = name.get(person); // <2>
 1. Need to make the reflection member accessible, to have any access to non-public members.
 This also means that in JPMS, one needs to add corresponding `opens` directives to allow
 for deep reflection
-2. Runtime access checks, not really optimisable by JIT at runtime.
+2. Reads the field reflectively. Java access checks are suppressed by `setAccessible(true)`,
+but this does not guarantee that the JIT can optimize the access as effectively as a direct
+field read.
 ====
 
-In more recent JDK versions the core reflection was reimplemented with `MethodHandle` use
-underneath as https://openjdk.org/jeps/416[JEP 416], delivered in JDK 18. So should we see
-the improvement and is the problem already solved ? That could have been the case, unless...
-because of the dynamic nature -- we cannot create and use the static references before time,
-since we only learn of user types at runtime -- the use remains on the slow path.
+Historically, reflection had a reputation for being slow. Though in JDK 18, reimplemented core
+reflection using method handles under link:https://openjdk.org/jeps/416[JEP 416]. This lets
+reflection benefit from method-handle optimizations, but also means it shares some of their
+performance constraints. To understand why this does not fully solve our performance side of
+the problem, let's look at method handles directly.
 
-=== Method and var handles and why they aren't getting us there
+=== Method handles: getting a handle on things, or...
+
+Method handles check access permissions when they are created, rather than on every
+invocation while Reflection normally checks access on each use, though as discussed above,
+these checks can be suppressed with `setAccessible(true)`. With access checks out of
+the invocation path, the difference comes down to the invocation mechanics and whether
+JIT can make optimisations.
 
 You may have seen some synthetic benchmarks showing that method handles can give you near
-direct member access. But there is a catch, to reach their peak performance a reference
-to such handle must be a `static final` one:
+direct member access. But there is a catch -- for method handle to reach its peak performance,
+JIT needs to be able to treat a reference to such handle as a constant:
 
 ====
 [source,java]
@@ -95,9 +108,9 @@ the underlying call.
 As explained in Jorn Vernee's link:https://jornvernee.github.io/methodhandles/2024/01/19/methodhandle-primer.html[MethodHandle primer],
 `MethodHandle` invocation relies on the handle being an exact compile-time constant for the JIT to inline the underlying `LambdaForm`.
 
-=== `LambdaMetafactory` to the rescue ?
+=== `LambdaMetafactory`: no fields attached
 
-`LambdaMetafactory` is a less known but very powerful instrument to get as close to direct getter
+`LambdaMetafactory` is a lesser known but very powerful instrument to get as close to direct getter
 calls as possible. It generates lightweight functional interface implementations at runtime that
 are JIT friendly and inline nicely.
 
@@ -123,25 +136,41 @@ and under specific conditions it reaches that peak performance, but it comes sho
 one needs to work with fields directly instead of getters/setters. That is because the
 factory ultimately works with methods and cannot emit a `GETFIELD` instruction directly.
 
-=== Where the built-in solutions stand ?
+=== One by one, or all for one?
+
+The best-performing approach also depends on how exactly we access the state. So far,
+we have looked at accessing a single member at a time -- reading a field, invoking a
+getter, or calling a constructor. This usually is a good fit for "random access" cases
+like traversing a validation graph, where we may read one property, inspect its value
+and either traverse into it or move to the next sibling.
+
+But there are also cases where we need to access several properties of the same object
+in one operation, without coming back to read them again later. For example, when loading
+a database row into an entity, Hibernate ORM needs to write the values of multiple mapped
+properties. Similarly, when extracting an entity's state, we may read all the required
+properties into an array in one pass and then be done with the original object.
+
+This can be implemented with reflection, method handles, or individual lambdas by
+iterating over a collection of accessors and invoking them one by one. But this means
+repeating the accessor dispatch for each property. It would be better if we could do
+that dispatch just once.
+
+=== Built-in JDK solutions: so close, yet ...
 
 With the above in mind -- none of the solutions fulfill the needs:
 
-* The `LambdaMetafactory` that can give us great performance in the dynamic nature of libraries
-is limited to getters/setters and has no solution for the fields.
+* The `LambdaMetafactory` can give us great performance for method calls and constructor
+invocations, but does not support direct field access.
 * None can give us an optimised multi-value access -- reading or writing the entire tuple
 of entity properties in one go when draining the database resultsets into entities.
 
 This leaves us with one more option to explore -- generating the bytecode ourselves.
 
-== An abstraction that wants to solve it all: `AccessorFactory`
+== One factory to access them all
 
-To systematically compare different strategies across Hibernate projects, we needed a unified,
-strategy-agnostic abstraction.
-
-With understanding of various access patterns used across our projects and shortcomings of built-in
-solutions in mind, we have settled on the following simple API providing us with a way to work with
-both single- and multi-access patterns while being more agnostic to the actual member behind it:
+With the access patterns used across our projects and the shortcomings of built-in
+solutions in mind, we settled on the following simple API. It supports both single-
+and multi-value access, whether the underlying members are fields or methods:
 
 [source,java]
 ----
@@ -165,49 +194,74 @@ public interface ValueReader<T> {
 public interface ValueWriter {
     void set(Object instance, Object value);
 }
+
 /**
  * Reads multiple values from an object instance in a single call.
  */
 public interface MultiValueReader {
     Object[] get(Object instance);
 }
+
 /**
  * Writes multiple values to an object instance in a single call.
  */
 public interface MultiValueWriter {
     void set(Object instance, Object[] values);
 }
+
+/**
+ * Main entry point to create accessors.
+ */
+public interface AccessorFactory {
+    <T> Instantiator<T> instantiator(Constructor<T> constructor);
+
+    ValueReader<?> valueReader(Field field);
+    ValueReader<?> valueReader(Method getter);
+
+    ValueWriter valueWriter(Field field);
+    ValueWriter valueWriter(Method setter);
+
+    MultiValueReader multiValueReader(Class<?> declaringClass, Member... members);
+    MultiValueWriter multiValueWriter(Class<?> declaringClass, Member... members);
+}
 ----
-We can plug different implementation strategies through a `AccessorFactory`,
-be it reflection or bytecode generated based ones.
+
+We can plug in different implementation strategies through an `AccessorFactory`,
+be it reflection-based or bytecode-generation-based, and use the resulting accessors
+to e.g. read object state:
+
+[source,java]
+----
+AccessorFactory factory = AccessorFactory.reflection(MethodHandles.lookup());
+ValueReader<?> reader = factory.valueReader(Person.class.getDeclaredField("name"));
+Object name = reader.get(person);
+----
 
 This ultimately gives us a way to swap the underlying implementation based on
 the specific environment we are running in, or if the state of built-in solutions
 changes.
 
-== Can we do any better ?
+== Taking matters into our own bytecode
 
 That is how we arrived at the idea of generating the bytecode to get the access to the state.
 It would not be something entirely new, it has been done in the past, and we do already
 generate bytecode enhanced entities in Hibernate ORM. But this time we tried to make it more
 suitable for the whole Hibernate portfolio with specific access patterns of each project in mind.
 
+Beyond generating direct member access, we also explored how to structure the access instructions
+within the generated classes/methods, including sharing one generated class across multiple accessors
+with switch-based dispatch. We will look at the tradeoffs of these approaches in the next post.
+
 On paper generating some simple `GETFIELD`/`PUTFIELD` instructions is trivial. But creating a
 general-purpose, runtime-generated accessor library for the entire portfolio introduces a whole
 new set of modern JVM surprises and challenges:
 
-* How do you safely generate and define classes at runtime ?
-* How can you get your hands on non-public properties ?
-* How do you navigate the module boundaries under the JPMS ?
-* How does defining hidden classes breaks even if you think you had a full privileged lookup ?
-* And how do you ensure runtime-generated classes don't cause Metaspace leaks?
+* How do you generate and define classes at runtime without exposing privileged access
+or bypassing module boundaries?
+* How can you get your hands on non-public properties?
+* How do you navigate the module boundaries under the JPMS?
+* How do you ensure runtime-generated classes don't cause Metaspace leaks?
+* And why can defining a hidden class still fail even when you start with
+a fully privileged lookup?!??
 
-We will dive into this and more in the second post of this series.
-
-== Feedback and discussions
-
-We welcome your thoughts and feedback, join the discussion:
-
-* https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[Zulip chat] (usage questions, development-related discussions, general feedback)
-* https://github.com/hibernate/hibernate-accessor[Issue tracker] (bug reports, feature requests)
-* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
+We will dive into this and more in the second post of this series. Stay tuned!
