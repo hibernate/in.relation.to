@@ -291,3 +291,72 @@ div.imageblock {
 	margin-top: 40px;
 }
 
+// Zoomable images/SVGs, see javascripts/zoom-image.js
+.zoomable {
+	cursor: zoom-in;
+}
+
+.zoom-backdrop {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1000;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.85);
+	cursor: zoom-out;
+
+	&.active {
+		display: flex;
+	}
+
+	img {
+		max-width: 90vw;
+		max-height: 90vh;
+		object-fit: contain;
+		cursor: default;
+	}
+
+	svg {
+		max-width: 90vw;
+		max-height: 90vh;
+		width: auto;
+		height: auto;
+		cursor: default;
+	}
+
+	img, svg {
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+		opacity: 0;
+		transform: scale(0.95);
+		transition: transform 0.2s ease, opacity 0.2s ease;
+	}
+
+	&.active img, &.active svg {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	.zoom-backdrop-close {
+		position: fixed;
+		top: 20px;
+		right: 25px;
+		width: 40px;
+		height: 40px;
+		border: 0;
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.15);
+		color: #fff;
+		font-size: 1.8em;
+		line-height: 1;
+		cursor: pointer;
+
+		&:hover {
+			background: rgba(255, 255, 255, 0.3);
+		}
+	}
+}
+
