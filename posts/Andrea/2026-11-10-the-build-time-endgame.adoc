@@ -47,6 +47,9 @@ to Hibernate ORM, Envers, Hibernate Search and Hibernate Validator. The integrat
 Hibernate ORM, Envers, Hibernate Search and Hibernate Validator receive: given a `Field`, `Method` or `Constructor`,
 it returns the matching generated accessor. We'll look at how it does that in <<accessor-factory>>.
 
+.What happens at build time, and what Hibernate receives at runtime
+image::../../images/posts/the-build-time-endgame/build-time-overview.svg["Build-time overview", role="zoomable"]
+
 === Registering members
 
 Quarkus has to know at build time which members need accessors.
@@ -262,6 +265,9 @@ The two bridges end up being almost opposites:
 Since the build-time bridge only forwards calls to methods that are already public, it doesn't need any special
 privileges. It only has to be visible from the extension's package, and a public class in the entity's package is.
 
+.A public bridge in the entity's package forwards calls to a non-public entity
+image::../../images/posts/the-build-time-endgame/build-time-bridge.svg["Build-time bridge", role="zoomable"]
+
 == Switching twice, generating once
 
 Now that every entity knows how to read, write and create itself, we need the objects that implement the Hibernate Accessor API.
@@ -415,6 +421,9 @@ public class QuarkusHibernateAccessorFactory implements AccessorFactory {
 
 Yes, these are `String` switches. They are only used when an accessor is requested, typically while Hibernate ORM boots,
 and never when reading or writing a value. Once you hold a `ValueReader`, it's integer indexes all the way down.
+
+.String switches at boot, int switches on every read
+image::../../images/posts/the-build-time-endgame/two-switches.svg["Two switches", role="zoomable"]
 
 == Even generated methods have limits
 
