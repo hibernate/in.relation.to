@@ -1,0 +1,115 @@
+:release-version: 8.0.0.Beta4
+= Hibernate {release-version}
+Steve Ebersole
+:toc:
+:toclevels: 2
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+:orm-docs: https://docs.hibernate.org/orm/8.0
+:issues: https://hibernate.atlassian.net/browse
+:release-tag: https://github.com/hibernate/hibernate-orm/releases/tag/{release-version}
+
+Hibernate ORM link:{release-tag}[{release-version}] is now available.
+This fourth beta of Hibernate ORM 8.0 adds new mapping capabilities, more flexible dependency management, and new integration options, along with fixes across querying, locking, stateless sessions, and XML mapping migration.
+
+NOTE: that 8.0 remains in beta while Jakarta Persistence is not yet approved.
+
+== Highlights
+
+=== Filters and SQL restrictions on to-one associations
+
+`@Filter` and `@SQLRestriction` may now be declared directly on `@ManyToOne` and `@OneToOne` associations, including associations mapped using join tables.
+These restrictions apply consistently across eager and lazy fetching and restrict visibility through the particular association.
+Association-level filters apply whenever enabled, independently of `@FilterDef.applyToLoadByKey`.
+
+A target hidden by an applicable restriction is represented as `null`.
+Hibernate preserves its stored reference during unrelated updates, so an association appearing null does not accidentally clear its foreign key.
+Applications should review the link:{orm-docs}/migration-guide/migration-guide.html#filtered-to-one-associations[migration guidance], particularly the rules for merge, orphan removal, and changing filters.
+
+=== Formula-based one-to-one associations
+
+`@OneToOne` mappings combining physical join columns with join formulas are now bound as true one-to-one associations.
+For physical join columns that also belong to the owner's primary key, Hibernate infers `insertable=false, updatable=false`, leaving the identifier mapping responsible for the column value.
+Equivalent Hibernate mapping XML declarations are also supported.
+
+See link:{issues}/HHH-20988[HHH-20988] and the link:{orm-docs}/migration-guide/migration-guide.html#formula-one-to-one-shared-identifier-columns[migration guidance] for shared identifier columns.
+
+=== Identifier generator optimizer selection
+
+The new `@GeneratorOptimizer` annotation selects a standard optimizer for sequence or table identifier generation directly on an identifier field or getter.
+For example:
+
+[source,java]
+----
+@Id
+@GeneratedValue(strategy = GenerationType.SEQUENCE)
+@SequenceGenerator(sequenceName = "book_sequence", allocationSize = 20)
+@GeneratorOptimizer(StandardOptimizerDescriptor.POOLED_LO)
+private Long id;
+----
+
+Optimizer selection applies to the consuming identifier mapping, including mappings referencing a globally named generator.
+For this pooled sequence example, the database sequence increment must match `allocationSize`.
+
+=== A Hibernate-only BOM
+
+The new `org.hibernate.orm:hibernate-bom` manages the versions of Hibernate ORM modules without constraining third-party dependencies.
+It is useful for applications that already manage those dependencies through another platform or parent POM.
+The existing `org.hibernate.orm:hibernate-platform` continues to manage both Hibernate and third-party dependency versions.
+
+=== CDI-managed interceptors
+
+Interceptors configured as classes through `hibernate.session_factory.interceptor` or `hibernate.session_factory.session_scoped_interceptor` now participate in CDI dependency injection and lifecycle callbacks when a CDI `BeanManager` is available.
+Factory-level interceptors are shared, while session-scoped interceptors are acquired per session and released according to the session lifecycle.
+
+=== Hibernate Processor extension SPI
+
+The new incubating `HibernateProcessorExtension` SPI lets frameworks customize generated code, including repository session access, qualifiers, and constructor injection.
+Extensions are discovered through `ServiceLoader`; at most one extension may be registered.
+
+This release also fixes record projections, implicit record result mappings for named native queries, and generated reactive repository methods using `KeyedResultList` and `CursoredPage`.
+
+=== Final persistent field checks
+
+Hibernate now checks at bootstrap for final persistent fields requiring reflective mutation.
+The `hibernate.mapping.final_persistent_fields` setting accepts `warn` (the default), `error`, or `ignore`.
+Bytecode enhancement removes the final modifier from persistent fields.
+For `@IdClass` types, constructor-based instantiation using `@Instantiator` is now supported as another way to avoid reflective final-field mutation.
+
+=== Revised User Guide
+
+The User Guide has been extensively reviewed and reorganized, with revised guidance and worked examples covering fetching, batching, caching, locking, transactions, multitenancy, statistics, and integration.
+
+== Selected fixes
+
+* *Stateless sessions:* fixes for optional one-to-one associations with missing targets, second-level cache loading without an explicit lock mode, and mutation propagation to element collections nested in embeddables.
+* *Flushing:* fixes for entity-delete batching and inverse many-to-many associations in the graph-based action queue.
+* *Locking and transactions:* fixes for follow-on locking with scrollable results, follow-on options passed to `lock()` and `refresh()`, Sybase ASE locking, and JTA transaction completion status.
+* *Optimistic locking:* stale updates using generated-value returning now report optimistic locking failures instead of missing generated values.
+* *Bootstrap and lifecycle:* fixes for duplicate factory construction with `HibernatePersistenceConfiguration`, default-listener exclusion, and JSON-B discovery when the API is present without a provider.
+* *Mapping:* fixes for embeddable access inheritance, composite identifiers using `@GenericGenerator`, and XML `exclude-from-versioning` processing.
+* *XML migration:* improvements to `hbm.xml` transformation for custom loaders, alternate-key collection references, foreign keys, batch sizes, nullability, and one-to-one associations; unsupported proxy declarations and cascade styles are now rejected explicitly.
+* *Database support:* fixes include repeated MySQL enum schema updates, SQL Server `date_trunc()` emulation before SQL Server 2022, and HANA array, JSON, and XML unnesting in subqueries.
+
+See the https://hibernate.atlassian.net/projects/HHH/versions/40489[full changelog] for the complete list.
+
+== Upgrading from Beta3
+
+Review the link:{orm-docs}/migration-guide/migration-guide.html[Migration Guide] before upgrading.
+In particular:
+
+* Restricted to-one targets now appear as `null`, including when a mapping declares `optional=false`. Applications relying on exceptions for excluded targets must adapt.
+* Embeddable state now inherits the containing class's access type independently of attribute-level access overrides. Use an explicit `@Access` on the embeddable when needed.
+* Configuring both factory-level and session-scoped interceptor settings now fails with `ConflictingInterceptorSettingsException`.
+* The interceptor-related `SessionFactoryOptions.getInterceptor()` and `getStatelessInterceptorImplementorSupplier()` methods have been removed. Integration code should review their replacements in the Migration Guide.
+* The Hibernate mapping XML namespace now uses `https://www.hibernate.org/xsd/orm/mapping`. Hibernate handles the previous namespace at runtime, but mapping documents should be updated.
+* `hibernate-platform` no longer includes relocation coordinates. Review dependency declarations that relied on those entries.
+
+
+== Try it out
+
+Use version `{release-version}` of the `org.hibernate.orm` artifacts.
+For requirements and compatibility information, see the https://hibernate.org/orm/releases/8.0/[Hibernate ORM 8.0 release page].
+
+Please report problems through the https://hibernate.atlassian.net/projects/HHH[Hibernate issue tracker] and share feedback on https://discourse.hibernate.org/[the Hibernate forum].
