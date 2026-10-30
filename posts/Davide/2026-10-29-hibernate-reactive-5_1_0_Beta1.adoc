@@ -1,0 +1,103 @@
+= Hibernate Reactive 5.1.0.Beta1 and 5.0.0.Beta3 released
+Davide D'Alto
+:awestruct-tags: [ "Hibernate Reactive", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+:getting-started-51: https://hibernate.org/reactive/releases/5.1/#getting_started
+:getting-started-50: https://hibernate.org/reactive/releases/5.0/#getting_started
+:release-51: https://github.com/hibernate/hibernate-reactive/releases/tag/5.1.0.Beta1
+:release-50: https://github.com/hibernate/hibernate-reactive/releases/tag/5.0.0.Beta3
+:issues: https://github.com/hibernate/hibernate-reactive/issues
+
+{getting-started-51}[Hibernate Reactive 5.1.0.Beta1] and {getting-started-50}[Hibernate Reactive 5.0.0.Beta3] are now available.
+
+Both are compatible with https://github.com/hibernate/hibernate-orm/releases/tag/8.0.0.Beta4[Hibernate ORM 8.0.0.Beta4].
+They differ in the version of the https://vertx.io/docs/vertx-pg-client/java/[Vert.x SQL client]:
+
+* Hibernate Reactive 5.1.0.Beta1 is compatible with Vert.x SQL client 5.2.2;
+* Hibernate Reactive 5.0.0.Beta3 is compatible with Vert.x SQL client 5.1.10.
+
+You can find what's new in Hibernate ORM in the https://in.relation.to/2026/10/28/orm-80-beta4/[Hibernate ORM 8.0.0.Beta4 announcement].
+
+If you need a Hibernate Reactive version compatible with older Hibernate ORM releases or Vert.x releases, you can find
+a https://hibernate.org/reactive/releases/[compatibility matrix] on the Hibernate website.
+
+== What's new
+
+Both releases contain the same changes, listed below.
+
+=== A platform (BOM) for Hibernate Reactive
+
+Like Hibernate Reactive 4.5.11, Hibernate Reactive 5.0 and 5.1 publish a platform, `org.hibernate.reactive:hibernate-reactive-platform`.
+It manages the versions of Hibernate Reactive, Hibernate ORM, the Vert.x SQL clients and their dependencies,
+using the versions Hibernate Reactive was built and tested with:
+
+[source,xml]
+----
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.hibernate.reactive</groupId>
+            <artifactId>hibernate-reactive-platform</artifactId>
+            <version>5.1.0.Beta1</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+----
+
+With Gradle, use `implementation platform( 'org.hibernate.reactive:hibernate-reactive-platform:5.1.0.Beta1' )`.
+See {issues}/2475[#2475].
+
+=== Version checks at startup
+
+During bootstrap, Hibernate Reactive now checks that the versions of Hibernate ORM and of the Vert.x SQL client
+on the classpath aren't older than the minimum versions it supports, and fails with a clear message if they are.
+This usually happens when another BOM imported first manages an older version.
+You can skip the check with `hibernate.reactive.skip_version_check=true`.
+See {issues}/1796[#1796].
+
+The information Hibernate Reactive logs at startup now uses the category `org.hibernate.reactive.info`,
+the equivalent of `org.hibernate.orm.info` in Hibernate ORM, so you can hide it by raising the level of that category.
+See {issues}/4241[#4241].
+
+=== Selected fixes
+
+* `createQuery(TypedQueryReference)` and `createStatement(StatementReference)` now work like in Hibernate ORM:
+  they bind the arguments, apply the entity graph, the options and the flush mode,
+  and create named statements the same way ({issues}/4303[#4303]).
+* The query cache is now read: before, Hibernate Reactive ran the query again even when the results were cached
+  ({issues}/3520[#3520]).
+* `persist()` and `merge()` now fail when an entity references a transient entity through a non-nullable association,
+  like in Hibernate ORM, instead of failing later at flush time ({issues}/4358[#4358]).
+* Upserts of entities mapped to multiple tables, for example with joined inheritance, no longer fail with `HR000084`
+  on MySQL and MariaDB ({issues}/1766[#1766]).
+* Custom identifier generators now work with the stateless session ({issues}/4317[#4317]).
+* Fixed a race condition during the dialect detection at startup ({issues}/4385[#4385]).
+* Hibernate Reactive checks again that a connection is used on the Vert.x context it was created on.
+  Duplicated contexts of the same root context, like the ones created by Quarkus, are accepted ({issues}/2936[#2936]).
+* Fixed multi-table mutation queries using a persistent id table, the default on CockroachDB ({issues}/2414[#2414]).
+* Fixed schema validation of JSON columns on MariaDB ({issues}/3106[#3106]).
+
+If you are upgrading from Hibernate Reactive 4.x, check the
+https://github.com/hibernate/hibernate-reactive/blob/5.1.0.Beta1/migration-guide.adoc[migration guide].
+
+You can find the full list of changes in the release notes of {release-51}[5.1.0.Beta1] and {release-50}[5.0.0.Beta3].
+
+== How can I get it?
+
+All details are available on the Hibernate Reactive website releases page, for
+link:https://hibernate.org/reactive/releases/5.1/#get-it[5.1] and link:https://hibernate.org/reactive/releases/5.0/#get-it[5.0].
+
+If you are new to Hibernate Reactive, {getting-started-51}[the official documentation] is a good place to start.
+
+== Feedback, issues, ideas?
+
+To get in touch, you can use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
