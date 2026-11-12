@@ -1,0 +1,103 @@
+:release-version: 8.0.0.CR1
+:release-family: 8.0
+
+= Hibernate {release-version}
+Steve Ebersole
+:toc:
+:toclevels: 2
+:awestruct-tags: ["Hibernate ORM", "Releases"]
+:awestruct-layout: blog-post
+
+:orm-docs: https://docs.hibernate.org/orm/{release-family}
+:issues: https://hibernate.atlassian.net/browse
+:release-tag: https://github.com/hibernate/hibernate-orm/releases/tag/{release-version}
+
+Hibernate ORM link:{release-tag}[{release-version}] is the first release candidate for Hibernate ORM 8.0!
+
+This release brings support for Jakarta Persistence 4.0 and Jakarta Data 1.1, a new approach to flush coordination, and significant improvements to fetching, association handling, and multi-tenancy.
+
+
+[[jakarta]]
+== Jakarta Persistence 4.0 and Jakarta Data 1.1
+
+Hibernate ORM 8.0 implements Jakarta Persistence 4.0, bringing several long-standing Hibernate capabilities into the standard API and introducing some useful new ones.
+
+Highlights include:
+
+* EntityAgent, which standardizes stateless persistence operations familiar to users of Hibernate’s `StatelessSession`.
+* Separate APIs for queries that return results and statements that modify data.
+* Programmatic SQL result set mappings.
+* More control over fetching through entity graphs.
+* Type-safe options for session creation, persistence operations, and query execution.
+* Package- and module-level entity listeners, along with persistence unit lifecycle callbacks.
+
+Hibernate Data Repositories implements Jakarta Data 1.1, including integration with Jakarta Persistence static queries, projections, restrictions, stateful repositories, and asynchronous repositories backed by Jakarta Concurrency or Hibernate Reactive.
+
+
+[[graph-flushing]]
+== Graph-based flushing
+
+One of the largest changes in 8.0 is the introduction of graph-based flush coordination.
+
+The new coordinator builds a dependency graph for pending entity and collection mutations, using the relational constraints of your mappings to plan their execution. This replaces an approach based primarily on operation ordering heuristics.
+
+The goal is to handle complex persistence operations more naturally, reduce ordering failures, and provide a stronger foundation for batching and future optimizations.
+
+Graph-based flushing is enabled by default. During this transition, the legacy coordinator remains available using:
+
+[source,properties]
+----
+hibernate.flush.queue.type=legacy
+----
+
+We would especially appreciate testing with applications that combine inserts, updates, deletes, and collection changes in the same flush.
+
+
+[[associations]]
+== Fetching and association handling
+
+Subselect fetching now supports to-one associations as well as collections. Together with the new Jakarta Persistence fetch options, this gives applications more control over how entity graphs are loaded.
+
+Hibernate can also optionally synchronize bidirectional associations during flush preparation:
+
+[source,properties]
+----
+hibernate.bidirectionality_management=true
+----
+When enabled, Hibernate treats the owning side as authoritative and updates inverse-side references and initialized collections. It does not initialize unloaded inverse collections solely to perform this synchronization.
+
+For applications using filters or SQL restrictions, @Filter and @SQLRestriction may now be declared directly on @ManyToOne and @OneToOne associations. SQL restriction support also covers more mappings involving secondary tables and joined inheritance.
+
+
+[[multitenancy]]
+== Multi-tenancy improvements
+
+Discriminator-based multi-tenancy now integrates with database row-level security on PostgreSQL, Db2, SQL Server, and CockroachDB.
+
+Hibernate also strengthens tenant handling for mutation operations, and custom @SQLUpdate and @SQLDelete statements may now include a parameter for the current tenant identifier.
+
+
+[[more]]
+== And more...
+
+Other significant additions include:
+
+* JSON and XML query functions graduating from incubation and becoming available by default.
+* Improvements to stored procedure result handling.
+* Improvements for formula-based associations.
+* Formula-based map keys through `@MapKeyFormula`.
+* Module-level mapping annotations and package- or module-level default list semantics.
+* CDI-managed interceptors.
+* A new StatementObserver contract for observing JDBC statements.
+* A smaller hibernate-bom that manages Hibernate module versions without constraining third-party dependencies.
+
+For integration providers, the new `@SPI` annotation makes supported extension contracts and their intended roles explicit. The central SQL AST and translator SPIs are also out of incubation.
+
+
+[[tias]]
+== Try it out
+
+Use version `{release-version}` of the `org.hibernate.orm` artifacts.
+For requirements and compatibility information, see the https://hibernate.org/orm/releases/8.0/[Hibernate ORM 8.0 release page].
+
+Please report problems through the https://hibernate.atlassian.net/projects/HHH[Hibernate issue tracker] and share feedback on https://discourse.hibernate.org/[the Hibernate forum].
