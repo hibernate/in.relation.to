@@ -1,0 +1,521 @@
+= The Build-Time Endgame: double switches, memory footprint and Quarkus (Part 4)
+Andrea Boriero; Marko Bekhta
+:awestruct-tags: [ "Hibernate Accessor", "Discussions", "Quarkus" ]
+:awestruct-layout: blog-post
+---
+
+In link:https://in.relation.to/2026/10/22/quest-for-reflection-free-access/[Part 1], we looked at reading and writing
+private state without reflection. In link:https://in.relation.to-pr-287-preview.surge.sh/2026/10/27/peek-behind-the-curtain-of-accessor-codegen/[Part 2],
+we examined Hibernate Accessor's runtime code generation, including hidden classes, nestmates, module access,
+classloader constraints and caching.
+// TODO: link to Part 3
+Part 3 measured the costs of that approach.
+
+== Runtime codegen sends the bill
+
+// TODO: recap the construction and footprint results from Part 3 here.
+Part 3 measured the startup-time and memory overhead of runtime code generation. Before an accessor can be used,
+its class must be generated, defined and initialized.
+
+The underlying constraint is access to private members. The entity class already exists, and we cannot modify it
+at runtime, so generated code must use JVM mechanisms that allow access without changing the original class.
+
+Quarkus takes a different approach. It performs bytecode generation during the build, including Hibernate ORM
+enhancement and entity proxy generation. Its runtime bytecode provider therefore rejects enhancement requests with
+`UnsupportedOperationException("Enhancement is not supported at runtime")`.
+
+Runtime class generation is also unavailable in native executables. As a result, the runtime strategy described in
+Part 2 is not suitable for Quarkus, and Hibernate libraries running there have relied on reflection.
+
+Can some of this work happen before application startup instead?
+
+== What if we knew the model beforehand?
+
+Quarkus performs much of its work during the build, in a phase called augmentation. At that point, it knows which
+entities belong to the application and can transform their bytecode. Hibernate ORM enhancement and Panache both
+modify entity classes before the application starts.
+
+This gives the extension a different option for accessing a private field in `Model`: inject the access code into
+`Model` itself. Code declared in the class can access its private fields directly.
+
+The Hibernate Accessor extension for Quarkus generates these accessors during augmentation and makes them available
+to Hibernate ORM, Envers, Hibernate Search and Hibernate Validator. The integration has three steps:
+
+. Hibernate extensions register the members they need accessors for.
+. The accessor extension combines those requests and transforms the model classes accordingly.
+. It generates an accessor factory and supplies it to the consumers. The factory is the single entry point that
+Hibernate ORM, Envers, Hibernate Search and Hibernate Validator receive: given a `Field`, `Method` or `Constructor`,
+it returns the matching generated accessor. We'll look at how it does that in <<accessor-factory>>.
+
+.What happens at build time, and what Hibernate receives at runtime
+image::../../images/posts/the-build-time-endgame/build-time-overview.svg["Build-time overview", role="zoomable"]
+
+=== Registering members
+
+Quarkus has to know at build time which members need accessors.
+For Hibernate ORM (and Envers), the extension's processors already know the managed classes, and they register
+all their members through a build item:
+
+====
+[source,java]
+----
+for (String managedClassName : managedClassesOnly) {
+    ClassInfo classToAccess = index.getClassByName(managedClassName);
+    accessorBuildItemProducer.produce(
+            new HibernateAccessorBuildItem.Builder(classToAccess)
+                    .all(classToAccess) // <1>
+                    .build());
+}
+----
+<1> Instance fields, no-argument methods returning a value, one-argument methods and, unless the class is abstract or an enum,
+constructors.
+====
+
+Hibernate Search and Hibernate Validator contribute the classes they need through the same `HibernateAccessorBuildItem`, and
+any other extension can do the same without the application having to annotate anything.
+Method names don't need to follow the JavaBeans conventions here, since some consumers (Hibernate Validator, for instance)
+let you decide what counts as a getter.
+
+For anything else, there's an annotation:
+
+====
+[source,java]
+----
+import io.quarkus.hibernate.accessor.runtime.ReflectionFreeAccessor;
+
+@ReflectionFreeAccessor // <1>
+public class Address {
+    private String street;
+    private String city;
+    // ...
+}
+
+public class Order {
+    @ReflectionFreeAccessor // <2>
+    private BigDecimal total;
+
+    @ReflectionFreeAccessor
+    public Order withNote(String note) { // <3>
+        this.note = note;
+        return this;
+    }
+}
+----
+<1> On a type, it registers its declared instance fields, getters (no arguments, returns a value), setters (one argument)
+and, for concrete non-enum classes, its constructors.
+<2> It can also be placed on individual fields, methods and constructors.
+<3> The return value of a one-argument method is discarded when writing, so builder-style setters are fine.
+====
+
+The annotation uses `CLASS` retention. It remains in the class file for Jandex to discover during augmentation,
+but it is not retained for runtime reflection.
+
+=== The access was inside the class all along
+
+With all the requests collected, the extension generates four pieces of bytecode:
+
+. static dispatch methods injected into each registered class;
+. an optional bridge class, only for classes that are not public;
+. one shared implementation class for each accessor role: `ValueReader`, `ValueWriter` and `Instantiator`;
+. an `AccessorFactory` implementation, the only entry point Hibernate libraries ever see.
+
+Let's go through them one by one.
+
+== Access methods in the entity class
+
+Throughout this post we'll use one entity, `Model`, with a `name` field and an `age` property exposed through a getter and a setter.
+Here's what we write:
+
+====
+[source,java]
+----
+package example;
+
+@Entity
+public class Model {
+    @Id
+    Long id;
+
+    private String name;
+    private int age;
+
+    public int getAge() { return age; }
+    public void setAge(int age) { this.age = age; }
+
+    // ...
+}
+----
+====
+
+And here's what the extension adds to it at build time, a few public static methods, each switching on a member index:
+
+====
+[source,java]
+----
+// Injected into Model
+public static Object $$__hibernateAccessor_read(int memberIndex, Object target) {
+    switch (memberIndex) {
+        case 0: return ((Model) target).name; // <1>
+        case 1: return Integer.valueOf(((Model) target).getAge()); // <2>
+        default: throw new IllegalArgumentException("Unknown member index " + memberIndex + " for Model");
+    }
+}
+
+public static void $$__hibernateAccessor_write(int memberIndex, Object target, Object value) {
+    switch (memberIndex) {
+        case 0: ((Model) target).name = (String) value; return; // <3>
+        case 1: ((Model) target).setAge(((Integer) value).intValue()); return;
+        default: throw new IllegalArgumentException("Unknown member index " + memberIndex + " for Model");
+    }
+}
+
+public static Object $$__hibernateAccessor_create(int memberIndex, Object[] arguments) {
+    switch (memberIndex) {
+        case 0: return new Model();
+        default: throw new IllegalArgumentException("Unknown member index " + memberIndex + " for Model");
+    }
+}
+----
+<1> A plain `GETFIELD` on a private field. This is legal simply because the code lives in `Model`.
+<2> Getters are called directly; primitive values are boxed.
+<3> And a plain `PUTFIELD` -- the very instruction that `LambdaMetafactory` couldn't give us back in Part 1.
+====
+
+Because the injected methods belong to the entity class, they can access its private fields directly. This path does
+not require `setAccessible`, `privateLookupIn` or a nestmate relationship. The same access methods can be used on the JVM
+and in a native executable.
+
+//TODO: add the link to Part 2 paragraph "one accessor, many tricks" when it's published.
+The dispatch structure resembles the `TABLESWITCH` used by the `BULK_SWITCH` strategy in Part 2 ("one accessor, many tricks"). The difference is
+that the earlier switch lived in a hidden class that had to be defined as a nestmate of `Model`; here, the switch is
+injected into `Model` itself.
+
+The injected methods are registered as a regular Quarkus `BytecodeTransformerBuildItem`, and the order of transformations matters.
+The accessor transformer runs _after_ Hibernate ORM enhancement and Panache, so it sees the class the way it'll actually look at runtime:
+
+* ORM enhancement adds `$$_hibernate_read_*` methods to entities. These are not in the Jandex index,
+since they didn't exist when the index was built, but ORM may still ask for accessors to them. The transformer notices
+them while visiting the class and registers them on the fly.
+* A `PUTFIELD` on a `final` field is only legal in the declaring class's constructor, so final fields don't get writers.
+The transformer checks the modifiers in the _transformed_ bytecode rather than the ones in the index,
+since another extension may have already removed the `final` modifier.
+
+Member indexes are only assigned once all fields and methods have been visited, so the indexes used in the switches
+and the ones handed out to accessors always agree.
+
+=== Why a bridge is still needed
+
+Both implementations need a bridge, but they solve different problems, with very different kinds of class:
+
+* *Hibernate Accessor at runtime (Part 2):* the problem is the lookup. A teleported lookup loses its `MODULE` bit,
+  so the bridge has to be defined at runtime as a hidden class that is a nestmate of the entity.
+* *Quarkus at build time:* the problem is the package. The shared reader, writer and instantiator classes live in one
+  fixed package of the extension, because a single class can only live in one package. If `Model` is public, they call
+  its injected methods directly. If `Model` is package-private, its injected methods are still public, but the JVM
+  won't let another package call them, because `Model` itself isn't accessible there.
+
+So, for non-public classes and interfaces only, Quarkus generates a public class in `Model`'s package that forwards
+the calls, and the shared implementations call the bridge instead of `Model`:
+
+====
+[source,java]
+----
+// Generated as Model$$HibernateAccessorBridge, in the same package as Model
+public static Object $$__hibernateAccessor_read(int memberIndex, Object target) {
+    return Model.$$__hibernateAccessor_read(memberIndex, target);
+}
+
+public static void $$__hibernateAccessor_write(int memberIndex, Object target, Object value) {
+    Model.$$__hibernateAccessor_write(memberIndex, target, value);
+}
+
+// ...plus _create and the per-name lookup methods
+----
+====
+
+The two bridges end up being almost opposites:
+
+[cols="1,2,2",options="header"]
+|===
+|
+|Runtime bridge (Part 2)
+|Build-time bridge (Quarkus)
+
+|Why it exists
+|The teleported lookup lost its `MODULE` bit
+|The shared implementations live outside the entity's package
+
+|What kind of class
+|A package-private class injected into the entity's package; it defines the hidden nestmate accessors
+|An ordinary public class in the entity's package
+
+|When it's created
+|At runtime
+|During the build, written into the application
+
+|For which entities
+|Entities in another module (or loaded by another classloader); one bridge per runtime package
+|Only non-public classes and interfaces; public ones are called directly
+
+|What it needs
+|`privateLookupIn`, `defineClass`, `addReads` and `defineHiddenClass` at runtime
+|Nothing: no lookups, no `addReads`, no classloader coordination
+|===
+
+Since the build-time bridge only forwards calls to methods that are already public, it doesn't need any special
+privileges. It only has to be visible from the extension's package, and a public class in the entity's package is.
+
+.A public bridge in the entity's package forwards calls to a non-public entity
+image::../../images/posts/the-build-time-endgame/build-time-bridge.svg["Build-time bridge", role="zoomable"]
+
+== Switching twice, generating once
+
+Now that every entity knows how to read, write and create itself, we need the objects that implement the Hibernate Accessor API.
+Instead of generating a class per member (`PER_MEMBER`), or a class per entity, the extension generates exactly *one*
+class per role -- reader, writer and instantiator -- for the whole application.
+Different properties are simply different instances, each carrying two numbers -- a class index and a member index.
+A read goes all the way down like this:
+
+----
+reader.get(object)
+  → shared reader implementation: switch (classIndex)
+  → model's injected method: switch (memberIndex)
+  → direct field access or method call
+----
+
+Here's the shared reader:
+
+====
+[source,java]
+----
+// Generated ValueReader, shared by every registered class
+public final class QuarkusHibernateAccessorValueReaderImpl implements ValueReader {
+    private final int classIndex;
+    private final int memberIndex;
+
+    public QuarkusHibernateAccessorValueReaderImpl(int classIndex, int memberIndex) {
+        this.classIndex = classIndex;
+        this.memberIndex = memberIndex;
+    }
+
+    public Object get(Object target) {
+        switch (this.classIndex) {
+            case 0: return Model.$$__hibernateAccessor_read(this.memberIndex, target); // <1>
+            case 1: return OtherModel$$HibernateAccessorBridge.$$__hibernateAccessor_read(this.memberIndex, target); // <2>
+            default: throw new IllegalArgumentException("Unknown class index " + this.classIndex);
+        }
+    }
+}
+----
+<1> A public entity is called directly.
+<2> A non-public one is called through its bridge.
+====
+
+The `ValueWriter` and `Instantiator` implementations have exactly the same shape, calling the `_write` and `_create`
+methods respectively.
+
+=== Why two switches?
+
+A read uses two switches because each serves a different purpose:
+
+* The member switch has to live in `Model`. It ends with a `GETFIELD` on a private field, and that's only legal in code that belongs to `Model`.
+* The class switch can't live there, since its job is to pick which entity to call in the first place.
+And the reader can't simply call "the right" entity: an `invokestatic` names its target class in the bytecode,
+so a single reader class serving every entity has to choose between them somewhere.
+
+The only way to get rid of the outer switch is to generate more reader classes, and that's a trade we deliberately didn't make:
+
+[stripes="even", options="header"]
+|===
+| Shape | Generated accessor classes | Switches per read
+| One class per member (`PER_MEMBER` in Part 2) | One per member and role | None
+| One class per entity | One per entity and role | One
+| One class per role (Quarkus) | Three, for the whole application | Two
+|===
+
+We chose one implementation class per role for two reasons: generated-class footprint and the receiver types seen by
+the JIT.
+
+Every generated class must be loaded and verified, occupies Metaspace on the JVM and contributes to the native image.
+With one class per member, an application with 200 entities and 10 properties per entity could need roughly 4,000
+classes for readers and writers alone. The role-based design needs three shared implementations, plus the factory and
+any bridges required for non-public entities. The additional switch adds only a small amount of bytecode to an existing
+class.
+
+The design also limits the implementation types seen at Hibernate ORM's `ValueReader.get(...)` call sites. Multiple
+receiver types can make a call site megamorphic and prevent inlining; using one implementation type gives HotSpot a
+better opportunity to inline the call. It does not guarantee inlining or improved throughput, so the benchmark results
+remain important.
+
+Member and class indexes are assigned sequentially, so the switch cases are dense. Compilers can implement dense switches
+with jump tables, although the generated machine code depends on the compiler and context. The switches should not be
+assumed to disappear: the indexes are `final` instance fields, which HotSpot does not generally treat as compile-time
+constants. The expected dispatch cost is small, but the benchmarks in Part 3 are the basis for evaluating performance.
+
+[[accessor-factory]]
+=== The accessor factory
+
+The last piece is the `AccessorFactory` itself. It is what Hibernate ORM, Envers, Search and Validator get handed,
+and it translates a `Field`, `Method` or `Constructor` into the pair of indexes:
+
+====
+[source,java]
+----
+// Generated AccessorFactory, simplified
+public class QuarkusHibernateAccessorFactory implements AccessorFactory {
+    private final AccessorFactory fallback; // only with reflection-free-with-fallback
+
+    public ValueReader valueReader(Field member) {
+        String className = member.getDeclaringClass().getName(); // <1>
+        String key = NamingUtil.memberKey(member);
+        switch (className) {
+            case "example.Model": {
+                ValueReader result = Model.$$__hibernateAccessor_fieldReader(key); // <2>
+                if (result != null) return result;
+                break;
+            }
+            // More registered hosts...
+        }
+        return fallback.valueReader(member); // <3>
+        // Without fallback: throw new UnsupportedOperationException(className + "." + key);
+    }
+
+    public ValueWriter valueWriter(Field member) {
+        String className = member.getDeclaringClass().getName();
+        String key = NamingUtil.memberKey(member);
+        switch (className) {
+            case "example.Model": {
+                ValueWriter result = Model.$$__hibernateAccessor_fieldWriter(key);
+                if (result != null) return result;
+                break;
+            }
+            // More registered hosts...
+        }
+        return fallback.valueWriter(member);
+    }
+
+    public Instantiator instantiator(Constructor constructor) {
+        String className = constructor.getDeclaringClass().getName();
+        String key = NamingUtil.constructorDescriptor(constructor); // <4>
+        switch (className) {
+            case "example.Model": {
+                Instantiator result = Model.$$__hibernateAccessor_instantiator(key);
+                if (result != null) return result;
+                break;
+            }
+            // More registered hosts...
+        }
+        return fallback.instantiator(constructor);
+    }
+
+    // valueReader(Method) and valueWriter(Method) have the same shape and call
+    // $$__hibernateAccessor_methodReader and $$__hibernateAccessor_methodWriter
+}
+----
+<1> The declaring class is used, so inherited and shadowed fields resolve to the member that was actually registered.
+<2> Each host also gets a lookup method, again generated into the entity, that maps member keys to accessors:
+`case "name": return (ValueReader) AccessorImplFactory.createReader(0, 0);`
+<3> What happens when nothing matches depends on the configured strategy, see <<strategies>>.
+<4> Constructors are looked up by their descriptor, since they all share the same name.
+====
+
+Yes, these are `String` switches. They are only used when an accessor is requested, typically while Hibernate ORM boots,
+and never when reading or writing a value. Once you hold a `ValueReader`, it's integer indexes all the way down.
+
+.String switches at boot, int switches on every read
+image::../../images/posts/the-build-time-endgame/two-switches.svg["Two switches", role="zoomable"]
+
+== Even generated methods have limits
+
+The generated code grows with the model: each registered class adds a case to the class switches, and each registered
+member adds a case to its class's member switches. A JVM method cannot exceed 64 KiB of bytecode, so large models
+require the generated switches to be split into smaller methods.
+
+The current implementation splits integer switches every 1,000 entries and string switches every 500. These are
+implementation thresholds, not JVM limits. Our benchmarks indicate that the thresholds need further tuning.
+
+== Generated during the build
+
+Let's put the two approaches side by side:
+
+[stripes="even", options="header"]
+|===
+| Runtime generation (Part 2) | Build time in Quarkus
+| Hidden class defined as a nestmate through `privateLookupIn` and `defineHiddenClass`
+| The code is in the entity itself, so it doesn't need anyone's permission
+| `$$HibernateAccessorBridge` to regain the `MODULE` bit and call `addReads` across modules
+| A plain public forwarder, only for non-public classes
+| Defining classes in the right classloader, in the right order, while avoiding `LinkageError` races
+| Everything is written into the application during the build
+| A `ClassValue` + `WeakReference` cache to avoid leaking classloaders and Metaspace
+| No classes are generated at runtime, so there's nothing to cache or release
+| `MultiBulkReader` splitting the work per declaring class, because inheritance breaks nestmates
+| Each declaring class carries its own dispatch methods
+| `AccessContext` and the GraalVM fix for caller-sensitive methods on native
+| Nothing to do for native: it's just regular, statically known code
+|===
+
+In Quarkus, accessor methods are generated during augmentation, so generating accessor classes is not part of
+application startup.
+
+The same design suits native executables. The generated accessors use statically known method calls and field accesses
+rather than defining new classes at runtime. For registered members, this also avoids relying on reflection to perform
+access.
+
+[[strategies]]
+== Choosing the access strategy
+
+How strictly to apply this is a build-time choice:
+
+====
+[source,properties]
+----
+# reflection-free (default), reflection-free-with-fallback or reflection
+quarkus.hibernate-accessor.strategy=reflection-free
+----
+====
+
+[stripes="even", options="header"]
+|===
+| Strategy | What happens
+| `reflection-free` | Only generated accessors are used. Asking for a member that was not registered at build time fails.
+| `reflection-free-with-fallback` | Generated accessors where available, reflection for everything else.
+| `reflection` | Reflection for everything, and no bytecode is generated at all.
+|===
+
+With the fallback, the reflection-based accessors are created with the framework's own identity
+(a `MethodHandles.lookup()` from the extension, calling `addReads` and `setAccessible` as needed),
+which works on the JVM and in native executables alike.
+
+== Limitations and known constraints
+
+There are several constraints to account for when registering members:
+
+* *Final fields can't be written.* As mentioned above, assigning a final field outside of the constructor isn't allowed,
+even from within the class.
+* *Records are read-only.* Their fields are registered for reading only; for writing, you go through the canonical constructor.
+* *Inherited members are not collected automatically.* Registering a class registers the members it declares; a superclass
+has to be registered as well. Hibernate ORM does this for the whole entity hierarchy, but if you're using the annotation,
+you'll need it on the superclass too.
+* *Multi-value accessors are not generated at build time.* When Quarkus enhances the entities, not all the mapping
+metadata needed to create them is available yet, so the factory throws `MultiValueAccessorGenerationException`, which is the contract
+Hibernate Accessor defines for consumers to fall back to per-property accessors.
+// TODO: explain what we lose by falling back to per-property accessors.
+* *Modular applications (JPMS).*
+// TODO: explain how this does (not) work on the module path.
+
+== What's next?
+
+Generating accessors during Quarkus augmentation removes the runtime class-definition and caching requirements described
+in Part 2. The trade-off is that the extension must know which members need accessors before the application starts.
+Quarkus already has this information for Hibernate-managed entities; other use cases can register members explicitly.
+
+// TODO: describe the next installment, or remove this note if Part 4 concludes the series.
+
+== Feedback and discussions
+
+We welcome your thoughts and feedback. Join the discussion:
+
+* https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[Zulip chat] (usage questions, development-related discussions, general feedback)
+* https://github.com/hibernate/hibernate-accessor[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] (development-related discussions)
