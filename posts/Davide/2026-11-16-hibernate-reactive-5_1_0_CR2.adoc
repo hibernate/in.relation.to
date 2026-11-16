@@ -1,0 +1,93 @@
+= Hibernate Reactive 5.1.0.CR2 and 5.0.0.CR2 released
+Davide D'Alto
+:awestruct-tags: [ "Hibernate Reactive", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+:getting-started-51: https://hibernate.org/reactive/releases/5.1/#getting_started
+:getting-started-50: https://hibernate.org/reactive/releases/5.0/#getting_started
+:milestone-51-cr1: https://github.com/hibernate/hibernate-reactive/milestone/200?closed=1
+:milestone-51-cr2: https://github.com/hibernate/hibernate-reactive/milestone/206?closed=1
+:milestone-50-cr1: https://github.com/hibernate/hibernate-reactive/milestone/201?closed=1
+:milestone-50-cr2: https://github.com/hibernate/hibernate-reactive/milestone/207?closed=1
+:issues: https://github.com/hibernate/hibernate-reactive/issues
+
+{getting-started-51}[Hibernate Reactive 5.1.0.CR2] and {getting-started-50}[Hibernate Reactive 5.0.0.CR2] are now available.
+
+Both are compatible with https://github.com/hibernate/hibernate-orm/releases/tag/8.0.0.CR1[Hibernate ORM 8.0.0.CR1].
+They differ in the version of the https://vertx.io/docs/vertx-pg-client/java/[Vert.x SQL client]:
+
+* Hibernate Reactive 5.1.0.CR2 is compatible with Vert.x SQL client 5.2.3, and requires at least 5.2.0;
+* Hibernate Reactive 5.0.0.CR2 is compatible with Vert.x SQL client 5.1.10, and requires at least 5.1.8.
+
+CR2 contains a single bug fix: in 5.1.0.CR1 and 5.0.0.CR1, table generators could cause a deadlock
+when the session holding the lock on the row of the generator table needed a new block of ids ({issues}/4538[#4538]).
+If you use 5.1.0.CR1 or 5.0.0.CR1 with a `@TableGenerator`, or with a sequence emulated with a table
+(for example, `@GeneratedValue` on MySQL), please upgrade.
+
+We released CR1 last week without announcing it, so this post also covers what's new in CR1,
+compared to 5.1.0.Beta1 and 5.0.0.Beta3.
+
+You can find what's new in Hibernate ORM in the https://in.relation.to/2026/11/12/orm-80-cr1/[Hibernate ORM 8.0.0.CR1 announcement].
+
+If you need a Hibernate Reactive version compatible with older Hibernate ORM releases or Vert.x releases, you can find
+a https://hibernate.org/reactive/releases/[compatibility matrix] on the Hibernate website.
+
+== What's new
+
+These changes are in CR1. 5.1 and 5.0 contain the same changes, except for the support of JSON on Oracle and SQL Server, which is only in 5.1.
+
+=== Transactions marked for rollback only are rolled back
+
+In Hibernate ORM, when an operation fails, the transaction is marked for rollback only:
+even if the application recovers from the failure, the transaction is rolled back instead of committed.
+Hibernate Reactive now does the same: `withTransaction()` rolls back a transaction marked for rollback only,
+and fails with a `RollbackException` when JPA transaction compliance is enabled.
+`Transaction#isMarkedForRollback()` reports it.
+
+Like in Hibernate ORM, a `NoResultException` thrown by `getSingleResult()` doesn't mark the transaction for rollback,
+so you can still recover from it. See {issues}/4448[#4448].
+
+=== Creating Vert.x with other options
+
+With the new setting `hibernate.vertx.factory`, you can name a `VertxFactory` that the default `VertxInstance`
+uses to create Vert.x, for example to enable metrics with `VertxOptions`, without implementing a whole `VertxInstance`.
+The rest of the behaviour doesn't change: Hibernate Reactive still uses the Vert.x instance of the current context
+if there is one, and closes only the instance it creates. See {issues}/4491[#4491].
+
+=== Extended pessimistic lock scope
+
+With `PessimisticLockScope.EXTENDED`, Hibernate Reactive now also locks the rows of the element collections
+and join tables owned by the locked entities, like Hibernate ORM 8.0, for `find()`, queries, `refresh()` and `lock()`.
+With `LockMode.PESSIMISTIC_FORCE_INCREMENT`, the version is incremented after the collection tables are locked.
+Before, the extended scope was treated like the normal one. See {issues}/4515[#4515].
+
+=== JSON
+
+* JSON arrays, for example a `List` mapped to a JSON column, now work ({issues}/4156[#4156]).
+* JSON columns now work on MariaDB ({issues}/1529[#1529]).
+* Hibernate Reactive 5.1 supports the JSON mappings on Oracle and SQL Server too ({issues}/4450[#4450]).
+
+The documentation now lists the column type used by each JSON mapping on each database.
+
+If you are upgrading from Hibernate Reactive 4.x, check the
+https://github.com/hibernate/hibernate-reactive/blob/5.1.0.CR2/migration-guide.adoc[migration guide].
+
+The full list of changes, including the bug fixes, is available on GitHub in the milestones of
+{milestone-51-cr1}[5.1.0.CR1], {milestone-51-cr2}[5.1.0.CR2], {milestone-50-cr1}[5.0.0.CR1] and {milestone-50-cr2}[5.0.0.CR2].
+
+== How can I get it?
+
+All details are available on the Hibernate Reactive website releases page, for
+link:https://hibernate.org/reactive/releases/5.1/#get-it[5.1] and link:https://hibernate.org/reactive/releases/5.0/#get-it[5.0].
+
+If you are new to Hibernate Reactive, {getting-started-51}[the official documentation] is a good place to start.
+
+== Feedback, issues, ideas?
+
+To get in touch, you can use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
