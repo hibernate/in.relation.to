@@ -1,0 +1,74 @@
+= Hibernate Reactive 5.1.0.CR3 and 5.0.0.Final released
+Davide D'Alto
+:awestruct-tags: [ "Hibernate Reactive", "Releases" ]
+:awestruct-layout: blog-post
+---
+
+:getting-started-51: https://hibernate.org/reactive/releases/5.1/#getting_started
+:getting-started-50: https://hibernate.org/reactive/releases/5.0/#getting_started
+:milestone-51-cr3: https://github.com/hibernate/hibernate-reactive/milestone/208?closed=1
+:milestone-50-final: https://github.com/hibernate/hibernate-reactive/milestone/209?closed=1
+:issues: https://github.com/hibernate/hibernate-reactive/issues
+
+{getting-started-51}[Hibernate Reactive 5.1.0.CR3] and {getting-started-50}[Hibernate Reactive 5.0.0.Final] are now available.
+
+Both are compatible with https://github.com/hibernate/hibernate-orm/releases/tag/8.0.0.CR2[Hibernate ORM 8.0.0.CR2],
+which is now also the minimum version they support.
+They differ in the version of the https://vertx.io/docs/vertx-pg-client/java/[Vert.x SQL client]:
+
+* Hibernate Reactive 5.1.0.CR3 is compatible with Vert.x SQL client 5.2.3;
+* Hibernate Reactive 5.0.0.Final is compatible with Vert.x SQL client 5.1.10.
+
+5.0.0.Final is the last release of Hibernate Reactive 5.0: the series has now reached its end of life,
+and we'll focus our efforts on 5.1.
+If you are using Hibernate Reactive 5.0, we recommend that you plan the upgrade to 5.1 and Vert.x 5.2.
+
+If you need a Hibernate Reactive version compatible with older Hibernate ORM releases or Vert.x releases, you can find
+a https://hibernate.org/reactive/releases/[compatibility matrix] on the Hibernate website.
+
+== What's new
+
+5.1.0.CR3 and 5.0.0.Final contain the same changes.
+
+=== `hibernate.jdbc.time_zone` applies to times
+
+Hibernate Reactive now applies `hibernate.jdbc.time_zone` to the values stored in a time column,
+like Hibernate ORM: `LocalTime`, `java.sql.Time`, and `Date` mapped with `@Temporal(TemporalType.TIME)`.
+Before, it stored the time of day in the default time zone of the JVM, and applied the setting only to timestamps.
+
+If you set `hibernate.jdbc.time_zone` to a time zone that differs from the one of the JVM,
+the times written by an earlier version are now read shifted by the difference between the two time zones.
+See the https://github.com/hibernate/hibernate-reactive/blob/5.1.0.CR3/migration-guide.adoc#jdbc-time-zone-times[migration guide].
+
+=== Bug fixes
+
+* `merge()` failed with a `ClassCastException` for an entity with an inverse `@OneToOne(mappedBy = ...)`
+without cascade ({issues}/4588[#4588]).
+
+=== JBang templates for Oracle and SQL Server
+
+The https://github.com/hibernate/hibernate-reactive/tree/5.1.0.CR3/tooling/jbang[JBang templates],
+which help you to write a test case for a bug report, now include Oracle and SQL Server,
+so you can now start from a template for every supported database ({issues}/4557[#4557]).
+
+If you are upgrading from Hibernate Reactive 4.x, check the
+https://github.com/hibernate/hibernate-reactive/blob/5.1.0.CR3/migration-guide.adoc[migration guide].
+
+The full list of changes is available on GitHub in the milestones of
+{milestone-51-cr3}[5.1.0.CR3] and {milestone-50-final}[5.0.0.Final].
+
+== How can I get it?
+
+All details are available on the Hibernate Reactive website releases page, for
+link:https://hibernate.org/reactive/releases/5.1/#get-it[5.1] and link:https://hibernate.org/reactive/releases/5.0/#get-it[5.0].
+
+If you are new to Hibernate Reactive, {getting-started-51}[the official documentation] is a good place to start.
+
+== Feedback, issues, ideas?
+
+To get in touch, you can use the following channels:
+
+* http://stackoverflow.com/questions/tagged/hibernate-reactive[**hibernate-reactive** tag on Stackoverflow] (usage questions)
+* https://discourse.hibernate.org/c/hibernate-reactive[User forum] or the https://hibernate.zulipchat.com/#narrow/stream/132096-hibernate-user[**hibernate-user** stream on Zulip] (usage questions, general feedback)
+* https://github.com/hibernate/hibernate-reactive/issues[Issue tracker] (bug reports, feature requests)
+* http://lists.jboss.org/pipermail/hibernate-dev/[Mailing list] or the https://hibernate.zulipchat.com/#narrow/stream/205413-hibernate-reactive-dev[**hibernate-reactive-dev** stream on Zulip] (development-related discussions)
